@@ -47,13 +47,14 @@ The existing spectator source card takes substantial space at a small browser vi
 
 - Root TypeScript check passed.
 - Headset TypeScript check and production build passed after the rendering changes.
+- After merging the team's work, the Gate TypeScript check and production build also passed. Gate now shares the World Labs camera-distance policy. These checks establish compilation, not a visual or native-interaction pass for this meadow in Gate.
 - Eleven focused backend tests passed across the World Labs and new cached-meadow suites, including authorization, explicit sample mode, reuse, no paid-job creation, pause and preserving the default courtyard selection.
 - Twelve headset tests passed, including full-world versus photo presentation, camera distance policy and existing room-switch/load/pause regressions.
 - Seven actual-browser rehearsal checks passed with no page errors or external service requests. These are grouped behavioral checks, not a claim of seven native XR tests.
 - The current cached-world script was run twice against local Convex and reused the room/selection. Source hashes were checked before uploads.
 - A local managed-browser rendering check loaded the actual 500k source successfully with no reported app/tick error.
 
-The production build still reports the existing large JavaScript chunk (~9.46 MB, ~2.68 MB gzip) and dependency comment warnings. The build passes, but bundle size and real-device performance remain engineering work. No physical Quest frame-rate or comfort claim is made.
+The IWSDK production build still reports the existing large JavaScript chunk (~9.46 MB, ~2.68 MB gzip) and dependency comment warnings. Gate's build also warns about a ~3.06 MB scene chunk (~1.07 MB gzip); the apps have different chunk layouts, so those numbers are not a total-size or runtime-performance comparison. Both builds pass, but bundle size and real-device performance remain engineering work. No physical Quest frame-rate or comfort claim is made.
 
 Useful commands from the repository root:
 
@@ -74,7 +75,7 @@ The managed-browser world check is `node node_modules/@iwsdk/cli/bin/iwsdk.js br
 ## Next integration gates, in order
 
 1. **Real GLB assets.** The 3D kite, spool, box and card described in the teammate brief do not exist yet as this package's final authored assets. The 2D SVG overlay is an illustration of their intended behavior. Deliver the kite/spool first.
-2. **Native interaction.** Add one selected-client adapter explicitly. The IWSDK fallback currently opts in photographs only; Gate uses a different XR framework. Verify grab → lift → string follows → safe release/dock → pause in the chosen runtime, then on Quest 3. Preserve that client's voice and pointing input ownership. Carry the adequate World Labs far-plane requirement into Gate when integrating this meadow.
+2. **Native interaction.** Add one selected-client adapter explicitly. The IWSDK fallback currently opts in photographs only; Gate uses a different XR framework. Verify grab → lift → string follows → safe release/dock → pause in the chosen runtime, then on Quest 3. Preserve that client's voice and pointing input ownership. Both clients now share the adequate World Labs far-plane policy; visually check the complete meadow in Gate when integrating it.
 3. **Server story semantics.** Add supported kite/spool nouns and per-detail color/ribbon proposals with source ownership, revisions, rejection/undo and explicit human illustration choice. The local rehearsal does not prove this server integration.
 4. **Physical Quest evaluation.** Check the 100k option as well as full quality, scene scale, side/back views, near floor, seated reach, headset pause, discomfort and dropped frames. No physical headset was available for this evaluation.
 5. **Human story and language.** Choose one actual language pair, obtain the participant's permissions, test recognition with a bilingual teammate and attach original audio only when consented. No real family speech or human language review was tested here.

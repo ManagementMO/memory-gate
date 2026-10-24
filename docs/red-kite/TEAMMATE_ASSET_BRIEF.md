@@ -21,7 +21,7 @@ The GLBs, named anchors, dimensions, material semantics and pure animation/state
 
 For the preferred Gate adapter, read `apps/gate/src/scene/PhotoWorld.tsx`, `World.tsx`, `SceneCanvas.tsx`, `XrLayer.tsx`, `scene/xr.ts`, `flow/memory.ts` and `state/store.ts`. Reuse its existing Canvas, XR store, frame loop, room session and pause/rest lifecycle. Use current documentation matching the pinned React Three XR version for handles/grabbing. Do not create a second Canvas/XR session or a new multiplayer service. Keep the existing companion, portal and album intact.
 
-The Gate camera was inspected with a 200 m far plane. The actual meadow contains forward splat centers beyond 267 m; the IWSDK fallback now uses 1,000 m for World Labs scenes. Carry that rendering requirement into the Gate integration, and ensure the portal's white-space/sky transition steps aside for the opaque generated setting. The Gate implementation was read but this new meadow has **not** been visually validated in that client by this package.
+The actual meadow contains forward splat centers beyond 267 m. Both clients now use the shared 1,000 m World Labs far-plane policy; Gate's PhotoWorld restores its previous range when the source leaves. During integration, ensure the portal's white-space/sky transition steps aside for the opaque generated setting. This new meadow has **not** been visually validated in Gate by this package; the existing evidence is from IWSDK.
 
 ## The outcome
 
