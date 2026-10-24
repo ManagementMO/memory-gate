@@ -6,12 +6,13 @@ import { copyText, useHashRoute, useLiveQuery, useLongPress, useNow } from './ho
 import { Admin } from './screens/Admin';
 import { Consent } from './screens/Consent';
 import { Live } from './screens/Live';
+import { Memories } from './screens/Memories';
 import { Photo } from './screens/Photo';
 import { Welcome } from './screens/Welcome';
 import { loadSession, saveSession, type Session } from './session';
 import { Loading, Notice, ToastProvider, useToast } from './ui';
 
-const ROUTES = ['story', 'photo', 'consent', 'admin'] as const;
+const ROUTES = ['story', 'memories', 'photo', 'consent', 'admin'] as const;
 type Route = (typeof ROUTES)[number];
 const HEADSET_FRESH_MS = 20_000;
 
@@ -86,9 +87,9 @@ function RoomShell({ session, onLeave }: { session: Session; onLeave: (notice?: 
           </p>
         </div>
         <nav className="tabs" aria-label="Screens">
-          {(['story', 'photo', 'consent'] as const).map((r) => (
+          {(['story', ...(view.me.role !== 'viewer' ? ['memories' as const] : []), 'photo', 'consent'] as const).map((r) => (
             <button key={r} type="button" className={`tab ${route === r ? 'tab-on' : ''}`} aria-current={route === r ? 'page' : undefined} data-testid={`tab-${r}`} onClick={() => go(r)}>
-              {r === 'story' ? 'Story' : r === 'photo' ? 'Photo' : 'Permissions'}
+              {r === 'story' ? 'Story' : r === 'memories' ? 'Memories' : r === 'photo' ? 'Photo' : 'Permissions'}
             </button>
           ))}
         </nav>
@@ -97,6 +98,7 @@ function RoomShell({ session, onLeave }: { session: Session; onLeave: (notice?: 
       {view.room.demo && <p className="sample-ribbon" data-testid="sample-ribbon">Sample content · fictional stories, with photos and illustrations labeled at their source</p>}
       <main className="content">
         {route === 'story' && <Live session={session} view={view} headsetConnected={headsetConnected} onConsent={() => go('consent')} />}
+        {route === 'memories' && view.me.role !== 'viewer' && <Memories session={session} onStory={() => go('story')} />}
         {route === 'photo' && <Photo session={session} view={view} onDone={() => go('story')} onConsent={() => go('consent')} />}
         {route === 'consent' && <Consent session={session} view={view} onDone={() => go(view.me.role === 'family' ? 'photo' : 'story')} />}
         {route === 'admin' && <Admin session={session} view={view} onBack={() => go('story')} onDeleted={() => onLeave('This memory was deleted: the photo, room, objects, lines, recordings and permissions.')} />}

@@ -2,6 +2,8 @@
 
 The current story demo opens a World Labs courtyard prepared from fictional sample words. A new spoken detail becomes a separate, reviewable object inside that place. World generation happened during preparation; it is not instantaneous. Automated voice evidence uses synthesized microphone input. Use a consenting relative's actual words after their language/content review.
 
+The integrated **Memories** tab adds a separate [Apify + SpacetimeDB sequence](docs/CALHACKS_RUNBOOK.md#two-minute-demonstration): pass a story → recipient accepts → original words → public archive search → chosen shared reference → revoke. It complements the live scene sequence below. The board does not yet insert references or switch shared perspectives inside VR.
+
 Prepare with scripts/start-all.sh, npm run seed:world, npm run demo:journey and npm run demo:links. Put the spectator and storyteller phone side by side. demo:journey reopens the current sample; --new explicitly makes an empty one. Open the family headset link on the Quest only after completing docs/QUEST_CHECKLIST.md. Keep the illustrative garden available on Photo; do not wait for a generation during judging.
 
 The intended audience is adults living with younger-onset Alzheimer’s (diagnosed before 65) and someone close to them. This does not assume a disease stage or level of ability. Let the storyteller choose a screen or the optional seated Quest and set the pace. The family can use the simpler storyteller view, watch the shared place, hear the original words, or pause immediately. Present this as a shared reminiscence prototype; no patient benefit or clinical validation has been established.

@@ -4,6 +4,11 @@
   "type": "module",
   "description": "Memory Gate practice build (pre-event rehearsal, 2026-10-23). See README for the event-rules note.",
   "scripts": {
+    "local:up": "node scripts/local-up.mjs",
+    "dev:exchange": "node --import tsx scripts/exchange.mjs",
+    "test:exchange:browser": "playwright test --config tests/exchange/playwright.config.mjs",
+    "test:atlas": "npm --prefix actors/historical-memory-atlas test",
+    "test:exchange": "node --import tsx --test tests/exchange/*.test.mjs",
     "dev:convex": "CONVEX_AGENT_MODE=anonymous convex dev --tail-logs disable",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --config tests/smoke/vitest.config.mjs",
@@ -29,6 +34,9 @@
   "dependencies": {
     "@anthropic-ai/sdk": "0.132.1",
     "convex": "1.46.0",
+    "spacetimedb": "2.13.0",
+    "tsx": "4.20.6",
+    "ws": "8.18.3",
     "zod": "4.6.7"
   },
   "devDependencies": {

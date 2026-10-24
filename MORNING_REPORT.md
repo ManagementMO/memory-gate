@@ -1,4 +1,18 @@
-# Heirloom / Memory Gate — review handoff
+# Heirloom / Memory Gate — current branch handoff
+
+The integrated branch is **main** in ManagementMO/memory-gate. It combines the World Labs story courtyard with the team's Apify/SpacetimeDB memory exchange. [The scene demonstration](DEMO_SCRIPT.md) and [the exchange runbook](docs/CALHACKS_RUNBOOK.md) describe separate working flows. `npm run local:up` starts the local stack on Windows/macOS/Linux after its dependencies are installed; `npm run demo:links` prints private participant URLs from the prepared room.
+
+The new Memories tab supports source-linked handoffs, recipient acceptance, a persistent collection, original text/audio under current permission, and revocation. SpacetimeDB is authoritative for the new exchange and shared archive board. The custom Apify Actor retrieves actual public institutional records with dates, rights and uncertainty; a person explicitly selects each shared reference. The existing Meta IWSDK garden and shared scene-editing flow remain.
+
+The incoming exchange branch recorded **71 backend tests, 4 renderer tests, 6 Actor tests, 5 real database/gateway tests, 3 new browser scenarios, and all 24 offline legacy browser scenarios passed** on Windows. Three paid-provider scenarios were deliberately skipped in that run. Accepted stories and references survived actual database and gateway process restarts there. Deleting a room erased its SpacetimeDB exchange records. Those records remain in evidence/calhacks-exchange/. The separately tested macOS World Labs pass is below; neither historical report is a claim that every combined path was tested on both machines.
+
+Remaining: no Apify cloud Actor deployment/run is claimed. The Windows native emulator failed to launch; the macOS World Labs pass did complete active Quest 3 emulation, including native grab/return and the gate. Physical Quest and comfort/performance testing are still open. Existing capture and scene state remain in Convex. The exchange and chosen reference board use SpacetimeDB; shared VR perspectives/POV switching and Instagram ingestion remain outstanding.
+
+The exchange branch made no paid world jobs. The macOS story pass used exactly the separately authorized one generation (1,580 credits, local cap now 4/4). Credentials stay in ignored files. No public app deployment or event submission was performed. Preserve the project's actual history when discussing event eligibility.
+
+---
+
+# macOS story courtyard and earlier review evidence
 
 ## Open now
 

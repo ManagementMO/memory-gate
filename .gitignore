@@ -22,3 +22,6 @@ evidence/video/*.webm
 .logs/
 auth/
 output/
+storage/
+.spacetime/
+spacetimedb/dist/
