@@ -13,6 +13,7 @@ import { MEMORY_CENTER } from '../layout';
 import { glowBlending } from '../util';
 import { fromParts, token, type Part } from './custom';
 import { LIBRARY_BUILDERS } from './library';
+import { hasRealModel, loadRealModel, realObject } from './realModels';
 import { newReveal, type BuildOptions } from './style';
 
 const hash = (s: string) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
@@ -119,8 +120,17 @@ function blobTexture(): THREE.CanvasTexture {
 export function SketchObject({ obj, place, delay, onLight = 1 }: { obj: PlanObject; place: Placement; delay: number; onLight?: number }) {
   const reveal = useMemo(() => newReveal(), [obj.id]);
   const [parts, setParts] = useState<Part[] | null>(null);
+  // The photoreal library, when it has this kind (usually preloaded when the plan arrived).
+  const [real, setReal] = useState(() => hasRealModel(obj.kind));
+  useEffect(() => {
+    if (real) return;
+    let live = true;
+    void loadRealModel(obj.kind).then((m) => { if (live && m) setReal(true); });
+    return () => { live = false; };
+  }, [obj.kind, real]);
   const entry = entryOf(obj.kind);
   const built = useMemo(() => {
+    if (real) { const r = realObject(obj.kind, reveal, obj.scale ?? 1); if (r) return r; }
     // Only a remembered material overrides the builder's own per-part finishes.
     const o: BuildOptions = { color: obj.color, material: obj.material, scale: obj.scale, seed: hash(obj.id), reveal, label: obj.label };
     const builder = LIBRARY_BUILDERS[obj.kind];
@@ -129,7 +139,7 @@ export function SketchObject({ obj, place, delay, onLight = 1 }: { obj: PlanObje
     }
     if (parts?.length) return fromParts(parts, o);
     return token(o, Math.min(0.7, Math.max(0.3, entry.h * 0.6)));
-  }, [obj.kind, obj.color, obj.material, obj.scale, obj.label, obj.id, parts, reveal, entry]);
+  }, [obj.kind, obj.color, obj.material, obj.scale, obj.label, obj.id, parts, reveal, entry, real]);
 
   // Ask Claude to compose things the library can't draw (cached server-side per label + colour).
   useEffect(() => {

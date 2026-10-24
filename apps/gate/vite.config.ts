@@ -58,6 +58,8 @@ export default defineConfig({
     },
     proxy,
   },
-  preview: { host: process.env.GATE_HOST ?? '0.0.0.0', port: Number(process.env.GATE_PORT ?? 4180), strictPort: true, proxy },
+  // A Cloudflare quick tunnel (cloudflared tunnel --url https://localhost:4180) gives the headset a public HTTPS address
+  // when the venue Wi-Fi keeps devices apart.
+  preview: { host: process.env.GATE_HOST ?? '0.0.0.0', port: Number(process.env.GATE_PORT ?? 4180), strictPort: true, proxy, allowedHosts: ['.trycloudflare.com'] },
   build: { target: 'es2022', chunkSizeWarningLimit: 2500 },
 });
