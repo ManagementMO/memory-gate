@@ -1,0 +1,33 @@
+4.0s  shot 01-portal
+4.6s  tapped Begin
+4.6s  stage → greeting
+7.1s  shot 02-greeting
+13.9s  stage → gathering
+15.7s  shot 03-gathering
+15.7s  state: {"stage":"gathering","said":"Is there a moment you’d like to visit today? You can tell me about it, or show me a photo.","heard":null,"voice":"unsupported","session":true,"title":null,"offers":{"photo":true,"video":true,"invite":true}}
+15.7s  person says: My grandmother’s kitchen, in the morning. Yellow curtains on the window, a round wooden table with two chairs, and her radio on the counter.
+19.6s  companion: I can almost see Grandmother's kitchen. Shall we go there together?
+22.4s  shot 04-described
+25.5s  person says: Yes, let’s go there.
+27.2s  stage → entering
+30.0s  shot 05-entering
+33.6s  stage → forming
+36.3s  shot 06-forming
+38.4s  stage → memory
+42.7s  shot 07-memory
+42.7s  state: {"stage":"memory","said":"Tell me what else was here, or anything you notice. Say when you’d like to leave.","heard":null,"voice":"unsupported","session":true,"title":"Grandmother's kitchen","offers":{"photo":false,"video":false,"invite":false}}
+48.7s  person says: There was a little cat sleeping on one of the chairs.
+58.0s  shot 08-detail
+88.0s  FAILED: TimeoutError: locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for getByTestId('leave')
+    - locator resolved to <button type="button" class="pill glass" data-testid="leave">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+  
+88.3s  shot zz-failure
+88.3s  state: {"stage":"memory","said":"There it is.","heard":"There was a little cat sleeping on one of the chairs.","voice":"unsupported","session":true,"title":"Grandmother's kitchen","offers":{"photo":false,"video":false,"invite":false}}
+88.3s  errors: 0

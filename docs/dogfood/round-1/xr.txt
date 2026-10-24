@@ -1,0 +1,7 @@
+4.3s  enter button visible: true
+5.0s  in XR: {"stage":"greeting","xr":true,"said":null}
+8.0s  XR frames rendered in 3 s: 163
+14.1s  state: {"stage":"greeting","xr":true,"said":"Is there a moment you’d like to visit today? You can tell me about it, or show me a photo."}
+41.8s  state: {"stage":"memory","xr":true,"said":"Tell me what else was here, or anything you notice. Say when you’d like to leave."}
+54.8s  after album: {"stage":"album","xr":false,"said":null}
+55.1s  errors: 0

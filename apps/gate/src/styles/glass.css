@@ -1,0 +1,60 @@
+/* Liquid glass. Chromium also gets real edge refraction: an SVG displacement filter (see GlassFilters.tsx) layered
+   into backdrop-filter. Safari and Quest Browser fall back to the blur-and-rim recipe, which is the same shape. */
+.glass {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(120% 140% at 12% -10%, rgba(255, 255, 255, 0.2), transparent 46%),
+    linear-gradient(180deg, var(--glass-tint-strong), var(--glass-tint));
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-rim-soft);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-rim),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.05),
+    inset 0 0 22px 0 rgba(255, 255, 255, 0.04),
+    var(--glass-shadow);
+}
+/* The specular sheen: a soft crescent across the top edge, brighter where light would catch a curved lens. */
+.glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 18%, transparent 40%),
+    radial-gradient(80% 50% at 50% 115%, rgba(255, 255, 255, 0.08), transparent 70%);
+  mix-blend-mode: screen;
+  z-index: 0;
+}
+/* A hairline highlight that rides the rim: brighter on the upper-left, fading around the shape. */
+.glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.06) 32%, rgba(255, 255, 255, 0) 55%, rgba(255, 255, 255, 0.18) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  z-index: 0;
+}
+.glass > * { position: relative; z-index: 1; }
+
+@supports (backdrop-filter: url(#lg-refract)) {
+  .glass.refract { backdrop-filter: url(#lg-refract) var(--glass-blur); }
+}
+
+/* On the white memory space the same glass reads as frosted ice, with dark ink. */
+.on-paper .glass,
+.glass.paper {
+  --glass-tint: rgba(255, 255, 255, 0.42);
+  --glass-tint-strong: rgba(255, 255, 255, 0.62);
+  --glass-rim: rgba(255, 255, 255, 0.95);
+  --glass-rim-soft: rgba(255, 255, 255, 0.55);
+  --glass-shadow: 0 16px 44px rgba(60, 58, 90, 0.16), 0 2px 6px rgba(60, 58, 90, 0.08);
+  color: var(--paper-ink);
+}

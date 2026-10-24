@@ -1,0 +1,90 @@
+{
+ "version": 1,
+ "title": "The classroom",
+ "setting": {
+  "indoor": true,
+  "type": "classroom",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "wood",
+  "palette": [],
+  "walls": true,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "fence-0",
+   "kind": "fence",
+   "label": "wall",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "table-1",
+   "kind": "table",
+   "label": "desk",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "chair-2",
+   "kind": "chair",
+   "label": "chair",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "next_to",
+   "target": "table-1",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "chair-3",
+   "kind": "chair",
+   "label": "chair",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "next_to",
+   "target": "table-1",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "books-4",
+   "kind": "books",
+   "label": "books",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "on",
+   "target": "table-1",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "window-5",
+   "kind": "window",
+   "label": "window",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here we are. The classroom, just as you described it."
+}

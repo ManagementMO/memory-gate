@@ -36,6 +36,19 @@ export default defineSchema({
     revokedAt: v.union(v.number(), v.null()),
   }).index('by_token', ['token']).index('by_room', ['roomId']),
 
+  // Who is here right now (one row per member, refreshed every couple of seconds while their page is open). Each
+  // person is shown to the others as a light of their own colour; a "look here" mark travels with the same row.
+  presence: defineTable({
+    roomId: v.id('rooms'),
+    memberId: v.id('members'),
+    seat: v.number(), // order of arrival; sets the colour and where the light waits beside you
+    color: v.string(),
+    device: v.string(), // headset | phone | desktop
+    point: v.union(v.object({ at: v.array(v.number()), t: v.number() }), v.null()),
+    updatedAt: v.number(),
+    leftAt: v.union(v.number(), v.null()),
+  }).index('by_room', ['roomId']).index('by_member', ['memberId']).index('by_updated', ['updatedAt']),
+
   consents: defineTable({
     roomId: v.id('rooms'),
     memberId: v.id('members'),
@@ -186,4 +199,36 @@ export default defineSchema({
   assets: defineTable({ key: v.string(), fileId: v.id('_storage'), meta: v.optional(v.any()) }).index('by_key', ['key']),
 
   flags: defineTable({ name: v.string(), value: v.boolean() }).index('by_name', ['name']),
+
+  // ---- Memory Gate experience (apps/gate) ----
+  // One visit through the gate: the words and media gathered, and the plan the sketch is drawn from.
+  memories: defineTable({
+    roomId: v.id('rooms'),
+    title: v.string(),
+    words: v.array(v.string()),
+    plan: v.any(), // ScenePlan (packages/shared/src/scene.ts), validated before storing
+    source: v.string(), // claude | offline
+    mediaFileId: v.union(v.id('_storage'), v.null()),
+    mediaKind: v.union(v.string(), v.null()), // photo | video
+    caption: v.union(v.string(), v.null()), // what the companion saw in the photo
+    memberId: v.optional(v.id('members')), // who began it (guests follow the host; the host welcomes a guest's photo)
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index('by_room', ['roomId']),
+  // Album moments: a picture of the place with the words that shaped it (and the original voice, if kept).
+  moments: defineTable({
+    roomId: v.id('rooms'),
+    memberId: v.id('members'),
+    memoryTitle: v.string(),
+    caption: v.string(),
+    speaker: v.string(), // you | companion
+    kind: v.string(), // arrival | detail | final
+    imageFileId: v.union(v.id('_storage'), v.null()),
+    audioFileId: v.union(v.id('_storage'), v.null()),
+    createdAt: v.number(),
+  }).index('by_room', ['roomId']),
+  // Estimated model spend (deployment-wide). Every Claude call records its usage; calls stop at the budget.
+  spend: defineTable({ key: v.string(), usd: v.number(), calls: v.number(), inputTokens: v.number(), outputTokens: v.number(), updatedAt: v.number() }).index('by_key', ['key']),
+  // Composed objects (primitives from Claude for things the library can't draw), cached by label + colour.
+  sketchCache: defineTable({ key: v.string(), parts: v.any(), createdAt: v.number() }).index('by_key', ['key']),
 });

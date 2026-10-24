@@ -1,0 +1,106 @@
+{
+ "version": 1,
+ "title": "My childhood bedroom",
+ "setting": {
+  "indoor": true,
+  "type": "bedroom",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "wood",
+  "palette": [
+   "#5b8fc9",
+   "#c9a27a",
+   "#e8d9c0"
+  ],
+  "walls": true,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "bed",
+   "kind": "bed",
+   "label": "small bed",
+   "color": null,
+   "material": "wood",
+   "zone": "back-left",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 0.8,
+   "quote": "A small bed with a patchwork quilt"
+  },
+  {
+   "id": "quilt",
+   "kind": "picnic_blanket",
+   "label": "patchwork quilt",
+   "color": "#d97a5b",
+   "material": "fabric",
+   "zone": "back-left",
+   "relation": "on",
+   "target": "bed",
+   "scale": 0.8,
+   "quote": "a patchwork quilt"
+  },
+  {
+   "id": "dresser",
+   "kind": "cabinet",
+   "label": "wooden dresser",
+   "color": "#8b5a2b",
+   "material": "wood",
+   "zone": "right",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1,
+   "quote": "a wooden dresser"
+  },
+  {
+   "id": "window",
+   "kind": "window",
+   "label": "window",
+   "color": null,
+   "material": "glass",
+   "zone": "back",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1,
+   "quote": "a window with blue curtains"
+  },
+  {
+   "id": "curtains",
+   "kind": "window",
+   "label": "blue curtains",
+   "color": "#5b8fc9",
+   "material": "fabric",
+   "zone": "back",
+   "relation": "next_to",
+   "target": "window",
+   "scale": 1,
+   "quote": "blue curtains"
+  },
+  {
+   "id": "teddy",
+   "kind": "custom",
+   "label": "teddy bear",
+   "color": "#a0703c",
+   "material": "fabric",
+   "zone": "back-left",
+   "relation": "on",
+   "target": "bed",
+   "scale": 0.6,
+   "quote": "my teddy bear on the pillow"
+  },
+  {
+   "id": "rug",
+   "kind": "rug",
+   "label": "small rug",
+   "color": null,
+   "material": "fabric",
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 0.9,
+   "quote": null
+  }
+ ],
+ "intro": "Here is your little bedroom, with the patchwork quilt on the bed and your teddy bear resting on the pillow."
+}

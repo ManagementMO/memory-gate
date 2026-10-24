@@ -1,0 +1,27 @@
+== typecheck
+   PASS apps/gate typecheck
+== production build
+   PASS vite build ()
+== journey: desktop, words, Figure (offline room, no voice)
+   PASS reached the album
+   84.4s  errors: 0
+== journey: phone 390x844, words, Light (offline room, no voice)
+   PASS reached the album
+   83.1s  errors: 0
+== headset rehearsal (emulated Quest 3)
+   PASS entered VR, formed a memory, exited to the album
+   7.9s  XR frames rendered in 3 s: 161
+   54.7s  errors: 0
+== album interactions
+   PASS album shots
+   {"openWhileHovering":1,"openAfterLeave":0,"openAfterEsc":0,"phoneOpenAfterTap":1,"errors":[]}
+== frame rate (headless Chrome on this Mac, not a Quest measurement)
+   portal https://localhost:5180/?voice=off&mode=offline → 69.5 fps
+   memory https://localhost:5180/?preview=scene&plan=/eval/livingroom.json&companion=none → 86.3 fps
+   portal at headset quality https://localhost:5180/?voice=off&mode=offline&q=0.15 → 82.3 fps
+== generation renders
+   PASS rendered kitchen
+   PASS rendered lake
+   PASS rendered livingroom
+   PASS rendered cafe
+done: docs/dogfood/round-3

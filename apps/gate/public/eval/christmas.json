@@ -1,0 +1,94 @@
+{
+ "version": 1,
+ "title": "Aunt's house at Christmas",
+ "setting": {
+  "indoor": true,
+  "type": "living room",
+  "timeOfDay": "morning",
+  "weather": "snow",
+  "floor": "wood",
+  "palette": [
+   "#b22222",
+   "#2e6b3a",
+   "#f2d16b"
+  ],
+  "walls": true,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "xmas-tree",
+   "kind": "pine_tree",
+   "label": "tall christmas tree",
+   "color": "#2e6b3a",
+   "material": "plant",
+   "zone": "back-left",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1.5,
+   "quote": "A tall Christmas tree with lights"
+  },
+  {
+   "id": "armchair",
+   "kind": "armchair",
+   "label": "red armchair",
+   "color": "#b22222",
+   "material": "fabric",
+   "zone": "right",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": "a red armchair"
+  },
+  {
+   "id": "presents",
+   "kind": "custom",
+   "label": "presents",
+   "color": "#c0392b",
+   "material": "paper",
+   "zone": "back-left",
+   "relation": "under",
+   "target": "xmas-tree",
+   "scale": 0.7,
+   "quote": "presents under the tree"
+  },
+  {
+   "id": "window",
+   "kind": "window",
+   "label": "window",
+   "color": null,
+   "material": "glass",
+   "zone": "back",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1.2,
+   "quote": "snow falling outside the window"
+  },
+  {
+   "id": "rug",
+   "kind": "rug",
+   "label": "rug",
+   "color": null,
+   "material": "fabric",
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "lamp",
+   "kind": "floor_lamp",
+   "label": "floor lamp",
+   "color": null,
+   "material": "light",
+   "zone": "back-right",
+   "relation": "next_to",
+   "target": "armchair",
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "It's Christmas morning at your aunt's house. The tall tree glows with lights, and snow drifts past the window."
+}

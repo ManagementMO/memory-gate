@@ -39,6 +39,8 @@ export class SttSession {
   openedAt: number | null = null;
   /** Fires if the socket closes on its own before finish() (idle timeout, network); used to reconnect a spare. */
   onDrop: (() => void) | null = null;
+  /** Optional: receives the transcript so far each time words arrive (interim words included). */
+  onText: ((text: string) => void) | null = null;
   readonly opened: Promise<boolean>;
   private readonly ws: WebSocket;
   private queue: ArrayBuffer[] = [];
@@ -77,6 +79,8 @@ export class SttSession {
       try { m = JSON.parse(ev.data) as Msg; } catch { return; }
       if (m.type === 'transcript') {
         if (m.is_final && typeof m.text === 'string') this.finals += m.text;
+        // Optional live view of the words so far (finals plus the current interim guess). Never changes `finals`.
+        if (typeof m.text === 'string' && this.onText) { try { this.onText(m.is_final ? this.finals : this.finals + m.text); } catch { /* the app's handler must not break STT */ } }
       } else if (m.type === 'flush_done') {
         this.flushAt = performance.now();
         this.flushWaiter?.();
@@ -147,6 +151,7 @@ export class SttSession {
     const was = this.state;
     this.state = 'closed';
     this.onDrop = null;
+    this.onText = null;
     this.queue = [];
     if (!this.ws) return;
     const ws = this.ws;

@@ -1,0 +1,105 @@
+{
+ "version": 1,
+ "title": "The living room",
+ "setting": {
+  "indoor": true,
+  "type": "living room",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "wood",
+  "palette": [
+   "#efe4c8",
+   "#5c9a5a"
+  ],
+  "walls": true,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "armchair-0",
+   "kind": "armchair",
+   "label": "armchair",
+   "color": "#5c9a5a",
+   "material": null,
+   "zone": "center",
+   "relation": "next_to",
+   "target": "fireplace-1",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "fireplace-1",
+   "kind": "fireplace",
+   "label": "fireplace",
+   "color": "#5c9a5a",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "bookshelf-2",
+   "kind": "bookshelf",
+   "label": "bookshelf",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "books-3",
+   "kind": "books",
+   "label": "books",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "on",
+   "target": "fireplace-1",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "lamp-4",
+   "kind": "lamp",
+   "label": "lamp",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "on",
+   "target": "fireplace-1",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "sofa-5",
+   "kind": "sofa",
+   "label": "sofa",
+   "color": "#efe4c8",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "rug-6",
+   "kind": "rug",
+   "label": "rug",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here we are. The living room, just as you described it."
+}

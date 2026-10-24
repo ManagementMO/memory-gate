@@ -1,0 +1,68 @@
+{
+ "version": 1,
+ "title": "The chapel",
+ "setting": {
+  "indoor": true,
+  "type": "chapel",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "stone",
+  "palette": [
+   "#f4f2ee"
+  ],
+  "walls": true,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "candle-0",
+   "kind": "candle",
+   "label": "candles",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "flowers-1",
+   "kind": "flowers",
+   "label": "flowers",
+   "color": "#f4f2ee",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "bench-2",
+   "kind": "bench",
+   "label": "bench",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "window-3",
+   "kind": "window",
+   "label": "window",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here we are. The chapel, just as you described it."
+}

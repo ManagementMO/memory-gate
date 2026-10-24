@@ -1,0 +1,106 @@
+{
+ "version": 1,
+ "title": "Dad's living room",
+ "setting": {
+  "indoor": true,
+  "type": "living room",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "wood",
+  "palette": [
+   "#4f7a4a",
+   "#f2e8d0",
+   "#8a5a3b"
+  ],
+  "walls": true,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "armchair",
+   "kind": "armchair",
+   "label": "green armchair",
+   "color": "#4f7a4a",
+   "material": "fabric",
+   "zone": "left",
+   "relation": "next_to",
+   "target": "fireplace",
+   "scale": 1,
+   "quote": "A green armchair by the fireplace"
+  },
+  {
+   "id": "fireplace",
+   "kind": "fireplace",
+   "label": "fireplace",
+   "color": null,
+   "material": "stone",
+   "zone": "back-left",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1.1,
+   "quote": "by the fireplace"
+  },
+  {
+   "id": "bookshelf",
+   "kind": "bookshelf",
+   "label": "big bookshelf",
+   "color": "#8a5a3b",
+   "material": "wood",
+   "zone": "back-right",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1.3,
+   "quote": "a big bookshelf full of books"
+  },
+  {
+   "id": "books",
+   "kind": "books",
+   "label": "books",
+   "color": null,
+   "material": "paper",
+   "zone": "back-right",
+   "relation": "on",
+   "target": "bookshelf",
+   "scale": 1,
+   "quote": "full of books"
+  },
+  {
+   "id": "sofa",
+   "kind": "sofa",
+   "label": "sofa",
+   "color": null,
+   "material": "fabric",
+   "zone": "right",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": "next to the sofa"
+  },
+  {
+   "id": "lamp",
+   "kind": "floor_lamp",
+   "label": "lamp with cream shade",
+   "color": "#f2e8d0",
+   "material": "fabric",
+   "zone": "front-right",
+   "relation": "next_to",
+   "target": "sofa",
+   "scale": 1,
+   "quote": "a lamp with a cream shade next to the sofa"
+  },
+  {
+   "id": "rug",
+   "kind": "rug",
+   "label": "rug",
+   "color": null,
+   "material": "fabric",
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here is Dad's living room, with the green armchair by the fireplace and the cream lamp glowing beside the sofa."
+}

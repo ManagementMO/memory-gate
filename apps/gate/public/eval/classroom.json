@@ -1,0 +1,142 @@
+{
+ "version": 1,
+ "title": "My first classroom",
+ "setting": {
+  "indoor": true,
+  "type": "classroom",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "wood",
+  "palette": [
+   "#a0784f",
+   "#2f4a3a",
+   "#e8dcc0"
+  ],
+  "walls": true,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "desk-1",
+   "kind": "table",
+   "label": "little wooden desk",
+   "color": "#a0784f",
+   "material": "wood",
+   "zone": "left",
+   "relation": "none",
+   "target": null,
+   "scale": 0.7,
+   "quote": "Rows of little wooden desks"
+  },
+  {
+   "id": "desk-2",
+   "kind": "table",
+   "label": "little wooden desk",
+   "color": "#a0784f",
+   "material": "wood",
+   "zone": "center",
+   "relation": "next_to",
+   "target": "desk-1",
+   "scale": 0.7,
+   "quote": "Rows of little wooden desks"
+  },
+  {
+   "id": "desk-3",
+   "kind": "table",
+   "label": "little wooden desk",
+   "color": "#a0784f",
+   "material": "wood",
+   "zone": "right",
+   "relation": "next_to",
+   "target": "desk-2",
+   "scale": 0.7,
+   "quote": "Rows of little wooden desks"
+  },
+  {
+   "id": "desk-4",
+   "kind": "table",
+   "label": "little wooden desk",
+   "color": "#a0784f",
+   "material": "wood",
+   "zone": "front-left",
+   "relation": "none",
+   "target": null,
+   "scale": 0.7,
+   "quote": "Rows of little wooden desks"
+  },
+  {
+   "id": "desk-5",
+   "kind": "table",
+   "label": "little wooden desk",
+   "color": "#a0784f",
+   "material": "wood",
+   "zone": "front-right",
+   "relation": "none",
+   "target": null,
+   "scale": 0.7,
+   "quote": "Rows of little wooden desks"
+  },
+  {
+   "id": "chalkboard",
+   "kind": "custom",
+   "label": "big chalkboard",
+   "color": "#2f4a3a",
+   "material": "stone",
+   "zone": "back",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1.5,
+   "quote": "a big chalkboard on the wall"
+  },
+  {
+   "id": "teacher-desk",
+   "kind": "table",
+   "label": "teacher's desk",
+   "color": "#8a5f3c",
+   "material": "wood",
+   "zone": "back-right",
+   "relation": "in_front_of",
+   "target": "chalkboard",
+   "scale": 1.1,
+   "quote": "the teacher’s desk"
+  },
+  {
+   "id": "globe",
+   "kind": "custom",
+   "label": "globe",
+   "color": "#4a7fb5",
+   "material": "plastic",
+   "zone": "back-right",
+   "relation": "on",
+   "target": "teacher-desk",
+   "scale": 0.6,
+   "quote": "a globe on the teacher’s desk"
+  },
+  {
+   "id": "window",
+   "kind": "window",
+   "label": "classroom window",
+   "color": null,
+   "material": "glass",
+   "zone": "left",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1.2,
+   "quote": null
+  },
+  {
+   "id": "clock",
+   "kind": "clock",
+   "label": "wall clock",
+   "color": null,
+   "material": "metal",
+   "zone": "back-left",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 0.7,
+   "quote": null
+  }
+ ],
+ "intro": "Here are the rows of little wooden desks, the big chalkboard waiting, and the globe sitting on the teacher's desk."
+}

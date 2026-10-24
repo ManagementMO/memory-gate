@@ -1,0 +1,11 @@
+5.4s  host began a visit
+9.3s  PASS phone is offered the visit nearby
+16.1s  PASS phone joined as a guest (guest)
+16.1s  PASS phone stays quiet (voice shared, music false)
+16.1s  PASS host sees the phone's light (1)
+16.1s  PASS phone sees the host's light (1)
+55.9s  host stage: memory
+55.9s  PASS phone followed into the memory
+60.3s  PASS host sees the phone’s “look here” mark
+61.9s  errors: 0
+61.9s  multiplayer: all checks passed

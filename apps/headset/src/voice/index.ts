@@ -32,6 +32,8 @@ export type VoiceOptions = {
   token: string;
   onState: (s: VoiceState) => void;
   onError: (msg: string) => void;
+  /** Optional: the words heard so far in the current turn, updated as they arrive (live captions). */
+  onPartial?: (text: string) => void;
 };
 
 export type TurnMetrics = {
@@ -327,6 +329,7 @@ export function createVoice(opts: VoiceOptions): Voice {
       const { session, warm } = takeSession();
       t.session = session;
       t.warm = warm;
+      if (opts.onPartial) session.onText = (text) => { if (turn === t) opts.onPartial?.(text); };
       // Pre-roll only when no speech just played, so the companion's last syllable never lands in the transcript.
       const preroll = performance.now() - speaker.lastAudioAt > 300;
       t.micId = mic.begin((pcm) => { t.frames.push(pcm); t.samples += pcm.length; session.send(pcm); }, preroll);

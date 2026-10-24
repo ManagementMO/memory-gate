@@ -1,0 +1,17 @@
+3.3s  tapped Begin (the only tap; everything after is spoken)
+3.3s  voice engine: starting
+3.3s  stage → greeting
+9.6s  voice engine: cartesia
+10.1s  companion: Hello. I’m so glad you’re here.
+12.2s  companion: Is there a moment you’d like to visit today? You can tell me about it, or show me a photo.
+17.8s  stage → gathering
+43.0s  console [voice] The voice connection dropped, so that wasn’t heard. Please try again, or type it.
+43.0s  console [voice] turn 9.38 s -> 0 chars in 11024 ms
+43.0s  companion: I’m sorry, I missed that. Could you say it again?
+59.8s  console [voice] turn 9.37 s -> 0 chars in 6005 ms
+82.4s  console [voice] The voice connection dropped, so that wasn’t heard. Please try again, or type it.
+82.4s  console [voice] turn 3.01 s -> 0 chars in 11018 ms
+90.9s  console [voice] turn 3.02 s -> 0 chars in 6002 ms
+173.5s  errors: 2
+173.5s    WebSocket connection to 'wss://api.cartesia.ai/stt/websocket?model=ink-2&encoding=pcm_s16le&sample_rate=16000&cartesia_version=2026-08-14&access_token=eyJhbGciOiJIUzI1NiIsImtpZCI6InNzaWRfTENwYkVRTW54eDIxZmVCYmhwWmJzZyJ9.eyJncmFudHMiOnsidHRz
+173.5s    WebSocket connection to 'wss://api.cartesia.ai/stt/websocket?model=ink-2&encoding=pcm_s16le&sample_rate=16000&cartesia_version=2026-08-14&access_token=eyJhbGciOiJIUzI1NiIsImtpZCI6InNzaWRfTENwYkVRTW54eDIxZmVCYmhwWmJzZyJ9.eyJncmFudHMiOnsidHRz

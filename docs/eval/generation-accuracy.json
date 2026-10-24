@@ -1,0 +1,1636 @@
+{
+ "at": "2026-10-24T09:04:14.496Z",
+ "summary": {
+  "claude": {
+   "recall": 1,
+   "color": 1,
+   "relation": 1,
+   "setting": 1,
+   "library": 0.9408730158730158
+  },
+  "offline": {
+   "recall": 0.861111111111111,
+   "color": 0.85,
+   "relation": 0.5,
+   "setting": 0.875,
+   "library": 1
+  },
+  "spentUsd": 0.34,
+  "medianMs": 6600
+ },
+ "results": [
+  {
+   "id": "kitchen",
+   "text": "My grandmother’s kitchen in the morning. Yellow curtains on the window, a round wooden table with two chairs, and her radio on the counter.",
+   "offline": {
+    "items": [
+     {
+      "key": "window",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "window"
+      ],
+      "color": true
+     },
+     {
+      "key": "table",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "table"
+      ]
+     },
+     {
+      "key": "chair",
+      "present": true,
+      "count": 2,
+      "kinds": [
+       "chair"
+      ]
+     },
+     {
+      "key": "counter",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "counter"
+      ]
+     },
+     {
+      "key": "radio",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "radio"
+      ],
+      "relation": true
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": true,
+     "time": true,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": 1,
+    "settingScore": 1,
+    "objects": 6,
+    "library": 1,
+    "extras": []
+   },
+   "ms": 6600,
+   "source": "claude (saved)",
+   "claude": {
+    "items": [
+     {
+      "key": "window",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "window"
+      ],
+      "color": true
+     },
+     {
+      "key": "table",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "round_table"
+      ]
+     },
+     {
+      "key": "chair",
+      "present": true,
+      "count": 2,
+      "kinds": [
+       "chair"
+      ]
+     },
+     {
+      "key": "counter",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "counter"
+      ]
+     },
+     {
+      "key": "radio",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "radio"
+      ],
+      "relation": true
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": true,
+     "time": true,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": 1,
+    "settingScore": 1,
+    "objects": 7,
+    "library": 1,
+    "extras": [
+     "stove"
+    ]
+   },
+   "title": "Grandmother's kitchen",
+   "intro": "Here is your grandmother's kitchen this morning, sunlight through the yellow curtains, her radio waiting on the counter.",
+   "setting": {
+    "indoor": true,
+    "type": "kitchen",
+    "timeOfDay": "morning",
+    "weather": "clear",
+    "floor": "tile",
+    "palette": [
+     "#e8c547",
+     "#a0703c",
+     "#f5ecd7"
+    ],
+    "walls": true,
+    "water": false
+   },
+   "objectsList": [
+    "window with yellow curtains [window #e8c547 against_wall ]",
+    "round wooden table [round_table #a0703c]",
+    "wooden chair [chair #a0703c next_to table]",
+    "wooden chair [chair #a0703c next_to table]",
+    "kitchen counter [counter against_wall ]",
+    "her radio [radio on counter]",
+    "stove [stove against_wall ]"
+   ]
+  },
+  {
+   "id": "lake",
+   "text": "Our cabin by the lake at dusk. A wooden dock going out over the water, a little red rowboat tied to it, and tall pine trees all around.",
+   "offline": {
+    "items": [
+     {
+      "key": "dock",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "dock"
+      ]
+     },
+     {
+      "key": "boat",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "boat"
+      ],
+      "color": true
+     },
+     {
+      "key": "pines",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "pine_tree"
+      ]
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": null,
+     "time": true,
+     "water": true,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": null,
+    "settingScore": 1,
+    "objects": 5,
+    "library": 1,
+    "extras": [
+     "cabin",
+     "trees"
+    ]
+   },
+   "ms": 7300,
+   "source": "claude (saved)",
+   "claude": {
+    "items": [
+     {
+      "key": "dock",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "dock"
+      ]
+     },
+     {
+      "key": "boat",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "boat"
+      ],
+      "color": true
+     },
+     {
+      "key": "pines",
+      "present": true,
+      "count": 4,
+      "kinds": [
+       "pine_tree"
+      ]
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": null,
+     "time": true,
+     "water": true,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": null,
+    "settingScore": 1,
+    "objects": 8,
+    "library": 1,
+    "extras": [
+     "our cabin",
+     "shore rock"
+    ]
+   },
+   "title": "Our cabin by the lake",
+   "intro": "Here's your cabin by the lake at dusk, the wooden dock reaching over the water and the little red rowboat waiting beside it.",
+   "setting": {
+    "indoor": false,
+    "type": "lake",
+    "timeOfDay": "dusk",
+    "weather": "clear",
+    "floor": "grass",
+    "palette": [
+     "#b03a2e",
+     "#2f4f3a",
+     "#8a6a4a"
+    ],
+    "walls": false,
+    "water": true
+   },
+   "objectsList": [
+    "our cabin [house #8a6a4a]",
+    "wooden dock [dock #a07a52]",
+    "little red rowboat [boat #b03a2e next_to dock]",
+    "tall pine trees [pine_tree #2f4f3a]",
+    "tall pine trees [pine_tree #2f4f3a]",
+    "tall pine trees [pine_tree #2f4f3a]",
+    "tall pine trees [pine_tree #2f4f3a]",
+    "shore rock [rock]"
+   ]
+  },
+  {
+   "id": "beach",
+   "text": "The beach in summer when I was a girl. A striped umbrella, a blue towel on the sand, and the sea going on forever.",
+   "offline": {
+    "items": [
+     {
+      "key": "umbrella",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "umbrella"
+      ]
+     },
+     {
+      "key": "towel",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "picnic_blanket"
+      ],
+      "color": true
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": null,
+     "time": null,
+     "water": true,
+     "floor": true
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": null,
+    "settingScore": 1,
+    "objects": 3,
+    "library": 1,
+    "extras": [
+     "palm tree"
+    ]
+   },
+   "ms": 5000,
+   "source": "claude (saved)",
+   "claude": {
+    "items": [
+     {
+      "key": "umbrella",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "umbrella"
+      ]
+     },
+     {
+      "key": "towel",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "picnic_blanket"
+      ],
+      "color": true
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": null,
+     "time": null,
+     "water": true,
+     "floor": true
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": null,
+    "settingScore": 1,
+    "objects": 5,
+    "library": 0.8,
+    "extras": [
+     "the sea",
+     "smooth rock",
+     "seagull"
+    ]
+   },
+   "title": "The beach in summer",
+   "intro": "Here is the beach in summer, a striped umbrella over your blue towel, and the sea going on forever.",
+   "setting": {
+    "indoor": false,
+    "type": "beach",
+    "timeOfDay": "midday",
+    "weather": "clear",
+    "floor": "sand",
+    "palette": [
+     "#2f6fb5",
+     "#f2dcae",
+     "#7fc4e0"
+    ],
+    "walls": false,
+    "water": true
+   },
+   "objectsList": [
+    "striped umbrella [umbrella #e05a4f]",
+    "blue towel [picnic_blanket #2f6fb5 under umbrella]",
+    "the sea [custom #3a8fc4]",
+    "smooth rock [rock]",
+    "seagull [bird #ffffff]"
+   ]
+  },
+  {
+   "id": "livingroom",
+   "text": "Dad’s living room. A green armchair by the fireplace, a big bookshelf full of books, and a lamp with a cream shade next to the sofa.",
+   "offline": {
+    "items": [
+     {
+      "key": "armchair",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "armchair"
+      ],
+      "color": true,
+      "relation": true
+     },
+     {
+      "key": "fireplace",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "fireplace"
+      ]
+     },
+     {
+      "key": "bookshelf",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "bookshelf"
+      ]
+     },
+     {
+      "key": "lamp",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "lamp"
+      ],
+      "color": false
+     },
+     {
+      "key": "sofa",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "sofa"
+      ]
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": true,
+     "time": null,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 0.5,
+    "relation": 1,
+    "settingScore": 1,
+    "objects": 7,
+    "library": 1,
+    "extras": [
+     "books",
+     "rug"
+    ]
+   },
+   "ms": 7000,
+   "source": "claude (saved)",
+   "claude": {
+    "items": [
+     {
+      "key": "armchair",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "armchair"
+      ],
+      "color": true,
+      "relation": true
+     },
+     {
+      "key": "fireplace",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "fireplace"
+      ]
+     },
+     {
+      "key": "bookshelf",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "bookshelf"
+      ]
+     },
+     {
+      "key": "lamp",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "floor_lamp"
+      ],
+      "color": true
+     },
+     {
+      "key": "sofa",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "sofa"
+      ]
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": true,
+     "time": null,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": 1,
+    "settingScore": 1,
+    "objects": 7,
+    "library": 1,
+    "extras": [
+     "books",
+     "rug"
+    ]
+   },
+   "title": "Dad's living room",
+   "intro": "Here is Dad's living room, with the green armchair by the fireplace and the cream lamp glowing beside the sofa.",
+   "setting": {
+    "indoor": true,
+    "type": "living room",
+    "timeOfDay": "golden",
+    "weather": "clear",
+    "floor": "wood",
+    "palette": [
+     "#4f7a4a",
+     "#f2e8d0",
+     "#8a5a3b"
+    ],
+    "walls": true,
+    "water": false
+   },
+   "objectsList": [
+    "green armchair [armchair #4f7a4a next_to fireplace]",
+    "fireplace [fireplace against_wall ]",
+    "big bookshelf [bookshelf #8a5a3b against_wall ]",
+    "books [books on bookshelf]",
+    "sofa [sofa]",
+    "lamp with cream shade [floor_lamp #f2e8d0 next_to sofa]",
+    "rug [rug]"
+   ]
+  },
+  {
+   "id": "garden",
+   "text": "Mom’s garden in spring. Rows of pink tulips, a white picket fence, and an old apple tree with a swing hanging from it.",
+   "offline": {
+    "items": [
+     {
+      "key": "tulips",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "flowers"
+      ],
+      "color": true
+     },
+     {
+      "key": "fence",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "fence"
+      ],
+      "color": true
+     },
+     {
+      "key": "tree",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "tree"
+      ]
+     },
+     {
+      "key": "swing",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "swing"
+      ],
+      "relation": true
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": true,
+     "time": null,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": 1,
+    "settingScore": 1,
+    "objects": 5,
+    "library": 1,
+    "extras": [
+     "bench"
+    ]
+   },
+   "ms": 5800,
+   "source": "claude (saved)",
+   "claude": {
+    "items": [
+     {
+      "key": "tulips",
+      "present": true,
+      "count": 2,
+      "kinds": [
+       "flowers"
+      ],
+      "color": true
+     },
+     {
+      "key": "fence",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "fence"
+      ],
+      "color": true
+     },
+     {
+      "key": "tree",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "tree"
+      ]
+     },
+     {
+      "key": "swing",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "swing"
+      ],
+      "relation": true
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": true,
+     "time": null,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": 1,
+    "settingScore": 1,
+    "objects": 6,
+    "library": 1,
+    "extras": [
+     "green bush"
+    ]
+   },
+   "title": "Mom's spring garden",
+   "intro": "Here is Mom's garden in spring, rows of pink tulips glowing, and the swing hanging gently from the old apple tree.",
+   "setting": {
+    "indoor": false,
+    "type": "garden",
+    "timeOfDay": "golden",
+    "weather": "soft",
+    "floor": "grass",
+    "palette": [
+     "#f4a6c0",
+     "#ffffff",
+     "#7cb342"
+    ],
+    "walls": false,
+    "water": false
+   },
+   "objectsList": [
+    "rows of pink tulips [flowers #f4a6c0]",
+    "pink tulips [flowers #f4a6c0 next_to tulips]",
+    "white picket fence [fence #ffffff]",
+    "old apple tree [tree]",
+    "swing [swing under tree]",
+    "green bush [bush #6a9a4a next_to fence]"
+   ]
+  },
+  {
+   "id": "bedroom",
+   "text": "My childhood bedroom. A small bed with a patchwork quilt, a wooden dresser, a window with blue curtains, and my teddy bear on the pillow.",
+   "offline": {
+    "items": [
+     {
+      "key": "bed",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "bed"
+      ]
+     },
+     {
+      "key": "dresser",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "cabinet"
+      ]
+     },
+     {
+      "key": "window",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "window"
+      ],
+      "color": true
+     },
+     {
+      "key": "teddy",
+      "present": false,
+      "count": 0,
+      "kinds": [],
+      "relation": false
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": true,
+     "time": null,
+     "water": null,
+     "floor": null
+    },
+    "recall": 0.75,
+    "color": 1,
+    "relation": 0,
+    "settingScore": 1,
+    "objects": 5,
+    "library": 1,
+    "extras": [
+     "quilt",
+     "lamp"
+    ]
+   },
+   "ms": 6300,
+   "source": "claude (saved)",
+   "claude": {
+    "items": [
+     {
+      "key": "bed",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "bed"
+      ]
+     },
+     {
+      "key": "dresser",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "cabinet"
+      ]
+     },
+     {
+      "key": "window",
+      "present": true,
+      "count": 2,
+      "kinds": [
+       "window"
+      ],
+      "color": true
+     },
+     {
+      "key": "teddy",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "custom"
+      ],
+      "relation": true
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": true,
+     "time": null,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": 1,
+    "settingScore": 1,
+    "objects": 7,
+    "library": 0.8571428571428571,
+    "extras": [
+     "patchwork quilt",
+     "small rug"
+    ]
+   },
+   "title": "My childhood bedroom",
+   "intro": "Here is your little bedroom, with the patchwork quilt on the bed and your teddy bear resting on the pillow.",
+   "setting": {
+    "indoor": true,
+    "type": "bedroom",
+    "timeOfDay": "golden",
+    "weather": "clear",
+    "floor": "wood",
+    "palette": [
+     "#5b8fc9",
+     "#c9a27a",
+     "#e8d9c0"
+    ],
+    "walls": true,
+    "water": false
+   },
+   "objectsList": [
+    "small bed [bed against_wall ]",
+    "patchwork quilt [picnic_blanket #d97a5b on bed]",
+    "wooden dresser [cabinet #8b5a2b against_wall ]",
+    "window [window against_wall ]",
+    "blue curtains [window #5b8fc9 next_to window]",
+    "teddy bear [custom #a0703c on bed]",
+    "small rug [rug]"
+   ]
+  },
+  {
+   "id": "classroom",
+   "text": "My first classroom. Rows of little wooden desks, a big chalkboard on the wall, and a globe on the teacher’s desk.",
+   "offline": {
+    "items": [
+     {
+      "key": "desks",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "table"
+      ]
+     },
+     {
+      "key": "chalkboard",
+      "present": false,
+      "count": 0,
+      "kinds": []
+     },
+     {
+      "key": "globe",
+      "present": false,
+      "count": 0,
+      "kinds": [],
+      "relation": false
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": true,
+     "time": null,
+     "water": null,
+     "floor": null
+    },
+    "recall": 0.3333333333333333,
+    "color": null,
+    "relation": 0,
+    "settingScore": 1,
+    "objects": 6,
+    "library": 1,
+    "extras": [
+     "wall",
+     "chair",
+     "chair",
+     "books",
+     "window"
+    ]
+   },
+   "ms": 7700,
+   "source": "claude (saved)",
+   "claude": {
+    "items": [
+     {
+      "key": "desks",
+      "present": true,
+      "count": 6,
+      "kinds": [
+       "table"
+      ]
+     },
+     {
+      "key": "chalkboard",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "custom"
+      ]
+     },
+     {
+      "key": "globe",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "custom"
+      ],
+      "relation": true
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": true,
+     "time": null,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": null,
+    "relation": 1,
+    "settingScore": 1,
+    "objects": 10,
+    "library": 0.8,
+    "extras": [
+     "classroom window",
+     "wall clock"
+    ]
+   },
+   "title": "My first classroom",
+   "intro": "Here are the rows of little wooden desks, the big chalkboard waiting, and the globe sitting on the teacher's desk.",
+   "setting": {
+    "indoor": true,
+    "type": "classroom",
+    "timeOfDay": "golden",
+    "weather": "clear",
+    "floor": "wood",
+    "palette": [
+     "#a0784f",
+     "#2f4a3a",
+     "#e8dcc0"
+    ],
+    "walls": true,
+    "water": false
+   },
+   "objectsList": [
+    "little wooden desk [table #a0784f]",
+    "little wooden desk [table #a0784f next_to desk-1]",
+    "little wooden desk [table #a0784f next_to desk-2]",
+    "little wooden desk [table #a0784f]",
+    "little wooden desk [table #a0784f]",
+    "big chalkboard [custom #2f4a3a against_wall ]",
+    "teacher's desk [table #8a5f3c in_front_of chalkboard]",
+    "globe [custom #4a7fb5 on teacher-desk]",
+    "classroom window [window against_wall ]",
+    "wall clock [clock against_wall ]"
+   ]
+  },
+  {
+   "id": "cafe",
+   "text": "The little café in Paris where we met. A small round marble table outside, two metal chairs, two coffee cups, and a lamp post on the corner.",
+   "offline": {
+    "items": [
+     {
+      "key": "table",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "table"
+      ]
+     },
+     {
+      "key": "chairs",
+      "present": true,
+      "count": 2,
+      "kinds": [
+       "chair"
+      ]
+     },
+     {
+      "key": "cups",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "cup"
+      ],
+      "relation": true
+     },
+     {
+      "key": "lamppost",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "lamp_post"
+      ]
+     }
+    ],
+    "setting": {
+     "indoor": false,
+     "type": null,
+     "time": null,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": null,
+    "relation": 1,
+    "settingScore": 0,
+    "objects": 7,
+    "library": 1,
+    "extras": [
+     "lamp",
+     "window"
+    ]
+   },
+   "ms": 8600,
+   "source": "claude (saved)",
+   "claude": {
+    "items": [
+     {
+      "key": "table",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "round_table"
+      ]
+     },
+     {
+      "key": "chairs",
+      "present": true,
+      "count": 2,
+      "kinds": [
+       "chair"
+      ]
+     },
+     {
+      "key": "cups",
+      "present": true,
+      "count": 2,
+      "kinds": [
+       "cup"
+      ],
+      "relation": true
+     },
+     {
+      "key": "lamppost",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "lamp_post"
+      ]
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": null,
+     "time": null,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": null,
+    "relation": 1,
+    "settingScore": 1,
+    "objects": 8,
+    "library": 1,
+    "extras": [
+     "little café",
+     "café awning"
+    ]
+   },
+   "title": "The little café in Paris",
+   "intro": "Here's the little café in Paris, with the small marble table and two coffee cups waiting outside.",
+   "setting": {
+    "indoor": false,
+    "type": "café",
+    "timeOfDay": "golden",
+    "weather": "clear",
+    "floor": "stone",
+    "palette": [
+     "#e8e4dc",
+     "#2f3a3a",
+     "#c9a46a"
+    ],
+    "walls": false,
+    "water": false
+   },
+   "objectsList": [
+    "small marble table [round_table #e8e4dc]",
+    "metal chair [chair #2f3a3a next_to table]",
+    "metal chair [chair #2f3a3a next_to table]",
+    "coffee cup [cup #ffffff on table]",
+    "coffee cup [cup #ffffff on table]",
+    "corner lamp post [lamp_post #2f3a3a]",
+    "little café [house #c9a46a behind table]",
+    "café awning [umbrella #8b2e2e]"
+   ]
+  },
+  {
+   "id": "christmas",
+   "text": "Christmas morning at my aunt’s house. A tall Christmas tree with lights, a red armchair, presents under the tree, and snow falling outside the window.",
+   "offline": {
+    "items": [
+     {
+      "key": "tree",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "pine_tree"
+      ]
+     },
+     {
+      "key": "armchair",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "armchair"
+      ],
+      "color": true
+     },
+     {
+      "key": "presents",
+      "present": false,
+      "count": 0,
+      "kinds": [],
+      "relation": false
+     },
+     {
+      "key": "window",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "window"
+      ]
+     }
+    ],
+    "setting": {
+     "indoor": false,
+     "type": null,
+     "time": true,
+     "water": null,
+     "floor": null
+    },
+    "recall": 0.75,
+    "color": 1,
+    "relation": 0,
+    "settingScore": 0.5,
+    "objects": 5,
+    "library": 1,
+    "extras": [
+     "house",
+     "tree"
+    ]
+   },
+   "ms": 6200,
+   "source": "claude (saved)",
+   "claude": {
+    "items": [
+     {
+      "key": "tree",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "pine_tree"
+      ]
+     },
+     {
+      "key": "armchair",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "armchair"
+      ],
+      "color": true
+     },
+     {
+      "key": "presents",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "custom"
+      ],
+      "relation": true
+     },
+     {
+      "key": "window",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "window"
+      ]
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": null,
+     "time": true,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": 1,
+    "settingScore": 1,
+    "objects": 6,
+    "library": 0.8333333333333334,
+    "extras": [
+     "rug",
+     "floor lamp"
+    ]
+   },
+   "title": "Aunt's house at Christmas",
+   "intro": "It's Christmas morning at your aunt's house. The tall tree glows with lights, and snow drifts past the window.",
+   "setting": {
+    "indoor": true,
+    "type": "living room",
+    "timeOfDay": "morning",
+    "weather": "snow",
+    "floor": "wood",
+    "palette": [
+     "#b22222",
+     "#2e6b3a",
+     "#f2d16b"
+    ],
+    "walls": true,
+    "water": false
+   },
+   "objectsList": [
+    "tall christmas tree [pine_tree #2e6b3a against_wall ]",
+    "red armchair [armchair #b22222]",
+    "presents [custom #c0392b under xmas-tree]",
+    "window [window against_wall ]",
+    "rug [rug]",
+    "floor lamp [floor_lamp next_to armchair]"
+   ]
+  },
+  {
+   "id": "campsite",
+   "text": "Camping with my brothers. An orange tent, a campfire with a ring of stones, and the night sky full of stars.",
+   "offline": {
+    "items": [
+     {
+      "key": "tent",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "tent"
+      ],
+      "color": true
+     },
+     {
+      "key": "campfire",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "campfire"
+      ]
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": null,
+     "time": true,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": null,
+    "settingScore": 1,
+    "objects": 4,
+    "library": 1,
+    "extras": [
+     "stones",
+     "pine tree"
+    ]
+   },
+   "ms": 6200,
+   "source": "claude (saved)",
+   "claude": {
+    "items": [
+     {
+      "key": "tent",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "tent"
+      ],
+      "color": true
+     },
+     {
+      "key": "campfire",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "campfire"
+      ]
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": null,
+     "time": true,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": null,
+    "settingScore": 1,
+    "objects": 6,
+    "library": 1,
+    "extras": [
+     "ring of stones",
+     "pine tree",
+     "pine tree",
+     "log seat"
+    ]
+   },
+   "title": "Camping under the stars",
+   "intro": "Here's the orange tent, with the campfire glowing in its ring of stones, and the night sky full of stars above.",
+   "setting": {
+    "indoor": false,
+    "type": "campsite",
+    "timeOfDay": "night",
+    "weather": "clear",
+    "floor": "grass",
+    "palette": [
+     "#e8762b",
+     "#1b2440",
+     "#f2c14e"
+    ],
+    "walls": false,
+    "water": false
+   },
+   "objectsList": [
+    "orange tent [tent #e8762b]",
+    "campfire [campfire #f2a03d in_front_of tent]",
+    "ring of stones [rock #8a8580 next_to campfire]",
+    "pine tree [pine_tree #2f4a35 behind tent]",
+    "pine tree [pine_tree #2f4a35]",
+    "log seat [chair #6b4a2e next_to campfire]"
+   ]
+  },
+  {
+   "id": "porch",
+   "text": "Sitting on the front porch at sunset. A wooden porch swing, a pot of red geraniums, and a pitcher of lemonade on a little table.",
+   "offline": {
+    "items": [
+     {
+      "key": "swing",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "swing"
+      ]
+     },
+     {
+      "key": "geraniums",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "potted_plant"
+      ],
+      "color": false
+     },
+     {
+      "key": "table",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "table"
+      ]
+     },
+     {
+      "key": "pitcher",
+      "present": false,
+      "count": 0,
+      "kinds": [],
+      "relation": false
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": null,
+     "time": true,
+     "water": null,
+     "floor": null
+    },
+    "recall": 0.75,
+    "color": 0,
+    "relation": 0,
+    "settingScore": 1,
+    "objects": 5,
+    "library": 1,
+    "extras": [
+     "fence",
+     "house"
+    ]
+   },
+   "ms": 6000,
+   "source": "claude (saved)",
+   "claude": {
+    "items": [
+     {
+      "key": "swing",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "swing"
+      ]
+     },
+     {
+      "key": "geraniums",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "flowers"
+      ],
+      "color": true
+     },
+     {
+      "key": "table",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "table"
+      ]
+     },
+     {
+      "key": "pitcher",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "teapot"
+      ],
+      "relation": true
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": null,
+     "time": true,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": 1,
+    "settingScore": 1,
+    "objects": 7,
+    "library": 1,
+    "extras": [
+     "house front",
+     "front door",
+     "porch railing"
+    ]
+   },
+   "title": "The front porch at sunset",
+   "intro": "The sun is setting over the front porch. The wooden swing sways gently, and cool lemonade waits on the little table.",
+   "setting": {
+    "indoor": false,
+    "type": "porch",
+    "timeOfDay": "golden",
+    "weather": "clear",
+    "floor": "wood",
+    "palette": [
+     "#e8915a",
+     "#c0392b",
+     "#f3e27a"
+    ],
+    "walls": false,
+    "water": false
+   },
+   "objectsList": [
+    "wooden porch swing [swing #a0703f]",
+    "red geraniums [flowers #c0392b]",
+    "little table [table #b8875a next_to swing]",
+    "pitcher of lemonade [teapot #f3e27a on table]",
+    "house front [house #efe6d6]",
+    "front door [door against_wall house]",
+    "porch railing [fence #f5f0e6]"
+   ]
+  },
+  {
+   "id": "chapel",
+   "text": "Our wedding day in the little white chapel. Rows of wooden benches, candles by the altar, and white flowers everywhere.",
+   "offline": {
+    "items": [
+     {
+      "key": "benches",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "bench"
+      ]
+     },
+     {
+      "key": "candles",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "candle"
+      ]
+     },
+     {
+      "key": "flowers",
+      "present": true,
+      "count": 1,
+      "kinds": [
+       "flowers"
+      ],
+      "color": true
+     },
+     {
+      "key": "altar",
+      "present": false,
+      "count": 0,
+      "kinds": []
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": null,
+     "time": null,
+     "water": null,
+     "floor": null
+    },
+    "recall": 0.75,
+    "color": 1,
+    "relation": null,
+    "settingScore": 1,
+    "objects": 4,
+    "library": 1,
+    "extras": [
+     "window"
+    ]
+   },
+   "ms": 8900,
+   "source": "claude (saved)",
+   "claude": {
+    "items": [
+     {
+      "key": "benches",
+      "present": true,
+      "count": 4,
+      "kinds": [
+       "bench"
+      ]
+     },
+     {
+      "key": "candles",
+      "present": true,
+      "count": 2,
+      "kinds": [
+       "candle"
+      ]
+     },
+     {
+      "key": "flowers",
+      "present": true,
+      "count": 3,
+      "kinds": [
+       "vase_flowers"
+      ],
+      "color": true
+     },
+     {
+      "key": "altar",
+      "present": true,
+      "count": 3,
+      "kinds": [
+       "table",
+       "candle"
+      ]
+     }
+    ],
+    "setting": {
+     "indoor": true,
+     "type": null,
+     "time": null,
+     "water": null,
+     "floor": null
+    },
+    "recall": 1,
+    "color": 1,
+    "relation": null,
+    "settingScore": 1,
+    "objects": 12,
+    "library": 1,
+    "extras": [
+     "chapel window",
+     "chapel door"
+    ]
+   },
+   "title": "Our little white chapel",
+   "intro": "Here is the little white chapel, candles glowing by the altar and white flowers everywhere among the wooden benches.",
+   "setting": {
+    "indoor": true,
+    "type": "chapel",
+    "timeOfDay": "golden",
+    "weather": "clear",
+    "floor": "wood",
+    "palette": [
+     "#ffffff",
+     "#8b5a2b",
+     "#f5e6c8"
+    ],
+    "walls": true,
+    "water": false
+   },
+   "objectsList": [
+    "wooden bench [bench #8b5a2b]",
+    "wooden bench [bench #8b5a2b]",
+    "wooden bench [bench #8b5a2b]",
+    "wooden bench [bench #8b5a2b]",
+    "the altar [table #ffffff against_wall ]",
+    "altar candles [candle #f5e6c8 on altar]",
+    "altar candles [candle #f5e6c8 on altar]",
+    "white flowers [vase_flowers #ffffff on altar]",
+    "white flowers [vase_flowers #ffffff next_to altar]",
+    "white flowers [vase_flowers #ffffff next_to altar]",
+    "chapel window [window against_wall ]",
+    "chapel door [door #ffffff against_wall ]"
+   ]
+  }
+ ]
+}

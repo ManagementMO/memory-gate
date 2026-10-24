@@ -1,0 +1,92 @@
+{
+ "version": 1,
+ "title": "The kitchen",
+ "setting": {
+  "indoor": true,
+  "type": "kitchen",
+  "timeOfDay": "morning",
+  "weather": "clear",
+  "floor": "tile",
+  "palette": [
+   "#e8c547"
+  ],
+  "walls": true,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "window-0",
+   "kind": "window",
+   "label": "curtains",
+   "color": "#e8c547",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "table-1",
+   "kind": "table",
+   "label": "table",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "chair-2",
+   "kind": "chair",
+   "label": "chairs",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "next_to",
+   "target": "table-1",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "radio-3",
+   "kind": "radio",
+   "label": "radio",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "on",
+   "target": "counter-4",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "counter-4",
+   "kind": "counter",
+   "label": "counter",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "chair-5",
+   "kind": "chair",
+   "label": "chair",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "next_to",
+   "target": "table-1",
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here we are. The kitchen, just as you described it."
+}

@@ -6,12 +6,18 @@
 import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
+import BeHereReducer from "../be_here_reducer";
+import LeaveVisitReducer from "../leave_visit_reducer";
+import MarkPointReducer from "../mark_point_reducer";
 import PassMemoryReducer from "../pass_memory_reducer";
 import PinReferenceReducer from "../pin_reference_reducer";
 import PurgeRoomReducer from "../purge_room_reducer";
 import RespondMemoryReducer from "../respond_memory_reducer";
 import UnpinReferenceReducer from "../unpin_reference_reducer";
 
+export type BeHereParams = __Infer<typeof BeHereReducer>;
+export type LeaveVisitParams = __Infer<typeof LeaveVisitReducer>;
+export type MarkPointParams = __Infer<typeof MarkPointReducer>;
 export type PassMemoryParams = __Infer<typeof PassMemoryReducer>;
 export type PinReferenceParams = __Infer<typeof PinReferenceReducer>;
 export type PurgeRoomParams = __Infer<typeof PurgeRoomReducer>;

@@ -1,0 +1,25 @@
+4.0s  shot 01-portal
+4.6s  tapped Begin
+4.7s  stage → greeting
+7.2s  shot 02-greeting
+14.2s  stage → gathering
+16.0s  shot 03-gathering
+16.0s  state: {"stage":"gathering","said":"Is there a moment you’d like to visit today? You can tell me about it, or show me a photo.","heard":null,"voice":"unsupported","session":true,"title":null,"offers":{"photo":true,"video":true,"invite":true}}
+16.0s  person says: My grandmother’s kitchen, in the morning. Yellow curtains on the window, a round wooden table with two chairs, and her radio on the counter.
+19.9s  companion: I can almost see Grandmother's kitchen. Shall we go there together?
+22.7s  shot 04-described
+25.7s  person says: Yes, let’s go there.
+27.5s  stage → entering
+30.4s  shot 05-entering
+33.9s  stage → forming
+36.8s  shot 06-forming
+38.8s  stage → memory
+43.3s  shot 07-memory
+43.3s  state: {"stage":"memory","said":"Tell me what else was here, or anything you notice. Say when you’d like to leave.","heard":null,"voice":"unsupported","session":true,"title":"Grandmother's kitchen","offers":{"photo":false,"video":false,"invite":false}}
+49.3s  person says: There was a little cat sleeping on one of the chairs.
+58.8s  shot 08-detail
+59.0s  tapped Leave
+63.2s  stage → album
+67.0s  shot 09-album
+67.0s  final stage: album
+67.0s  errors: 0

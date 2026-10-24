@@ -1,0 +1,94 @@
+{
+ "version": 1,
+ "title": "Mom's spring garden",
+ "setting": {
+  "indoor": false,
+  "type": "garden",
+  "timeOfDay": "golden",
+  "weather": "soft",
+  "floor": "grass",
+  "palette": [
+   "#f4a6c0",
+   "#ffffff",
+   "#7cb342"
+  ],
+  "walls": false,
+  "water": false
+ },
+ "ambience": "petals",
+ "objects": [
+  {
+   "id": "tulips",
+   "kind": "flowers",
+   "label": "rows of pink tulips",
+   "color": "#f4a6c0",
+   "material": "plant",
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": "Rows of pink tulips"
+  },
+  {
+   "id": "tulips-2",
+   "kind": "flowers",
+   "label": "pink tulips",
+   "color": "#f4a6c0",
+   "material": "plant",
+   "zone": "front-left",
+   "relation": "next_to",
+   "target": "tulips",
+   "scale": 1,
+   "quote": "Rows of pink tulips"
+  },
+  {
+   "id": "fence",
+   "kind": "fence",
+   "label": "white picket fence",
+   "color": "#ffffff",
+   "material": "wood",
+   "zone": "back",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": "a white picket fence"
+  },
+  {
+   "id": "tree",
+   "kind": "tree",
+   "label": "old apple tree",
+   "color": null,
+   "material": "plant",
+   "zone": "right",
+   "relation": "none",
+   "target": null,
+   "scale": 1.4,
+   "quote": "an old apple tree"
+  },
+  {
+   "id": "swing",
+   "kind": "swing",
+   "label": "swing",
+   "color": null,
+   "material": "wood",
+   "zone": "right",
+   "relation": "under",
+   "target": "tree",
+   "scale": 1,
+   "quote": "with a swing hanging from it"
+  },
+  {
+   "id": "bush",
+   "kind": "bush",
+   "label": "green bush",
+   "color": "#6a9a4a",
+   "material": "plant",
+   "zone": "back-left",
+   "relation": "next_to",
+   "target": "fence",
+   "scale": 0.9,
+   "quote": null
+  }
+ ],
+ "intro": "Here is Mom's garden in spring, rows of pink tulips glowing, and the swing hanging gently from the old apple tree."
+}

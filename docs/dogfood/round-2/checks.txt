@@ -1,0 +1,38 @@
+== typecheck
+   PASS apps/gate typecheck
+== production build
+   PASS vite build ()
+== journey: desktop, words, Figure (offline room, no voice)
+   PASS reached the album
+   83.7s  errors: 0
+== journey: phone 390x844, words, Light (offline room, no voice)
+   PASS reached the album
+   83.1s  errors: 0
+== headset rehearsal (emulated Quest 3)
+   PASS entered VR, formed a memory, exited to the album
+   8.1s  XR frames rendered in 3 s: 161
+   54.8s  errors: 0
+== album interactions
+   PASS album shots
+   {"openWhileHovering":1,"openAfterLeave":0,"openAfterEsc":0,"phoneOpenAfterTap":1,"errors":[]}
+== frame rate (headless Chrome on this Mac, not a Quest measurement)
+   portal https://localhost:5180/?voice=off&mode=offline → 65.5 fps
+   memory https://localhost:5180/?preview=scene&plan=/eval/livingroom.json&companion=none → 85.8 fps
+   portal at headset quality https://localhost:5180/?voice=off&mode=offline&q=0.15 → 79.8 fps
+== generation renders
+   PASS rendered kitchen
+   PASS rendered lake
+   PASS rendered livingroom
+   PASS rendered cafe
+== live: hands-free voice loop (synthesized speech as the microphone)
+   FAIL voice loop (see voice.txt)
+   10.1s  companion: Hello. I’m so glad you’re here.
+   12.2s  companion: Is there a moment you’d like to visit today? You can tell me about it, or show me a photo.
+   43.0s  companion: I’m sorry, I missed that. Could you say it again?
+   173.5s  errors: 2
+== live: photo with Claude vision
+   PASS photo journey reached the album
+   19.9s  companion: I can see a bright living room with a sofa, round rug, and radiator. Where is this place?
+   34.0s  companion: I can almost see the living room. Shall we go there together?
+   106.4s  errors: 0
+done: docs/dogfood/round-2

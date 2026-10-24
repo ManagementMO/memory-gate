@@ -1,0 +1,80 @@
+{
+ "version": 1,
+ "title": "The snowy field",
+ "setting": {
+  "indoor": false,
+  "type": "snowy field",
+  "timeOfDay": "morning",
+  "weather": "snow",
+  "floor": "snow",
+  "palette": [
+   "#c0504d"
+  ],
+  "walls": false,
+  "water": false
+ },
+ "ambience": "snow",
+ "objects": [
+  {
+   "id": "house-0",
+   "kind": "house",
+   "label": "house",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "pine_tree-1",
+   "kind": "pine_tree",
+   "label": "christmas tree",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "tree-2",
+   "kind": "tree",
+   "label": "tree",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "armchair-3",
+   "kind": "armchair",
+   "label": "armchair",
+   "color": "#c0504d",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "window-4",
+   "kind": "window",
+   "label": "window",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here we are. Can you feel the air?"
+}

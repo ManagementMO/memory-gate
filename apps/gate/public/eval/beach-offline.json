@@ -1,0 +1,57 @@
+{
+ "version": 1,
+ "title": "The beach",
+ "setting": {
+  "indoor": false,
+  "type": "beach",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "sand",
+  "palette": [
+   "#4a78b8",
+   "#4a78b8"
+  ],
+  "walls": false,
+  "water": true
+ },
+ "ambience": "leaves",
+ "objects": [
+  {
+   "id": "umbrella-0",
+   "kind": "umbrella",
+   "label": "umbrella",
+   "color": "#4a78b8",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "picnic_blanket-1",
+   "kind": "picnic_blanket",
+   "label": "towel",
+   "color": "#4a78b8",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "palm_tree-2",
+   "kind": "palm_tree",
+   "label": "palm tree",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here we are. Can you feel the air?"
+}
