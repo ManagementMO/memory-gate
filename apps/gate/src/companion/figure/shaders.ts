@@ -26,7 +26,7 @@ export type FaceUniforms = {
 
 export function faceUniforms(): FaceUniforms {
   return {
-    uHeadR: { value: new THREE.Vector3(0.1, 0.1, 0.1) },
+    uHeadR: { value: new THREE.Vector3(0.1, 0.074, 0.088) },
     uEyeL: { value: new THREE.Vector4(-0.36, 0.0, 1, 1) },
     uEyeR: { value: new THREE.Vector4(0.36, 0.0, 1, 1) },
     uArc: { value: 0 },
@@ -36,9 +36,8 @@ export function faceUniforms(): FaceUniforms {
     uBright: { value: 0.3 },
     uScan: { value: 0 },
     uTilt: { value: 0.12 },
-    // Pale aqua light from the aurora's palette (its own colour, not a borrowed robot blue).
-    uEyeCore: { value: new THREE.Color('#d6fdff') },
-    uEyeEdge: { value: new THREE.Color('#39c9d9') },
+    uEyeCore: { value: new THREE.Color('#8fd8ff') },
+    uEyeEdge: { value: new THREE.Color('#2a86ff') },
     uVisor: { value: new THREE.Color('#040507') },
     uRim: { value: new THREE.Color('#b7a8ff') },
     uRimAmt: { value: 0.22 },
@@ -93,10 +92,10 @@ float figEye(vec2 p, vec4 e, float side, float line) {
   // A kind tilt: the outer corner of each eye sits a little lower.
   float c = cos(uTilt * side), s = sin(uTilt * side);
   q = mat2(c, -s, s, c) * q;
-  vec2 r = vec2(0.118, 0.118) * e.zw; // round, soft eyes
+  vec2 r = vec2(0.205, 0.128) * e.zw;
   r.y *= mix(1.0, 0.11, line);
   float dE = (length(q / r) - 1.0) * min(r.x, r.y);
-  float dA = figArc(q - vec2(0.0, -0.07 * e.w), vec2(sin(1.15), cos(1.15)), 0.11 * e.z, 0.026 * e.w);
+  float dA = figArc(q - vec2(0.0, -0.085 * e.w), vec2(sin(1.15), cos(1.15)), 0.15 * e.z, 0.03 * e.w);
   float d = mix(dE, dA, uArc * (1.0 - line));
   float lidY = mix(r.y + 0.03, -0.006, uLid);
   return max(d, q.y - lidY);
@@ -104,8 +103,8 @@ float figEye(vec2 p, vec4 e, float side, float line) {
       .replace('#include <clipping_planes_fragment>', /* glsl */ `#include <clipping_planes_fragment>
   vec3 figN = normalize(vFig / uHeadR);
   vec2 figP = vec2(atan(figN.x, figN.z), asin(clamp(figN.y, -1.0, 1.0)));
-  // The face: a round window of dark glass on the front of the pearl.
-  vec2 figVq = (figP - vec2(0.0, -0.02)) / vec2(0.64, 0.52);
+  // The visor: an oval of black glass across the front of the head.
+  vec2 figVq = (figP - vec2(0.0, -0.07)) / vec2(0.97, 0.55);
   float figVd = length(figVq) - 1.0;
   float figVw = max(fwidth(figVd), 1e-4);
   float figVisor = 1.0 - smoothstep(-figVw, figVw, figVd);
@@ -118,7 +117,7 @@ float figEye(vec2 p, vec4 e, float side, float line) {
   // Fine LED scanlines, faded out when they'd be finer than a pixel (no moire at a distance).
   float figSf = fwidth(figP.y * 54.0);
   float figScanP = 0.62 + 0.38 * smoothstep(0.12, 0.6, abs(fract(figP.y * 54.0 + uScan) - 0.5) * 2.0);
-  float figScan = 1.0; // clean, even light: no LED scanlines (figScanP / figSf kept for a future toggle)
+  float figScan = mix(figScanP, 0.86, smoothstep(0.35, 0.8, figSf));
   float figCore = smoothstep(0.004, -0.045, figD);
   vec3 figEyeCol = mix(uEyeEdge, uEyeCore, figCore) * figEyeMask * figScan * uBright;
   float figHalo = exp(-max(figD, 0.0) * 95.0) * (1.0 - figEyeMask) * figVisor * uBright;`)

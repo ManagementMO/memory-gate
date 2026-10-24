@@ -45,20 +45,29 @@ const CONSENT_SCOPES = ['voice_processing', 'voice_recording', 'photo_processing
 const withTimeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>
   Promise.race([p, new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
 
+/** A busy local backend can drop a write (its per-function time limit); setup steps retry a few times, gently. */
+async function retry<T>(fn: () => Promise<T>, tries = 3): Promise<T> {
+  let last: unknown;
+  for (let i = 0; i < tries; i++) {
+    try { return await withTimeout(fn(), 6000); } catch (e) { last = e; await new Promise((r) => setTimeout(r, 400 * (i + 1))); }
+  }
+  throw last;
+}
+
 /** Create (host) or join (guest) a session and record consent. Resolves null when the backend is unreachable. */
 export async function startSession(opts: { name: string; invite: { code: string; key: string } | null }): Promise<Session | null> {
   try {
     if (opts.invite) {
-      const r = await withTimeout(convex.mutation(api.rooms.join, { code: opts.invite.code, displayName: opts.name, role: 'family', key: opts.invite.key }), 6000);
+      const r = await retry(() => convex.mutation(api.rooms.join, { code: opts.invite!.code, displayName: opts.name, role: 'family', key: opts.invite!.key }));
       const s: Session = { code: r.code, token: r.token, joinKey: opts.invite.key, role: 'guest', name: opts.name };
       rememberSession(s);
       return s;
     }
     // ?mode=offline creates an immutable offline room: the server forces every paid service off (tests, demos without keys).
     const offline = new URLSearchParams(location.search).get('mode') === 'offline';
-    const r = await withTimeout(convex.mutation(api.rooms.create, { title: 'A new memory', displayName: opts.name, demo: false, offline }), 6000);
-    await withTimeout(convex.mutation(api.consents.give, { code: r.code, token: r.token, scopes: [...CONSENT_SCOPES] }), 6000);
-    const view = await withTimeout(convex.query(api.rooms.get, { code: r.code, token: r.token }), 6000);
+    const r = await retry(() => convex.mutation(api.rooms.create, { title: 'A new memory', displayName: opts.name, demo: false, offline }));
+    await retry(() => convex.mutation(api.consents.give, { code: r.code, token: r.token, scopes: [...CONSENT_SCOPES] }));
+    const view = await retry(() => convex.query(api.rooms.get, { code: r.code, token: r.token }));
     const s: Session = { code: r.code, token: r.token, joinKey: view.joinKey ?? null, role: 'host', name: opts.name };
     rememberSession(s);
     return s;
