@@ -1,8 +1,8 @@
 # The Red Kite
 
-A fictional childhood afternoon in the foothills of California's Central Coast. Elena, 58, tells a younger relative about flying a kite with her friend Rosa. The place stays welcoming while the objects in the story gradually acquire detail.
+A fictional childhood afternoon in the foothills of California's Central Coast. Elena, 58, and her childhood friend Rosa each share what they remember about flying a kite together. A younger relative can explore the same afternoon through either telling, including each person's spatial viewpoint, words and uncertain details.
 
-The creative direction is **one beautiful place, one shared object, one meaningful interaction**. Make the visitor care about a red paper kite before adding more scenery or mechanics.
+The creative direction is **one shared place, two personal perspectives, one meaningful shared object**. Make the visitor care about the people and their red paper kite before adding more scenery or mechanics. The backdrop must hold together from both the open path and beside the oak, looking back across the clearing.
 
 ![Proposed final-state art direction](references/completed-scene-concept.png)
 
@@ -33,12 +33,12 @@ To open the actual cached 3D meadow in the existing app, run `npm run demo:kite`
 | A small runtime module | Animate the kite and ribbon, draw the string, manage local grabbing and docking, and obey pause. |
 | Phone and spectator views | Make the source and illustration choice easy to see without wearing the headset. |
 
-The 2D rehearsal demonstrates the intended sequence. It is not the XR interaction implementation. The teammate brief explicitly identifies the missing integration work rather than assuming a GLB becomes interactive when uploaded.
+The current 2D rehearsal demonstrates Elena's illustration-choice sequence. It does not yet implement the second telling or a 3D perspective switch. The teammate brief now includes that core requirement alongside the missing XR interactions. The cached world's existing forward-view evidence does not establish its reverse-view quality.
 
 The team's newer `apps/gate` portal/companion/album client is preserved alongside `apps/headset`. Prefer integrating the finished Red Kite journey into Gate, with portable GLBs and a small client-specific adapter. Keep the currently verified IWSDK world as a fallback, and do not mix the clients' different Three versions. The brief now covers this boundary explicitly.
 
 ## Product promise
 
-“Share a story, choose how to illustrate it, and hold a small part of it together.”
+“Step into the same memory through the people who shared it.”
 
 For the younger-onset Alzheimer's direction, the design is a person-led shared reminiscence experience. We have no evidence that this prototype diagnoses, treats or restores memory. We will not turn a missing detail into a failure, a progress score or a requirement to continue.

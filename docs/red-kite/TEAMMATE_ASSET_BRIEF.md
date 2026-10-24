@@ -25,7 +25,20 @@ The actual meadow contains forward splat centers beyond 267 m. Both clients now 
 
 ## The outcome
 
-We want a fictional grandmother's childhood story to feel tangible in a calm California meadow. The **red paper kite and its wooden spool** are the hero. A visitor holds and lifts the spool; the kite catches a gentle breeze and the ribbon follows. A small keepsake box and story card later provide a place to return to the original words.
+We want a shared childhood afternoon to feel tangible through **two people's perspectives** in a calm California meadow. Elena remembers the kite pulling at the spool from the open path; Rosa remembers the ribbon and Elena's laughter from beside the oak. The **kite and its wooden spool** connect their tellings. A visitor can choose a telling, listen to its source and gently interact with the shared object. A keepsake box and source cards preserve both accounts.
+
+## Core requirement: perspectives are personal and spatial
+
+The user clarified that exploring a memory from different people's perspectives is the central product idea. Build for two attributed tellings of one scene, not a single storyteller with interchangeable camera angles.
+
+- Preserve a stable shared object ID and common world-space landmarks. Each contributor's appearance, remembered placement, words, uncertainty and illustration choice remain separately attributed. An agreed staging choice is not proof that two accounts agree historically.
+- The selected telling is local to the viewer. Do not move other participants, change canonical story content or confirm a proposal when someone switches perspectives.
+- Support a host-provided path viewpoint and oak-side viewpoint. Deliver assets with finished reverse faces, sensible normals and materials from both sides. Do not optimize only the hero camera. The integration owner calibrates the anchors against the actual generated world; their coordinates are not inferred from the concept image.
+- Emit a perspective-selection intent to the host, which owns a voluntary fade → stationary-origin change → fade transition. Keep head tracking intact. Release/dock held props before the transition, and preserve their shared world-space anchors. If a seated visitor needs a reachable inspection copy, label and manage it as local inspection rather than moving the remembered object.
+- Elena's and Rosa's accounts may be complementary or contradictory. Keep red-versus-orange alternatives source-linked; never overwrite the other person's detail or let the AI decide which memory is true. Unknown in one telling does not inherit a value from another without an explicit, attributed illustration choice.
+- A present-day relative who was not at the event contributes an interpretation or response, not an eyewitness memory. No reconstructed child/avatar is required for P0.
+
+The existing 2D rehearsal shows only Elena's illustration sequence. It does not establish multiple perspectives or a reverse-view 3D pass. The full fictional dialogue and both viewpoints are specified in `SCENE_DIRECTION.md`.
 
 We are building for Meta Quest 3 in the existing web application. This is a stationary, seated-compatible shared reminiscence experience. The meadow stays stable. There is no forced locomotion, child avatar, memory quiz or claim that adding a visual detail restores a person's memory.
 
@@ -244,10 +257,12 @@ type IllustrationDetail = {
   value: string | null;
   status: 'unknown' | 'proposed' | 'accepted';
   sourceUtteranceId: string | null;
+  contributorId: string | null;
 };
 
 type RedKiteState = {
   revision: number;
+  perspectiveId: string; // this viewer's selected telling; never a forced room-wide camera selection
   identity: 'absent' | 'proposed' | 'accepted';
   identitySourceUtteranceId: string | null;
   color: IllustrationDetail;
@@ -269,6 +284,8 @@ scene.dispose();
 ```
 
 If the adapter offers a “use this look” control, it emits a proposal ID / intent callback to the host. It must not locally mark a story detail accepted and later assume the database agreed. The preview can use a clearly labeled synthetic host for demonstration.
+
+`applyState` receives a projection of authoritative content for this viewer's selected perspective; the underlying store keeps all contributors' accounts. Source/proposal references must be validated against the correct room and contributor. Do not persist one flattened “final memory” that discards alternatives. A perspective selector emits a request to the host; the adapter never writes a shared camera pose or changes another person's narrative layer.
 
 Keep **story state** separate from **local interaction phase** (`docked`, `held`, `flying`, `returning`). Holding a spool is not a confirmation of the kite's historical color. A rejected or superseded proposal must stop affecting the visible accepted illustration. Ignore stale revisions; handle a new authoritative reset cleanly.
 
@@ -314,6 +331,10 @@ Test these meaningful cases:
 | Grab, lift, release | Actual native squeeze or clearly labeled desktop equivalent; anchors follow; return to dock works. |
 | Pause while holding / animating | Safe release, frozen world motion, no queued replay after pause. |
 | Reconnect / repeated applyState | No duplicate props, no false story writes, latest revision wins. |
+| Switch Elena / Rosa | Same landmark/object anchors, correct source and contributor, no remote viewer's camera or story state changes. |
+| Different colors or remembered placements | Each account survives the switch; a shared stage choice does not erase the alternatives. |
+| Unknown detail in one account | It stays unknown in that telling; another contributor's detail is not silently borrowed. |
+| Switch while holding / paused | Safe docking before a voluntary transition; no camera switch while paused, no held prop left attached to the old viewpoint. |
 | Missing model / named node | Clear recoverable error; no half-working invisible collider. |
 | Seated mode / reduced motion | Controls reachable, no forced camera motion, stable pose. |
 | Mount / dispose twice | No leaked entities, handlers or runaway animation. |

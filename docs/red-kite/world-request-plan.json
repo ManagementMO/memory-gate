@@ -67,5 +67,13 @@
     "isPanoField": "omitted; provider auto-detection used for a regular perspective JPEG"
   },
   "worldId": "0b84554c-b182-4b3e-a7bb-78f15822a49d",
-  "actualCostStatus": "1,580 credits estimated from documented image pricing; no settled billing audit performed"
+  "actualCostStatus": "1,580 credits estimated from documented image pricing; no settled billing audit performed",
+  "laterDesignRequirement": {
+    "source": "User clarified that exploring the same memory through different people's perspectives is the core idea.",
+    "sharedBackdrop": "One coherent meadow, with a path-to-oak viewpoint and an oak-to-path viewpoint; each needs ground, reverse-surface and peripheral evaluation.",
+    "narrativeLayers": "Separate contributor-linked words, remembered details, uncertainty and illustration choices; local perspective selection never overwrites another account.",
+    "preferredPromptUpdated": "WORLD_LABS_PROMPT.txt now describes both viewpoints for any future deliberately authorized generation.",
+    "currentGenerationStatus": "Completed request history above is unchanged. Current candidate has only fixed-forward-view evidence; reverse-view quality remains unverified.",
+    "additionalGenerationsSubmitted": 0
+  }
 }

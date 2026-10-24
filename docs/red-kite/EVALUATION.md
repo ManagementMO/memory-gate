@@ -4,6 +4,8 @@ Evaluated October 24, 2026. This record separates original concept art, a real W
 
 During delivery, 19 newer team commits through `5ba599f` arrived on `origin/main`, adding `apps/gate` and related backend/presence work. They are preserved in the merge. This scene package's visual evidence is from `apps/headset`; it does not establish the new meadow's rendering or interaction quality in Gate. The teammate brief now prefers Gate for the finished journey while keeping GLBs and behavior portable.
 
+The user subsequently clarified that viewing the same memory through different people's perspectives is the core idea. The storyline, future backdrop prompt and teammate brief now require two attributed tellings and two spatially coherent viewpoints. This is a design update; no additional World Labs generation was submitted, and the existing captures and browser tests do not establish that feature.
+
 ## What exists
 
 | Deliverable | Result / evidence |
@@ -15,12 +17,13 @@ During delivery, 19 newer team commits through `5ba599f` arrived on `origin/main
 | Existing IWSDK runtime | Actual full 500k meadow rendered through the managed browser, with provider-derived eye height ~1.525 m and spectator FOV 78°. The final check reported no app or tick error. This was desktop spectator rendering, not physical Quest proof. |
 | 2D story rehearsal | Real browser buttons and pointer input exercised the unknown → proposed → chosen illustration flow, lift/dock, pause, sample speech cancellation and responsive layout. See `rehearsal-check.json`. |
 | Teammate assignment | Detailed original-model specifications, Blender build path, export/manifest contract, runtime API, interaction ownership, validation and handoff requirements. |
+| Multiple personal perspectives | Specified for Elena and Rosa, including separate source-linked details, local viewpoint selection and preserved disagreements. Not yet implemented or visually verified. |
 
 ## The actual world versus the reference
 
 The provider result has convincing warm light, layered meadow depth, a worn path and a readable oak silhouette. It also adds a very large nearby oak on the left, rather than reproducing the reference's single dominant right-side tree. The candidate remains useful as a fictional setting, but this is a compositional departure. We should place the kite in open sky and keep reachable props away from the large trunk.
 
-The revised reference gives a stronger interaction clearing than the original rocky foreground. A requested four-meter clearing in an image prompt is not a measured flat collision surface. The actual scene needs near-ground inspection, seated reach calibration and a physical Quest check before final object placement.
+The revised reference gives a stronger interaction clearing than the original rocky foreground. A requested four-meter clearing in an image prompt is not a measured flat collision surface. The actual scene needs near-ground inspection, seated reach calibration and a physical Quest check before final object placement. It also needs inspection from the oak-side viewpoint looking back across the clearing, including newly exposed surfaces and peripheral coverage. The current evidence covers a fixed forward view only. The backdrop remains a candidate until both intended perspectives work; prompting alone is not a multi-view quality guarantee.
 
 This generation is accepted as a **candidate environment foundation**. It is not evidence of a fully navigable game, an exact historical place or clinical benefit. The intended experience stays stationary; arbitrary walking around generated geometry is outside this acceptance.
 
@@ -75,8 +78,9 @@ The managed-browser world check is `node node_modules/@iwsdk/cli/bin/iwsdk.js br
 ## Next integration gates, in order
 
 1. **Real GLB assets.** The 3D kite, spool, box and card described in the teammate brief do not exist yet as this package's final authored assets. The 2D SVG overlay is an illustration of their intended behavior. Deliver the kite/spool first.
+   Before final placement, validate the generated backdrop from both intended viewing regions. Do not build the second telling around an uninspected reverse view.
 2. **Native interaction.** Add one selected-client adapter explicitly. The IWSDK fallback currently opts in photographs only; Gate uses a different XR framework. Verify grab → lift → string follows → safe release/dock → pause in the chosen runtime, then on Quest 3. Preserve that client's voice and pointing input ownership. Both clients now share the adequate World Labs far-plane policy; visually check the complete meadow in Gate when integrating it.
-3. **Server story semantics.** Add supported kite/spool nouns and per-detail color/ribbon proposals with source ownership, revisions, rejection/undo and explicit human illustration choice. The local rehearsal does not prove this server integration.
+3. **Server story semantics.** Add supported kite/spool nouns and per-contributor color/ribbon/placement proposals with source ownership, revisions, rejection/undo and explicit human illustration choice. Preserve both tellings, including disagreements; selected perspective is local viewing state. The local rehearsal does not prove this server integration.
 4. **Physical Quest evaluation.** Check the 100k option as well as full quality, scene scale, side/back views, near floor, seated reach, headset pause, discomfort and dropped frames. No physical headset was available for this evaluation.
 5. **Human story and language.** Choose one actual language pair, obtain the participant's permissions, test recognition with a bilingual teammate and attach original audio only when consented. No real family speech or human language review was tested here.
 6. **Polish the whole two-minute loop.** Keep source captions concise, preload the world, adjust prop lighting to the actual meadow, and rehearse a quiet ending with an original-voice keepsake or explicitly labeled transcript fallback.
