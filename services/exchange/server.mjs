@@ -5,6 +5,7 @@ import { ConvexHttpClient } from 'convex/browser';
 import { makeFunctionReference } from 'convex/server';
 import { DbConnection } from './bindings/index.ts';
 import { runArchive } from './archive-runner.mjs';
+import { createSocial, SOCIAL_SUBSCRIPTIONS } from './social.mjs';
 
 const token = process.env.SPACETIME_TOKEN;
 if (!token) throw new Error('SPACETIME_TOKEN is required by the private exchange gateway.');
@@ -12,7 +13,7 @@ if (!process.env.WORKER_SECRET) throw new Error('WORKER_SECRET is required for r
 const convex = new ConvexHttpClient(process.env.CONVEX_URL ?? 'http://127.0.0.1:3210');
 const contextRef = makeFunctionReference('exchange:context');
 const sourceRef = makeFunctionReference('exchange:source');
-const origins = new Set((process.env.EXCHANGE_ORIGINS ?? 'http://127.0.0.1:5173,http://localhost:5173,https://localhost:5174').split(','));
+const origins = new Set((process.env.EXCHANGE_ORIGINS ?? 'http://127.0.0.1:5173,http://localhost:5173,https://localhost:5174,https://localhost:5180,https://localhost:4180').split(','));
 const clients = new Set();
 let ready = false; let archiveBusy = false;
 let reconciling = false;
@@ -22,7 +23,7 @@ const db = DbConnection.builder().withUri(process.env.SPACETIME_URL ?? 'ws://127
   .withAutomaticReconnect()
   .onConnect(conn => {
     conn.subscriptionBuilder().onApplied(() => { ready = true; refreshAll(); void reconcileDeletedRooms(); }).onError(() => { ready = false; invalidateAll(); })
-      .subscribe(['SELECT * FROM capsule', 'SELECT * FROM reference', 'SELECT * FROM presence']);
+      .subscribe(['SELECT * FROM capsule', 'SELECT * FROM reference', 'SELECT * FROM presence', ...SOCIAL_SUBSCRIPTIONS]);
   }).onDisconnect(() => { ready = false; invalidateAll(); })
   .onConnectError(() => { ready = false; invalidateAll(); }).build();
 
@@ -61,7 +62,7 @@ async function reconcileDeletedRooms() {
   if (!ready || reconciling || !process.env.WORKER_SECRET) return;
   reconciling = true;
   try {
-    const ids = [...new Set([...db.db.capsule.iter(), ...db.db.reference.iter()].map(row => row.roomId))];
+    const ids = [...new Set([...[...db.db.capsule.iter(), ...db.db.reference.iter()].map(row => row.roomId), ...social.roomIds()])];
     for (let i = 0; i < ids.length; i += 100) {
       const deleted = await convex.query(makeFunctionReference('exchange:deletedRooms'), { secret: process.env.WORKER_SECRET, roomIds: ids.slice(i, i + 100) });
       for (const roomId of deleted) await db.reducers.purgeRoom({ roomId });
@@ -97,12 +98,14 @@ async function nearby() {
   nearbyCache = { at: Date.now(), value };
   return value;
 }
+// Perspectives (poses, stories, handoffs, archive photographs, likenesses): services/exchange/social.mjs.
+const social = createSocial({ db, clients, send, convex, authorize, isReady: () => ready });
 function requireReady(context) { if (!ready) throw new Error('The exchange is not connected.'); if (context.paused) throw new Error('This room is paused. Resume it before changing memories.'); }
 async function action(c, message) {
   if (message.type === 'join') {
     if (c.auth) throw new Error('This connection has already joined a room.');
     if (typeof message.code !== 'string' || typeof message.token !== 'string' || message.token.length > 100) throw new Error('Invalid room session.');
-    c.auth = { code: message.code, token: message.token }; await authorize(c); await refresh(c); return;
+    c.auth = { code: message.code, token: message.token }; await authorize(c); await refresh(c); await social.joined(c); return;
   }
   // Presence: heartbeats reuse this connection's recent authorization (refreshed every 5 s) instead of a check each.
   if (message.type === 'here' || message.type === 'point' || message.type === 'leave') {
@@ -117,9 +120,10 @@ async function action(c, message) {
       const at = message.at;
       if (!Array.isArray(at) || at.length !== 3 || !at.every(Number.isFinite)) throw new Error('Invalid point.');
       await db.reducers.markPoint({ roomId, memberId, x: at[0], y: at[1], z: at[2] });
-    } else await db.reducers.leaveVisit({ roomId, memberId });
+    } else { await db.reducers.leaveVisit({ roomId, memberId }); await db.reducers.dropPose({ roomId, memberId }); }
     return;
   }
+  if (social.handles(message.type)) return void await social.act(c, message);
   const context = await authorize(c); requireReady(context);
   const { memberId, roomId } = context;
   if (message.type === 'pass') {
@@ -159,6 +163,7 @@ async function action(c, message) {
   await refresh(c);
 }
 const server = http.createServer((req, res) => {
+  if (req.url?.startsWith('/exchange/archive-image/')) { void social.archiveImage(req, res); return; }
   if (req.url === '/nearby' || req.url === '/exchange/nearby') {
     void nearby().then(value => { res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify({ nearby: value })); },
       () => { res.writeHead(503, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ nearby: null })); });
@@ -177,9 +182,11 @@ wss.on('connection', socket => {
   socket.on('message', async raw => {
     let message;
     try {
+      try { message = JSON.parse(raw.toString()); } catch { message = null; }
+      // Live heads and hands (~10 a second) have their own lane and limit, never queued behind an action.
+      if (message?.type === 'pose') { social.pose(c, message); return; }
       if (Date.now() - c.window > 60_000) { c.count = 0; c.window = Date.now(); }
       if (++c.count > 60) throw new Error('Please slow down.');
-      message = JSON.parse(raw.toString());
       if (!message || typeof message !== 'object' || typeof message.requestId !== 'string' || message.requestId.length > 80) throw new Error('Invalid request.');
       if (c.busy) throw new Error('Your previous action is still being saved.');
       c.busy = true;
@@ -190,10 +197,10 @@ wss.on('connection', socket => {
       send(c, { type: 'error', requestId: message?.requestId, message: safe });
     }
   });
-  socket.on('close', () => { clearTimeout(authTimeout); clients.delete(c); refreshAll(); });
+  socket.on('close', () => { clearTimeout(authTimeout); clients.delete(c); refreshAll(); void social.left(c.context); });
 });
 const poll = setInterval(refreshAll, 5000);
-const cleanup = setInterval(() => void reconcileDeletedRooms(), 10_000);
+const cleanup = setInterval(() => { void reconcileDeletedRooms(); void social.reconcileAvatars(); }, 10_000);
 server.listen(Number(process.env.EXCHANGE_PORT ?? 3212), '127.0.0.1', () => console.log('Memory exchange gateway listening on 127.0.0.1:3212; private SpacetimeDB subscriptions enabled.'));
 function stop() { clearInterval(poll); clearInterval(cleanup); for (const c of clients) c.socket.close(); wss.close(); server.close(); db.disconnect(); }
 process.on('SIGTERM', stop); process.on('SIGINT', stop);

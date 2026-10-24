@@ -12,7 +12,7 @@ for (const file of ['.env.local', '.env.exchange']) if (existsSync(file)) proces
 process.env.CONVEX_AGENT_MODE = 'anonymous';
 process.env.ATLAS_MODE ??= 'local';
 const hosts = ['localhost', '127.0.0.1', ...Object.values(os.networkInterfaces()).flat().filter(n => n?.family === 'IPv4' && !n.internal).map(n => n.address)];
-process.env.EXCHANGE_ORIGINS ??= hosts.flatMap(h => [`http://${h}:5173`, `https://${h}:5174`]).join(',');
+process.env.EXCHANGE_ORIGINS ??= hosts.flatMap(h => [`http://${h}:5173`, `https://${h}:5174`, `https://${h}:5180`, `https://${h}:4180`]).join(',');
 mkdirSync('.logs', { recursive: true });
 const spacetime = process.env.SPACETIME_BIN ?? 'spacetime';
 const node = process.execPath;

@@ -34,20 +34,47 @@ import {
 } from "spacetimedb";
 
 // Import all reducer arg schemas
+import AddObjectReducer from "./add_object_reducer";
+import AddStoryReducer from "./add_story_reducer";
+import AddTurnReducer from "./add_turn_reducer";
 import BeHereReducer from "./be_here_reducer";
+import ClaimPerspectiveReducer from "./claim_perspective_reducer";
+import ClearAvatarReducer from "./clear_avatar_reducer";
+import DropPoseReducer from "./drop_pose_reducer";
+import EnsurePerspectivesReducer from "./ensure_perspectives_reducer";
 import LeaveVisitReducer from "./leave_visit_reducer";
 import MarkPointReducer from "./mark_point_reducer";
 import PassMemoryReducer from "./pass_memory_reducer";
+import PassStoryReducer from "./pass_story_reducer";
 import PinReferenceReducer from "./pin_reference_reducer";
+import PinToPerspectiveReducer from "./pin_to_perspective_reducer";
+import PlacePinReducer from "./place_pin_reducer";
 import PurgeRoomReducer from "./purge_room_reducer";
+import RemoveObjectReducer from "./remove_object_reducer";
+import RemoveStoryReducer from "./remove_story_reducer";
+import RespondHandoffReducer from "./respond_handoff_reducer";
 import RespondMemoryReducer from "./respond_memory_reducer";
+import SetAvatarReducer from "./set_avatar_reducer";
+import SetSummaryReducer from "./set_summary_reducer";
+import UnpinFromPerspectiveReducer from "./unpin_from_perspective_reducer";
 import UnpinReferenceReducer from "./unpin_reference_reducer";
+import UpdatePerspectiveReducer from "./update_perspective_reducer";
+import UpdatePoseReducer from "./update_pose_reducer";
 
 // Import all procedure arg schemas
 
 // Import all table schema definitions
+import AvatarRow from "./avatar_table";
 import CapsuleRow from "./capsule_table";
+import CompanionSummaryRow from "./companion_summary_table";
+import CompanionTurnRow from "./companion_turn_table";
+import HandoffRow from "./handoff_table";
 import OperatorRow from "./operator_table";
+import PerspectiveRow from "./perspective_table";
+import PerspectiveObjectRow from "./perspective_object_table";
+import PerspectivePinRow from "./perspective_pin_table";
+import PerspectiveStoryRow from "./perspective_story_table";
+import PoseRow from "./pose_table";
 import PresenceRow from "./presence_table";
 import ReferenceRow from "./reference_table";
 
@@ -55,6 +82,20 @@ import ReferenceRow from "./reference_table";
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
+  avatar: __table({
+    name: 'avatar',
+    indexes: [
+      { accessor: 'id', name: 'avatar_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'byRoom', name: 'avatar_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'avatar_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, AvatarRow),
   capsule: __table({
     name: 'capsule',
     indexes: [
@@ -69,6 +110,51 @@ const tablesSchema = __schema({
       { name: 'capsule_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, CapsuleRow),
+  companionSummary: __table({
+    name: 'companion_summary',
+    indexes: [
+      { accessor: 'perspectiveId', name: 'companion_summary_perspective_id_idx_btree', algorithm: 'btree', columns: [
+        'perspectiveId',
+      ] },
+      { accessor: 'byRoom', name: 'companion_summary_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'companion_summary_perspective_id_key', constraint: 'unique', columns: ['perspectiveId'] },
+    ],
+  }, CompanionSummaryRow),
+  companionTurn: __table({
+    name: 'companion_turn',
+    indexes: [
+      { accessor: 'id', name: 'companion_turn_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'byRoom', name: 'companion_turn_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+      { accessor: 'byPerspective', name: 'companion_turn_perspective_id_idx_btree', algorithm: 'btree', columns: [
+        'perspectiveId',
+      ] },
+    ],
+    constraints: [
+      { name: 'companion_turn_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, CompanionTurnRow),
+  handoff: __table({
+    name: 'handoff',
+    indexes: [
+      { accessor: 'id', name: 'handoff_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'byRoom', name: 'handoff_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'handoff_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, HandoffRow),
   operator: __table({
     name: 'operator',
     indexes: [
@@ -80,6 +166,76 @@ const tablesSchema = __schema({
       { name: 'operator_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, OperatorRow),
+  perspective: __table({
+    name: 'perspective',
+    indexes: [
+      { accessor: 'id', name: 'perspective_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'byRoom', name: 'perspective_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'perspective_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, PerspectiveRow),
+  perspectiveObject: __table({
+    name: 'perspective_object',
+    indexes: [
+      { accessor: 'id', name: 'perspective_object_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'byRoom', name: 'perspective_object_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'perspective_object_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, PerspectiveObjectRow),
+  perspectivePin: __table({
+    name: 'perspective_pin',
+    indexes: [
+      { accessor: 'id', name: 'perspective_pin_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'byRoom', name: 'perspective_pin_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'perspective_pin_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, PerspectivePinRow),
+  perspectiveStory: __table({
+    name: 'perspective_story',
+    indexes: [
+      { accessor: 'id', name: 'perspective_story_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'byRoom', name: 'perspective_story_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'perspective_story_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, PerspectiveStoryRow),
+  pose: __table({
+    name: 'pose',
+    indexes: [
+      { accessor: 'memberId', name: 'pose_member_id_idx_btree', algorithm: 'btree', columns: [
+        'memberId',
+      ] },
+      { accessor: 'byRoom', name: 'pose_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'pose_member_id_key', constraint: 'unique', columns: ['memberId'] },
+    ],
+  }, PoseRow),
   presence: __table({
     name: 'presence',
     indexes: [
@@ -112,14 +268,32 @@ const tablesSchema = __schema({
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
+  __reducerSchema("add_object", AddObjectReducer),
+  __reducerSchema("add_story", AddStoryReducer),
+  __reducerSchema("add_turn", AddTurnReducer),
   __reducerSchema("be_here", BeHereReducer),
+  __reducerSchema("claim_perspective", ClaimPerspectiveReducer),
+  __reducerSchema("clear_avatar", ClearAvatarReducer),
+  __reducerSchema("drop_pose", DropPoseReducer),
+  __reducerSchema("ensure_perspectives", EnsurePerspectivesReducer),
   __reducerSchema("leave_visit", LeaveVisitReducer),
   __reducerSchema("mark_point", MarkPointReducer),
   __reducerSchema("pass_memory", PassMemoryReducer),
+  __reducerSchema("pass_story", PassStoryReducer),
   __reducerSchema("pin_reference", PinReferenceReducer),
+  __reducerSchema("pin_to_perspective", PinToPerspectiveReducer),
+  __reducerSchema("place_pin", PlacePinReducer),
   __reducerSchema("purge_room", PurgeRoomReducer),
+  __reducerSchema("remove_object", RemoveObjectReducer),
+  __reducerSchema("remove_story", RemoveStoryReducer),
+  __reducerSchema("respond_handoff", RespondHandoffReducer),
   __reducerSchema("respond_memory", RespondMemoryReducer),
+  __reducerSchema("set_avatar", SetAvatarReducer),
+  __reducerSchema("set_summary", SetSummaryReducer),
+  __reducerSchema("unpin_from_perspective", UnpinFromPerspectiveReducer),
   __reducerSchema("unpin_reference", UnpinReferenceReducer),
+  __reducerSchema("update_perspective", UpdatePerspectiveReducer),
+  __reducerSchema("update_pose", UpdatePoseReducer),
 );
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */

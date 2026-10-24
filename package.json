@@ -6,6 +6,7 @@
   "scripts": {
     "local:up": "node scripts/local-up.mjs",
     "dev:exchange": "node --import tsx scripts/exchange.mjs",
+    "stdb:generate": "spacetime generate --lang typescript --out-dir services/exchange/bindings --module-path spacetimedb --include-private --yes",
     "test:exchange:browser": "playwright test --config tests/exchange/playwright.config.mjs",
     "test:atlas": "npm --prefix actors/historical-memory-atlas test",
     "test:exchange": "node --import tsx --test tests/exchange/*.test.mjs",
