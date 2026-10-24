@@ -38,6 +38,10 @@ export default function AlbumPreview() {
     useGate.getState().set({ stage: 'album' });
     const empty = new URLSearchParams(location.search).get('empty') === '1';
     useMoments.setState({ memories: empty ? [] : sampleMemories() });
+    // Tests only: show the family rows for a real session (?xcode=CODE&xtoken=TOKEN) from the memory exchange.
+    const p = new URLSearchParams(location.search);
+    const xcode = p.get('xcode'), xtoken = p.get('xtoken');
+    if (xcode && xtoken) useGate.getState().set({ session: { code: xcode, token: xtoken, joinKey: null, role: 'guest', name: 'Family' } });
     return true;
   });
   return (

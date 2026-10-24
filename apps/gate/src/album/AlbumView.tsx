@@ -4,7 +4,9 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { summaryLine, todayLine } from './format';
+import { FromFamily } from './FromFamily';
 import { MemoryChapter } from './MemoryChapter';
+import { useGate } from '../state/store';
 import { useAlbum } from './useAlbum';
 import './album.css';
 
@@ -15,6 +17,7 @@ const HOVER_CLOSE_MS = 320;
 
 export default function AlbumView({ onBeginAnother, onRevisit }: AlbumViewProps) {
   const memories = useAlbum();
+  const session = useGate((s) => s.session);
   const reduce = useReducedMotion();
   const [openId, setOpenId] = useState<string | null>(null);
   const pinned = useRef(false);
@@ -71,6 +74,7 @@ export default function AlbumView({ onBeginAnother, onRevisit }: AlbumViewProps)
               onToggle={onToggle} onFocusOpen={onFocusOpen} onRevisit={onRevisit} />
           ))
         )}
+        <FromFamily session={session} />
       </div>
       </div>
       {!empty && <div className="album-fade" aria-hidden="true" />}

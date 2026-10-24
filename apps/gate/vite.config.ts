@@ -22,7 +22,19 @@ function backendTarget(): string {
   return 'http://127.0.0.1:3210';
 }
 
-const proxy: Record<string, ProxyOptions> = { '/api': { target: backendTarget(), changeOrigin: true, ws: true } };
+/** The team's memory exchange gateway (SpacetimeDB): EXCHANGE_PORT from the repo's ignored .env.exchange, else 3212. */
+function exchangeTarget(): string {
+  if (process.env.EXCHANGE_PROXY_TARGET) return process.env.EXCHANGE_PROXY_TARGET;
+  const envFile = path.join(repoRoot, '.env.exchange');
+  const port = existsSync(envFile) ? readFileSync(envFile, 'utf8').match(/^EXCHANGE_PORT=(\d+)$/m)?.[1] : undefined;
+  return `http://127.0.0.1:${port ?? '3212'}`;
+}
+
+const proxy: Record<string, ProxyOptions> = {
+  '/api': { target: backendTarget(), changeOrigin: true, ws: true },
+  // The gateway checks the browser's Origin itself, so it is passed through unchanged.
+  '/exchange': { target: exchangeTarget(), ws: true },
+};
 const insecure = process.env.GATE_HTTP === '1'; // plain HTTP for automated screenshots only; mic/XR need HTTPS on the LAN
 
 export default defineConfig({
