@@ -46,7 +46,7 @@ try {
   pass = true;
 } catch (error) { records.push({ step: 'failure', error: error.message }); process.exitCode = 1; }
 finally {
-  await xr('set-gamepad-state', { device: 'controller-right', buttons: [{ index: 1, value: 0 }, { index: 0, value: 0 }] }).catch(() => {});
+  await xr('set-gamepad-state', { device: 'controller-right', buttons: [{ index: 1, value: 0 }, { index: 0, value: 0 }, { index: 5, value: 0 }] }).catch(() => {});
   const output = new URL(process.env.MG_XR_EVIDENCE ?? '../../../evidence/world-story/xr-rehearsal.json', import.meta.url);
   mkdirSync(new URL('./', output), { recursive: true });
   writeFileSync(output, JSON.stringify({ at: new Date().toISOString(), environment: 'IWSDK Meta Quest 3 emulator; no physical headset', pass, records }, null, 2));

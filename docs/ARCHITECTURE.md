@@ -47,6 +47,8 @@ Provider metadata is an initial calibration, not a measured site survey. The Pal
 
 Courtyard rooms use a stable desktop overview and fitted captions. XR uses the actual tracked head pose. No provider, LLM or database mutation runs in the render loop. Native grabbing uses IWSDK components; objects are separate from the splat, so selecting or moving a bench does not require semantic segmentation.
 
+The headset now requests immersive VR with an opaque background. Unused AR room-scanning features are disabled. Scenery detail and eye-buffer resolution are independent: a lite world preserves the default 0.75 framebuffer scale or a validated explicit scale between 0.5 and 1.25. A break fades the memory and keeps a pinned spatial return instruction; asynchronous voice errors remain in screen UI/stats during the break. Family pause/resume was exercised while emulator XR stayed active. Physical Quest scale, readability, comfort, performance and controller B remain device acceptance work.
+
 ## Speech and cancellation
 
 Both phone and headset reuse the 16 kHz mono PCM AudioWorklet, streaming manual-finalize recognizer and WAV encoder. The backend checks membership/voice consent and issues a short-lived Cartesia token. Direct browser streaming is a deliberate alternative to the brief's server audio relay.

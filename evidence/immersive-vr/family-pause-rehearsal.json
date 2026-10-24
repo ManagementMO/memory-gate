@@ -1,0 +1,379 @@
+{
+  "at": "2026-10-24T19:26:53.045Z",
+  "environment": "Real family UI clicks plus IWSDK Meta Quest 3 emulator; no physical headset",
+  "pass": true,
+  "records": [
+    {
+      "step": "before",
+      "xr": true,
+      "sessionMode": "immersive-vr",
+      "framebufferScale": 0.75,
+      "paused": false,
+      "caption": null,
+      "tickError": null,
+      "pauseButtonValue": 0,
+      "pauseButtonPresses": 0,
+      "lastError": "The microphone is blocked. Allow it for this page and reload; typing works meanwhile.",
+      "scenery": {
+        "source": "worldlabs",
+        "loaded": true,
+        "lite": true
+      },
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": false,
+            "gateAngle": 0
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "yaw": 0,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 13,
+          "held": false,
+          "active": true,
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "center": [
+            -0.550000011920929,
+            1.2599999595806004,
+            -0.8500000238418579
+          ]
+        }
+      ],
+      "gateOpen": null
+    },
+    {
+      "step": "family-pause",
+      "xr": true,
+      "sessionMode": "immersive-vr",
+      "framebufferScale": 0.75,
+      "paused": true,
+      "caption": "Taking a break: There is no rush. Press B, or ask your family to resume.",
+      "tickError": null,
+      "pauseButtonValue": 0,
+      "pauseButtonPresses": 0,
+      "lastError": "The microphone is blocked. Allow it for this page and reload; typing works meanwhile.",
+      "scenery": {
+        "source": "worldlabs",
+        "loaded": true,
+        "lite": true
+      },
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": false,
+            "gateAngle": 0
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "yaw": 0,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 13,
+          "held": false,
+          "active": false,
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "center": [
+            -0.550000011920929,
+            1.2599999595806004,
+            -0.8500000238418579
+          ]
+        }
+      ],
+      "gateOpen": null
+    },
+    {
+      "step": "after-five-seconds",
+      "xr": true,
+      "sessionMode": "immersive-vr",
+      "framebufferScale": 0.75,
+      "paused": true,
+      "caption": "Taking a break: There is no rush. Press B, or ask your family to resume.",
+      "tickError": null,
+      "pauseButtonValue": 0,
+      "pauseButtonPresses": 0,
+      "lastError": "The microphone is blocked. Allow it for this page and reload; typing works meanwhile.",
+      "scenery": {
+        "source": "worldlabs",
+        "loaded": true,
+        "lite": true
+      },
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": false,
+            "gateAngle": 0
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "yaw": 0,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 13,
+          "held": false,
+          "active": false,
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "center": [
+            -0.550000011920929,
+            1.2599999595806004,
+            -0.8500000238418579
+          ]
+        }
+      ],
+      "gateOpen": null
+    },
+    {
+      "step": "family-resume",
+      "xr": true,
+      "sessionMode": "immersive-vr",
+      "framebufferScale": 0.75,
+      "paused": false,
+      "caption": null,
+      "tickError": null,
+      "pauseButtonValue": 0,
+      "pauseButtonPresses": 0,
+      "lastError": "The microphone is blocked. Allow it for this page and reload; typing works meanwhile.",
+      "scenery": {
+        "source": "worldlabs",
+        "loaded": true,
+        "lite": true
+      },
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": false,
+            "gateAngle": 0
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "yaw": 0,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 13,
+          "held": false,
+          "active": true,
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "center": [
+            -0.550000011920929,
+            1.2599999595806004,
+            -0.8500000238418579
+          ]
+        }
+      ],
+      "gateOpen": null
+    }
+  ]
+}

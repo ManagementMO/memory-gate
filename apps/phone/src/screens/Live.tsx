@@ -218,7 +218,7 @@ export function Live({ session, view, headsetConnected, onConsent }: { session: 
   async function onPause() {
     const next = !paused;
     const r = await run('pause', () => setPaused({ code, token, paused: next, commandId: newCommandId() }));
-    if (r.ok) toast.say(next ? 'Paused. The headset fades to the real room.' : 'Resumed. The memory fades back in.', 'ok');
+    if (r.ok) toast.say(next ? 'Paused. The memory fades and the headset shows a break instruction.' : 'Resumed. The memory fades back in.', 'ok');
   }
 
   async function onUndo() {
@@ -263,7 +263,7 @@ export function Live({ session, view, headsetConnected, onConsent }: { session: 
       </div>
       {paused && (
         <Notice tone="warn" title="Paused" testId="paused-banner">
-          The headset shows the real room for now: no memory, no objects, no captions and no questions. Resume when everyone is ready.
+          The memory fades and the headset shows a quiet break instruction. No new questions are asked. Resume when everyone is ready.
         </Notice>
       )}
       {canAct ? (

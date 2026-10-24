@@ -1,0 +1,30 @@
+{
+  "scope": "Immersive VR presentation baseline; not Palace scene completion",
+  "date": "2026-10-24",
+  "checks": {
+    "backendTypecheck": "passed",
+    "headsetTypecheck": "passed",
+    "phoneTypecheck": "passed",
+    "rendererTests": { "passed": 10, "failed": 0 },
+    "headsetProductionBuild": "passed",
+    "phoneProductionBuild": "passed",
+    "focusedBrowserScenarios": { "passed": 2, "failed": 0 },
+    "nativeGrabMoveReleaseReturnAndGate": "passed subsequence in xr-rehearsal.json; the overall run failed its added B-pause assertion",
+    "familyPausePersistentReturnInstructionAndResume": "passed real family UI clicks while emulator XR remained active; family-pause-rehearsal.json",
+    "controllerB": "not passed; numeric button injection did not reach the named B input; pause-rehearsal.json"
+  },
+  "runtime": {
+    "device": "Meta Quest 3 emulator",
+    "sessionMode": "immersive-vr",
+    "opaqueBackground": true,
+    "liteScenery": true,
+    "framebufferScale": 0.75
+  },
+  "limits": [
+    "No physical headset validation: stereo quality, scale, reach, comfort, microphone and device frame pacing remain unverified.",
+    "No Palace photos were supplied and no Palace world was generated.",
+    "No new geometry, material, navigation, positional audio or dynamic scenery implementation is claimed by this baseline change.",
+    "No additional paid generation; the World Labs cap remains 4 of 4.",
+    "The existing courtyard and illustrative props are rehearsal material; successful tests do not establish polished visual quality."
+  ]
+}

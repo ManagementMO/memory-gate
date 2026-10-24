@@ -10,6 +10,14 @@ Remaining: no Apify cloud Actor deployment/run is claimed. The Windows native em
 
 The exchange branch made no paid world jobs. The macOS story pass used exactly the separately authorized one generation (1,580 credits, local cap now 4/4). Credentials stay in ignored files. No public app deployment or event submission was performed. Preserve the project's actual history when discussing event eligibility.
 
+## Immersive VR baseline after visual feedback — October 24
+
+The current experience remains technical rehearsal material, not a finished Palace scene. The next production order and visible acceptance gates are in [the Palace guide](docs/ORBIS_AND_PALACE.md). The user will provide Quest access and site photos later today; no new world was generated or generation cap increased.
+
+Two concrete presentation defects were corrected: the manifest now requests immersive VR with an opaque background, and lite scenery no longer forces the entire eye buffer to 0.5. Default eye scale remains 0.75 pending hardware measurement; explicit scale settings are validated and respected. Pause retains a pinned spatial return instruction, protected from asynchronous error messages. The phone's pause copy now describes that actual VR behavior.
+
+Fresh checks passed: backend/headset/phone TypeScript, **10 renderer tests**, both application builds, and two focused browser scenarios. Active immersive-vr emulation with lite scenery at eye scale 0.75 passed native keepsake squeeze/move/release/return and gate selection. A separate family-screen input test paused/resumed that active XR session and retained its return instruction after five seconds. Numeric emulator B injection did not register in the app's named input; that controller path remains unverified and its failed probe is preserved. The family control works. See evidence/immersive-vr/verification.json for separate passing and unresolved evidence. No physical Quest or finished-art claim is made.
+
 ## Integrated macOS verification — October 24
 
 After merging all five team commits, the combined source passed **81 backend/domain tests, 8 renderer tests, 5 offline Palace intake CLI tests, 6 Actor tests, 5 real SpacetimeDB/gateway tests, 29 live legacy browser scenarios and 3 exchange browser scenarios**. The latter included an actual local Apify archive search and two independent browser clients. Four TypeScript checks, both production builds and doctor passed. After the final world-switch race fix, the renderer checks, headset typecheck/build, cached-world browser flow and native XR input rehearsal passed again. Full suite and focused post-fix evidence are distinguished in evidence/integrated-palace/verification.json.
