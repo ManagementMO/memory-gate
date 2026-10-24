@@ -82,6 +82,18 @@ export const get = query({
   },
 });
 
+/** The name others see for you in a shared visit ("Lily", "Grandpa Joe"); set when someone picks whose eyes they see through. */
+export const rename = mutation({
+  args: { code: v.string(), token: v.string(), displayName: v.string() },
+  handler: async (ctx, { code, token, displayName }) => {
+    const { member } = await requireMember(ctx, code, token);
+    const name = displayName.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (name.length < 1) throw new ConvexError({ code: 'BAD_NAME', message: 'Add a name.' });
+    await ctx.db.patch(member._id, { displayName: name });
+    return name;
+  },
+});
+
 export const setPaused = mutation({
   args: { code: v.string(), token: v.string(), paused: v.boolean(), commandId: v.string() },
   handler: async (ctx, { code, token, paused, commandId }) => {

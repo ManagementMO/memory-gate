@@ -10,6 +10,7 @@
 
 import type * as admin from "../admin.js";
 import type * as ai from "../ai.js";
+import type * as avatars from "../avatars.js";
 import type * as budget from "../budget.js";
 import type * as consents from "../consents.js";
 import type * as corrections from "../corrections.js";
@@ -44,6 +45,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   ai: typeof ai;
+  avatars: typeof avatars;
   budget: typeof budget;
   consents: typeof consents;
   corrections: typeof corrections;

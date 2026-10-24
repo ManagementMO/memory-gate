@@ -231,4 +231,18 @@ export default defineSchema({
   spend: defineTable({ key: v.string(), usd: v.number(), calls: v.number(), inputTokens: v.number(), outputTokens: v.number(), updatedAt: v.number() }).index('by_key', ['key']),
   // Composed objects (primitives from Claude for things the library can't draw), cached by label + colour.
   sketchCache: defineTable({ key: v.string(), parts: v.any(), createdAt: v.number() }).index('by_key', ['key']),
+  // A person's likeness for shared visits: a rigged GLB built offline (docs/AVATARS.md). Not tied to one room, since
+  // every visit is a new room; the device that uploaded it keeps the unguessable key and wears it again. A minor's
+  // likeness is never accepted without a guardian's recorded agreement. Revoking deletes the file.
+  avatars: defineTable({
+    key: v.string(),
+    fileId: v.union(v.id('_storage'), v.null()),
+    bytes: v.number(),
+    label: v.string(),
+    subjectIsMinor: v.boolean(),
+    guardianName: v.union(v.string(), v.null()),
+    consentBy: v.id('members'),
+    consentAt: v.number(),
+    revokedAt: v.union(v.number(), v.null()),
+  }).index('by_key', ['key']),
 });
