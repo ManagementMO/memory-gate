@@ -1,6 +1,8 @@
-// Takes a picture of the place for the album. Runs after the frame is drawn (priority after the composer), reads the
-// canvas in the same frame (so preserveDrawingBuffer isn't needed) and scales it down to a JPEG.
-import { useFrame, useThree } from '@react-three/fiber';
+// Takes a picture of the place for the album. Reads the canvas right after the frame is drawn (an after-effect, so in
+// the same task: preserveDrawingBuffer isn't needed) and scales it down to a JPEG. It must never claim a useFrame
+// priority above zero: that tells React Three Fiber this component draws the frame itself, and in the headset (where
+// there is no composer) nothing would draw at all.
+import { addAfterEffect, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import { registerSnapshot } from '../flow/moments';
 
@@ -13,7 +15,7 @@ export function Snapshotter() {
       setTimeout(() => { const i = pending.current.findIndex((p) => p.resolve === resolve); if (i >= 0) { pending.current.splice(i, 1); resolve(null); } }, 2500);
     }));
   }, []);
-  useFrame(() => {
+  useEffect(() => addAfterEffect(() => {
     if (!pending.current.length) return;
     const jobs = pending.current.splice(0);
     const src = gl.domElement;
@@ -26,6 +28,6 @@ export function Snapshotter() {
         c.toBlob((b) => job.resolve(b), 'image/jpeg', 0.88);
       } catch { job.resolve(null); }
     }
-  }, 10);
+  }), [gl]);
   return null;
 }

@@ -247,3 +247,5 @@ function impulse(ctx: AudioContext, seconds: number, decay: number): AudioBuffer
 }
 
 export const music = new Music();
+// For the headset heartbeat (src/diag/deviceLog.ts): whether this page's sound is actually running.
+(window as unknown as { __gateAudio?: () => string }).__gateAudio = () => (music as unknown as { ctx: AudioContext | null }).ctx?.state ?? 'not started';

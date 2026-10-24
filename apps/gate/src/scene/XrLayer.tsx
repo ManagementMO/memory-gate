@@ -1,5 +1,5 @@
 // What the headset needs that the page can't show: the companion's words as calm 3D captions under your line of
-// sight, and controller buttons for the few things a person might reach for. Everything else is voice.
+// sight, a small dock of things to reach for (XrControls), and controller buttons for the same. Everything else is voice.
 //   A: begin / continue    B: rest or resume    menu (left) or thumbstick press: leave the memory
 // When the album is ready the headset session ends, so the album is waiting on the page in Quest Browser.
 import { Text } from '@react-three/drei';
@@ -11,6 +11,7 @@ import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyper
 import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
 import { xrStore } from './xr';
+import { XrControls } from './XrControls';
 
 const _head = new THREE.Vector3();
 const _q = new THREE.Quaternion();
@@ -102,6 +103,7 @@ export function XrLayer() {
     <>
       <FrameCounter />
       <Captions3D />
+      <XrControls />
       <Buttons />
     </>
   );

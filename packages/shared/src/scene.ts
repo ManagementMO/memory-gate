@@ -334,18 +334,39 @@ export function layout(plan: ScenePlan): Placement[] {
   const facingCenter = (x: number, z: number) => Math.atan2(-x, -z + 0.6);
 
   const shore = !indoor && plan.setting.water ? -1.15 : -Infinity; // by water, land things stay on the near shore
-  const free = (b: Box) => !boxes.some((o) => overlaps(o, b)) && Math.abs(b.x) + b.w / 2 <= halfW + 0.6 && b.z - b.d / 2 >= Math.max(backZ - 0.05, shore) && b.z + b.d / 2 <= 2.3;
+  // Outdoors, a house (or barn, or chapel) is one thing: its own door and windows come with it, and the way to its
+  // door stays open, so nothing tall stands in front of it.
+  const backdrops = indoor ? [] : plan.objects.filter((o) => entryOf(o.kind).place === 'backdrop');
+  const keepClear: Box[] = [];
+  const tallOf = (o: PlanObject) => entryOf(o.kind).h * o.scale >= 1.5;
+  const free = (b: Box, tall = false) => !boxes.some((o) => overlaps(o, b)) && !(tall && keepClear.some((o) => overlaps(o, b, 0)))
+    && Math.abs(b.x) + b.w / 2 <= halfW + 0.6 && b.z - b.d / 2 >= Math.max(backZ - 0.05, shore) && b.z + b.d / 2 <= 2.3;
   const settle = (o: PlanObject, x0: number, z0: number): Box => {
     const [w, d] = footprint(o);
     const seed = hashStr(o.id);
-    for (let i = 0; i < 90; i++) {
+    const tall = tallOf(o);
+    for (let i = 0; i < 140; i++) {
       const a = i * 2.399 + (seed % 7);
       const r = i === 0 ? 0 : 0.18 * Math.sqrt(i);
       const b = { id: o.id, x: x0 + Math.cos(a) * r, z: z0 + Math.sin(a) * r * 0.75, w, d };
-      if (free(b)) return b;
+      if (free(b, tall)) return b;
     }
     return { id: o.id, x: x0, z: z0, w, d };
   };
+  // The house first: everything else keeps clear of its walls.
+  for (const o of backdrops) {
+    const e = entryOf(o.kind);
+    const byWater = plan.setting.water;
+    // By water it stands on the shore to one side, turned toward you, so the water stays open; elsewhere it stands
+    // behind the place, facing you.
+    const s = o.scale * (byWater ? 0.7 : 1);
+    const x = byWater ? -6.8 : 0, z = byWater ? -1.6 : backZ - (e.fp[1] * s) / 2 - 1.2;
+    const yaw = byWater ? Math.PI / 2 - 0.5 : 0;
+    out.set(o.id, { id: o.id, x, y: 0, z, yaw, scale: s, on: null });
+    const span = Math.max(e.fp[0], e.fp[1]) * s;
+    boxes.push({ id: o.id, x, z, w: byWater ? span : e.fp[0] * s + 0.6, d: byWater ? span : e.fp[1] * s + 0.6 });
+    if (!byWater) keepClear.push({ id: `${o.id}-path`, x, z: z + (e.fp[1] * s) / 2 + 2.4, w: 2.6, d: 4.6 });
+  }
 
   // 1. Under-things (rugs, blankets) in the middle.
   for (const o of plan.objects.filter((o) => entryOf(o.kind).place === 'floor-under')) {
@@ -353,7 +374,7 @@ export function layout(plan: ScenePlan): Placement[] {
     out.set(o.id, { id: o.id, x: ax * 0.6, y: 0.002, z: az * 0.6, yaw: 0, scale: o.scale, on: null });
   }
   // 2. Things mounted on the back wall (windows, doors, clocks, pictures), spread along it.
-  const mounted = plan.objects.filter((o) => entryOf(o.kind).place === 'wall-mounted');
+  const mounted = plan.objects.filter((o) => entryOf(o.kind).place === 'wall-mounted' && !(backdrops.length && !indoor));
   mounted.forEach((o, i) => {
     const n = mounted.length;
     const x = n === 1 ? 0 : -halfW * 0.62 + (i * (halfW * 1.24)) / (n - 1);
@@ -387,20 +408,40 @@ export function layout(plan: ScenePlan): Placement[] {
     boxes.push(placed.b);
     out.set(o.id, { id: o.id, x: placed.b.x, y: 0, z: placed.b.z, yaw: placed.yaw, scale: o.scale, on: null });
   }
-  // 4. Freestanding floor things: tables first (others relate to them), then the rest, by zone.
-  const floorers = plan.objects.filter((o) => ['floor', 'edge', 'water', 'backdrop'].includes(entryOf(o.kind).place) && !out.has(o.id) && o.relation !== 'on');
+  // 4. Fences and railings frame the place: down its sides when a house stands behind it, else along the back.
+  //    Never across the front, where they'd hide everything behind them.
+  const edges = plan.objects.filter((o) => entryOf(o.kind).place === 'edge' && !out.has(o.id));
+  edges.forEach((o, i) => {
+    const [w] = footprint(o);
+    if (backdrops.length || edges.length > 1) {
+      const side = (i % 2 ? 1 : -1) * (o.zone.includes('right') ? -1 : 1) * -1;
+      const x = side * (halfW * 0.66), z = -1.2 - Math.floor(i / 2) * (w + 0.3);
+      boxes.push({ id: o.id, x, z, w: 0.3, d: w });
+      out.set(o.id, { id: o.id, x, y: 0, z, yaw: Math.PI / 2, scale: o.scale, on: null });
+    } else {
+      const b = settle(o, 0, backZ + 0.35);
+      boxes.push(b);
+      out.set(o.id, { id: o.id, x: b.x, y: 0, z: b.z, yaw: 0, scale: o.scale, on: null });
+    }
+  });
+  // 5. Rows of seats that face one thing (chapel pews, classroom desks): an aisle down the middle, facing the front.
+  const seats = plan.objects.filter((o) => (o.kind === 'bench' || (o.kind === 'chair' && !o.target)) && !out.has(o.id) && o.relation !== 'on');
+  if (indoor && seats.length >= 3 && /chapel|church|classroom|school|theat|cinema|hall|lecture|auditorium/.test(plan.setting.type)) {
+    seats.forEach((o, i) => {
+      const [w, d] = footprint(o);
+      const col = i % 2 ? 1 : -1, row = Math.floor(i / 2);
+      const b: Box = { id: o.id, x: col * (w / 2 + 0.55), z: -0.55 + row * (d + 0.75), w, d };
+      boxes.push(b);
+      out.set(o.id, { id: o.id, x: b.x, y: 0, z: b.z, yaw: Math.PI, scale: o.scale, on: null });
+    });
+  }
+  // 6. Freestanding floor things: tables first (others relate to them), then the rest, by zone.
+  const floorers = plan.objects.filter((o) => ['floor', 'water'].includes(entryOf(o.kind).place) && !out.has(o.id) && o.relation !== 'on');
   floorers.sort((a, b) => Number(b.kind.includes('table')) - Number(a.kind.includes('table')));
   for (const o of floorers) {
     const e = entryOf(o.kind);
     const target = o.target ? out.get(o.target) : undefined;
     let x0: number, z0: number;
-    if (e.place === 'backdrop') {
-      // A house stands behind the place; by water it sits on the shore to one side, so the water stays open.
-      const byWater = plan.setting.water;
-      x0 = byWater ? -5.6 : 0; z0 = byWater ? -2.2 : backZ - e.fp[1] / 2 - 1.2;
-      out.set(o.id, { id: o.id, x: x0, y: 0, z: z0, yaw: byWater ? Math.PI / 2 : 0, scale: o.scale, on: null });
-      continue;
-    }
     if (e.place === 'water') { x0 = indoor ? 0 : 1.3; z0 = -1.1 - entryOf(o.kind).fp[1] * o.scale / 2; }
     else if (target && (o.relation === 'next_to' || o.relation === 'none')) {
       const t = byId.get(o.target!);
@@ -416,10 +457,16 @@ export function layout(plan: ScenePlan): Placement[] {
       const zone: Zone = tall ? (({ 'front-left': 'left', 'front-right': 'right', center: 'back' } as Partial<Record<Zone, Zone>>)[o.zone] ?? o.zone) : o.zone;
       [x0, z0] = ZONE_ANCHOR[zone];
       if (!indoor) { x0 *= 1.25; z0 *= 1.25; }
+      const side = (x: number) => (x === 0 ? (hashStr(o.id) % 2 ? 1 : -1) : Math.sign(x));
       if (tall && !indoor && /tree|palm|pine/.test(o.kind)) {
-        // Trees frame the place from its sides and back; by water they keep to the shore.
-        if (Math.abs(x0) < 3.0) x0 = (x0 === 0 ? (hashStr(o.id) % 2 ? 1 : -1) : Math.sign(x0)) * 3.4;
-        z0 = plan.setting.water ? -0.9 : Math.min(z0, -1.2);
+        // Trees frame the place from its sides and back, clear of the house; by water they keep to the shore (and
+        // to the open side, away from a house there).
+        const away = plan.setting.water && backdrops.length ? 1 : side(x0);
+        if (Math.abs(x0) < 3.6) x0 = away * (3.8 + (hashStr(o.id) % 3) * 0.5);
+        z0 = plan.setting.water ? -0.4 + (hashStr(o.id) % 4) * 0.35 : Math.min(z0, -1.6);
+      } else if (tall && !indoor && backdrops.length) {
+        // A swing, a lamp post, an umbrella: beside the house's front, never in front of its door.
+        if (Math.abs(x0) < 2.4) x0 = side(x0) * 2.6;
       }
     }
     const onWater = e.place === 'water' && !indoor;
@@ -428,10 +475,9 @@ export function layout(plan: ScenePlan): Placement[] {
     boxes.push(b);
     let yaw = onWater ? 0 : facingCenter(b.x, b.z);
     if (o.kind === 'chair' && target) yaw = Math.atan2(target.x - b.x, target.z - b.z);
-    if (e.place === 'edge') yaw = 0;
     out.set(o.id, { id: o.id, x: b.x, y: 0, z: b.z, yaw, scale: o.scale, on: null });
   }
-  // 5. Things that rest on something: on their target, else on the first table/counter/cabinet.
+  // 7. Things that rest on something: on their target, else on the first table/counter/cabinet.
   const surfaces = plan.objects.filter((o) => (entryOf(o.kind).surface ?? 0) > 0 && out.has(o.id));
   const stacked = new Map<string, number>();
   for (const o of plan.objects.filter((o) => !out.has(o.id))) {

@@ -9,6 +9,14 @@ export const xrStore = createXRStore({
   // Controllers point and select; hands pinch. No teleport: a memory is a place to stand in, not to run through.
   controller: { teleportPointer: false },
   hand: { teleportPointer: false },
+  // Only what a memory needs: the floor and hands. Room scanning (planes, the room mesh, anchors, hit tests) would
+  // make the Quest ask for spatial data or a space setup before the visit can begin, and nothing here uses it.
+  anchors: false,
+  planeDetection: false,
+  meshDetection: false,
+  hitTest: false,
+  domOverlay: false,
+  depthSensing: false,
   offerSession: false,
   enterGrantedSession: true,
   frameRate: 'high',
