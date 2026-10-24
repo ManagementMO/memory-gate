@@ -1,4 +1,18 @@
-# Heirloom / Memory Gate — review handoff
+# Heirloom / Memory Gate — current branch handoff
+
+The requested branch is **codex/calhacks-apify-spacetime-meta**. Start with [the current runbook](docs/CALHACKS_RUNBOOK.md), which includes installation, ports, the two-minute demo, tests and explicit remaining limits. `npm run local:up` starts the local stack on Windows/macOS/Linux; `npm run demo:links` prints private participant URLs from the prepared room.
+
+The new Memories tab supports source-linked handoffs, recipient acceptance, a persistent collection, original text/audio under current permission, and revocation. SpacetimeDB is authoritative for the new exchange and shared archive board. The custom Apify Actor retrieves actual public institutional records with dates, rights and uncertainty; a person explicitly selects each shared reference. The existing Meta IWSDK garden and shared scene-editing flow remain.
+
+Current verification: **71 backend tests, 4 renderer tests, 6 Actor tests, 5 real database/gateway tests, 3 new browser scenarios, and all 24 offline legacy browser scenarios passed**. Three paid-provider scenarios were deliberately skipped. All four TypeScript checks and both frontend builds passed. Accepted stories and references survived actual database and gateway process restarts. Deleting a room erased its SpacetimeDB exchange records. A clean Actor dependency install was checked separately.
+
+Remaining: no Apify token was found in the supplied notes, so no cloud Actor deployment/run is claimed. The current Windows native emulator browser failed to launch; physical Quest and comfort/performance testing are still open. The production 3D browser correction/confirmation/undo test passed after using the Windows D3D11 graphics backend. Existing capture and scene state remain in Convex, so confirm the SpacetimeDB prize's core-backend criterion with the sponsor. Preserve this project's pre-event history when discussing eligibility.
+
+No supplied provider keys were copied into source, no new paid world jobs were made, and no public app deployment or event submission was performed. [Current evidence](evidence/calhacks-exchange/README.md) is separate from the historical review below.
+
+---
+
+# Earlier macOS review — historical evidence, not current running state
 
 ## Open now
 

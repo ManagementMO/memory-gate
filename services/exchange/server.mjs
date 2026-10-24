@@ -8,6 +8,7 @@ import { runArchive } from './archive-runner.mjs';
 
 const token = process.env.SPACETIME_TOKEN;
 if (!token) throw new Error('SPACETIME_TOKEN is required by the private exchange gateway.');
+if (!process.env.WORKER_SECRET) throw new Error('WORKER_SECRET is required for room-deletion reconciliation. Run npm run env:push for the local backend.');
 const convex = new ConvexHttpClient(process.env.CONVEX_URL ?? 'http://127.0.0.1:3210');
 const contextRef = makeFunctionReference('exchange:context');
 const sourceRef = makeFunctionReference('exchange:source');

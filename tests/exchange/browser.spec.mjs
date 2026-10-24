@@ -4,7 +4,7 @@ import { backend, ref, makeRoom } from './helpers.mjs';
 
 async function enter(browser, auth, name, role, viewport) {
   const context = await browser.newContext({ viewport });
-  await context.addInitScript(session => { if (location.protocol === 'http:') localStorage.setItem('memorygate.session.v1', JSON.stringify(session)); }, { ...auth, name, role, sample: true });
+  await context.addInitScript(session => { if (['http:', 'https:'].includes(location.protocol)) localStorage.setItem('memorygate.session.v1', JSON.stringify(session)); }, { ...auth, name, role, sample: true });
   const page = await context.newPage();
   await page.goto('/#/memories');
   await expect(page.getByText('Shared collection connected')).toBeVisible();

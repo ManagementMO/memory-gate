@@ -20,6 +20,8 @@ export default defineConfig({
   use: {
     baseURL: process.env.PHONE_URL ?? 'http://127.0.0.1:5173',
     browserName: 'chromium',
+    // Match IWSDK's Windows ANGLE backend; software rendering stalls the garden's animations.
+    ...(process.platform === 'win32' ? { launchOptions: { args: ['--use-gl=angle', '--use-angle=d3d11', '--enable-webgl'] } } : {}),
     // The bundled Chromium (revision 1248) is installed; set E2E_CHANNEL=chrome to use the system Chrome instead.
     ...(process.env.E2E_CHANNEL ? { channel: process.env.E2E_CHANNEL } : {}),
     trace: 'retain-on-failure',

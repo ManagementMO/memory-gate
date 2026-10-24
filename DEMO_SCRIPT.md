@@ -1,5 +1,7 @@
 # Two-minute demonstration
 
+For the **current Apify + SpacetimeDB + Meta branch**, use [the revised two-minute sequence](docs/CALHACKS_RUNBOOK.md#two-minute-demonstration): story → pass → recipient accepts → original words → actual archive search → chosen shared reference → revoke. The sequence below is the earlier scene-editing demonstration, retained as a separate optional flow.
+
 The current scripted experience is an original illustrative courtyard with separate original props. Generated backdrops are cached for review; the courtyard generation has visible floor stretching in wide views, so the cleaner illustrative set is selected for the main demo. The source recording in automated evidence is synthesized. Use a consenting relative's actual words only after their language/content review.
 
 Prepare with scripts/start-all.sh and npm run demo:links. Put the spectator view and storyteller phone side by side. Open the family headset link on the Quest and complete docs/QUEST_CHECKLIST.md first. Keep the illustrative courtyard available on Photo; do not wait for a new world generation during judging.

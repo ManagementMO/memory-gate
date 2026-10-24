@@ -1,10 +1,12 @@
 # Memory Gate / Heirloom
 
+**Current branch:** [Cal Hacks runbook](docs/CALHACKS_RUNBOOK.md). The new **Memories** tab lets two participants pass, accept and reopen original stories. A real SpacetimeDB backend owns that exchange and its shared board; a custom Apify Actor supplies public historical references for people to review and choose. The existing Meta IWSDK garden remains available. Start locally on Windows/macOS/Linux with `npm run local:up` after the dependencies and SpacetimeDB CLI are installed. See [current evidence and limits](evidence/calhacks-exchange/README.md).
+
 An adult living with younger-onset Alzheimer’s shares a story with someone close to them. Their words can suggest objects in a shared place, on a screen or an optional Quest 3. Family members review visual suggestions together. Original recordings, translations and contributor attribution stay with the story. This is a reminiscence and conversation prototype; clinical benefit has not been established.
 
 The experience now has a shaded illustrative garden, more natural original props, an eye-level stable camera, an embedded shared view, and an optional simpler storyteller screen. A spoken correction still creates a gold placement preview; confirmation moves and turns the bench in both views. Selecting it replays the original sentence. Undo restores its previous placement and source. Uncertain recall stays as conversation, rather than becoming scene evidence. See [the current handoff](MORNING_REPORT.md) for verification and remaining gates.
 
-This is the reviewed local Heirloom foundation, not an untested overnight completion claim. The defining shared correction, real speech/source replay, generated scenery and native emulator interactions have evidence. Physical Quest 3 and real-family validation remain open.
+The prior review established the shared-correction foundation and recorded earlier speech, scenery and emulator evidence. The current branch separately verifies the new exchange and archive flows. Physical Quest 3 and real-family validation remain open.
 
 Start with [MORNING_REPORT.md](MORNING_REPORT.md), [the audit](docs/AUDIT_AND_IMPROVEMENTS.md), [plan alignment](docs/PLAN_ALIGNMENT.md) and [the two-minute demo](DEMO_SCRIPT.md).
 
@@ -12,7 +14,7 @@ This is a pre-event practice project with subsequent review improvements. The in
 
 ## Fresh clone setup
 
-Use Node 22.12+ in the 22.x line, or Node 24. This review used Node 22.22.3. No provider keys or GPU worker are required for the illustrative experience.
+Use Node 24 (the current Windows verification used 24.19) and the SpacetimeDB 2.13.0 CLI on PATH. No provider keys or GPU worker are required for the illustrative experience or local Apify Actor.
 
 ~~~sh
 git clone https://github.com/ManagementMO/memory-gate.git
@@ -20,11 +22,12 @@ cd memory-gate
 npm ci
 npm --prefix apps/headset ci
 npm --prefix apps/phone ci
+npm --prefix actors/historical-memory-atlas ci
+npm --prefix spacetimedb ci
 npx playwright install chromium
-scripts/start-all.sh
-npm run demo:room
+npm run local:up
 npm run demo:links -- --illustrative
-npm run verify
+npm test
 ~~~
 
 Startup creates the local backend and private worker/operator configuration, seeds original courtyard assets, and leaves provider flags off until you explicitly enable them. The repository includes our original models, the permitted sample photos and the earlier optional sample pack. `npm run seed -- --mocks` loads that alternative library. Its generated and third-party assets have separate terms and unresolved rights recorded in [fixtures/LICENSES.md](fixtures/LICENSES.md); inclusion does not establish commercial redistribution rights. The default courtyard uses our original models.
@@ -32,13 +35,13 @@ Startup creates the local backend and private worker/operator configuration, see
 ## Open the prepared experience
 
 ~~~sh
-scripts/start-all.sh
+npm run local:up
 npm run demo:links
 ~~~
 
 The links command reopens the prepared courtyard without making a room or spending credits. It prints a laptop phone link, a phone/Quest Wi-Fi link and a read-only spectator link. Family links contain the room key; share them only with participants.
 
-The phone microphone uses HTTPS port 5174. Accept the local certificate and choose Enable microphone. The Quest production build uses HTTPS port 4173. The keyboard-only phone remains at HTTP port 5173. Devices must be on the same Wi-Fi and the Mac must stay awake.
+The phone microphone uses HTTPS port 5174. Accept the local certificate and choose Enable microphone. The Quest production build uses HTTPS port 4173. The keyboard-only phone remains at HTTP port 5173. Devices must be on the same Wi-Fi and the computer must stay awake.
 
 For a fresh illustrative room:
 
