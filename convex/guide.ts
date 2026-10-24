@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { action } from './_generated/server';
 import { internal } from './_generated/api';
 import { GUIDE_INTENTS, GUIDE_SYSTEM, type GuideInput, type GuideIntent, type GuideReply } from '../packages/shared/src/guide';
-import { structured } from './lib/claude';
+import { guideModel, structured } from './lib/claude';
 
 const Out = z.object({
   reply: z.string(),
@@ -36,7 +36,7 @@ export const respond = action({
   handler: async (ctx, { code, token, input }): Promise<GuideReply | null> => {
     const gate = await ctx.runQuery(internal.budget.gate, { code, token });
     if (!gate.ok) return null;
-    const out = await structured(ctx, { system: GUIDE_SYSTEM, content: render(input as GuideInput), schema: Out, maxTokens: 2500, effort: 'low' });
+    const out = await structured(ctx, { system: GUIDE_SYSTEM, content: render(input as GuideInput), schema: Out, maxTokens: 2500, effort: 'low', model: guideModel() });
     if (!out) return null;
     return { reply: cap(out.reply, 220), intent: out.intent, place: cap(out.place, 48) || null };
   },

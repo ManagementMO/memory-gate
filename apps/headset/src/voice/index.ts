@@ -296,12 +296,30 @@ export function createVoice(opts: VoiceOptions): Voice {
     if (mic) {
       mic.onEnded = () => {
         micOk = false;
-        report('The microphone stopped. Reload the page to use voice again; typing still works.');
         refreshState();
+        void recoverMic();
       };
     }
     if (!mint) { degradedReported = true; report(mintMessage(mintError)); }
   })();
+  // A headset going to sleep takes the microphone away. When the page is visible again, ask for it again (the
+  // permission is already granted, so no prompt); only after two minutes without it say that a reload is needed.
+  let recovering = false;
+  async function recoverMic(): Promise<void> {
+    if (recovering || disposed || !mic) return;
+    recovering = true;
+    const deadline = Date.now() + 120_000;
+    while (!disposed && Date.now() < deadline) {
+      if (document.visibilityState === 'visible') {
+        if (ctx && ctx.state !== 'running') await ctx.resume().catch(() => {});
+        if (await mic.reopen()) { micOk = true; recovering = false; refreshState(); return; }
+      }
+      await sleep(1500);
+    }
+    recovering = false;
+    if (!disposed) report('The microphone stopped. Reload the page to use voice again; typing still works.');
+  }
+
   const ready: Promise<void> = (async () => {
     await basics;
     if (!sttUsable()) return; // voice flags off, no consent or no mic: mock mode

@@ -121,6 +121,29 @@ export class Mic {
     }
   }
 
+  /**
+   * After the device took the microphone away (a headset going to sleep, then waking): ask for it again and plug it
+   * into the same graph. Resolves false while it can't be had yet (try again later).
+   */
+  async reopen(): Promise<boolean> {
+    if (!this.node) return false;
+    if (this.ok) return true;
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+    } catch { return false; }
+    try { this.source?.disconnect(); } catch { /* already gone */ }
+    for (const t of this.stream?.getTracks() ?? []) t.stop();
+    const source = this.ctx.createMediaStreamSource(stream);
+    source.connect(this.node);
+    source.connect(this.analyser);
+    for (const track of stream.getAudioTracks()) track.addEventListener('ended', () => this.onEnded?.(), { once: true });
+    this.stream = stream; this.source = source;
+    return true;
+  }
+
   /** Starts capturing a turn; frames arrive at onFrame until end(id) resolves. */
   begin(onFrame: (pcm: Int16Array<ArrayBuffer>) => void, preroll: boolean): number {
     const id = this.nextId++;

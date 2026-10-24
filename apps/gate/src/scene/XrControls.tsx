@@ -62,7 +62,7 @@ export function XrControls() {
     camera.getWorldQuaternion(_q);
     const yaw = _e.setFromQuaternion(_q, 'YXZ').y;
     // Below the captions, a little closer: within reach of a pointer, out of the way of the view.
-    _target.set(_head.x - Math.sin(yaw) * 1.05, _head.y - 0.62, _head.z - Math.cos(yaw) * 1.05);
+    _target.set(_head.x - Math.sin(yaw) * 1.05, _head.y - 0.68, _head.z - Math.cos(yaw) * 1.05);
     if (!placed.current) { g.position.copy(_target); placed.current = true; }
     g.position.lerp(_target, 1 - Math.exp(-dt * 1.2));
     g.lookAt(_head.x, g.position.y + 0.25, _head.z);

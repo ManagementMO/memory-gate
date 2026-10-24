@@ -358,8 +358,20 @@ class Flow {
     this.listen(true);
   }
 
+  /** From the start page: the album of earlier visits on this device, before any conversation begins. */
+  openAlbum(): void {
+    const g = useGate.getState();
+    if (g.stage !== 'portal') return;
+    music.start();
+    music.setEnabled(g.musicOn);
+    music.setMode('album');
+    g.set({ stage: 'album' });
+  }
+
   /** From the album: back to the gate for another memory (the session continues). */
   again(): void {
+    // Opened from the start page: nothing has begun yet, so this is the first visit.
+    if (!this.begun) { useGate.getState().set({ stage: 'portal' }); void this.begin(); return; }
     this.leaving = false;
     this.history = [];
     this.turnsInPhase = 0;

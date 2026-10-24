@@ -53,11 +53,11 @@ export function CompanionRig() {
       targetScale = 1.0;
       rate = 4;
     } else if (gl.xr.isPresenting && day) {
-      // Beside and a little below the line of sight, about a metre ahead.
+      // Beside and a little below the line of sight, about a metre ahead: to the left of the captions, clear of them.
       camera.getWorldPosition(_head);
       camera.getWorldQuaternion(_q);
       const y = _e.setFromQuaternion(_q, 'YXZ').y;
-      _target.set(_head.x - Math.sin(y) * 1.05 - Math.cos(y) * 0.45, _head.y - 0.22, _head.z - Math.cos(y) * 1.05 + Math.sin(y) * 0.45);
+      _target.set(_head.x - Math.sin(y) * 1.05 - Math.cos(y) * 0.62, _head.y - 0.15, _head.z - Math.cos(y) * 1.05 + Math.sin(y) * 0.62);
       targetScale = 0.8;
       rate = 1.1;
     } else if (s.stage === 'entering') {

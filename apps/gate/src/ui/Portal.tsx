@@ -33,6 +33,7 @@ export function Portal() {
         {guestOf ? 'Join' : 'Begin'}
       </button>
       <p className="fine">It listens while you talk and keeps your words, voice and photos with your memories. Rest or stop any time.</p>
+      {!guestOf && <button type="button" className="quiet-link" onClick={() => flow.openAlbum()} data-testid="open-album">Your moments</button>}
     </section>
   );
 }

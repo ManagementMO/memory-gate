@@ -22,6 +22,7 @@ function Captions3D() {
   const said = useGate((s) => s.companionLine);
   const heard = useGate((s) => s.heardLine);
   const stage = useGate((s) => s.stage);
+  const thinking = useGate((s) => s.mood === 'thinking');
   const group = useRef<THREE.Group>(null);
   const plate = useRef<THREE.MeshBasicMaterial>(null);
   const camera = useThree((s) => s.camera);
@@ -34,7 +35,7 @@ function Captions3D() {
     camera.getWorldQuaternion(_q);
     const yaw = _e.setFromQuaternion(_q, 'YXZ').y;
     // Below the line of sight, about a metre and a quarter ahead, following lazily (never head-locked).
-    _target.set(_head.x - Math.sin(yaw) * 1.25, _head.y - 0.38, _head.z - Math.cos(yaw) * 1.25);
+    _target.set(_head.x - Math.sin(yaw) * 1.25, _head.y - 0.43, _head.z - Math.cos(yaw) * 1.25);
     if (!placed.current) { g.position.copy(_target); placed.current = true; }
     g.position.lerp(_target, 1 - Math.exp(-dt * 1.4));
     g.lookAt(_head.x, g.position.y, _head.z);
@@ -45,17 +46,17 @@ function Captions3D() {
   return (
     <group ref={group}>
       <mesh position={[0, -0.06, -0.01]} renderOrder={1990}>
-        <planeGeometry args={[1.05, 0.3]} />
+        <planeGeometry args={[0.86, 0.3]} />
         <meshBasicMaterial ref={plate} color={day ? '#ffffff' : '#0b0c1c'} transparent opacity={0} depthTest={false} depthWrite={false} toneMapped={false} />
       </mesh>
       {said && (
-        <Text font={fontUrl} fontSize={0.042} lineHeight={1.25} maxWidth={0.95} anchorX="center" anchorY="top" textAlign="center" position={[0, 0.06, 0]} color={ink} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>
+        <Text font={fontUrl} fontSize={0.04} lineHeight={1.25} maxWidth={0.78} anchorX="center" anchorY="top" textAlign="center" position={[0, 0.06, 0]} color={ink} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>
           {said.text}
         </Text>
       )}
       {heard && (
-        <Text font={fontUrl} fontSize={0.026} maxWidth={0.9} anchorX="center" anchorY="top" textAlign="center" position={[0, -0.13, 0]} color={day ? '#4a4864' : '#c9c6e6'} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>
-          {`“${heard.text}”`}
+        <Text font={fontUrl} fontSize={0.026} maxWidth={0.78} anchorX="center" anchorY="top" textAlign="center" position={[0, -0.13, 0]} color={day ? '#4a4864' : '#c9c6e6'} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>
+          {`“${heard.text}”${!heard.interim && thinking ? '   …' : ''}`}
         </Text>
       )}
     </group>
