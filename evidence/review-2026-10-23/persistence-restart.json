@@ -1,0 +1,33 @@
+{
+  "testedAt": "2026-10-24T02:08:45.650Z",
+  "restarted": "Checkout-owned Convex CLI and local database process; restarted detached",
+  "canonicalStatePreserved": true,
+  "rooms": [
+    {
+      "code": "MWWFUG",
+      "revision": 30,
+      "objects": 4,
+      "splatId": null
+    },
+    {
+      "code": "6N9S4X",
+      "revision": 30,
+      "objects": 4,
+      "splatId": "kd73m0zvtedsxp5atesfpjxkjx8gw8yt"
+    }
+  ],
+  "assets": [
+    {
+      "room": "6N9S4X",
+      "variant": "full",
+      "status": 200,
+      "bytes": 7694401
+    },
+    {
+      "room": "6N9S4X",
+      "variant": "lite",
+      "status": 200,
+      "bytes": 1223863
+    }
+  ]
+}

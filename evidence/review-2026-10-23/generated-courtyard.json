@@ -1,0 +1,217 @@
+{
+  "testedAt": "2026-10-24T01:59:58.846Z",
+  "room": "6N9S4X",
+  "model": "marble-1.1",
+  "source": "Original procedural courtyard rendered without interactive props; fictional, not family material",
+  "full": {
+    "provider": "worldlabs",
+    "loadMs": 111,
+    "fps": 60,
+    "tickError": null,
+    "placements": [
+      {
+        "id": "k179z4dht2pgffcxx9snh5qq6s8gwz3w",
+        "label": "bench",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          -2,
+          0,
+          -3.3
+        ],
+        "yaw": 0.3,
+        "interaction": null
+      },
+      {
+        "id": "k172d93xbtfds6dam018hqar6x8gwfca",
+        "label": "tree",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          2,
+          0,
+          -5.6
+        ],
+        "yaw": 0,
+        "interaction": null
+      },
+      {
+        "id": "k17175nf3kw6tbrzs0rx4b1kc58gxxrg",
+        "label": "gate",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          0,
+          0,
+          -8.5
+        ],
+        "yaw": 0,
+        "interaction": {
+          "gateOpen": false,
+          "gateAngle": 0
+        }
+      },
+      {
+        "id": "k17b5tdr2azzvrfxz2st4rff518gw2av",
+        "label": "photograph",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          -0.75,
+          1.0499999523162842,
+          -2.4000000953674316
+        ],
+        "yaw": 0,
+        "interaction": null
+      }
+    ]
+  },
+  "fallback": {
+    "source": "illustrative-procedural",
+    "splatLoaded": false,
+    "placements": [
+      {
+        "id": "k179z4dht2pgffcxx9snh5qq6s8gwz3w",
+        "label": "bench",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          -2,
+          0,
+          -3.3
+        ],
+        "yaw": 0.3,
+        "interaction": null
+      },
+      {
+        "id": "k172d93xbtfds6dam018hqar6x8gwfca",
+        "label": "tree",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          2,
+          0,
+          -5.6
+        ],
+        "yaw": 0,
+        "interaction": null
+      },
+      {
+        "id": "k17175nf3kw6tbrzs0rx4b1kc58gxxrg",
+        "label": "gate",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          0,
+          0,
+          -8.5
+        ],
+        "yaw": 0,
+        "interaction": {
+          "gateOpen": false,
+          "gateAngle": 0
+        }
+      },
+      {
+        "id": "k17b5tdr2azzvrfxz2st4rff518gw2av",
+        "label": "photograph",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          -0.75,
+          1.0499999523162842,
+          -2.4000000953674316
+        ],
+        "yaw": 0,
+        "interaction": null
+      }
+    ]
+  },
+  "lite": {
+    "provider": "worldlabs",
+    "lite": true,
+    "loadMs": 20,
+    "fps": 60,
+    "tickError": null,
+    "placements": [
+      {
+        "id": "k179z4dht2pgffcxx9snh5qq6s8gwz3w",
+        "label": "bench",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          -2,
+          0,
+          -3.3
+        ],
+        "yaw": 0.3,
+        "interaction": null
+      },
+      {
+        "id": "k172d93xbtfds6dam018hqar6x8gwfca",
+        "label": "tree",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          2,
+          0,
+          -5.6
+        ],
+        "yaw": 0,
+        "interaction": null
+      },
+      {
+        "id": "k17175nf3kw6tbrzs0rx4b1kc58gxxrg",
+        "label": "gate",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          0,
+          0,
+          -8.5
+        ],
+        "yaw": 0,
+        "interaction": {
+          "gateOpen": false,
+          "gateAngle": 0
+        }
+      },
+      {
+        "id": "k17b5tdr2azzvrfxz2st4rff518gw2av",
+        "label": "photograph",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          -0.75,
+          1.0499999523162842,
+          -2.4000000953674316
+        ],
+        "yaw": 0,
+        "interaction": null
+      }
+    ]
+  },
+  "transform": {
+    "floorY": -0.5670476803780615,
+    "scale": 1.0028423,
+    "liteNumSplats": 100000
+  },
+  "jobs": [
+    {
+      "artifactHash": "58eba9a240e2777a8ebb29a59ee7d519adce5d39dbd164c1366fa66d97453222",
+      "attempts": 1,
+      "canRecover": false,
+      "createdAt": 1792806755054,
+      "id": "jn79k68d3er28hxndsry7mn9358gxgp5",
+      "kind": "world",
+      "lastError": null,
+      "model": "marble-1.1",
+      "ms": 321418,
+      "operationId": "c308075e-ab02-4181-aba8-8a496c6c2434",
+      "provider": "worldlabs",
+      "status": "done"
+    }
+  ],
+  "pageErrors": [],
+  "physicalQuest": false
+}

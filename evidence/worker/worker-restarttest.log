@@ -1,0 +1,42 @@
+[worker 03:45:33] starting convex=http://127.0.0.1:3210 budget_gpu_s=1500.0 prewarm=False
+✓ Initialized. View run at 
+https://modal.com/apps/<workspace>/main/ap-ji4RUQ4QYUG3tvvc7mokqQ
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/kyaa/memory-gate-prep/practice/memory-gate/worker/sharp_worker.py
+└── ✓ Created Function Sharp.*.
+[worker 03:45:41] claimed job=jn7ev93fz9n08xba8r87m4p5zx8gtbpy splat=kd7c180fcgjptp15be6d0y20d58gt0ag
+[worker 03:45:41] FAILED job=jn7ev93fz9n08xba8r87m4p5zx8gtbpy error=ConnectionError: simulated GPU failure (MEMGATE_SIMULATE_GPU_FAILURES)
+Traceback (most recent call last):
+  File "/Users/kyaa/memory-gate-prep/practice/memory-gate/worker/sharp_worker.py", line 265, in process
+    raise ConnectionError("simulated GPU failure (MEMGATE_SIMULATE_GPU_FAILURES)")
+ConnectionError: simulated GPU failure (MEMGATE_SIMULATE_GPU_FAILURES)
+[worker 03:45:42] claimed job=jn7cjkj1mhckxx4cw00wpndc9n8gtkne splat=kd7732wy69yc2bdycz6x62z2rx8gvxma
+[worker 03:45:42] FAILED job=jn7cjkj1mhckxx4cw00wpndc9n8gtkne error=ConnectionError: simulated GPU failure (MEMGATE_SIMULATE_GPU_FAILURES)
+Traceback (most recent call last):
+  File "/Users/kyaa/memory-gate-prep/practice/memory-gate/worker/sharp_worker.py", line 265, in process
+    raise ConnectionError("simulated GPU failure (MEMGATE_SIMULATE_GPU_FAILURES)")
+ConnectionError: simulated GPU failure (MEMGATE_SIMULATE_GPU_FAILURES)
+[worker 03:45:42] GPU calls failed twice in a row; restarting the Modal app
+Stopping app - local entrypoint completed.
+✓ App completed. View run at 
+https://modal.com/apps/<workspace>/main/ap-ji4RUQ4QYUG3tvvc7mokqQ
+[worker 03:45:42] restarting the Modal app in 10 s restarts=1
+✓ Initialized. View run at 
+https://modal.com/apps/<workspace>/main/ap-RYwKaesjQSuu5IaGVlYXBZ
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/kyaa/memory-gate-prep/practice/memory-gate/worker/sharp_worker.py
+└── ✓ Created Function Sharp.*.
+[worker 03:45:55] claimed job=jn7exdv4rxsrdrhewf0gzvyfd58gvx7p splat=kd74q4k57h02806b0q237538md8gv3v5
+[worker 03:45:55] FAILED job=jn7exdv4rxsrdrhewf0gzvyfd58gvx7p error=ConnectionError: simulated GPU failure (MEMGATE_SIMULATE_GPU_FAILURES)
+Traceback (most recent call last):
+  File "/Users/kyaa/memory-gate-prep/practice/memory-gate/worker/sharp_worker.py", line 265, in process
+    raise ConnectionError("simulated GPU failure (MEMGATE_SIMULATE_GPU_FAILURES)")
+ConnectionError: simulated GPU failure (MEMGATE_SIMULATE_GPU_FAILURES)
+[worker 03:45:55] max jobs reached; exiting
+Stopping app - local entrypoint completed.
+✓ App completed. View run at 
+https://modal.com/apps/<workspace>/main/ap-RYwKaesjQSuu5IaGVlYXBZ
+[worker 03:45:55] stopped jobs=3 restarts=1 gpu_estimate_s=0 est_usd=0.0 wall_s=21.9
+{"summary": {"jobs": 3, "restarts": 1, "gpuEstimateS": 0, "estUsd": 0.0, "containers": 0, "sessions": []}}

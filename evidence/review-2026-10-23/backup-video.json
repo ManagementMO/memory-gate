@@ -1,0 +1,7 @@
+{
+  "file": "evidence/review-2026-10-23/demo-correction.webm",
+  "bytes": 3317725,
+  "sha256": "216265844986ad2cc16551560378f79d1be5ef453dae33b02620c339ad22ae08",
+  "kind": "Silent real-browser capture of the live STT correction/replay flow; synthesized microphone fixture",
+  "modifiedAt": "2026-10-24T03:06:56.377413+00:00"
+}

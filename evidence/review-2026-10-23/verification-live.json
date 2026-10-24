@@ -1,0 +1,11 @@
+{
+  "testedAt": "2026-10-24T03:11:05.519609+00:00",
+  "command": "E2E_RECORD=1 npm run verify:live",
+  "pass": true,
+  "backend": 56,
+  "renderer": 4,
+  "browser": 24,
+  "groups": 9,
+  "physicalQuest": false,
+  "sourceAudio": "Synthesized microphone fixtures through live providers"
+}

@@ -1,0 +1,647 @@
+{
+  "kind": "voice-check",
+  "at": "2026-10-24T00:54:00.812Z",
+  "evidenceLevel": "automated test against live providers (Chrome fake microphone, local Convex backend); not a headset result",
+  "backend": "127.0.0.1:3210",
+  "fixture": {
+    "sentence": "There was a piano under the window.",
+    "wav": "evidence/raw/voice-check-mic-16k.wav",
+    "seconds": 4.92,
+    "speechSec": 2.32,
+    "leadSec": 1,
+    "voice": "Harlow (Cartesia stock voice)"
+  },
+  "chrome": "155.0.8059.86",
+  "ready": {
+    "readyMs": 522,
+    "mode": "live",
+    "mintMs": [
+      122
+    ],
+    "socketOpenMs": [
+      204
+    ],
+    "spare": "open",
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.038,
+      "state": "running"
+    }
+  },
+  "calibration": {
+    "onsetPhase": 1.201,
+    "detected": true,
+    "nominalLeadSec": 1,
+    "holdMs": 5626,
+    "micLevelMax": 1,
+    "transcript": "There was a piano under the window."
+  },
+  "firstTurnAudioFileId": "kg22bzttnqpc0qg9qrmmnnp4xx8gxxr5",
+  "turns": [
+    {
+      "transcript": "There was a piano under the window.",
+      "wer": 0,
+      "durationMs": 3581,
+      "audioFileId": "stored",
+      "holdMs": 3372,
+      "stopMs": 188,
+      "id": 2,
+      "audioSec": 3.58,
+      "warmSocket": true,
+      "releaseToFlushMs": 141,
+      "releaseToDoneMs": 174,
+      "releaseToTranscriptMs": 174,
+      "uploadMs": 14,
+      "releaseToResultMs": 188,
+      "chars": 35,
+      "replayed": false,
+      "error": null
+    },
+    {
+      "transcript": "There was a piano under the window.",
+      "wer": 0,
+      "durationMs": 3571,
+      "audioFileId": "stored",
+      "holdMs": 3371,
+      "stopMs": 137,
+      "id": 3,
+      "audioSec": 3.57,
+      "warmSocket": true,
+      "releaseToFlushMs": 91,
+      "releaseToDoneMs": 129,
+      "releaseToTranscriptMs": 129,
+      "uploadMs": 8,
+      "releaseToResultMs": 137,
+      "chars": 35,
+      "replayed": false,
+      "error": null
+    }
+  ],
+  "extraction": {
+    "status": "done",
+    "intent": "propose_object",
+    "aiMode": "live",
+    "aiMs": 2212,
+    "waitedMs": 2287,
+    "sayBack": "A piano… under the window. Shall I keep it there?",
+    "reply": "A piano under the window sounds lovely. Who used to play it, and what do you remember hearing?",
+    "dropped": [],
+    "object": {
+      "label": "piano",
+      "status": "ghost",
+      "model": "ready",
+      "where": "under the window",
+      "quote": "a piano under the window"
+    },
+    "clip": {
+      "bytes": 114646,
+      "sampleRate": 16000,
+      "seconds": 3.58
+    }
+  },
+  "speech": [
+    {
+      "ms": 10484,
+      "maxLevel": 0.882,
+      "chars": 144,
+      "mode": "tts",
+      "language": null,
+      "firstByteMs": 186,
+      "firstAudioMs": 236,
+      "fetchMs": 1095,
+      "playedMs": 10483,
+      "audioSec": 10.237,
+      "underruns": 0,
+      "cancelled": false,
+      "error": null
+    },
+    {
+      "ms": 1838,
+      "maxLevel": 0.863,
+      "chars": 27,
+      "mode": "tts",
+      "language": null,
+      "firstByteMs": 101,
+      "firstAudioMs": 151,
+      "fetchMs": 258,
+      "playedMs": 1837,
+      "audioSec": 1.68,
+      "underruns": 0,
+      "cancelled": false,
+      "error": null
+    },
+    {
+      "ms": 2810,
+      "maxLevel": 0.852,
+      "chars": 33,
+      "mode": "tts",
+      "language": null,
+      "firstByteMs": 837,
+      "firstAudioMs": 887,
+      "fetchMs": 1174,
+      "playedMs": 2810,
+      "audioSec": 1.92,
+      "underruns": 0,
+      "cancelled": false,
+      "error": null
+    },
+    {
+      "ms": 1660,
+      "maxLevel": 0.772,
+      "chars": 15,
+      "mode": "tts",
+      "language": null,
+      "firstByteMs": 244,
+      "firstAudioMs": 294,
+      "fetchMs": 359,
+      "playedMs": 1660,
+      "audioSec": 1.36,
+      "underruns": 0,
+      "cancelled": false,
+      "error": null
+    },
+    {
+      "ms": 2935,
+      "maxLevel": 0.909,
+      "chars": 46,
+      "mode": "tts",
+      "language": "es",
+      "firstByteMs": 88,
+      "firstAudioMs": 138,
+      "fetchMs": 356,
+      "playedMs": 2935,
+      "audioSec": 2.799,
+      "underruns": 0,
+      "cancelled": false,
+      "error": null
+    }
+  ],
+  "reconnect": {
+    "idleDrop": {
+      "reconnectMs": 1220,
+      "spare": "open",
+      "drops": 1
+    },
+    "afterDropTurn": {
+      "id": 7,
+      "audioSec": 3.57,
+      "warmSocket": true,
+      "releaseToFlushMs": 108,
+      "releaseToDoneMs": 144,
+      "releaseToTranscriptMs": 144,
+      "uploadMs": 8,
+      "releaseToResultMs": 152,
+      "chars": 35,
+      "replayed": false,
+      "error": null
+    },
+    "midTurnDrop": {
+      "id": 8,
+      "audioSec": 3.58,
+      "warmSocket": true,
+      "releaseToFlushMs": 2161,
+      "releaseToDoneMs": 2388,
+      "releaseToTranscriptMs": 2388,
+      "uploadMs": 10,
+      "releaseToResultMs": 2398,
+      "chars": 35,
+      "replayed": true,
+      "error": null
+    }
+  },
+  "mock": {
+    "mode": "mock",
+    "r": {
+      "transcript": "",
+      "durationMs": 0,
+      "audioFileId": null
+    },
+    "pttMs": 0,
+    "speakMs": 1203,
+    "chars": 20,
+    "errors": [
+      "Voice needs permission first. On the phone, turn on voice in the room’s permissions."
+    ],
+    "last": {
+      "chars": 20,
+      "mode": "captions",
+      "language": null,
+      "firstByteMs": null,
+      "firstAudioMs": null,
+      "fetchMs": null,
+      "playedMs": 1203,
+      "audioSec": 0,
+      "underruns": 0,
+      "cancelled": false,
+      "error": null
+    }
+  },
+  "latency": {
+    "releaseToFinalTranscriptMs": {
+      "n": 6,
+      "p50": 153,
+      "p90": 1523,
+      "max": 1523
+    },
+    "releaseToFlushDoneMs": {
+      "n": 6,
+      "p50": 122,
+      "p90": 1477,
+      "max": 1477
+    },
+    "releaseToDoneMs": {
+      "n": 6,
+      "p50": 153,
+      "p90": 1523,
+      "max": 1523
+    },
+    "releaseToStopResolvedWithUploadMs": {
+      "n": 2,
+      "p50": 188,
+      "p90": 188,
+      "max": 188
+    },
+    "clipUploadMs": {
+      "n": 2,
+      "p50": 14,
+      "p90": 14,
+      "max": 14
+    },
+    "speakToFirstAudioMs": {
+      "n": 6,
+      "p50": 238,
+      "p90": 887,
+      "max": 887
+    },
+    "ttsFirstByteMs": {
+      "n": 6,
+      "p50": 188,
+      "p90": 837,
+      "max": 837
+    },
+    "ttsTotalFetchMs": {
+      "n": 6,
+      "p50": 359,
+      "p90": 1174,
+      "max": 1174
+    },
+    "readyMs": 522,
+    "socketOpenMs": [
+      204
+    ],
+    "mintMs": [
+      122
+    ],
+    "note": "release = stop() called; first audio = first sample scheduled on the AudioContext (output device latency not included)"
+  },
+  "spend": {
+    "cartesiaSttSec": 32.7,
+    "cartesiaTtsChars": 685,
+    "claudeExtractions": 2,
+    "estUsd": 0.03
+  },
+  "rooms": {
+    "full": "748FGC",
+    "noRecording": "NAF63H",
+    "noConsent": "39VH9G"
+  },
+  "roomsDeleted": true,
+  "tests": [
+    {
+      "name": "garbled Spanish replies are repaired before speech; clean text is untouched",
+      "pass": true,
+      "repaired": [
+        "¿Qué recuerda de esa radio, quién la escuchaba?",
+        "Claro, lo quitamos. ¿Qué otra cosa recuerda en esa habitación?",
+        "¿Qué canciones tocaba tu hermana?",
+        "There was a piano under the window."
+      ]
+    },
+    {
+      "name": "backend mints a short-lived Cartesia token (no key in the browser)",
+      "pass": true,
+      "nodeMintMs": 328,
+      "ttlSec": 600,
+      "keyterms": [
+        "Wilhelmina"
+      ],
+      "ttsModel": "sonic-3.6-2026-08-27"
+    },
+    {
+      "name": "ready resolves in live mode with the socket pre-opened",
+      "pass": true,
+      "readyMs": 522,
+      "mode": "live",
+      "mintMs": [
+        122
+      ],
+      "socketOpenMs": [
+        204
+      ],
+      "spare": "open",
+      "audio": {
+        "sampleRate": 48000,
+        "baseLatency": 0.005333333333333333,
+        "outputLatency": 0.038,
+        "state": "running"
+      }
+    },
+    {
+      "name": "mic level rises with speech while listening",
+      "pass": true,
+      "onsetPhase": 1.201,
+      "detected": true,
+      "nominalLeadSec": 1,
+      "holdMs": 5626,
+      "micLevelMax": 1,
+      "transcript": "There was a piano under the window."
+    },
+    {
+      "name": "STT transcript matches the spoken sentence (WER <= 0.15 on every aligned turn)",
+      "pass": true,
+      "transcripts": [
+        "There was a piano under the window.",
+        "There was a piano under the window."
+      ],
+      "wer": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "turns use the pre-opened socket",
+      "pass": true,
+      "warm": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "release -> final transcript is fast (p50 < 600 ms)",
+      "pass": true,
+      "releaseToTranscriptMs": [
+        174,
+        129
+      ],
+      "releaseToFlushMs": [
+        141,
+        91
+      ],
+      "releaseToDoneMs": [
+        174,
+        129
+      ]
+    },
+    {
+      "name": "recording consent: the clip is uploaded and returned as audioFileId",
+      "pass": true,
+      "uploadMs": [
+        14,
+        8
+      ]
+    },
+    {
+      "name": "utterances.add accepts the STT transcript and Claude proposes the piano (live)",
+      "pass": true,
+      "status": "done",
+      "intent": "propose_object",
+      "aiMode": "live",
+      "aiMs": 2212,
+      "waitedMs": 2287,
+      "sayBack": "A piano… under the window. Shall I keep it there?",
+      "reply": "A piano under the window sounds lovely. Who used to play it, and what do you remember hearing?",
+      "dropped": [],
+      "object": {
+        "label": "piano",
+        "status": "ghost",
+        "model": "ready",
+        "where": "under the window",
+        "quote": "a piano under the window"
+      },
+      "clip": {
+        "bytes": 114646,
+        "sampleRate": 16000,
+        "seconds": 3.58
+      }
+    },
+    {
+      "name": "the stored clip is a playable 16 kHz WAV of the turn",
+      "pass": true,
+      "clip": {
+        "bytes": 114646,
+        "sampleRate": 16000,
+        "seconds": 3.58
+      },
+      "durationMs": 3581
+    },
+    {
+      "name": "speak() plays Cartesia TTS and resolves after playback",
+      "pass": true,
+      "ms": [
+        10484,
+        1838,
+        2810,
+        1660,
+        2935
+      ],
+      "audioSec": [
+        10.237,
+        1.68,
+        1.92,
+        1.36,
+        2.799
+      ]
+    },
+    {
+      "name": "level() follows the speech output",
+      "pass": true,
+      "maxLevel": [
+        0.882,
+        0.863,
+        0.852,
+        0.772,
+        0.909
+      ]
+    },
+    {
+      "name": "speak() -> first audio p50 < 500 ms",
+      "pass": true,
+      "firstAudioMs": [
+        236,
+        151,
+        887,
+        294,
+        138
+      ],
+      "firstByteMs": [
+        186,
+        101,
+        837,
+        244,
+        88
+      ]
+    },
+    {
+      "name": "queued lines play in order without overlapping",
+      "pass": true,
+      "order": [
+        "a",
+        "b"
+      ],
+      "firstLineSec": 1.52,
+      "secondFirstAudioMs": 1707,
+      "secondPlayedMs": 4913
+    },
+    {
+      "name": "cancelSpeech stops speech within ~50 ms and drops the queued line and late chunks",
+      "pass": true,
+      "rmsBefore": 0.1463,
+      "resolveMs": 0,
+      "rmsAfter120ms": 0,
+      "lateMax": 0,
+      "longLine": {
+        "chars": 185,
+        "mode": "tts",
+        "language": null,
+        "firstByteMs": 139,
+        "firstAudioMs": 189,
+        "fetchMs": 1120,
+        "playedMs": 1540,
+        "audioSec": 11.2,
+        "underruns": 0,
+        "cancelled": true,
+        "error": null
+      },
+      "queuedLine": {
+        "chars": 35,
+        "mode": "tts",
+        "language": null,
+        "firstByteMs": 1243,
+        "firstAudioMs": 11379,
+        "fetchMs": 1498,
+        "playedMs": 1540,
+        "audioSec": 2.959,
+        "underruns": 0,
+        "cancelled": true,
+        "error": null
+      }
+    },
+    {
+      "name": "pressing push-to-talk stops speech; speak() during listening is dropped",
+      "pass": true,
+      "before": 0.11683743152483357,
+      "stateAfterStart": "listening",
+      "afterStart": 0,
+      "droppedMs": 0,
+      "transcriptChars": 0,
+      "final": "idle"
+    },
+    {
+      "name": "release-before-start: stop() awaits start(), returns, and the next turn still works",
+      "pass": true,
+      "raceTranscriptChars": 0,
+      "noStartMs": 0,
+      "nextTurn": "There was a piano under the window."
+    },
+    {
+      "name": "an idle socket that drops is reopened and the next turn works",
+      "pass": true,
+      "reconnectMs": 1220,
+      "spare": "open",
+      "drops": 1,
+      "transcript": "There was a piano under the window."
+    },
+    {
+      "name": "a socket lost mid-turn: the kept clip is replayed and the words still arrive",
+      "pass": true,
+      "transcript": "There was a piano under the window.",
+      "releaseToTranscriptMs": 2388
+    },
+    {
+      "name": "token refresh mints a new token; speech and STT keep working",
+      "pass": true,
+      "ok": true,
+      "refreshes": 1,
+      "tokenValidForSec": 600,
+      "spare": "open",
+      "mintMs": 236,
+      "ttsFirstAudioMs": 238,
+      "transcript": "There was a piano under the window."
+    },
+    {
+      "name": "a press before ready resolves still captures and transcribes the clip",
+      "pass": true,
+      "transcript": "There was a piano under the window.",
+      "firstTurn": {
+        "id": 1,
+        "audioSec": 5.63,
+        "warmSocket": false,
+        "releaseToFlushMs": 93,
+        "releaseToDoneMs": 131,
+        "releaseToTranscriptMs": 131,
+        "uploadMs": null,
+        "releaseToResultMs": 132,
+        "chars": 35,
+        "replayed": false,
+        "error": null
+      }
+    },
+    {
+      "name": "no voice_recording consent: audioFileId is null and nothing is uploaded",
+      "pass": true,
+      "transcript": "There was a piano under the window.",
+      "audioFileId": null
+    },
+    {
+      "name": "mock mode: empty transcript, ~60 ms per character captions, consent message",
+      "pass": true,
+      "mode": "mock",
+      "r": {
+        "transcript": "",
+        "durationMs": 0,
+        "audioFileId": null
+      },
+      "pttMs": 0,
+      "speakMs": 1203,
+      "chars": 20,
+      "errors": [
+        "Voice needs permission first. On the phone, turn on voice in the room’s permissions."
+      ],
+      "last": {
+        "chars": 20,
+        "mode": "captions",
+        "language": null,
+        "firstByteMs": null,
+        "firstAudioMs": null,
+        "fetchMs": null,
+        "playedMs": 1203,
+        "audioSec": 0,
+        "underruns": 0,
+        "cancelled": false,
+        "error": null
+      }
+    },
+    {
+      "name": "console shows no tokens or transcripts (only the short debug line)",
+      "pass": true,
+      "consoleLines": [
+        "debug: [voice] turn 5.82 s -> 35 chars in 155 ms (clip saved)",
+        "debug: [voice] turn 3.58 s -> 35 chars in 174 ms (clip saved)",
+        "debug: [voice] turn 3.57 s -> 35 chars in 129 ms (clip saved)",
+        "debug: [voice] turn 0.5 s -> 0 chars in 351 ms",
+        "debug: [voice] turn 3.57 s -> 35 chars in 1523 ms (clip saved)",
+        "debug: [voice] turn 3.57 s -> 35 chars in 144 ms (clip saved)",
+        "debug: [voice] turn 3.58 s -> 35 chars in 2388 ms (clip saved)",
+        "debug: [voice] turn 3.58 s -> 35 chars in 137 ms (clip saved)",
+        "debug: [voice] turn 5.63 s -> 35 chars in 131 ms",
+        "debug: [voice] turn 3.57 s -> 35 chars in 153 ms",
+        "error: [CONVEX A(voice:mintToken)] [Request ID: 8fc9948c631b5221] Server Error\nUncaught ConvexError: {\"code\":\"NO_CONSENT\",\"message\":\"Voice needs the voice_processing consent on the phone.\"}\n    at handler (../convex/voice.ts:29:79)\n"
+      ],
+      "leaks": []
+    }
+  ],
+  "passed": 24,
+  "failed": 0,
+  "durationSec": 104
+}

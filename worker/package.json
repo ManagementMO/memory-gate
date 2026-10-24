@@ -1,0 +1,9 @@
+{
+  "name": "memory-gate-worker",
+  "private": true,
+  "type": "module",
+  "description": "Local GPU worker helpers: SPZ writing (@adobe/spz WASM, V15) and the end-to-end test.",
+  "dependencies": {
+    "@adobe/spz": "0.2.3"
+  }
+}

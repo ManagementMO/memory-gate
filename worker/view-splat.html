@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Splat check</title>
+<style>html,body{margin:0;background:#1d1b19;overflow:hidden} #label{position:fixed;left:10px;top:8px;color:#f2e8da;font:13px/1.4 ui-monospace,monospace;background:#0008;padding:4px 8px;border-radius:4px}</style>
+<script type="importmap">
+{ "imports": { "three": "/three/build/three.module.js", "three/addons/": "/three/examples/jsm/", "@sparkjsdev/spark": "/spark/spark.module.js" } }
+</script>
+</head>
+<body>
+<div id="label"></div>
+<script type="module">
+// Worker output check: the splat as SHARP wrote it (OpenCV axes) turned 180 deg about X like the headset does, seen
+// (a) from the photo's own viewpoint with the photo's field of view, and (b) from above and to the side, with a 1 m
+// grid at the estimated floorY, which should lie on the splat's floor.
+import * as THREE from 'three';
+import { SparkRenderer, SplatMesh } from '@sparkjsdev/spark';
+const q = new URLSearchParams(location.search);
+const floorY = Number(q.get('floor') ?? '-1.2'), vfov = Number(q.get('vfov') ?? '50'), view = q.get('view') ?? 'photo';
+const renderer = new THREE.WebGLRenderer({ antialias: false });
+renderer.setPixelRatio(1);
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1d1b19);
+const camera = new THREE.PerspectiveCamera(view === 'photo' ? vfov : 60, innerWidth / innerHeight, 0.01, 100);
+const spark = new SparkRenderer({ renderer });
+scene.add(spark);
+const splat = new SplatMesh({ url: q.get('spz') });
+splat.quaternion.set(1, 0, 0, 0); // OpenCV -> three.js (y up, -z forward)
+scene.add(splat);
+if (view === 'photo') { camera.position.set(0, 0, 0); camera.lookAt(0, 0, -1); }
+else { camera.position.set(2.6, 0.9, 0.6); camera.lookAt(0, floorY, -2.4); }
+if (view !== 'photo' || q.get('grid') === '1') {
+  const grid = new THREE.GridHelper(8, 8, 0xff5a36, 0xffb36b); // 1 m cells
+  grid.position.set(0, floorY, -3);
+  grid.material.depthTest = false; grid.material.transparent = true; grid.material.opacity = 0.85;
+  grid.renderOrder = 999; // splats write no depth: draw the grid over them
+  scene.add(grid);
+}
+document.getElementById('label').textContent = `${q.get('name') ?? ''} | ${view === 'photo' ? `photo viewpoint, vfov ${vfov.toFixed(1)} deg` : `side view, grid = floorY ${floorY} m (1 m cells)`}`;
+let frames = 0;
+renderer.setAnimationLoop(() => { renderer.render(scene, camera); frames++; window.__frames = frames; });
+splat.initialized.then(async (m) => {
+  const start = frames;
+  while (frames - start < 40) await new Promise((r) => setTimeout(r, 50)); // let the sort settle
+  window.__done = { ok: true, numSplats: m.numSplats ?? m.packedSplats?.numSplats ?? null };
+}).catch((e) => { window.__done = { ok: false, error: String(e) }; });
+</script>
+</body>
+</html>

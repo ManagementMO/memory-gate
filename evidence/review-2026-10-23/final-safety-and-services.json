@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-10-24T02:23:30.520Z",
+  "scannedFiles": 432,
+  "secretLeaks": [],
+  "privateFilesIgnored": [
+    "auth/memory-gate.env",
+    ".env.worker"
+  ],
+  "credentialMode": "600",
+  "workerMode": "600",
+  "services": [
+    {
+      "url": "https://localhost:4173/",
+      "status": 200
+    },
+    {
+      "url": "https://localhost:5174/",
+      "status": 200
+    },
+    {
+      "url": "https://localhost:8081/",
+      "status": 200
+    }
+  ]
+}

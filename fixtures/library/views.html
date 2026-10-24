@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Library views</title>
+<style>
+  html, body { margin: 0; background: #2b2b2b; font: 14px/1.3 system-ui, sans-serif; color: #f2f2f2; }
+  #sheet { position: relative; width: 1200px; height: 800px; }
+  canvas { display: block; }
+  .label { position: absolute; padding: 3px 7px; background: rgba(0, 0, 0, 0.62); border-radius: 4px; font-weight: 600; }
+  #info { position: absolute; left: 812px; top: 412px; width: 372px; white-space: pre-wrap; font: 13px/1.45 ui-monospace, Menlo, monospace; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "/three/build/three.module.js", "three/addons/": "/three/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div id="sheet"></div>
+<script type="module">
+// Facing check for a library GLB: 5 panels in one 1200x800 sheet.
+// Row 1: the RAW model seen from +Z, +X, -Z. Row 2: from -X, then the "front check": the model after
+// rotation.y = yawOffset seen from +Z (what the headset shows as the object's front), then an info panel.
+// Cameras sit 15 deg above the horizon and look at the box centre; a grid marks the floor, and a red arrow marks +Z.
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const q = new URLSearchParams(location.search);
+const W = 400, H = 400;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+renderer.setSize(3 * W, 2 * H);
+renderer.setScissorTest(true);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const sheet = document.getElementById('sheet');
+sheet.appendChild(renderer.domElement);
+const label = (text, x, y) => { const d = document.createElement('div'); d.className = 'label'; d.textContent = text; d.style.left = `${x + 8}px`; d.style.top = `${y + 8}px`; sheet.appendChild(d); };
+
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x555555, 1.6));
+const key = new THREE.DirectionalLight(0xffffff, 1.8);
+scene.add(key, key.target);
+const grid = new THREE.GridHelper(2, 8, 0x888888, 0x555555);
+scene.add(grid);
+const arrow = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0.002, 0.55), 0.35, 0xff3333, 0.1, 0.06);
+scene.add(arrow);
+
+const info = { file: q.get('glb'), key: q.get('key'), yaw: Number(q.get('yaw') || 0) };
+try {
+  const gltf = await new GLTFLoader().loadAsync(`/glb/${encodeURIComponent(info.file)}`);
+  const raw = gltf.scene;
+  // Normalize: largest dimension -> 1 m, centred on x/z, standing on y = 0 (world bounds include node transforms).
+  raw.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(raw);
+  const size = box.getSize(new THREE.Vector3());
+  const s = 1 / Math.max(size.x, size.y, size.z);
+  const centre = box.getCenter(new THREE.Vector3());
+  const norm = new THREE.Group();
+  raw.position.sub(new THREE.Vector3(centre.x, box.min.y, centre.z));
+  norm.add(raw);
+  norm.scale.setScalar(s);
+  const yawed = new THREE.Group();
+  yawed.add(norm);
+  scene.add(yawed);
+  info.bbox = { x: +(size.x * s).toFixed(3), y: +(size.y * s).toFixed(3), z: +(size.z * s).toFixed(3) };
+  info.rawLargest = +Math.max(size.x, size.y, size.z).toFixed(3);
+  let tris = 0;
+  raw.traverse((o) => { if (o.isMesh) tris += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3; });
+  info.triangles = Math.round(tris);
+
+  const cam = new THREE.PerspectiveCamera(32, W / H, 0.01, 50);
+  const target = new THREE.Vector3(0, (size.y * s) / 2, 0);
+  const view = (dir, px, py, yaw, text) => {
+    yawed.rotation.y = yaw;
+    const elev = THREE.MathUtils.degToRad(15);
+    const d = 2.6;
+    cam.position.set(dir.x * Math.cos(elev) * d, target.y + Math.sin(elev) * d, dir.z * Math.cos(elev) * d);
+    cam.lookAt(target);
+    key.position.copy(cam.position).add(new THREE.Vector3(0.6, 1.2, 0));
+    key.target.position.copy(target);
+    // three.js viewport y is measured from the bottom of the canvas.
+    renderer.setViewport(px, 2 * H - py - H, W, H);
+    renderer.setScissor(px, 2 * H - py - H, W, H);
+    renderer.setClearColor(0xd9d6d0, 1);
+    renderer.clear();
+    renderer.render(scene, cam);
+    label(text, px, py);
+  };
+  view(new THREE.Vector3(0, 0, 1), 0, 0, 0, 'RAW from +Z');
+  view(new THREE.Vector3(1, 0, 0), W, 0, 0, 'RAW from +X');
+  view(new THREE.Vector3(0, 0, -1), 2 * W, 0, 0, 'RAW from -Z');
+  view(new THREE.Vector3(-1, 0, 0), 0, H, 0, 'RAW from -X');
+  view(new THREE.Vector3(0, 0, 1), W, H, info.yaw, `FRONT CHECK: yaw ${(info.yaw / Math.PI).toFixed(3)}*PI, from +Z`);
+  renderer.setViewport(2 * W, 0, W, H); renderer.setScissor(2 * W, 0, W, H); renderer.setClearColor(0x2b2b2b, 1); renderer.clear();
+  document.getElementById('info') || sheet.insertAdjacentHTML('beforeend', '<div id="info"></div>');
+  document.getElementById('info').textContent =
+    `${info.key}\nfile ${info.file}\nyawOffset ${info.yaw.toFixed(4)} rad (${(info.yaw / Math.PI).toFixed(3)}*PI)\n` +
+    `normalized bbox x ${info.bbox.x}  y ${info.bbox.y}  z ${info.bbox.z}\nraw largest dim ${info.rawLargest} (world, incl. node scale)\n` +
+    `triangles ${info.triangles}\n\nRed arrow = +Z (the direction the\nobject's front must face after yaw).\nFront check: we should see the front.`;
+  window.__done = { ok: true, ...info };
+} catch (e) {
+  window.__done = { ok: false, error: String(e && e.message || e), ...info };
+}
+</script>
+</body>
+</html>

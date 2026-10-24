@@ -1,0 +1,8 @@
+{
+  "reviewedAt": "2026-10-24T02:09:48.947Z",
+  "selectedDefault": "original illustrative courtyard",
+  "generatedLivingRoom": "Loaded and visually inspected; plausible image-viewpoint interpretation with some background artifacts",
+  "generatedCourtyard": "Full/lite loaded with four independent props; wide spectator camera exposes floor stretching. Retained for review, not chosen as the default presentation scene.",
+  "newGenerationRequired": false,
+  "physicalQuest": false
+}

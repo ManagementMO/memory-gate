@@ -1,0 +1,11 @@
+{
+  "testedAt": "2026-10-24T02:22:01.621Z",
+  "command": "npm run verify",
+  "pass": true,
+  "backend": 56,
+  "renderer": 4,
+  "browserPassed": 21,
+  "providerOnlySkipped": 3,
+  "groups": 9,
+  "paidProviderCalls": false
+}

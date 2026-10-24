@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="data:," />
+    <title>Memory Gate · headset</title>
+    <style>
+      :root {
+        --ink: #f8eedc;
+        --ink-soft: rgba(248, 238, 220, 0.74);
+        --ink-faint: rgba(248, 238, 220, 0.62);
+        --brass: #e7c48d;
+        --panel: rgba(22, 15, 10, 0.78);
+        --panel-edge: rgba(255, 214, 160, 0.2);
+        --primary: #e9b56f;
+        --primary-ink: #2a1a0c;
+        --danger: #f2a38a;
+        --serif: Georgia, 'Iowan Old Style', 'Noto Serif', serif;
+        --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: #0d0a07; color: var(--ink); font-family: var(--sans); }
+      #scene-container { position: fixed; inset: 0; }
+      .mg-hidden { display: none !important; }
+      .mg-tag {
+        position: fixed; left: 16px; top: 14px; z-index: 20; font: 600 11px/1 var(--sans);
+        letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); pointer-events: none;
+      }
+      .mg-head { position: fixed; left: 16px; right: 16px; top: 36px; z-index: 20; pointer-events: none; }
+      .mg-title { margin: 0; font: 400 clamp(26px, 3.2vw, 40px)/1.15 var(--serif); color: var(--ink); text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55); }
+      .mg-sub { margin-top: 6px; font: 500 13px/1.4 var(--sans); color: var(--ink-soft); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6); }
+      .mg-sub b { color: var(--brass); font-weight: 600; letter-spacing: 0.08em; }
+      .mg-panel {
+        position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 20; width: min(1040px, calc(100vw - 32px));
+        background: rgba(22, 15, 10, 0.72); border: 1px solid var(--panel-edge); border-radius: 20px; padding: 10px 14px 6px;
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+      }
+      .mg-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+      .mg-typed { display: flex; gap: 8px; flex: 1 1 260px; min-width: 0; }
+      .mg-sep { width: 1px; align-self: stretch; background: rgba(255, 214, 160, 0.2); margin: 4px 2px; }
+      .mg-row + .mg-row { margin-top: 12px; }
+      .mg-btn {
+        min-height: 48px; padding: 0 20px; border-radius: 999px; border: 1px solid rgba(255, 214, 160, 0.38);
+        background: rgba(40, 27, 16, 0.9); color: var(--ink); font: 500 17px/1 var(--serif); cursor: pointer;
+        transition: background-color 0.4s ease, border-color 0.4s ease, opacity 0.4s ease;
+      }
+      .mg-btn:hover { border-color: rgba(255, 214, 160, 0.7); }
+      .mg-btn:focus-visible, .mg-input:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+      .mg-btn:disabled { opacity: 0.5; cursor: default; }
+      .mg-btn.primary { background: var(--primary); color: var(--primary-ink); border-color: transparent; font-weight: 600; }
+      .mg-btn.done { border-color: rgba(190, 220, 160, 0.5); color: #dfeccc; }
+      .mg-btn.big { min-height: 60px; font-size: 19px; padding: 0 30px; }
+      .mg-talk { min-width: 150px; font: 600 15px/1.15 var(--sans); touch-action: none; user-select: none; -webkit-user-select: none; }
+      .mg-talk.held { background: #f3c98a; color: var(--primary-ink); border-color: transparent; }
+      .mg-hint { font: 500 13px/1.4 var(--sans); color: var(--ink-soft); }
+      .mg-notice { margin: 0 0 9px; font: 400 12px/1.45 var(--sans); color: var(--ink-soft); }
+      .mg-input {
+        flex: 1 1 160px; min-width: 0; min-height: 48px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(255, 214, 160, 0.3);
+        background: rgba(12, 8, 5, 0.75); color: var(--ink); font: 400 16px var(--serif);
+      }
+      .mg-input::placeholder { color: var(--ink-faint); font-style: italic; }
+      .mg-status { font: 500 12px/1.4 var(--sans); color: var(--ink-faint); margin-top: 4px; min-height: 16px; }
+      .mg-error {
+        position: fixed; left: 50%; top: 18px; transform: translateX(-50%); z-index: 40; max-width: min(640px, calc(100vw - 32px));
+        background: rgba(60, 22, 14, 0.94); border: 1px solid rgba(242, 163, 138, 0.5); color: #fde8df; border-radius: 14px;
+        padding: 12px 44px 12px 16px; font: 500 15px/1.45 var(--sans); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      }
+      .mg-error button { position: absolute; right: 8px; top: 8px; width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: inherit; font-size: 18px; cursor: pointer; }
+      .mg-join { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 16px; background: radial-gradient(ellipse at 50% 40%, rgba(70, 45, 22, 0.55), rgba(10, 7, 5, 0.96)); }
+      .mg-card { width: min(460px, 100%); background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 24px; padding: 28px 26px 24px; text-align: center; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5); }
+      .mg-card h1 { margin: 0 0 8px; font: 400 30px/1.2 var(--serif); }
+      .mg-card p { margin: 0 0 18px; color: var(--ink-soft); font: 400 15px/1.5 var(--sans); }
+      .mg-code {
+        width: 100%; min-height: 64px; text-align: center; font: 600 32px/1 var(--sans); letter-spacing: 0.32em; text-transform: uppercase;
+        border-radius: 16px; border: 1px solid rgba(255, 214, 160, 0.35); background: rgba(12, 8, 5, 0.8); color: var(--ink); padding: 0 12px 0 22px;
+      }
+      .mg-card .mg-btn { width: 100%; margin-top: 14px; }
+      .mg-card .mg-field-error { color: var(--danger); font: 500 14px/1.4 var(--sans); min-height: 20px; margin-top: 10px; }
+      .mg-loading { position: fixed; left: 50%; top: 46%; transform: translate(-50%, -50%); z-index: 10; font: italic 400 20px var(--serif); color: var(--ink-soft); pointer-events: none; transition: opacity 0.8s ease; }
+      /* Spectator view (?view=spectator): no controls, a story ticker for the room, sized for a projector. */
+      body.mg-spectator #mg-head, body.mg-spectator #mg-panel, body.mg-spectator #mg-loading { display: none !important; }
+      body.mg-spectator .mg-tag { font-size: 12px; color: rgba(248, 238, 220, 0.7); }
+      .mg-ticker {
+        position: fixed; left: 20px; bottom: 20px; z-index: 20; width: min(760px, calc(100vw - 40px));
+        background: linear-gradient(180deg, rgba(34, 24, 15, 0.86), rgba(18, 12, 8, 0.88)); border: 1px solid rgba(255, 214, 160, 0.18);
+        border-radius: 20px; padding: 6px 22px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45); font-family: var(--serif);
+      }
+      .mg-tick { display: grid; grid-template-columns: 10px 1fr; gap: 0 14px; padding: 8px 0; transition: opacity 0.6s ease; }
+      .mg-tick + .mg-tick { border-top: 1px solid rgba(255, 214, 160, 0.1); }
+      .mg-tick:nth-child(2) { opacity: 0.8; }
+      .mg-tick:nth-child(3) { opacity: 0.62; }
+      .mg-tick .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--brass); margin-top: 9px; }
+      .mg-tick .meta { font: 600 13px/1.4 var(--serif); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brass); }
+      .mg-tick .text { font: 400 clamp(19px, 1.9vw, 28px)/1.3 var(--serif); color: var(--ink); }
+      .mg-tick .text b { font-weight: 600; }
+      .mg-tick .sub { font: italic 400 clamp(15px, 1.5vw, 21px)/1.35 var(--serif); color: #cdb994; margin-top: 2px; }
+      .mg-sound { position: fixed; right: 16px; top: 12px; z-index: 25; min-height: 40px; font-size: 15px; }
+      @media (max-width: 640px) {
+        .mg-panel { bottom: 10px; padding: 14px; }
+        .mg-sep { display: none; }
+        #mg-mic, #mg-enter { flex: 1 1 40%; }
+      }
+      @media (prefers-reduced-motion: reduce) { .mg-btn { transition: none; } }
+    </style>
+  </head>
+  <body>
+    <div id="scene-container"></div>
+
+    <div class="mg-tag" id="mg-tag" data-testid="sample-tag">practice build · sample content</div>
+
+    <header class="mg-head mg-hidden" id="mg-head">
+      <h1 class="mg-title" id="mg-title" data-testid="room-title">…</h1>
+      <div class="mg-sub" id="mg-sub" aria-live="polite"></div>
+    </header>
+
+    <div class="mg-loading mg-hidden" id="mg-loading" aria-live="polite">The memory is forming…</div>
+
+    <section class="mg-panel mg-hidden" id="mg-panel" aria-label="Before you enter">
+      <p class="mg-notice" id="mg-notice">
+        You'll talk with an AI companion. Your voice is turned into text by Cartesia and the words go to Claude (Anthropic) to suggest objects. Nothing is added to the room unless someone confirms it.
+        Conversations are recorded and may be shared with Cartesia and its third-party large language model providers.
+        Recordings are kept only for this family's room and can be deleted at any time.
+      </p>
+      <div class="mg-row">
+        <button class="mg-btn" id="mg-mic" data-testid="enable-mic">Enable microphone</button>
+        <button class="mg-btn primary" id="mg-enter" data-testid="enter-memory">Enter the memory</button>
+        <span class="mg-sep" aria-hidden="true"></span>
+        <button class="mg-btn mg-talk" id="mg-talk" data-testid="talk" aria-label="Hold to talk (or hold Space)" title="Hold to talk, or hold Space. Click an object to hear who said it.">Hold to talk</button>
+        <form class="mg-typed" id="mg-typed" autocomplete="off">
+          <label for="mg-typed-input" class="mg-hidden">Say it by typing</label>
+          <input class="mg-input" id="mg-typed-input" data-testid="typed-input" placeholder="Say it by typing…" maxlength="300" />
+          <button class="mg-btn" type="submit" data-testid="typed-send">Send</button>
+        </form>
+      </div>
+      <div class="mg-status" id="mg-status" data-testid="status" aria-live="polite"></div>
+    </section>
+
+    <section class="mg-ticker mg-hidden" id="mg-ticker" aria-label="The story so far" aria-live="polite" data-testid="ticker"></section>
+    <button class="mg-btn mg-sound mg-hidden" id="mg-sound" type="button" data-testid="sound">Turn on sound</button>
+
+    <div class="mg-error mg-hidden" id="mg-error" role="alert" data-testid="error">
+      <span id="mg-error-text"></span><button type="button" aria-label="Dismiss" id="mg-error-close">×</button>
+    </div>
+
+    <div class="mg-join mg-hidden" id="mg-join">
+      <form class="mg-card" id="mg-join-form" autocomplete="off" aria-labelledby="mg-join-title">
+        <h1 id="mg-join-title">Join a memory room</h1>
+        <p>Type the 6-character room code shown on the family's phone.</p>
+        <label for="mg-join-code" class="mg-hidden">Room code</label>
+        <input class="mg-code" id="mg-join-code" data-testid="join-code" inputmode="text" autocapitalize="characters" spellcheck="false" maxlength="6" placeholder="ABC234" />
+        <div class="mg-field-error" id="mg-join-error" aria-live="polite"></div>
+        <button class="mg-btn big primary" type="submit" data-testid="join-submit">Join</button>
+      </form>
+    </div>
+
+    <script type="module" src="/src/index.ts"></script>
+  </body>
+</html>

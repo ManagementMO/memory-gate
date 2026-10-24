@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-10-24T03:11:05.519609+00:00",
+  "repository": "https://github.com/ManagementMO/memory-gate",
+  "branch": "main",
+  "import": "Single initial commit requested by the user; original app plus reviewed improvements and assets",
+  "verification": {
+    "full_live_groups_passed": 9,
+    "backend_tests_passed": 56,
+    "renderer_tests_passed": 4,
+    "browser_tests_passed": 24,
+    "ordinary_browser_tests_passed": 21,
+    "ordinary_provider_cases_skipped": 3,
+    "three_typechecks": true,
+    "two_production_builds": true
+  },
+  "hardware": "Physical Quest 3 and real family speech not tested",
+  "deployment": "Source publication only; application services local",
+  "world_generation": "No new world generation during release verification",
+  "asset_provenance": "fixtures/LICENSES.md"
+}

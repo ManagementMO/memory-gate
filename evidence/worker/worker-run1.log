@@ -1,0 +1,19 @@
+[worker 03:21:29] starting convex=http://127.0.0.1:3210 budget_gpu_s=1500.0 prewarm=False
+✓ Initialized. View run at 
+https://modal.com/apps/<workspace>/main/ap-R05Qjs8JZgNByj5EB3n3yZ
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/kyaa/memory-gate-prep/practice/memory-gate/worker/sharp_worker.py
+└── ✓ Created Function Sharp.*.
+[worker 03:21:37] claimed job=jn7arg8cte9ad4v8mx1t2n8ghh8gvf05 splat=kd7a0h4dzbqa9pdeaq4a915zbh8gtawf
+[worker 03:22:07] done late=False jobId=jn7arg8cte9ad4v8mx1t2n8ghh8gvf05 numSplats=500000 bytes=6966713 floorY=-1.158 total=30.23 gpu=25.95 cold=True
+[worker 03:22:21] claimed job=jn7fxv1jwtzrb73rtk8ypwkfx58gvxft splat=kd70ak9kgvsafhckqb6zfhyq298gtw9t
+[worker 03:22:31] done late=False jobId=jn7fxv1jwtzrb73rtk8ypwkfx58gvxft numSplats=500000 bytes=7097336 floorY=-1.54 total=10.11 gpu=5.7 cold=False
+[worker 03:22:33] claimed job=jn70c6a09mxqzedjdz8vzgcc4x8gv1az splat=kd7ambh8rgmsqvc0ptn93kp5018gvg36
+[worker 03:22:40] done late=False jobId=jn70c6a09mxqzedjdz8vzgcc4x8gv1az numSplats=500000 bytes=6966713 floorY=-1.158 total=7.46 gpu=5.0 cold=False
+[worker 03:22:40] max jobs reached; exiting
+Stopping app - local entrypoint completed.
+✓ App completed. View run at 
+https://modal.com/apps/<workspace>/main/ap-R05Qjs8JZgNByj5EB3n3yZ
+[worker 03:22:43] stopped jobs=3 gpu_estimate_s=360.8 est_usd=0.196 wall_s=73.3
+{"summary": {"jobs": 3, "gpuEstimateS": 360.8, "estUsd": 0.196, "containers": 1, "sessions": [[7.6, 68.3]]}}

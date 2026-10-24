@@ -1,0 +1,50 @@
+{
+  "testedAt": "2026-10-24T01:50:13.699Z",
+  "model": "marble-1.1",
+  "source": "Public-domain 1938 living-room photo; AI interpretation",
+  "scene": {
+    "sceneReady": true,
+    "sceneSource": "generated-or-prepared-splat",
+    "provider": "worldlabs",
+    "splatLoadMs": 117,
+    "fps": 60,
+    "tickError": null
+  },
+  "transform": {
+    "scale": 0.8583877,
+    "floorY": -1.772388397457233,
+    "metricGroundOffset": 1.5213964
+  },
+  "jobs": [
+    {
+      "artifactHash": "fdf441856ca790971bdcde7714a4fa53c64fb46fbb7ed0aab3ddaeb0414089e7",
+      "attempts": 1,
+      "canRecover": false,
+      "createdAt": 1792806123645,
+      "id": "jn7b4w9zt79wy2m45vhzd6yt3h8gwf93",
+      "kind": "world",
+      "lastError": null,
+      "model": null,
+      "ms": 333036,
+      "operationId": "c43046c3-77ec-43c6-ab89-24b2af4945ae",
+      "provider": "worldlabs",
+      "status": "done"
+    },
+    {
+      "artifactHash": null,
+      "attempts": 1,
+      "canRecover": true,
+      "createdAt": 1792805909291,
+      "id": "jn75yf4bn0y0nvk247kzat1j958gx1nc",
+      "kind": "world",
+      "lastError": "The generated floor needs calibration before headset viewing.",
+      "model": null,
+      "ms": 45560,
+      "operationId": "7e778706-29ff-4b84-ab2c-25fb7099fd13",
+      "provider": "worldlabs",
+      "status": "failed"
+    }
+  ],
+  "pageErrors": [],
+  "physicalQuest": false
+}

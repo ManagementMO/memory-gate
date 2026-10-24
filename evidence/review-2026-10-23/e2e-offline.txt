@@ -1,0 +1,36 @@
+
+> e2e
+> playwright test --config tests/e2e/playwright.config.mjs
+
+
+Running 24 tests using 1 worker
+
+(node:28510) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/e2e/lan-and-photo.spec.mjs:12:3 › phone on the Wi-Fi (LAN address) › loads live data via the proxy and replays a recorded clip from a storage URL (1.6s)
+  ✓   2 tests/e2e/lan-and-photo.spec.mjs:68:1 › photo: upload reports the prepared room or the explicit illustrative fallback without claiming reconstruction (4.8s)
+  -   3 tests/e2e/phone-voice.spec.mjs:6:1 › phone microphone sends real recognized words and a replayable original clip; cancel discards a turn
+  ✓   4 tests/e2e/security.spec.mjs:7:1 › the dev server serves only what the app needs from outside apps/phone (27ms)
+  ✓   5 tests/e2e/security.spec.mjs:18:1 › a ?convex= override starts with an empty session (the real token stays put) (794ms)
+  ✓   6 tests/e2e/security.spec.mjs:30:1 › a new family invitation opens its requested room without silently reusing an older room session (895ms)
+  ✓   7 tests/e2e/spatial-corrections.spec.mjs:5:1 › a bilingual placement preview, confirmation and undo synchronize two phones and the real 3D renderer (13.3s)
+  -   8 tests/e2e/spoken-correction.spec.mjs:34:1 › Spanish speech creates a source-linked 3D correction, and selecting the moved bench replays that exact recording
+  ✓   9 tests/e2e/states.spec.mjs:6:1 › missing consent: the typed line and the photo upload explain what is needed (1.1s)
+  ✓  10 tests/e2e/states.spec.mjs:23:1 › a dropped connection shows a calm banner, queues the tap, and recovers (2.1s)
+  ✓  11 tests/e2e/states.spec.mjs:54:1 › reset demo room clears both phones; delete this memory ends the room everywhere (1.8s)
+  ✓  12 tests/e2e/states.spec.mjs:95:1 › every screen fits a 360 px phone without sideways scrolling (1.6s)
+  ✓  13 tests/e2e/two-phones.spec.mjs:32:3 › two phones in one room › A creates a room and gives consent (voice recording stays off by default) (1.3s)
+  ✓  14 tests/e2e/two-phones.spec.mjs:57:3 › two phones in one room › B joins with the code (307ms)
+  ✓  15 tests/e2e/two-phones.spec.mjs:71:3 › two phones in one room › A adds "chair" and B sees it live as Suggested (638ms)
+  ✓  16 tests/e2e/two-phones.spec.mjs:81:3 › two phones in one room › B confirms and A sees "In the room" (530ms)
+  ✓  17 tests/e2e/two-phones.spec.mjs:89:3 › two phones in one room › A undoes and both see it back as Suggested (122ms)
+  ✓  18 tests/e2e/two-phones.spec.mjs:97:3 › two phones in one room › reloading both pages keeps the session and the room state (197ms)
+  ✓  19 tests/e2e/two-phones.spec.mjs:106:3 › two phones in one room › pause on A shows the paused room on B, and resume restores it (134ms)
+  ✓  20 tests/e2e/two-phones.spec.mjs:115:3 › two phones in one room › a typed line reaches the configured interpreter and a piano suggestion appears on both phones within 15 s (763ms)
+  ✓  21 tests/e2e/two-phones.spec.mjs:136:3 › two phones in one room › B says "Not quite" to the piano: it leaves both lists; A undoes the reject and it is Suggested again (143ms)
+  -  22 tests/e2e/two-phones.spec.mjs:148:3 › two phones in one room › a Spanish line keeps the words as spoken and shows an English translation on both phones
+  ✓  23 tests/e2e/two-phones.spec.mjs:163:3 › two phones in one room › the owner opens the admin screen (flags, jobs, reset, delete) (688ms)
+  ✓  24 tests/e2e/two-phones.spec.mjs:178:3 › two phones in one room › no page errors on either phone (0ms)
+
+  3 skipped
+  21 passed (33.6s)

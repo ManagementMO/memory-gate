@@ -1,0 +1,68 @@
+{
+  "source": "Original procedural illustration",
+  "generatedFromFamilyPhoto": false,
+  "axes": "Y up, +Z front, floor contact Y=0",
+  "license": "Project-owned original illustrative assets; see source for reproducible geometry.",
+  "assets": [
+    {
+      "key": "bench",
+      "size": 1.6,
+      "file": "bench.glb"
+    },
+    {
+      "key": "tree",
+      "size": 2.9,
+      "file": "tree.glb"
+    },
+    {
+      "key": "gate",
+      "size": 2,
+      "file": "gate.glb"
+    },
+    {
+      "key": "photograph",
+      "size": 0.48,
+      "file": "photograph.glb"
+    },
+    {
+      "key": "chair",
+      "size": 0.86,
+      "file": "chair.glb"
+    },
+    {
+      "key": "armchair",
+      "size": 0.98,
+      "file": "armchair.glb"
+    },
+    {
+      "key": "piano",
+      "size": 1.5,
+      "file": "piano.glb"
+    },
+    {
+      "key": "radio",
+      "size": 0.55,
+      "file": "radio.glb"
+    },
+    {
+      "key": "lamp",
+      "size": 0.72,
+      "file": "lamp.glb"
+    },
+    {
+      "key": "clock",
+      "size": 0.5,
+      "file": "clock.glb"
+    },
+    {
+      "key": "rug",
+      "size": 1.8,
+      "file": "rug.glb"
+    },
+    {
+      "key": "teapot",
+      "size": 0.35,
+      "file": "teapot.glb"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice check</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { color-scheme: light dark; --bg: #faf7f2; --fg: #222; --muted: #6b5a45; --btn: #fff4e6; --line: #a67c52; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1b1814; --fg: #eee6dc; --muted: #c2ab8c; --btn: #2b241c; --line: #8a6a48; } }
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 0; padding: 16px; background: var(--bg); color: var(--fg); }
+  main { max-width: 640px; margin: 0 auto; display: grid; gap: 12px; }
+  .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; margin: 0; }
+  .notice { font-size: 14px; color: var(--muted); margin: 0; }
+  button { font: inherit; font-size: 18px; padding: 12px 18px; border-radius: 10px; border: 1px solid var(--line); background: var(--btn); color: var(--fg); touch-action: none; }
+  button:disabled { opacity: .5; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  input { font: inherit; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--fg); width: 8em; text-transform: uppercase; }
+  meter { width: 160px; }
+  #errors { white-space: pre-wrap; color: #b4532a; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="label">Memory Gate voice module test page · sample content · not part of the app</p>
+  <p class="notice">You'll talk with an AI companion. Your voice is turned into text by Cartesia and the words go to Claude (Anthropic) to suggest objects. Nothing is added to the room unless someone confirms it.</p>
+  <p class="notice">Conversations are recorded and may be shared with Cartesia and its third-party large language model providers. Recordings are kept only for this family's room and can be deleted at any time.</p>
+  <div class="row">
+    <label>Room code <input id="room" maxlength="6" autocomplete="off"></label>
+    <button id="enable" type="button">Enable microphone</button>
+  </div>
+  <div class="row">
+    <button id="talk" type="button" disabled>Hold to talk</button>
+    <label><input id="send" type="checkbox" checked style="width:auto"> Send to the room</label>
+  </div>
+  <div class="row">
+    <button id="say" type="button" disabled>Speak a test line</button>
+    <button id="hush" type="button" disabled>Stop speaking</button>
+  </div>
+  <div class="row">State: <strong id="state">idle</strong> · Mode: <strong id="mode">–</strong> · <meter id="level" min="0" max="1" value="0"></meter></div>
+  <p>Heard: <span id="heard">(nothing yet)</span></p>
+  <p>Reply: <span id="reply">–</span></p>
+  <div id="errors" role="status"></div>
+</main>
+<script type="module" src="./harness.ts"></script>
+</body>
+</html>

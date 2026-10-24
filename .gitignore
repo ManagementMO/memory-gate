@@ -1,0 +1,24 @@
+node_modules/
+dist/
+.env
+.env.*
+*.env
+!.env.example
+.convex/
+# The optional sample pack is committed; source-specific rights are recorded in fixtures/LICENSES.md.
+# Raw sources and unused variants stay local.
+fixtures/large/raw/
+fixtures/large/polyhaven/
+fixtures/large/chair-cc0.glb
+fixtures/large/armchair-ph.glb
+fixtures/large/clock.glb
+fixtures/large/rocking-chair.glb
+evidence/raw/
+test-results/
+playwright-report/
+*.ply
+.DS_Store
+evidence/video/*.webm
+.logs/
+auth/
+output/

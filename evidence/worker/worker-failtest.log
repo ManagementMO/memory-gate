@@ -1,0 +1,19 @@
+[worker 03:31:45] starting convex=http://127.0.0.1:3210 budget_gpu_s=0.0 prewarm=False
+✓ Initialized. View run at 
+https://modal.com/apps/<workspace>/main/ap-K4zOzrMKc91RfkMXfjnwzB
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/kyaa/memory-gate-prep/practice/memory-gate/worker/sharp_worker.py
+└── ✓ Created Function Sharp.*.
+[worker 03:31:56] claimed job=jn7d90pnxzefz5n5xg3zcyd2w98gtnyc splat=kd7ejadwqw0vsqjw5vhtezc0xd8gttvy
+[worker 03:31:56] FAILED job=jn7d90pnxzefz5n5xg3zcyd2w98gtnyc error=RuntimeError: GPU budget reached (~0s of 0s); prebaked splat instead
+Traceback (most recent call last):
+  File "/Users/kyaa/memory-gate-prep/practice/memory-gate/worker/sharp_worker.py", line 249, in process
+    raise RuntimeError(f"GPU budget reached (~{ledger.estimate_s():.0f}s of {ledger.budget_s:.0f}s); prebaked splat instead")
+RuntimeError: GPU budget reached (~0s of 0s); prebaked splat instead
+[worker 03:31:56] max jobs reached; exiting
+Stopping app - local entrypoint completed.
+✓ App completed. View run at 
+https://modal.com/apps/<workspace>/main/ap-K4zOzrMKc91RfkMXfjnwzB
+[worker 03:31:56] stopped jobs=1 gpu_estimate_s=0 est_usd=0.0 wall_s=10.8
+{"summary": {"jobs": 1, "gpuEstimateS": 0, "estUsd": 0.0, "containers": 0, "sessions": []}}

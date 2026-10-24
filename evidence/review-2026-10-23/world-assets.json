@@ -1,0 +1,54 @@
+{
+  "recordedAt": "2026-10-24T02:15:05.483Z",
+  "notes": "Earlier two jobs predate request-hash recording; null fields are intentionally not reconstructed. The original-art courtyard job has the complete current metadata.",
+  "worlds": [
+    {
+      "status": "done",
+      "operationId": "c308075e-ab02-4181-aba8-8a496c6c2434",
+      "worldId": "7bf221fa-abf8-45ef-b7b8-a8cfb529d7f0",
+      "model": "marble-1.1",
+      "requestHash": "b03e03906e9851147aeee28b24bc7a5fe1ffb9e2c221c895fafe8c49a6927e47",
+      "photoHash": "4eade60f5aaac9b63321d546ceff1e0867edb382838753e07c523518c95b75e1",
+      "artifactHash": "58eba9a240e2777a8ebb29a59ee7d519adce5d39dbd164c1366fa66d97453222",
+      "liteArtifactHash": "88d480b2e174b6380e7b641927e99e4e31b35dabc60e65a3d9dfc97ac5c1c5ee",
+      "bytes": 8918264,
+      "scale": 1.0028423,
+      "floorY": -0.5670476803780615,
+      "elapsedMs": 321418,
+      "role": "static scenery; interactive props remain separate",
+      "lastError": null
+    },
+    {
+      "status": "done",
+      "operationId": "c43046c3-77ec-43c6-ab89-24b2af4945ae",
+      "worldId": "7aa51e2f-e40b-4fa3-b933-b91c5d838bb9",
+      "model": null,
+      "requestHash": null,
+      "photoHash": null,
+      "artifactHash": "fdf441856ca790971bdcde7714a4fa53c64fb46fbb7ed0aab3ddaeb0414089e7",
+      "liteArtifactHash": "d9b7cf5c72eeb28b2310466760d0ca7fbc417ffdb36b5472ce4bc2981869b8ed",
+      "bytes": 9012252,
+      "scale": 0.8583877,
+      "floorY": -1.772388397457233,
+      "elapsedMs": 333036,
+      "role": "static scenery; interactive props remain separate",
+      "lastError": null
+    },
+    {
+      "status": "failed",
+      "operationId": "7e778706-29ff-4b84-ab2c-25fb7099fd13",
+      "worldId": null,
+      "model": null,
+      "requestHash": null,
+      "photoHash": null,
+      "artifactHash": null,
+      "liteArtifactHash": null,
+      "bytes": null,
+      "scale": null,
+      "floorY": null,
+      "elapsedMs": 45560,
+      "role": "static scenery; interactive props remain separate",
+      "lastError": "The generated floor needs calibration before headset viewing."
+    }
+  ]
+}

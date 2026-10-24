@@ -1,0 +1,15 @@
+[worker 03:46:41] starting convex=http://127.0.0.1:3210 budget_gpu_s=1500.0 prewarm=False
+✓ Initialized. View run at 
+https://modal.com/apps/<workspace>/main/ap-AVwfJpd9yjnjDaHZVdAJ6P
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/kyaa/memory-gate-prep/practice/memory-gate/worker/sharp_worker.py
+└── ✓ Created Function Sharp.*.
+[worker 03:46:43] claimed job=jn74z03aep3pnhe1gkv5v7bfc58gvaps splat=kd7fwfbfgxczrcb7xmt6fbtach8gtjn9
+[worker 03:47:11] done late=False jobId=jn74z03aep3pnhe1gkv5v7bfc58gvaps numSplats=500000 bytes=7097336 floorY=-1.54 total=28.16 gpu=23.04 cold=True
+[worker 03:47:11] max jobs reached; exiting
+Stopping app - local entrypoint completed.
+✓ App completed. View run at 
+https://modal.com/apps/<workspace>/main/ap-AVwfJpd9yjnjDaHZVdAJ6P
+[worker 03:47:18] stopped jobs=1 restarts=0 gpu_estimate_s=34.7 est_usd=0.019 wall_s=36.5
+{"summary": {"jobs": 1, "restarts": 0, "gpuEstimateS": 34.7, "estUsd": 0.019, "containers": 1, "sessions": [[1.9, 24.9]]}}

@@ -1,0 +1,44 @@
+{
+  "name": "memory-gate-headset",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Memory Gate headset app (IWSDK 1.0.1 mixed reality + Spark 2.4.0 splats). Practice build, sample content.",
+  "scripts": {
+    "dev": "iwsdk dev up --headed",
+    "dev:runtime": "vite",
+    "dev:vite": "IWSDK_DEV_OPEN=false vite",
+    "dev:down": "iwsdk dev down",
+    "dev:status": "iwsdk dev status",
+    "typecheck": "tsc --noEmit",
+    "build": "vite build",
+    "preview": "vite preview",
+    "room": "node scripts/make-room.mjs",
+    "shoot": "node scripts/shoot.mjs",
+    "dev:headless": "iwsdk dev up --headless --allow-browser-automation --screenshot-width 1280 --screenshot-height 800",
+    "shoot:spectator": "node scripts/shoot-spectator.mjs"
+  },
+  "dependencies": {
+    "@iwsdk/core": "1.0.1",
+    "@pmndrs/uikit": "1.0.77",
+    "@pmndrs/uikit-horizon": "1.0.77",
+    "@pmndrs/uikit-lucide": "1.0.77",
+    "@sparkjsdev/spark": "2.4.0",
+    "convex": "1.46.0",
+    "three": "npm:super-three@0.181.0"
+  },
+  "devDependencies": {
+    "@iwsdk/cli": "1.0.1",
+    "@iwsdk/vite-plugin-dev": "1.0.1",
+    "@types/three": "0.181.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.7"
+  },
+  "overrides": {
+    "sharp": "0.35.5",
+    "three": "npm:super-three@0.181.0"
+  },
+  "engines": {
+    "node": ">=20.19.0 <21.0.0-0 || >=22.12.0 <23.0.0-0 || >=24.0.0"
+  }
+}

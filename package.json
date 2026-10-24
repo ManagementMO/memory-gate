@@ -1,0 +1,39 @@
+{
+  "name": "memory-gate-practice",
+  "private": true,
+  "type": "module",
+  "description": "Memory Gate practice build (pre-event rehearsal, 2026-10-23). See README for the event-rules note.",
+  "scripts": {
+    "dev:convex": "CONVEX_AGENT_MODE=anonymous convex dev --tail-logs disable",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --config tests/smoke/vitest.config.mjs",
+    "test:headset": "vitest run --config tests/headset/vitest.config.mjs",
+    "assets:builtin": "node scripts/build-builtin-assets.mjs",
+    "seed:builtin": "node scripts/build-builtin-assets.mjs && node scripts/seed-builtin.mjs",
+    "demo:room": "node scripts/practice-room.mjs",
+    "demo:links": "node scripts/demo-links.mjs",
+    "test:xr": "node apps/headset/scripts/xr-rehearsal.mjs",
+    "e2e": "playwright test --config tests/e2e/playwright.config.mjs",
+    "e2e:live": "E2E_LIVE=1 playwright test --config tests/e2e/playwright.config.mjs",
+    "eval:live": "node scripts/eval-live.mjs",
+    "seed": "node scripts/seed.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "env:push": "node scripts/env-push.mjs",
+    "services:live": "node scripts/enable-live.mjs",
+    "verify": "bash scripts/verify-all.sh",
+    "verify:live": "E2E_LIVE=1 bash scripts/verify-all.sh"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.132.1",
+    "convex": "1.46.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@edge-runtime/vm": "5.0.0",
+    "@playwright/test": "1.64.0",
+    "@types/node": "^24.10.1",
+    "convex-test": "0.0.61",
+    "typescript": "5.9.3",
+    "vitest": "5.0.3"
+  }
+}

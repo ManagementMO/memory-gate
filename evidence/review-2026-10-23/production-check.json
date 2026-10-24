@@ -1,0 +1,68 @@
+{
+  "testedAt": "2026-10-24T01:47:20.745Z",
+  "browser": "Chrome headless on macOS; LAN HTTPS production build",
+  "origin": "https://10.0.8.161:4173",
+  "room": "MWWFUG",
+  "readyMs": 2255,
+  "scene": {
+    "source": "illustrative-procedural",
+    "objects": [
+      {
+        "label": "bench",
+        "position": [
+          -2,
+          0,
+          -3.3
+        ],
+        "phase": "solid"
+      },
+      {
+        "label": "tree",
+        "position": [
+          2,
+          0,
+          -5.6
+        ],
+        "phase": "solid"
+      },
+      {
+        "label": "gate",
+        "position": [
+          0,
+          0,
+          -8.5
+        ],
+        "phase": "solid"
+      },
+      {
+        "label": "photograph",
+        "position": [
+          -0.75,
+          1.0499999523162842,
+          -2.4000000953674316
+        ],
+        "phase": "solid"
+      }
+    ],
+    "tickError": null,
+    "fps": 60
+  },
+  "frames": {
+    "count": 120,
+    "frameMsP50": 16.699999999999818,
+    "frameMsP95": 16.800000000000182
+  },
+  "phoneHttpsStatus": 200,
+  "secretFileDenied": [
+    {
+      "port": 5174,
+      "status": 403
+    },
+    {
+      "port": 8081,
+      "status": 403
+    }
+  ],
+  "pageErrors": [],
+  "physicalQuest": false
+}

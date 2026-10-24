@@ -1,0 +1,17 @@
+[worker 03:32:42] starting convex=http://127.0.0.1:3210 budget_gpu_s=1500.0 prewarm=True
+✓ Initialized. View run at 
+https://modal.com/apps/<workspace>/main/ap-tQs2TTmkWUcJ8Leol4S24V
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/kyaa/memory-gate-prep/practice/memory-gate/worker/sharp_worker.py
+└── ✓ Created Function Sharp.*.
+[worker 03:32:58] prewarmed wall_s=15.2 gpu=NVIDIA L40S model_load_s=10.65 container_age_s=0.0 first_call=True
+[worker 03:33:24] keep-warm ping wall_s=0.5 container_age_s=26.0 gpu_estimate_s=341.2
+[worker 03:33:35] claimed job=jn7db263zxptvdrjq7tspc76y18gv4g4 splat=kd79mch5kghzmbs5yyqm3vgvjs8gvjx3
+[worker 03:33:44] done late=False jobId=jn7db263zxptvdrjq7tspc76y18gv4g4 numSplats=500000 bytes=7097336 floorY=-1.54 total=9.69 gpu=7.57 cold=False
+[worker 03:33:44] max jobs reached; exiting
+Stopping app - local entrypoint completed.
+✓ App completed. View run at 
+https://modal.com/apps/<workspace>/main/ap-tQs2TTmkWUcJ8Leol4S24V
+[worker 03:33:46] stopped jobs=1 gpu_estimate_s=63.4 est_usd=0.034 wall_s=64.5
+{"summary": {"jobs": 1, "gpuEstimateS": 63.4, "estUsd": 0.034, "containers": 1, "sessions": [[1.1, 60.7]]}}
