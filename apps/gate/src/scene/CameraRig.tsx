@@ -9,6 +9,7 @@ import { MEMORY_CENTER } from './layout';
 import { damp, dampVec3, easeInOutCubic } from './util';
 import { useMemory } from '../flow/memory';
 import { EYE, LOOK_Y, SHORE, albumView, walkView } from './palace/plan';
+import { firstPersonActive, firstPersonView } from '../social/firstPerson';
 
 const useMemoryWater = () => !!useMemory.getState().plan?.setting.water;
 
@@ -95,6 +96,10 @@ export function CameraRig() {
       _look.set(px * 0.6, eye - 0.08 + py * 0.25, -3);
       fov = 58;
       rate = 1.6;
+    } else if (firstPersonActive()) {
+      // Through someone's eyes: at your spot, at the perspective's eye height (social/firstPerson.ts).
+      fov = firstPersonView(_pos, _look, state.size.width / Math.max(1, state.size.height));
+      rate = 4;
     } else if (s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving') {
       const o = orbit.current;
       if (!o.dragging) {

@@ -1,5 +1,6 @@
 // Headset rehearsal in the emulated Quest 3 (IWER via @react-three/xr): the Enter button appears, entering begins the
-// conversation, captions render in 3D, the memory forms around the wearer, and reaching the album ends the session.
+// conversation, captions render in 3D, the memory forms around the wearer, seeing through the grandchild's eyes puts
+// the wearer's eyes at 1.1 m (the world scales around their feet), and reaching the album ends the session.
 import { chromium } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 const out = process.argv[2] ?? 'apps/gate/.shots/xr';
@@ -44,6 +45,24 @@ try {
   await page.waitForTimeout(5000);
   await page.screenshot({ path: `${out}/03-xr-memory.png` });
   note(`state: ${JSON.stringify(await st())}`);
+  // Perspectives: through the grandchild's eyes the world grows around the wearer until their eyes are at 1.1 m.
+  const eyes = () => page.evaluate(() => {
+    const s = window.__social.store.getState();
+    return { viewing: s.viewing, measured: s.xr.measured, k: s.xr.k };
+  });
+  await page.waitForFunction(() => window.__social.store.getState().xr.measured !== null, null, { timeout: 10000 }).catch(() => undefined);
+  const before = await eyes();
+  note(`perspective ${before.viewing}: measured eye ${before.measured?.toFixed(2)} m, world scale ${before.k.toFixed(2)}`);
+  await page.evaluate(() => window.__social.setViewing('child'));
+  await page.waitForFunction(() => Math.abs(window.__social.store.getState().xr.k - 1) > 0.05, null, { timeout: 5000 }).catch(() => undefined);
+  const after = await eyes();
+  const seenAt = after.measured ? after.measured * after.k : null;
+  note(`${seenAt && Math.abs(seenAt - 1.1) < 0.03 ? 'PASS' : 'FAIL'} grandchild's eyes: world scale ${after.k.toFixed(2)}, eyes at ${seenAt?.toFixed(2)} m in the memory`);
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: `${out}/03b-xr-grandchild-eyes.png` });
+  await page.evaluate(() => window.__social.setViewing('grandparent'));
+  await page.waitForTimeout(800);
+  note(`back to the grandparent's eyes: world scale ${(await eyes()).k.toFixed(2)}`);
   await page.evaluate(() => window.__gate.flow.leave());
   await page.waitForFunction(() => window.__gate.store.getState().stage === 'album', null, { timeout: 40000 });
   await page.waitForTimeout(6000);

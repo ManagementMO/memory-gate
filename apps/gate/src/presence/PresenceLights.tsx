@@ -8,6 +8,7 @@ import { useGate } from '../state/store';
 import { glowBlending } from '../scene/util';
 import { PersonLight } from './PersonLight';
 import { pointBus, serverNow, usePresence, type Person } from './presence';
+import { useInSceneIds } from '../social/scene/SocialLayer';
 
 // Places beside the viewer in the camera's own frame (x right, y up, -z ahead), nearest first. The right side fills
 // first: inside a memory the companion stands to your left.
@@ -112,6 +113,7 @@ export function PresenceLights() {
   const others = usePresence((s) => s.others);
   const me = usePresence((s) => s.me);
   const myPoint = usePresence((s) => s.myPoint);
+  const inScene = useInSceneIds(); // people standing in the memory are drawn where they are (social/SocialLayer)
   const stage = useGate((s) => s.stage);
   const onLight = stage === 'forming' || stage === 'memory' || stage === 'leaving';
   if (stage === 'album') return null;
@@ -120,7 +122,7 @@ export function PresenceLights() {
   if (myPoint && me && now - myPoint.t < MARK_MS) marks.push({ key: `me-${myPoint.t}`, at: myPoint.at, t: myPoint.t, color: me.color });
   return (
     <group name="presence">
-      {others.map((p, i) => <Seat key={p.id} person={p} index={i} onLight={onLight} />)}
+      {others.filter((p) => !inScene.has(p.id)).map((p, i) => <Seat key={p.id} person={p} index={i} onLight={onLight} />)}
       {marks.map((k) => <Mark key={k.key} at={k.at} t={k.t} color={k.color} />)}
       <TapToPoint />
     </group>
