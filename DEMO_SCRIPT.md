@@ -4,9 +4,11 @@ The current scripted experience is an original illustrative courtyard with separ
 
 Prepare with scripts/start-all.sh and npm run demo:links. Put the spectator view and storyteller phone side by side. Open the family headset link on the Quest and complete docs/QUEST_CHECKLIST.md first. Keep the illustrative courtyard available on Photo; do not wait for a new world generation during judging.
 
+The intended audience is adults living with younger-onset Alzheimer’s (diagnosed before 65) and someone close to them. This does not assume a disease stage or level of ability. Let the storyteller choose a screen or the optional seated Quest and set the pace. The family can use the simpler storyteller view, watch the shared place, hear the original words, or pause immediately. Present this as a shared reminiscence prototype; no patient benefit or clinical validation has been established.
+
 | Time | Exact spoken line | Operator action / visible result |
 |---|---|---|
-| 0:00–0:15 | “Families can describe the same place in different languages. Heirloom lets them rebuild it together and preserve the voices behind each detail. This is our fictional sample courtyard.” | Show the initial bench, tree, gate and keepsake, with the phone connected. |
+| 0:00–0:15 | “We’re building Memory Gate for adults living with younger-onset Alzheimer’s and the people close to them. A story becomes a place they can shape together, with their own voice behind each detail. This is our fictional sample.” | Show the garden with the phone connected. Open the shared screen view; the Quest is optional. |
 | 0:15–0:35 | Storyteller: “Mueve el banco al lado del árbol, mirando hacia la puerta.” | Phone: Record, speak, Stop and share. The source sentence and gold placement preview appear. |
 | 0:35–0:55 | “She remembers it beside the tree, facing the gate. Her words make a proposal; the remembered place stays unchanged until someone confirms.” | Review the gold bench, then Keep this placement. The accepted bench moves and turns in both views. |
 | 0:55–1:15 | “Every correction can keep the voice that gave it.” | Select the moved bench. Let the original sentence play; point out its English reading and contributor attribution. |

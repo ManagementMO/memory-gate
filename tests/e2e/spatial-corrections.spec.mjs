@@ -37,6 +37,7 @@ test('a bilingual placement preview, confirmation and undo synchronize two phone
     await expect(a.getByTestId('utterance-item').filter({ hasText: 'No lo muevas.' })).toHaveAttribute('data-status', 'done');
     await expect(b.getByTestId('correction-preview')).toHaveCount(1);
     expect((await readBench()).position).toEqual(before.position);
+    // Scroll from the long conversation into an actual hittable control; no forced click can hide an overlay bug.
     await b.getByTestId('correction-confirm').click();
     for (const p of [a, b]) await expect(p.getByTestId('correction-preview')).toHaveCount(0);
     await expect.poll(async () => (await readBench()).position[0]).not.toBeCloseTo(before.position[0], 1);

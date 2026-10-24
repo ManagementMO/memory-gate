@@ -6,6 +6,8 @@ The source brief is outputs/heirloom-overnight/HEIRLOOM_OVERNIGHT_BUILD.md in th
 
 Level A's core browser collaboration is implemented and tested. Level B's real speech, original recording and generated scenery are implemented and exercised. Level C remains incomplete until a real Quest 3 wearer and a consenting family member review the flow.
 
+The current user-directed focus is younger-onset Alzheimer’s, meaning diagnosis before 65, without assuming stage or ability. The shared construction/source/confirmation architecture is preserved. This refresh improves original garden geometry/materials, a steady eye-level camera, source-labeled spectator presentation, an optional phone 3D view and simpler storyteller controls. It removes the old grandparent/1940s assumptions and adds conservative uncertainty/quiz safeguards. Unpointed courtyard additions use bounded, spaced, provisional floor positions; unsupported model relations do not place objects on imagined furniture. If no clear slot remains, the words are kept without adding overlapping geometry. The backdrop’s authored architecture is interpretation, not extracted story evidence. Medical efficacy, individual comfort and patient usefulness are unverified; see LIMITATIONS.md and its research sources.
+
 | Original requirement | Current implementation and evidence |
 |---|---|
 | A courtyard with bench, tree, gate and keepsake | Original procedural courtyard and twelve original GLBs; four primary props explicitly seeded in sample rooms. A generated courtyard from the original empty set is also cached. |

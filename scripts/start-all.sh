@@ -22,7 +22,7 @@ if up 3210; then echo "backend   already running (:3210)"; else
   grep -q "Convex functions ready" .logs/convex.log && echo "backend   ready" || { echo "backend   NOT ready, see .logs/convex.log"; exit 1; }
 fi
 if [ ! -f .env.worker ]; then npm run env:push; fi
-node scripts/ensure-seeded.mjs
+node --experimental-transform-types scripts/ensure-seeded.mjs
 if up 8081; then echo "headset   already running (:8081)"; else
   echo "headset   starting managed server (no browser window)…"; (cd apps/headset && npx @iwsdk/cli dev up --no-open --timeout 45000 > "$ROOT/.logs/headset.log" 2>&1)
   wait_port 8081 && echo "headset   ready" || echo "headset   NOT ready, see .logs/headset.log"

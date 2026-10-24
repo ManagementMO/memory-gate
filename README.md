@@ -1,6 +1,8 @@
 # Memory Gate / Heirloom
 
-A family member speaks a correction on a phone. Both participants see a gold placement preview. After confirmation, the bench moves and turns in their shared 3D place. Selecting it replays the original sentence with its English reading and contributor attribution. Undo restores its previous placement and source.
+An adult living with younger-onset Alzheimer’s shares a story with someone close to them. Their words can suggest objects in a shared place, on a screen or an optional Quest 3. Family members review visual suggestions together. Original recordings, translations and contributor attribution stay with the story. This is a reminiscence and conversation prototype; clinical benefit has not been established.
+
+The experience now has a shaded illustrative garden, more natural original props, an eye-level stable camera, an embedded shared view, and an optional simpler storyteller screen. A spoken correction still creates a gold placement preview; confirmation moves and turns the bench in both views. Selecting it replays the original sentence. Undo restores its previous placement and source. Uncertain recall stays as conversation, rather than becoming scene evidence. See [the current handoff](MORNING_REPORT.md) for verification and remaining gates.
 
 This is the reviewed local Heirloom foundation, not an untested overnight completion claim. The defining shared correction, real speech/source replay, generated scenery and native emulator interactions have evidence. Physical Quest 3 and real-family validation remain open.
 
@@ -54,6 +56,8 @@ Through the UI, choose Use the sample content, give permissions, open Story and 
 3. Select the moved bench to hear that correction's original recording, then undo.
 
 A short trigger click selects/replays and opens the gate. Hold trigger to talk. B pauses/resumes. Move a controller near the keepsake and hold squeeze/grip to inspect it; release returns it to the remembered position. Gate/keepsake exploration is local; accepted placements are shared. See [the Quest checklist](docs/QUEST_CHECKLIST.md) before calling hardware ready.
+
+On the phone, **Simpler storyteller view** hides arrangement tools while keeping recording, original words, typed input and pause available. **Open the shared place** embeds the read-only 3D view only with family-sharing permission; it does not request microphone access. The still garden image is a capture of our illustrative renderer, not an uploaded family photograph or a live view. Storytellers join in the simpler view by default and can reveal the family tools themselves.
 
 ## Scenery and credentials
 

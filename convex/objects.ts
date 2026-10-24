@@ -7,6 +7,7 @@ import { internal } from './_generated/api';
 import type { Doc, Id } from './_generated/dataModel';
 import { activeScopes, appendEvent, priorCommand, readFlags, requireMember } from './lib/auth';
 import { anchorV } from './schema';
+import { storyPlacement } from '../packages/shared/src/story-placement';
 import { norm, sayBack, type AppAction, type ProposeAction } from '../packages/shared/src/contract';
 import { settlePendingCorrection } from './corrections';
 
@@ -219,9 +220,14 @@ export const proposeFromPhone = mutation({
     notPaused(room);
     const clean = label.trim().toLowerCase();
     if (!/^[a-z][a-z' -]{0,39}$/.test(clean)) throw new ConvexError({ code: 'BAD_LABEL', message: 'Use plain words for the object name.' });
-    const pos = (anchor?.position ?? [0, 0, -1.6]) as Vec3;
+    const lib = await findLibrary(ctx, clean);
+    const current = room.layout === 'courtyard' ? await ctx.db.query('objects').withIndex('by_room', q => q.eq('roomId',room._id)).collect() : [];
+    const pos = anchor?.position ?? (room.layout === 'courtyard'
+      ? storyPlacement(lib?.size ?? DEFAULT_SIZE, current.filter(o => o.status === 'confirmed' || o.status === 'ghost'))
+      : [0,0,-1.6] as Vec3);
+    if (!pos) throw new ConvexError({code:'NO_CLEAR_SPACE',message:'There is no clear floor space for another suggestion. Remove a suggestion or arrange the existing objects first.'});
     const r = await createObject(ctx, room, member, { label: clean, details: [], where: '', quote: clean, utteranceId: null,
-      anchor: { position: pos, source: anchor ? anchor.source : 'phone' }, generatorPrompt: `${clean}, single household object, 1940s, plain background`, commandId });
+      anchor: { position: pos as Vec3, source: anchor ? anchor.source : room.layout === 'courtyard' ? 'suggested-layout' : 'phone' }, generatorPrompt: `${clean}, single physical object, plain background`, commandId });
     return { objectId: r.objectId, duplicate: false };
   },
 });
@@ -276,6 +282,7 @@ export const applyActions = internalMutation({
     const actions = a.actions as AppAction[];
     let intent: string = actions[0]?.type ?? 'none';
     let say: string | null = null;
+    let proposedAny = false;
     const notes = [...a.dropped];
     if (room.paused && intent !== 'pause_session') {
       notes.push('room paused: actions ignored');
@@ -286,14 +293,23 @@ export const applyActions = internalMutation({
         try {
           if (act.type === 'propose_object') {
             const p = act as ProposeAction;
-            const dup = (await ctx.db.query('objects').withIndex('by_room', (q) => q.eq('roomId', room._id)).collect()).find((o) => o.status === 'ghost' && o.label === p.label);
-            if (dup) { notes.push(`already showing a ${p.label}`); continue; }
+            const current = await ctx.db.query('objects').withIndex('by_room', (q) => q.eq('roomId', room._id)).collect();
+            const dup = current.find((o) => o.status === 'ghost' && o.label === p.label);
+            if (dup) { proposedAny = true; notes.push(`already showing a ${p.label}`); continue; }
             // On a table/seat/shelf only when the words mean "on" (any language: Claude's relation), or for small
             // objects (radio, teapot, clock…) when the ray met a surface; furniture stands on the floor.
             const lib = await findLibrary(ctx, p.label);
             const onSurface = p.relation === 'on' || (lib !== null && lib.size <= 0.5);
+            // Without a pointing ray, choose only a clear provisional floor slot. Model anchor/relation fields
+            // must not invent a support, bypass bounds, or leave a prop stranded when its supposed support moves.
+            const suggested = !u.pointer && room.layout === 'courtyard'
+              ? storyPlacement(lib?.size ?? DEFAULT_SIZE,current.filter(o => o.status === 'confirmed' || o.status === 'ghost')) : undefined;
+            if (suggested === null) { notes.push('No clear floor space for a visual suggestion. Your words are saved.'); continue; }
             const r = await createObject(ctx, (await ctx.db.get(room._id))!, member, { label: p.label, details: p.details, where: p.where, quote: p.quote, utteranceId: u._id,
-              anchor: anchorFrom(u.pointer, i++, onSurface), generatorPrompt: p.generatorPrompt, commandId: null });
+              anchor: suggested
+                ? { position: suggested, source: 'suggested-layout' }
+                : anchorFrom(u.pointer, i++, onSurface), generatorPrompt: p.generatorPrompt, commandId: null });
+            proposedAny = true;
             // The code-built say-back is English-only; for other languages the companion's own reply (in the
             // storyteller's language) does the acknowledging.
             if (!a.language || a.language === 'en') say ??= sayBack(p.label, p.where, r.modelReady);
@@ -313,6 +329,7 @@ export const applyActions = internalMutation({
         }
       }
     }
+    if (intent === 'propose_object' && !proposedAny) intent = 'none';
     const silent = room.paused && intent !== 'pause_session';
     await ctx.db.patch(u._id, { status: 'done', intent, reply: silent ? null : a.reply, replyTranslation: silent ? null : a.replyTranslation || null, sayBack: say, aiMode: a.aiMode, aiMs: a.aiMs, dropped: notes, language: a.language, translation: a.translation });
   },

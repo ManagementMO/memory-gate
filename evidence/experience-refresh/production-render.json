@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-24T06:25:58.880Z",
+  "environment": "Mac headless Chrome, HTTPS production spectator at 1440x960; not physical Quest",
+  "room": "BFP3SK",
+  "source": "Original illustrative scenery and props, fictional practice room",
+  "timing": { "samples": 120, "p50Ms": 8.300000011920929, "p95Ms": 9 },
+  "xrPresenting": false,
+  "drift": false,
+  "tickError": null,
+  "confirmedRenderedObjects": ["bench", "tree", "gate", "photograph"]
+}

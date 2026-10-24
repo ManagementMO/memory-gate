@@ -8,10 +8,13 @@
 // Solids stay in the opaque pass (alpha-test dissolve, no blending), so splats keep sorting correctly around them, and
 // keep a faint warm rim: spoken additions always glow. Accepted corrections ease to their new anchor and heading.
 // Calm contract: pulses ≤ 0.5 Hz, every brightness change takes ≥ 0.4 s.
-import * as THREE from 'three';
+import * as THREE from '@iwsdk/core';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { GOLD, INK, glowBlending, radialTexture, SEPIA_GLSL, easeInOutCubic, easeOutCubic } from './palette.js';
 import type { Motes } from './motes.js';
+import { surfaceTexture } from '../scene-assets/natural-surfaces';
+
+const oakGrain = surfaceTexture('wood');
 
 const GHOST_VERT = /* glsl */ `
 varying vec3 vN; varying vec3 vW;
@@ -55,7 +58,7 @@ class Body {
   readonly ghost: THREE.Group;
   readonly placeholder: boolean;
   readonly ghostU = { uTime: { value: 0 }, uOpacity: { value: 0 }, uTop: { value: 0 }, uBottom: { value: -10 }, uShimmer: { value: 0 }, uColor: { value: GOLD.clone() } };
-  readonly solidU = { uCut: { value: -10 }, uGrade: { value: 0.6 }, uEdge: { value: 1 }, uRim: { value: 0.16 } };
+  readonly solidU = { uCut: { value: -10 }, uGrade: { value: 0.08 }, uEdge: { value: 1 }, uRim: { value: 0.025 } };
   readonly minY: number;
   readonly maxY: number;
   readonly halfX: number;
@@ -131,6 +134,7 @@ class Body {
     m.metalness = 0; // Tripo ships metallicFactor 1 + an ORM map; wood and fabric read as plastic-metal without this
     m.metalnessMap = null;
     m.envMapIntensity = 0.9;
+    if (/^Memory(Oak|Walnut)$/.test(std.name)) { m.map = oakGrain; m.bumpMap = oakGrain; m.bumpScale = .003; }
     m.transparent = false;
     m.depthWrite = true;
     const u = this.solidU;

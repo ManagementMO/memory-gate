@@ -62,7 +62,7 @@ describe('review fixes (05:20)', () => {
   });
   test('Spanish medical claims in the reply or its translation are replaced', () => {
     const v = validate('Había un piano.', base({ language: 'es', translation: 'There was a piano.', companion_reply: 'Esta aplicación cura la demencia.', reply_translation: 'This app cures dementia.' }));
-    expect(v.reply).toBe('Thank you for sharing that. What else do you see in the room?');
+    expect(v.reply).toBe('Thank you for sharing that. Take your time; we can stay here together.');
     expect(v.replyTranslation).toBe('');
   });
   test('a translation that adds medical claims is dropped', () => {

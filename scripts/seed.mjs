@@ -7,7 +7,7 @@
 // must be <= 1.5 MB (gltf-transform optimize, webp 1024); the rug has a baked lie-flat node (fixtures/library/orient.mjs).
 // Idempotent: rows are upserted by key, and a file whose sha256 matches the stored one is NOT re-uploaded. (A new
 // upload makes admin.upsert* delete the old file, and existing rooms still point at it from splat/object rows.)
-// Usage: node scripts/seed.mjs [--mocks]   (--mocks turns every live flag off)
+// Usage: npm run seed -- [--mocks]   (--mocks turns every live flag off)
 import { readFileSync, statSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { ConvexHttpClient } from 'convex/browser';

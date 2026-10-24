@@ -68,11 +68,12 @@ export function Welcome({ onEnter, notice }: { onEnter: (s: Session, firstScreen
     <main className="welcome" data-testid="welcome">
       <header className="welcome-head">
         <p className="eyebrow">Memory Gate</p>
-        <h1>A place to remember, together.</h1>
+        <h1>Your story.<br />A place to share it.</h1>
         <p className="lede">
-          Tell a story in your own words. Follow it on a headset, shape the place together, and keep the original voice behind each memory.
-          Suggested additions and placements need your confirmation. It supports reminiscence; it is not a treatment.
+          Turn the places in your stories into somewhere you can spend time together.
+          Speak in your own language, shape the scene with someone you trust, and keep your own voice at its heart.
         </p>
+        <p className="welcome-purpose">Designed for adults living with younger-onset Alzheimer’s and the people close to them. A shared reminiscence prototype; clinical benefit has not been established.</p>
       </header>
 
       {notice && <Notice tone="ok" testId="welcome-notice">{notice}</Notice>}
@@ -83,7 +84,7 @@ export function Welcome({ onEnter, notice }: { onEnter: (s: Session, firstScreen
           <label className="field">
             <span>Room title</span>
             <input data-testid="create-title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60}
-              placeholder={useSample ? SAMPLE.roomTitle : 'Grandma’s front room'} autoComplete="off" />
+              placeholder={useSample ? SAMPLE.roomTitle : 'Our Sunday garden'} autoComplete="off" />
           </label>
           <label className="field">
             <span>Your name</span>

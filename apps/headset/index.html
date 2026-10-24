@@ -97,6 +97,24 @@
       .mg-tick .text b { font-weight: 600; }
       .mg-tick .sub { font: italic 400 clamp(15px, 1.5vw, 21px)/1.35 var(--serif); color: #cdb994; margin-top: 2px; }
       .mg-sound { position: fixed; right: 16px; top: 12px; z-index: 25; min-height: 40px; font-size: 15px; }
+      .mg-view-heading { display: none; position: fixed; top: 54px; left: 32px; z-index: 15; color: #fffbed; pointer-events: none; text-shadow: 0 2px 18px #263c2e; }
+      .mg-view-heading h1 { font: 400 clamp(26px, 3vw, 42px)/1.12 var(--serif); letter-spacing: -.025em; margin: 0 0 8px; }
+      .mg-view-heading p { font: 500 12px/1.4 var(--sans); margin: 0; color: #f4f2e3; }
+      body.mg-spectator .mg-view-heading { display: block; }
+      body.mg-presenting .mg-view-heading { display: none; }
+      body.mg-spectator .mg-tag { left: 32px; top: 24px; letter-spacing: .16em; color: #fffbed; text-shadow: 0 1px 10px #263c2e; }
+      body.mg-spectator::after { content: ''; position: fixed; inset: 0; pointer-events: none; background: linear-gradient(180deg,rgba(14,32,23,.3),transparent 25%,transparent 72%,rgba(14,32,23,.18)); z-index: 5; }
+      .mg-ticker { left: 32px; bottom: 28px; width: min(640px,calc(100vw - 64px)); border-radius: 16px; background: rgba(21,40,29,.87); border-color: rgba(235,240,222,.25); padding: 10px 20px; box-shadow: 0 10px 30px rgba(15,32,22,.16); }
+      .mg-tick { gap: 0 12px; padding: 6px 0; }
+      .mg-tick .meta { font: 500 11px/1.4 var(--sans); letter-spacing: .09em; color: #d4ddc4; margin-bottom: 5px; }
+      .mg-tick .text { font-size: clamp(19px,2.1vw,28px); }
+      .mg-tick:not([data-kind="line"]) .text { font: 500 13px/1.5 var(--sans); color: #e4e8da; }
+      .mg-tick:not([data-kind="line"]) .dot { width: 5px; height: 5px; margin-top: 7px; background: #b9c3a6; }
+      .mg-tick .sub { font-size: 17px; color: #d5ddc7; }
+      body.mg-embedded .mg-view-heading, body.mg-embedded .mg-tag, body.mg-embedded .mg-sound { display: none !important; }
+      body.mg-embedded .mg-ticker { left: 12px; bottom: 12px; width: calc(100% - 24px); padding: 6px 12px; }
+      body.mg-embedded .mg-tick .text { font-size: 17px; }
+      body.mg-embedded .mg-tick:not([data-kind="line"]) { display: none; }
       @media (max-width: 640px) {
         .mg-panel { bottom: 10px; padding: 14px; }
         .mg-sep { display: none; }
@@ -108,7 +126,8 @@
   <body>
     <div id="scene-container"></div>
 
-    <div class="mg-tag" id="mg-tag" data-testid="sample-tag">practice build · sample content</div>
+    <div class="mg-tag" id="mg-tag" data-testid="sample-tag">Memory Gate · together</div>
+    <div class="mg-view-heading"><h1 id="mg-view-title"></h1><p id="mg-scene-kind"></p></div>
 
     <header class="mg-head mg-hidden" id="mg-head">
       <h1 class="mg-title" id="mg-title" data-testid="room-title">…</h1>
@@ -118,11 +137,11 @@
     <div class="mg-loading mg-hidden" id="mg-loading" aria-live="polite">The memory is forming…</div>
 
     <section class="mg-panel mg-hidden" id="mg-panel" aria-label="Before you enter">
-      <p class="mg-notice" id="mg-notice">
+      <details class="mg-notice"><summary>About the AI companion and your voice</summary><p id="mg-notice">
         You'll talk with an AI companion. Your voice is turned into text by Cartesia and the words go to Claude (Anthropic) to suggest objects. Nothing is added to the room unless someone confirms it.
         Conversations are recorded and may be shared with Cartesia and its third-party large language model providers.
         Recordings are kept only for this family's room and can be deleted at any time.
-      </p>
+      </p></details>
       <div class="mg-row">
         <button class="mg-btn" id="mg-mic" data-testid="enable-mic">Enable microphone</button>
         <button class="mg-btn primary" id="mg-enter" data-testid="enter-memory">Enter the memory</button>

@@ -99,17 +99,17 @@ export function StoryRecorder({ session, allowed, recordingAllowed, paused, onCo
   }
 
   return <section className="card compact recorder" data-testid="story-recorder" data-state={state} aria-label="Speak a memory">
-    <div className="section-head"><h2 className="h3">Let them tell it</h2><span className="chip chip-soft">Original voice</span></div>
-    <p className="muted small">Speak a memory or a placement correction. Your words appear on every screen; a suggestion needs confirmation.</p>
+    <div className="section-head"><h2 className="h3">Tell it your way.</h2><span className="chip chip-soft">Your own voice</span></div>
+    <p className="recorder-intro">A little detail is enough. Talk about a place, a thing, or a moment that matters to you.</p>
     {!allowed ? <Notice tone="warn">Voice needs permission. <button className="btn btn-quiet" onClick={onConsent}>Open Permissions</button></Notice>
       : !secure ? <Notice tone="warn" testId="recorder-insecure">To use the phone microphone on Wi-Fi, open <a href={`https://${window.location.hostname}:5174${window.location.pathname}${window.location.search}`}>the secure phone page</a> and accept the local development certificate. Typing works here.</Notice>
       : <div className="row wrap">
         {!ready ? <button type="button" className="btn btn-primary" data-testid="voice-enable" onClick={enable} disabled={connecting || paused}>
-          {connecting ? 'Connecting microphone…' : 'Enable microphone'}
+          <span className="mic-symbol" aria-hidden="true">●</span> {connecting ? 'Connecting microphone…' : 'Enable microphone'}
         </button> : <>
           <button type="button" className={`btn btn-primary recorder-button ${state === 'listening' ? 'is-recording' : ''}`} data-testid="voice-record"
             aria-pressed={state === 'listening'} onClick={toggle} disabled={paused || state === 'thinking'}>
-            <span aria-hidden="true">{state === 'listening' ? '■' : '●'}</span> {state === 'listening' ? 'Stop and share' : state === 'thinking' ? 'Saving your words…' : 'Record a memory'}
+            <span className="mic-symbol" aria-hidden="true">{state === 'listening' ? '■' : '●'}</span> {state === 'listening' ? 'Stop and share' : state === 'thinking' ? 'Saving your words…' : 'Record a memory'}
           </button>
           <button type="button" className="btn btn-quiet" data-testid="voice-disconnect" onClick={disconnect}>Cancel / turn mic off</button>
         </>}

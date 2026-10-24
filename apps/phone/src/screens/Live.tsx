@@ -12,6 +12,7 @@ import type { Session } from '../session';
 import { Chip, Notice, Spinner, useToast } from '../ui';
 import { Corrections } from './Corrections';
 import { StoryRecorder } from './StoryRecorder';
+import { MemoryStage } from './MemoryStage';
 
 type RoomView = FunctionReturnType<typeof api.rooms.get>;
 type Obj = FunctionReturnType<typeof api.objects.list>[number];
@@ -27,7 +28,10 @@ let playing: HTMLAudioElement | null = null;
 function ReplayButton({ url, label }: { url: string; label: string }) {
   const [state, setState] = useState<'idle' | 'loading' | 'playing' | 'ended' | 'error'>('idle');
   const audio = useRef<HTMLAudioElement | null>(null);
-  useEffect(() => () => { audio.current?.pause(); }, []);
+  useEffect(() => {
+    setState('idle');
+    return () => { const prior=audio.current; prior?.pause(); if (playing === prior) playing=null; audio.current=null; };
+  }, [url]);
   function toggle() {
     const src = fileUrl(url);
     if (!src) { setState('error'); return; }
@@ -75,6 +79,7 @@ function ObjectCard({ o, canAct, busy, onConfirm, onReject }: { o: Obj; canAct: 
       </div>
       <h3 className="object-label">{capitalize(o.label)}{o.details.length > 0 && <span className="details"> · {o.details.join(', ')}</span>}</h3>
       {o.where && <p className="where">{o.where}</p>}
+      {o.anchor.source === 'suggested-layout' && <p className="muted small">{ghost ? 'Initial floor suggestion. Review its placement; the words above describe the story.' : 'Placement reviewed by the family; scenery remains an interpretation.'}</p>}
       {showQuote && <blockquote className="quote" lang={said?.language ?? undefined} data-testid="object-quote">“{o.quote}”</blockquote>}
       {said?.translation && <p className="translation" data-testid="object-translation"><span>In English</span> “{said.translation}”</p>}
       <p className="attribution" data-testid="object-attribution">
@@ -186,6 +191,7 @@ export function Live({ session, view, headsetConnected, onConsent }: { session: 
   const [labelError, setLabelError] = useState<string | null>(null);
   const [line, setLine] = useState('');
   const lineInput = useRef<HTMLInputElement>(null);
+  const [focused, setFocused] = useState(session.role === 'storyteller');
 
   const role = view.me.role;
   const canAct = role === 'family' || role === 'storyteller';
@@ -247,12 +253,13 @@ export function Live({ session, view, headsetConnected, onConsent }: { session: 
     : 'Nothing to undo';
 
   return (
-    <section className="screen" data-testid="live-screen" aria-label="Live story">
-      <details className="card compact">
-        <summary>{headsetConnected ? 'Headset connected · invite family' : 'Connect a headset or invite family'}</summary>
-        <HeadsetCard code={code} connected={headsetConnected} joinKey={view.joinKey} />
-      </details>
-
+    <section className={`screen live-story ${focused ? 'story-focused' : ''}`} data-testid="live-screen" aria-label="Live story" data-focused={focused}>
+      <div className="story-heading">
+        <div><p className="eyebrow">Time together</p><h2>Every story starts with you.</h2></div>
+        {canAct && <button className="btn btn-quiet focus-toggle" aria-pressed={focused} data-testid="story-focus" onClick={() => setFocused(v => !v)}>
+          {focused ? 'Show family tools' : 'Simpler storyteller view'}
+        </button>}
+      </div>
       {paused && (
         <Notice tone="warn" title="Paused" testId="paused-banner">
           The headset shows the real room for now: no memory, no objects, no captions and no questions. Resume when everyone is ready.
@@ -271,6 +278,26 @@ export function Live({ session, view, headsetConnected, onConsent }: { session: 
         <StoryRecorder session={session} allowed={scopes.has('voice_processing')} recordingAllowed={scopes.has('voice_recording')}
           paused={paused} onConsent={onConsent} />
       )}
+
+      <MemoryStage code={code} title={view.room.title} illustrative={!view.splat?.url || view.splat.status !== 'ready'}
+        sharing={scopes.has('share_with_family')} paused={paused} onConsent={onConsent} />
+      <div className="family-tools">
+        <details className="card compact">
+          <summary>{headsetConnected ? 'Headset connected · invite family' : 'Connect a headset or invite family'}</summary>
+          <HeadsetCard code={code} connected={headsetConnected} joinKey={view.joinKey} />
+        </details>
+      </div>
+
+      <section className="story-moment" aria-label="Latest words" data-testid="story-moment" aria-live="polite">
+        <p className="eyebrow">{recent.data?.[0] ? `${recent.data[0].speaker}’s words` : 'At your own pace'}</p>
+        <blockquote>{recent.data?.[0] ? `“${recent.data[0].transcript}”` : 'A place you love. A small detail. Anything you feel like sharing.'}</blockquote>
+        {recent.data?.[0]?.translation && <p className="translation">{recent.data[0].translation}</p>}
+        {recent.data?.[0]?.audioUrl && <ReplayButton key={recent.data[0].id} url={recent.data[0].audioUrl} label="the latest original words" />}
+        {recent.data?.[0]?.dropped.some(note => note.startsWith('No clear floor space')) && <p className="muted small" role="status">Your words are saved. There is no clear floor space for another visual suggestion; you can keep talking or arrange the existing objects.</p>}
+        <p className="muted small">{recent.data?.[0]?.status === 'pending' ? 'Keeping your words. Any visual suggestion will appear for review.' : 'There is no right answer. You can change the scene, keep talking, or simply enjoy being here.'}</p>
+      </section>
+
+      <div className="family-tools" data-testid="family-story-tools">
 
       {objects.data && objects.data.length > 0 && <Corrections code={code} token={token} revision={view.room.revision}
         objects={objects.data} canAct={canAct} paused={paused} />}
@@ -325,6 +352,7 @@ export function Live({ session, view, headsetConnected, onConsent }: { session: 
         </form>
       )}
 
+      </div>
       {canAct && (
         <form className="card compact" onSubmit={onTell} noValidate>
           <label className="field">
@@ -349,6 +377,7 @@ export function Live({ session, view, headsetConnected, onConsent }: { session: 
         </form>
       )}
 
+      <div className="family-tools">
       <h2>The story so far</h2>
       {recent.problem ? (
         <Notice tone="error">{recent.problem.message}</Notice>
@@ -361,7 +390,7 @@ export function Live({ session, view, headsetConnected, onConsent }: { session: 
           {recent.data.map((u) => <UtteranceItem key={u.id} u={u} />)}
         </ol>
       )}
-
+      </div>
     </section>
   );
 }

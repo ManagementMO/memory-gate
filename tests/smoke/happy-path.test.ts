@@ -51,7 +51,7 @@ describe('happy path', () => {
     const u = await say(t, code, teller.token, transcript, { pointer, durationMs: 2100 });
     expect(u).toMatchObject({ status: 'done', intent: 'propose_object', aiMode: 'mock', speaker: STORYTELLER, transcript, source: 'stt', translation: null, audioUrl: null });
     expect(u.sayBack).toBe('A piano… under the window. Shall I keep it there?'); // built by code; model is ready
-    expect(u.reply).toBe('What do you remember about the piano?');
+    expect(u.reply).toBe('Thank you. We can picture that together, at your pace.');
 
     // 6. A ghost with the verbatim quote, placed once at proposal time.
     let list = await t.query(api.objects.list, { code, token });

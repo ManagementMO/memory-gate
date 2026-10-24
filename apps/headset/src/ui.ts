@@ -42,6 +42,11 @@ export function createUi() {
       head.classList.remove('mg-hidden');
       panel.classList.remove('mg-hidden');
     },
+    setSceneContext(t: string, generated: boolean, sample: boolean, paused: boolean) {
+      $('mg-tag').textContent = `Memory Gate · ${sample ? 'fictional practice' : 'together'}`;
+      $('mg-view-title').textContent = t.replace(/\s*·.*$/, '');
+      $('mg-scene-kind').textContent = paused ? 'Taking a break' : generated ? 'AI scenery · family-guided interpretation' : 'Illustrative garden · imagined scenery';
+    },
     setSub(html: string) { sub.innerHTML = html; },
     setStatus(text: string) { status.textContent = text; },
     setLoading(on: boolean, text?: string) {
@@ -51,6 +56,7 @@ export function createUi() {
     /** In XR the 2D page is not seen; keep the emulator view clean too. */
     setPresenting(p: boolean) {
       for (const el of [head, panel]) el.style.visibility = p ? 'hidden' : '';
+      document.body.classList.toggle('mg-presenting', p);
     },
     error(msg: string, ms = 9000) {
       errText.textContent = msg;
@@ -69,7 +75,8 @@ export function createUi() {
     /** Spectator (projector) view: no controls, just the corner tag, the story ticker and an optional sound button. */
     setSpectator() {
       document.body.classList.add('mg-spectator');
-      $('mg-tag').textContent = 'Memory Gate · live · sample content';
+      document.body.classList.toggle('mg-embedded', new URLSearchParams(location.search).get('embed') === '1');
+      $('mg-tag').textContent = 'Memory Gate · together';
       $('mg-ticker').classList.remove('mg-hidden');
     },
     /** Up to three story items, newest first. Text is set with textContent (transcripts are data, never HTML). */

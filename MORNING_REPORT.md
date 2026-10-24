@@ -2,7 +2,7 @@
 
 ## Open now
 
-The local stack is running. Open the [spectator](https://localhost:4173/?room=6N9S4X&view=spectator&drift=0), or run:
+The local stack is running. Open the refreshed [spectator](https://localhost:4173/?room=BFP3SK&view=spectator&drift=0), or run:
 
 ~~~sh
 npm run demo:links
@@ -22,7 +22,15 @@ The defining shared editing experience, actual speech/source playback, persisten
 
 Anthropic, Cartesia and World Labs authenticated and were called successfully. Real STT tests used synthesized microphone fixtures, not a real relative. No physical Quest or real-family pass is claimed. The initial import for ManagementMO/memory-gate includes the full application, original assets, optional earlier sample pack, historical artifacts and fresh review evidence. The sample pack's source-specific terms and unresolved rights remain recorded in fixtures/LICENSES.md. Private credentials and machine-local runtime data stay local. No public application deployment or event submission was made.
 
-## Current verification
+## Younger-onset experience refresh
+
+The user clarified younger-onset Alzheimer’s (diagnosed before 65), not an assumed early stage. This refresh adds a more detailed, textured original garden and props, individual leaf geometry, a supported keepsake table, eye-level stable framing, a quieter source-labeled spectator view, optional screen-based 3D and simpler storyteller controls. It removes the grandparent/1940s assumptions, avoids memory-test prompts, preserves uncertain recall as conversation, stops obsolete voice playback when the source changes, and uses bounded clear floor suggestions for unpointed narration. It does not claim medical benefit or recovered historical truth.
+
+Fresh final verification: **69/69 domain tests, 4/4 renderer tests, 27/27 browser scenarios, three TypeScript checks, both production builds and doctor all pass.** The fresh immersive emulator rehearsal also passed native squeeze/grab/move/release/return and trigger-driven gate opening with an active XR session and no render-loop error. Production browser sampling at 1440×960 recorded 120 frame intervals (p50 8.3 ms, p95 9 ms on this Mac); this is not Quest performance. The browser run explicitly exercised live Cartesia speech and original clip replay with synthesized input, bilingual shared correction/undo, screen sharing/revocation and source playback transitions. Artifacts for this refresh are in evidence/experience-refresh/. Physical Quest and patient/family evaluation remain open. The provider accounts’ existing world-generation cap was preserved; no new world was generated.
+
+The first full run exposed a desktop sticky scene covering a confirmation control. Its measured hit target was the scene invitation, not the button; removing sticky positioning fixes the exact rerun. Independent review also found unchecked automatic placement and replay/source mismatch; those paths now have focused negative and actual-playback regressions. Model-supplied relations cannot create an unsupported furniture attachment. A dedicated attachment/group-movement feature remains out of scope.
+
+## Initial import verification (before the experience refresh)
 
 - 56/56 backend/domain regressions.
 - 4/4 renderer/async-world/floor-buffer checks.

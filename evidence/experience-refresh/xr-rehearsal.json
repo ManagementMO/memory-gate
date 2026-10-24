@@ -1,0 +1,412 @@
+{
+  "at": "2026-10-24T06:31:45.821Z",
+  "environment": "IWSDK Meta Quest 3 emulator; no physical headset",
+  "pass": true,
+  "records": [
+    {
+      "step": "before",
+      "xr": true,
+      "tickError": null,
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": false,
+            "gateAngle": 0
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "yaw": 0,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 14,
+          "held": false,
+          "active": true,
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "center": [
+            -0.550000011920929,
+            1.2599999595806004,
+            -0.8500000238418579
+          ]
+        }
+      ],
+      "gateOpen": null
+    },
+    {
+      "step": "squeeze",
+      "xr": true,
+      "tickError": null,
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": false,
+            "gateAngle": 0
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "yaw": 1.2578153630921088e-23,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 14,
+          "held": true,
+          "active": true,
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "center": [
+            -0.550000011920929,
+            1.2599999595806004,
+            -0.8500000238418579
+          ]
+        }
+      ],
+      "gateOpen": null
+    },
+    {
+      "step": "held-movement",
+      "xr": true,
+      "tickError": null,
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": false,
+            "gateAngle": 0
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0.09999997913837433,
+            1.2400000095367432,
+            -0.800000011920929
+          ],
+          "yaw": 1.2578153630921088e-23,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 14,
+          "held": true,
+          "active": true,
+          "position": [
+            0.09999997913837433,
+            1.2400000095367432,
+            -0.800000011920929
+          ],
+          "center": [
+            0.09999997913837433,
+            1.4500000168010594,
+            -0.800000011920929
+          ]
+        }
+      ],
+      "gateOpen": null
+    },
+    {
+      "step": "release",
+      "xr": true,
+      "tickError": null,
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": false,
+            "gateAngle": 0
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.5499997735023499,
+            1.0500004291534424,
+            -0.8499997854232788
+          ],
+          "yaw": 4.680814008606053e-30,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 14,
+          "held": false,
+          "active": true,
+          "position": [
+            -0.5499997735023499,
+            1.0500004291534424,
+            -0.8499997854232788
+          ],
+          "center": [
+            -0.5499997735023499,
+            1.2600004364177586,
+            -0.8499997854232788
+          ]
+        }
+      ],
+      "gateOpen": null
+    },
+    {
+      "step": "gate-select",
+      "xr": true,
+      "tickError": null,
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": true,
+            "gateAngle": -1.4962583044659215
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.5499998331069946,
+            1.0500003099441528,
+            -0.8499998450279236
+          ],
+          "yaw": 4.645819018470512e-37,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 14,
+          "held": false,
+          "active": true,
+          "position": [
+            -0.5499998331069946,
+            1.0500003099441528,
+            -0.8499998450279236
+          ],
+          "center": [
+            -0.5499998331069946,
+            1.260000317208469,
+            -0.8499998450279236
+          ]
+        }
+      ],
+      "gateOpen": true
+    }
+  ]
+}

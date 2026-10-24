@@ -9,7 +9,7 @@ import { api } from '../../convex/_generated/api.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const repoRoot = path.resolve(here, '../..');
-export const SCREENS = path.join(repoRoot, 'evidence', 'review-2026-10-23', 'screens');
+export const SCREENS = process.env.E2E_SCREEN_DIR ?? path.join(repoRoot, 'evidence', 'review-2026-10-23', 'screens');
 
 const { defaultBrowserType: _ignored, ...iphone } = devices['iPhone 13'];
 export const IPHONE_13 = iphone; // 390 × 844 at 3×, touch, mobile UA (run in Chromium)

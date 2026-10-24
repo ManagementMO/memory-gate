@@ -1,13 +1,16 @@
 // Original illustrative props. Meters, Y up, +Z front, base at Y=0.
 // These are intentionally stylized fixtures, never reconstructions of a family's possessions.
-import { Group, Mesh, BoxGeometry, CylinderGeometry, SphereGeometry, IcosahedronGeometry, MeshStandardMaterial } from '@iwsdk/core';
+import { Group, Mesh, CylinderGeometry, SphereGeometry, MeshStandardMaterial, Vector3, TorusGeometry } from '@iwsdk/core';
+import { bevelBox, makeRandom } from './lib/hardsurface.ts';
+import { branch, foliage } from './natural-surfaces.ts';
 
 const material = (color: number, metalness = 0) => new MeshStandardMaterial({ color, roughness: .76, metalness });
 const wood = material(0x987045), darkWood = material(0x533b2d), iron = material(0x303d36, .35);
+wood.name = 'MemoryOak'; darkWood.name = 'MemoryWalnut'; iron.name = 'AgedIron';
 const cream = material(0xeadfc6), gold = material(0xb49052, .25), green = material(0x74855a), greenDark = material(0x526b49);
 const ink = material(0x282c2b), white = material(0xf6ead2), terra = material(0xb37857);
 function box(parent: Group, name: string, w: number, h: number, d: number, x: number, y: number, z: number, mat = wood) {
-  const mesh = new Mesh(new BoxGeometry(w, h, d), mat); mesh.name = name; mesh.position.set(x, y, z); parent.add(mesh); return mesh;
+  const mesh = new Mesh(bevelBox(w, h, d, Math.min(w,h,d) * .12), mat); mesh.name = name; mesh.position.set(x, y, z); parent.add(mesh); return mesh;
 }
 function cylinder(parent: Group, name: string, top: number, bottom: number, h: number, x: number, y: number, z: number, mat = wood) {
   const mesh = new Mesh(new CylinderGeometry(top, bottom, h, 12), mat); mesh.name = name; mesh.position.set(x, y, z); parent.add(mesh); return mesh;
@@ -17,25 +20,42 @@ export function makeProp(kind: string): Group {
   if (kind === 'bench' || kind === 'chair' || kind === 'armchair') {
     const w = kind === 'bench' ? 1.6 : .65;
     for (const x of [-w * .39, w * .39]) for (const z of [-.22, .22]) box(root, 'Leg', .065, .45, .065, x, .225, z, iron);
-    for (let i = 0; i < 5; i++) box(root, 'SeatSlat', w, .045, .09, 0, .46, -.22 + i * .11);
+    for (let i = 0; i < 5; i++) {
+      const slat = wood.clone(); slat.name = wood.name; slat.color.multiplyScalar(.88 + i * .045);
+      box(root, 'SeatSlat', w, .045, .09, 0, .46, -.22 + i * .11, slat);
+    }
     for (const x of [-w * .44, w * .44]) box(root, 'BackSupport', .055, .7, .06, x, .61, -.27, iron);
     for (let i = 0; i < 3; i++) box(root, 'BackSlat', w, .095, .045, 0, .67 + i * .12, -.27);
+    if (kind === 'bench') for (const x of [-w * .44, w * .44]) {
+      box(root, 'Armrest', .065, .055, .59, x, .71, -.01, darkWood);
+      box(root, 'ArmSupport', .035, .23, .035, x, .59, .21, iron);
+      for (const y of [.68,.8,.92]) {
+        const bolt = new Mesh(new SphereGeometry(.012, 6, 4), iron); bolt.name = 'RecessedBolt'; bolt.position.set(x,y,-.238); root.add(bolt);
+      }
+    }
     if (kind === 'armchair') {
       box(root, 'SeatCushion', .57, .13, .48, 0, .54, .01, cream);
       box(root, 'BackCushion', .56, .38, .11, 0, .79, -.2, cream);
       for (const x of [-.35, .35]) box(root, 'ArmRest', .11, .12, .6, x, .72, 0, darkWood);
     }
   } else if (kind === 'tree') {
-    cylinder(root, 'Trunk', .09, .16, 1.6, 0, .8, 0, darkWood);
-    for (const [x,y,z,r] of [[0,1.9,0,.9],[-.55,1.6,.15,.7],[.55,1.75,-.1,.72],[.1,2.35,-.15,.64]]) {
-      const leaf = new Mesh(new IcosahedronGeometry(r, 2), x! > 0 ? greenDark : green);
-      leaf.name = 'Foliage'; leaf.position.set(x!,y!,z!); root.add(leaf);
+    const random = makeRandom(84);
+    branch(root, new Vector3(0,0,0), new Vector3(.08,1.45,-.07), .14, darkWood);
+    for (let i=0;i<12;i++) {
+      const angle=i*2.399, length=.48+random()*.4, y=1.2+random()*.9;
+      const tip=new Vector3(Math.cos(angle)*length,y+.38,Math.sin(angle)*length);
+      branch(root,new Vector3(.04,.86+random()*.55,-.02),tip,.038+random()*.025,darkWood);
+      root.add(foliage(92+i,140,.47,tip,.16));
     }
-    cylinder(root, 'TreeBed', .55, .6, .16, 0, .08, 0, terra);
+    cylinder(root,'Soil',.64,.64,.035,0,.026,0,material(0x504334));
+    const rim=new Mesh(new TorusGeometry(.67,.055,6,36),terra); rim.name='TerracottaBedRim';rim.rotation.x=Math.PI/2;rim.position.y=.055;root.add(rim);
   } else if (kind === 'gate') {
     for (const x of [-.9,.9]) { box(root,'StonePost',.22,1.8,.28,x,.9,0,cream); box(root,'PostCap',.29,.09,.34,x,1.84,0,gold); }
     const hinge = new Group(); hinge.name = 'GateHinge'; hinge.position.set(-.76,.16,0); root.add(hinge);
-    for (let i=0;i<8;i++) box(hinge,'GatePlank',.16,1.25,.065,.095+i*.19,.625,0,darkWood);
+    for (let i=0;i<8;i++) {
+      const plank=wood.clone();plank.name=wood.name;plank.color.setHex(i%2 ? 0x697969 : 0x73816c);
+      box(hinge,'GatePlank',.177,1.25,.065,.095+i*.19,.625,0,plank);
+    }
     for (const y of [.3,.96]) box(hinge,'IronBrace',1.48,.07,.09,.76,y,.045,iron);
     cylinder(hinge,'Latch',.045,.045,.12,1.39,.66,.07,gold).rotation.x=Math.PI/2;
   } else if (kind === 'photograph') {

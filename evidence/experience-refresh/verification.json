@@ -1,0 +1,36 @@
+{
+  "environment": "Local Mac, Convex, headless Chromium and IWSDK Meta Quest 3 emulator; fictional/permitted fixtures",
+  "fullCommand": "E2E_SCREEN_DIR=evidence/experience-refresh/screens npm run verify:live",
+  "fullResult": {
+    "passed": true,
+    "groups": 9,
+    "backendTests": 69,
+    "rendererTests": 4,
+    "browserTests": 27,
+    "typechecks": 3,
+    "productionBuilds": 2,
+    "doctor": true
+  },
+  "subsequentTargetedChecks": {
+    "headsetTypecheck": true,
+    "headsetProductionBuild": true,
+    "reminiscenceBrowserTests": 3,
+    "embeddedXrPolicyErrors": 0,
+    "immersiveEmulatorRehearsal": true,
+    "originalAssetsGenerator": true,
+    "startupShellSyntax": true
+  },
+  "reviewFixes": [
+    "desktop scene no longer covers confirmations",
+    "bounded clear floor-only automatic suggestions; null when full",
+    "model relations cannot invent furniture attachments",
+    "old voice pauses before latest-source attribution changes"
+  ],
+  "limits": [
+    "No physical Quest 3 measurement",
+    "No patient pilot or clinical validation",
+    "Live speech used synthesized fixtures",
+    "No new World Labs generation; default request cap remains 3/3",
+    "No public app deployment"
+  ]
+}

@@ -3,7 +3,7 @@
 // Sample content only (public-domain 1938 photo, fictional lines). "Supports reminiscence", never treatment.
 // URL switches: ?room=CODE  ?convex=<url>  ?multiview=on  ?scale=0.75  ?tm=none|aces  ?fov=46  ?hud=1  ?voice=mock
 import type { World } from '@iwsdk/core';
-import * as THREE from 'three';
+import * as THREE from '@iwsdk/core';
 import type { ConvexClient } from 'convex/browser';
 import type { FunctionReturnType } from 'convex/server';
 import type { Id } from '../../../convex/_generated/dataModel.js';
@@ -45,10 +45,10 @@ export async function startApp(world: World): Promise<void> {
   window.__mg = mg;
   const ui = createUi();
   // Spectator view (?view=spectator): a read-only projector page for people without the headset. No controls, a
-  // story ticker, bigger captions, a slow camera drift (?drift=0 stops it), silent unless ?audio=1.
+  // story ticker, bigger captions, a steady camera (?drift=1 opts into drift), silent unless ?audio=1.
   const spectator = params.get('view') === 'spectator';
   const audioWanted = !spectator || params.get('audio') === '1';
-  const driftOn = spectator && params.get('drift') !== '0';
+  const driftOn = spectator && params.get('drift') === '1';
   if (spectator) ui.setSpectator();
   const chimes = new Chimes();
   chimes.muted = !audioWanted;
@@ -105,10 +105,10 @@ export async function startApp(world: World): Promise<void> {
   captions.mesh.scale.setScalar(DESKTOP_CAPTION.scale);
   world.scene.add(captions.mesh);
   // Lights exist from load (adding one mid-session recompiles every lit material); they only light the GLB solids.
-  const key = new THREE.DirectionalLight(0xffe0b0, 1.2);
-  key.position.set(-2.5, 3.2, -1.0); // from the window side of the sample room
+  const key = new THREE.DirectionalLight(0xfff0d6, 1.65);
+  key.position.set(-4, 7, 2);
   memoryRoot.add(key, key.target);
-  memoryRoot.add(new THREE.HemisphereLight(0xffe6c8, 0x2a1d12, 0.45));
+  memoryRoot.add(new THREE.HemisphereLight(0xdce8e9, 0x77715a, 0.72));
   if (params.get('debug') === 'floor') {
     // Dev aid: the memory's floor plane (y = 0) as a 0.5 m grid, plus an optional side camera (?cam=side|top).
     const grid = new THREE.GridHelper(12, 24, 0x66ccff, 0x2f86b8);
@@ -158,8 +158,8 @@ export async function startApp(world: World): Promise<void> {
       return;
     }
     if (roomView?.room.layout === 'courtyard' || (spectator && fallback && !room.ready)) {
-      world.camera.position.set(0, 3.4, 2.8);
-      world.camera.lookAt(0, .7, -4.6);
+      world.camera.position.set(0, 1.62, 1.9);
+      world.camera.lookAt(0, 1.25, -4.6);
       world.camera.updateMatrixWorld(true);
       captions.drop = -.34;
       captions.mesh.scale.setScalar(.85);
@@ -346,7 +346,7 @@ export async function startApp(world: World): Promise<void> {
     stats.latestUtterance = list[0] ? { status: list[0].status, intent: list[0].intent, aiMode: list[0].aiMode, aiMs: list[0].aiMs } : null;
   };
 
-  // ---------- spectator story ticker: the latest line, the latest change, then the next newest (max 3) ----------
+  // ---------- spectator story ticker: one latest source line and one latest change ----------
   let tickerUtterances: Utterance[] = [];
   let tickerEvents: RoomEvent[] = [];
   const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
@@ -371,14 +371,10 @@ export async function startApp(world: World): Promise<void> {
     // Consecutive identical changes (an undo of the confirm, then of the proposal) read as one "taken back".
     const changes = tickerEvents.map(eventItem).filter((x): x is TickerItem => !!x)
       .filter((x, i, all) => i === 0 || `${x.lead}${x.text}` !== `${all[i - 1]!.lead}${all[i - 1]!.text}`);
-    const picked: TickerItem[] = [];
-    if (lines[0]) picked.push(lines[0]);
-    if (changes[0]) picked.push(changes[0]);
-    const rest = [...lines.slice(1), ...changes.slice(1)].sort((a, b) => b.at - a.at);
-    if (rest[0]) picked.push(rest[0]);
-    picked.sort((a, b) => b.at - a.at);
-    ui.setTicker(picked);
-    stats.ticker = picked.map((p) => `${p.meta ? `${p.meta}: ` : ''}${p.lead ? `${p.lead} · ` : ''}${p.text}${p.sub ? ` / ${p.sub}` : ''}`);
+    // One story and one latest change keep the place visible and the speaker central.
+    const shown = lines[0] ? [lines[0], ...(changes[0] ? [changes[0]] : [])] : changes.slice(0, 1);
+    ui.setTicker(shown);
+    stats.ticker = shown.map((p) => `${p.meta ? `${p.meta}: ` : ''}${p.lead ? `${p.lead} · ` : ''}${p.text}${p.sub ? ` / ${p.sub}` : ''}`);
   };
 
   // ---------- replay ----------
@@ -392,6 +388,7 @@ export async function startApp(world: World): Promise<void> {
     setTimeout(done, 30_000);
   });
   const replay = (rec: ObjectRecord) => {
+    if (paused) return;
     const gate = objects.activate(rec.id);
     if (gate !== null) stats.gateOpen = gate;
     const edit = rec.correctionSource;
@@ -683,7 +680,8 @@ export async function startApp(world: World): Promise<void> {
   });
   (async () => {
     const xr = (navigator as Navigator & { xr?: { isSessionSupported(m: string): Promise<boolean> } }).xr;
-    const ok = xr ? await xr.isSessionSupported('immersive-ar').catch(() => false) : false;
+    // A read-only embedded viewer does not request XR capabilities from its sandboxed frame.
+    const ok = !spectator && xr ? await xr.isSessionSupported('immersive-ar').catch(() => false) : false;
     stats.arSupported = ok;
     if (!ok) ui.setEnterReady(false, 'Open this page on the Quest to enter');
   })();
@@ -857,6 +855,7 @@ export async function startApp(world: World): Promise<void> {
     stats.flags = r.flags;
     stats.tRoom ??= Math.round(performance.now());
     ui.showRoom(r.room.title);
+    ui.setSceneContext(r.room.title, r.splat?.status === 'ready', r.room.demo, r.room.paused);
     if (r.splat?.status === 'ready' && r.splat.url) {
       // splat.lite (phone admin): the 250k SPZ of the same memory, paired with XR framebuffer scale 0.5 (CLAUDE.md).
       const lite = !!(r.flags['splat.lite'] && r.splat.liteUrl);
