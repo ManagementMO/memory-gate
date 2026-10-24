@@ -14,12 +14,13 @@ const sourceRef = makeFunctionReference('exchange:source');
 const origins = new Set((process.env.EXCHANGE_ORIGINS ?? 'http://127.0.0.1:5173,http://localhost:5173,https://localhost:5174').split(','));
 const clients = new Set();
 let ready = false; let archiveBusy = false;
+let reconciling = false;
 const archiveCooldown = new Map();
 const db = DbConnection.builder().withUri(process.env.SPACETIME_URL ?? 'ws://127.0.0.1:3000')
   .withDatabaseName(process.env.SPACETIME_DATABASE ?? 'heirloom-exchange').withToken(token).withConfirmedReads(true)
   .withAutomaticReconnect()
   .onConnect(conn => {
-    conn.subscriptionBuilder().onApplied(() => { ready = true; refreshAll(); }).onError(() => { ready = false; invalidateAll(); })
+    conn.subscriptionBuilder().onApplied(() => { ready = true; refreshAll(); void reconcileDeletedRooms(); }).onError(() => { ready = false; invalidateAll(); })
       .subscribe(['SELECT * FROM capsule', 'SELECT * FROM reference']);
   }).onDisconnect(() => { ready = false; invalidateAll(); })
   .onConnectError(() => { ready = false; invalidateAll(); }).build();
@@ -55,6 +56,18 @@ async function refresh(c) {
   } finally { c.refreshing = false; }
 }
 function refreshAll() { for (const c of clients) void refresh(c); }
+async function reconcileDeletedRooms() {
+  if (!ready || reconciling || !process.env.WORKER_SECRET) return;
+  reconciling = true;
+  try {
+    const ids = [...new Set([...db.db.capsule.iter(), ...db.db.reference.iter()].map(row => row.roomId))];
+    for (let i = 0; i < ids.length; i += 100) {
+      const deleted = await convex.query(makeFunctionReference('exchange:deletedRooms'), { secret: process.env.WORKER_SECRET, roomIds: ids.slice(i, i + 100) });
+      for (const roomId of deleted) await db.reducers.purgeRoom({ roomId });
+    }
+  } catch { console.warn('Room deletion reconciliation will retry; no records were inferred from a failed query.'); }
+  finally { reconciling = false; }
+}
 for (const table of [db.db.capsule, db.db.reference]) {
   table.onInsert(refreshAll); table.onDelete(refreshAll); table.onUpdate(refreshAll);
 }
@@ -131,6 +144,7 @@ wss.on('connection', socket => {
   socket.on('close', () => { clearTimeout(authTimeout); clients.delete(c); refreshAll(); });
 });
 const poll = setInterval(refreshAll, 5000);
+const cleanup = setInterval(() => void reconcileDeletedRooms(), 10_000);
 server.listen(Number(process.env.EXCHANGE_PORT ?? 3212), '127.0.0.1', () => console.log('Memory exchange gateway listening on 127.0.0.1:3212; private SpacetimeDB subscriptions enabled.'));
-function stop() { clearInterval(poll); for (const c of clients) c.socket.close(); wss.close(); server.close(); db.disconnect(); }
+function stop() { clearInterval(poll); clearInterval(cleanup); for (const c of clients) c.socket.close(); wss.close(); server.close(); db.disconnect(); }
 process.on('SIGTERM', stop); process.on('SIGINT', stop);

@@ -1,6 +1,6 @@
 // Load project-scoped private configuration without exposing it in logs or browser bundles.
 import { existsSync, readFileSync } from 'node:fs';
-for (const file of ['.env.local', '.env.exchange']) {
+for (const file of ['.env.local', '.env.worker', '.env.exchange']) {
   if (existsSync(file)) process.loadEnvFile(file);
 }
 if (!process.env.SPACETIME_TOKEN && existsSync('.spacetime/config/cli.toml')) {

@@ -1,4 +1,7 @@
 .memory-exchange { padding-top: 12px; }
+.has-incoming .exchange-hero { padding: 20px 8px; }
+.has-incoming .memory-seal, .has-incoming .exchange-hero > p:not(.eyebrow) { display: none; }
+.has-incoming .exchange-hero h2 { font-size: 1.8rem; margin: 12px 0; }
 .exchange-hero { text-align: center; padding: 38px 20px 32px; background: radial-gradient(ellipse at 50% 0, #f4d9a774, transparent 70%); border-bottom: 1px solid var(--line); }
 .exchange-hero h2 { font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.12; font-weight: 400; letter-spacing: -.035em; margin: 18px 0; }
 .exchange-hero > p:not(.eyebrow) { max-width: 480px; margin: 0 auto 24px; color: var(--ink-2); }
@@ -56,3 +59,4 @@
 @keyframes memory-arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (max-width: 650px) { .exchange-columns, .atlas-grid { grid-template-columns: 1fr; } .exchange-panel, .opened-memory { padding: 20px; } .atlas-search { grid-template-columns: 1fr 1fr; padding: 18px; } .atlas-search > label:first-child, .atlas-search > label:nth-child(4), .atlas-search > button { grid-column: 1 / -1; } .memory-envelope { gap: 12px; padding: 20px; } .envelope-star { font-size: 36px; } .exchange-hero { padding: 24px 8px; } .tabs { flex-wrap: wrap; } }
 @media (prefers-reduced-motion: reduce) { .memory-envelope, .opened-memory { animation: none; } }
+@media (max-width: 650px) { .collection-first .collection-panel { order: -1; } }

@@ -8,8 +8,7 @@
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
-    "apify": "3.7.0",
-    "memory-gate-practice": "file:../.."
+    "apify": "3.7.0"
   },
   "engines": {
     "node": ">=22"

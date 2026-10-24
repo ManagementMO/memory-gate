@@ -7,7 +7,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "memory-gate-practice": "file:..",
     "spacetimedb": "2.13.0"
   },
   "devDependencies": {

@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-24T13:55:08.305Z",
+  "phase": "gateway-restart",
+  "acceptedMemory": true,
+  "originalSource": true,
+  "sharedArchiveBoard": true,
+  "environment": "Local persistent SpacetimeDB 2.13.0 and authenticated gateway; real process restart"
+}

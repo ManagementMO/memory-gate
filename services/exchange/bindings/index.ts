@@ -36,6 +36,7 @@ import {
 // Import all reducer arg schemas
 import PassMemoryReducer from "./pass_memory_reducer";
 import PinReferenceReducer from "./pin_reference_reducer";
+import PurgeRoomReducer from "./purge_room_reducer";
 import RespondMemoryReducer from "./respond_memory_reducer";
 import UnpinReferenceReducer from "./unpin_reference_reducer";
 
@@ -95,6 +96,7 @@ const tablesSchema = __schema({
 const reducersSchema = __reducers(
   __reducerSchema("pass_memory", PassMemoryReducer),
   __reducerSchema("pin_reference", PinReferenceReducer),
+  __reducerSchema("purge_room", PurgeRoomReducer),
   __reducerSchema("respond_memory", RespondMemoryReducer),
   __reducerSchema("unpin_reference", UnpinReferenceReducer),
 );

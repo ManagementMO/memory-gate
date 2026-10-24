@@ -63,3 +63,8 @@ export const unpinReference = db.reducer({ id: t.string(), roomId: t.string(), m
   if (r.roomId !== a.roomId || r.addedBy !== a.memberId) throw new SenderError('Only the contributor can remove this reference.');
   ctx.db.reference.id.delete(a.id);
 });
+export const purgeRoom = db.reducer({ roomId: t.string() }, (ctx, { roomId }) => {
+  requireOperator(ctx);
+  for (const row of [...ctx.db.capsule.byRoom.filter(roomId)]) ctx.db.capsule.id.delete(row.id);
+  for (const row of [...ctx.db.reference.byRoom.filter(roomId)]) ctx.db.reference.id.delete(row.id);
+});
