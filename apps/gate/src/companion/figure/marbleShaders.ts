@@ -158,7 +158,7 @@ float mgBend(float y) { float t = max(0.0, -y) / ${f(WING.len)}; return ${f(WING
 function featureBlock(feature: MarbleFeature): string {
   const base = /* glsl */ `
   float mgFront = smoothstep(0.18, 0.55, normalize(vMNor).z);
-  float mgGoldMask = 0.0, mgChromeMask = 0.0, mgGlowMask = 0.0, mgH = 0.0, mgShadePlate = 0.0, mgCut = 0.0;
+  float mgGoldMask = 0.0, mgChromeMask = 0.0, mgGlowMask = 0.0, mgH = 0.0, mgShadePlate = 0.0, mgCut = 0.0, mgDarkRim = 0.0;
   vec3 mgEmit = vec3(0.0);
   vec2 mgP = vMPos.xy;
   // Carving fades where a pixel spans more than a few millimetres (no shimmer far away); glow does the opposite: its
@@ -200,8 +200,9 @@ function featureBlock(feature: MarbleFeature): string {
   float mgEx = min(abs(mgP.x - uEyeL.x), abs(mgP.x - uEyeR.x)) / 0.0235;
   float mgArc = 1.0 - smoothstep(0.1, 1.0, mgEx);
   // A hard gold outline round each eye, like the rims of the wing windows; the glow starts beyond it.
-  float mgEyeRim = (smoothstep(-mgW, mgW, mgD) - smoothstep(0.0009 - mgW, 0.0009 + mgW, mgD)) * mgFront;
-  float mgHalo = exp(-max(mgD - 0.0009, 0.0) / mgHaloW) * (1.0 - mgEye) * (1.0 - mgEyeRim) * mgFront;
+  float mgEyeRim = (smoothstep(-mgW, mgW, mgD) - smoothstep(0.0014 - mgW, 0.0014 + mgW, mgD)) * mgFront;
+  mgDarkRim = mgEyeRim;
+  float mgHalo = exp(-max(mgD - 0.0014, 0.0) / mgHaloW) * (1.0 - mgEye) * (1.0 - mgEyeRim) * mgFront;
   mgGlowMask = max(mgEye, mgDia);
   mgGoldMask = max(mgSeam * 0.85, mgEyeRim);
   // Carving: the plate sits a little lower than the head; the seam is a fine V-cut; the eyes and star are set in.
@@ -278,12 +279,15 @@ export function applyMarble(m: THREE.MeshPhysicalMaterial, u: MarbleUniforms, fe
   diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.46, 0.425, 0.385), mgV.x * 0.72);
   diffuseColor.rgb = mix(diffuseColor.rgb, uGold, mgV.y * 0.65);
   diffuseColor.rgb = mix(diffuseColor.rgb, uChrome, mgChromeMask);
-  diffuseColor.rgb = mix(diffuseColor.rgb, uGold, mgGoldMask);`)
+  diffuseColor.rgb = mix(diffuseColor.rgb, uGold, mgGoldMask);
+  diffuseColor.rgb = mix(diffuseColor.rgb, uGold * 0.55, mgDarkRim);`)
       .replace('#include <roughnessmap_fragment>', /* glsl */ `#include <roughnessmap_fragment>
   roughnessFactor = mix(roughnessFactor, 0.34, max(mgGoldMask, mgV.y * 0.6));
   roughnessFactor = mix(roughnessFactor, 0.1, mgChromeMask);`)
       .replace('#include <metalnessmap_fragment>', /* glsl */ `#include <metalnessmap_fragment>
-  metalnessFactor = mix(metalnessFactor, 1.0, max(max(mgGoldMask, mgV.y * 0.6), mgChromeMask));`)
+  metalnessFactor = mix(metalnessFactor, 1.0, max(max(mgGoldMask, mgV.y * 0.6), mgChromeMask));
+  metalnessFactor = mix(metalnessFactor, 0.45, mgDarkRim);
+  roughnessFactor = mix(roughnessFactor, 0.45, mgDarkRim);`)
       .replace('#include <emissivemap_fragment>', /* glsl */ `#include <emissivemap_fragment>
   totalEmissiveRadiance += mgEmit + uGold * mgGoldMask * 0.05 + uChrome * mgChromeMask * 0.08;`)
       .replace('#include <opaque_fragment>', /* glsl */ `
