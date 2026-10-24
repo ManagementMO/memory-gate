@@ -1,23 +1,23 @@
 // The Figure: a small marble muse. A softly rounded diamond of a head rests on a slender spindle above a teardrop
 // body; two long blades float at its sides like folded wings, and a little point with a hanging jewel floats below.
-// Its face is drawn in light: two soft eyes, a diamond on the brow, a fine gold oval. Polished white stone with
+// Its face is drawn in light: two arched eyes, a star on the brow, a recessed oval plate edged with light. Polished white stone with
 // grey and gold veins, warm where light passes through. All motion is eased and unhurried.
 //   portal     calm: soft half-lidded eyes that glow and blink, head a little bowed, slow breath
-//   idle       soft eyes of light that breathe, occasional blinks, tiny head tilts
-//   listening  the eyes widen a little and brighten with your voice; the head tilts, the blades come in
+//   idle       arched eyes of light that breathe, occasional blinks, tiny head tilts
+//   listening  the eyes fill and brighten with your voice; the head tilts, the wings come in
 //   thinking   eyes glance up and aside, the brow diamond pulses
 //   speaking   eye light follows the voice; a gentle nod; the blades open slightly
-// Expressions: happy (the cheeks lift into a smile), curious (one eye larger), gentle (lids lowered), sleepy (lines).
+// Expressions: happy (fuller, brighter eyes), curious (one eye larger), gentle (slimmer arcs), sleepy (fine arcs).
 import * as THREE from 'three';
 import { glowBlending } from '../../scene/util';
 import type { FigureRig } from './createFigure';
-import { applyMarble, FACE, marbleFaceUniforms, marbleUniforms } from './marbleShaders';
+import { applyMarble, FACE, marbleFaceUniforms, marbleUniforms, WING } from './marbleShaders';
 
 // Proportions (metres). Total ≈ 0.5 m; the root's origin is the figure's visual centre, at the top of the body.
 const HEAD = { a: 0.142, up: 0.118, down: 0.094, c: 0.08, q: 2.5 };
-const NECK_H = 0.034;
-const ARM_X = 0.068;   // the wings' roots, at the shoulders
-const ARM_SPREAD = 0.4; // radians: the wings open outward from the shoulders
+const NECK_H = 0.023;
+const ARM_X = 0.066;   // the wings' roots, at the shoulders
+const ARM_SPREAD = 0.27; // radians: the wings open outward from the shoulders
 
 /** The head's front outline as radius-by-angle: a rhombus with softly rounded corners and gently full sides. */
 function outline(n: number): Float32Array {
@@ -87,6 +87,8 @@ function headFrontZ(x: number, y: number): number {
 function lathe(points: [number, number][], segments: number, samples: number) {
   const curve = new THREE.SplineCurve(points.map(([r, y]) => new THREE.Vector2(r, y)));
   const pts = curve.getPoints(samples).map((v) => new THREE.Vector2(Math.max(0.0004, v.x), v.y));
+  // Profiles here run top to bottom; LatheGeometry faces outward only when its points run bottom to top.
+  if (pts.length > 1 && pts[0]!.y > pts[pts.length - 1]!.y) pts.reverse();
   const geo = new THREE.LatheGeometry(pts, segments);
   geo.computeVertexNormals();
   return { geo, pts };
@@ -107,13 +109,13 @@ const BODY_PROFILE: [number, number][] = [
   [0.008, -0.1445], [0.0004, -0.1455],
 ];
 
-/** A wing: slender at the root, fullest a third of the way down, tapering to a fine point (~0.19 m). */
-const ARM_PROFILE: [number, number][] = [
+/** A wing: slender at the root, fullest a third of the way down, tapering to a fine point (WING.len long). */
+const ARM_PROFILE: [number, number][] = ([
   [0.0004, 0.012], [0.0058, 0.0105], [0.0118, 0.005], [0.0178, -0.006], [0.0228, -0.022], [0.0262, -0.041], [0.0276, -0.06],
   [0.027, -0.079], [0.0246, -0.099], [0.0208, -0.119], [0.0162, -0.138], [0.0113, -0.155], [0.0066, -0.168], [0.003, -0.177], [0.0004, -0.183],
-];
+] as [number, number][]).map(([r, y]) => [r * 1.04, y * (WING.len / 0.183)]);
 const ARM_FLAT = 0.5;
-const armBend = (y: number) => -0.011 * Math.pow(Math.max(0, -y) / 0.183, 2); // the tip sweeps outward, like a wing
+const armBend = (y: number) => WING.bend * Math.pow(Math.max(0, -y) / WING.len, 2); // the tip sweeps outward, like a wing
 
 /** A wing blade: a flattened leaf whose tip sweeps outward. Local +x faces the body. Pivot at the root. */
 function armGeometry() {
@@ -153,7 +155,7 @@ export function createMarbleFigure(): FigureRig {
   // Polished white marble: a smooth base under one crisp clearcoat.
   const stone: THREE.MeshPhysicalMaterialParameters = {
     color: '#f3f0ea', roughness: 0.24, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05,
-    envMapIntensity: 0.85, transparent: true, opacity: 1, fog: false, // the companion is always near and crisp
+    envMapIntensity: 0.62, transparent: true, opacity: 1, fog: false, // the companion is always near and crisp
   };
   const headMat = new THREE.MeshPhysicalMaterial(stone);
   applyMarble(headMat, U, 'face', face);
@@ -161,11 +163,14 @@ export function createMarbleFigure(): FigureRig {
   applyMarble(bodyMat, U, 'chest');
   const shellMat = new THREE.MeshPhysicalMaterial(stone);
   applyMarble(shellMat, U, 'shell');
-  // Champagne gold for the spindle, rings and edges: it also glows a little, so it reads in the dark gate.
-  const goldMat = new THREE.MeshPhysicalMaterial({ color: '#e6cf9f', metalness: 1, roughness: 0.2, clearcoat: 0.4, emissive: new THREE.Color('#4a3517'), emissiveIntensity: 0.55, transparent: true, fog: false });
+  const wingMat = new THREE.MeshPhysicalMaterial(stone);
+  applyMarble(wingMat, U, 'wing');
+  // Champagne chrome for the neck, rings and bezels (the carved seams and frames are gold): it also glows a little,
+  // so it reads in a dark scene.
+  const goldMat = new THREE.MeshPhysicalMaterial({ color: '#e9e1d0', metalness: 1, roughness: 0.16, clearcoat: 0.5, emissive: new THREE.Color('#3d3324'), emissiveIntensity: 0.5, transparent: true, fog: false });
   const glassMat = new THREE.MeshPhysicalMaterial({ color: '#1b1d24', roughness: 0.14, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.08, transparent: true, fog: false });
   const lightMat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#fff2dc'), toneMapped: false, transparent: true, fog: false });
-  const disposables: { dispose(): void }[] = [headMat, bodyMat, shellMat, goldMat, glassMat, lightMat];
+  const disposables: { dispose(): void }[] = [headMat, bodyMat, shellMat, wingMat, goldMat, glassMat, lightMat];
   const geo = <G extends THREE.BufferGeometry>(g: G) => { disposables.push(g); return g; };
 
   // ---------- body (its top is the root's origin), spindle and head ----------
@@ -173,23 +178,30 @@ export function createMarbleFigure(): FigureRig {
   const bodyGroup = new THREE.Group();
   root.add(bodyGroup);
   bodyGroup.add(new THREE.Mesh(geo(BODY.geo), bodyMat));
-  const spindle = lathe([
+  // The neck: a short gold spindle (collar, one ring, a stem that rises into the head).
+  const spindle = lathe(([
     [0.017, 0.0], [0.0175, 0.0025], [0.0135, 0.0055], [0.006, 0.0075], [0.0048, 0.012], [0.0105, 0.0145], [0.011, 0.0165],
     [0.0048, 0.019], [0.0042, 0.028], [0.0065, 0.034], [0.003, 0.039], [0.0004, 0.04],
-  ], 48, 60);
+  ] as [number, number][]).map(([r, y]) => [r, y * 0.68]), 48, 60);
   bodyGroup.add(new THREE.Mesh(geo(spindle.geo), goldMat));
 
   // Two round ports on the body's flanks, where the blades would join: a gold bezel around dark glass.
+  // Two round discs on the body's flanks (where the wings would join): a chrome bezel, dark glass, a ring of light.
+  const portRingMat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd9a0'), toneMapped: false, transparent: true, fog: false });
+  disposables.push(portRingMat);
   for (const side of [-1, 1]) {
-    const phi = side * 1.2, y = -0.066, r = radiusAt(BODY.pts, y);
+    const phi = side * 1.22, y = -0.062, r = radiusAt(BODY.pts, y);
     const port = new THREE.Group();
-    port.position.set(Math.sin(phi) * (r - 0.001), y, Math.cos(phi) * (r - 0.001));
+    port.position.set(Math.sin(phi) * (r + 0.0008), y, Math.cos(phi) * (r + 0.0008));
     port.rotation.y = phi;
-    port.add(new THREE.Mesh(geo(new THREE.TorusGeometry(0.0125, 0.0021, 12, 48)), goldMat));
-    const disc = new THREE.Mesh(geo(new THREE.CircleGeometry(0.0122, 40)), glassMat);
-    disc.position.z = -0.0006;
+    port.add(new THREE.Mesh(geo(new THREE.TorusGeometry(0.0172, 0.0028, 16, 64)), goldMat));
+    const disc = new THREE.Mesh(geo(new THREE.CircleGeometry(0.0168, 48)), glassMat);
+    disc.position.z = -0.0012;
     port.add(disc);
-    port.add(new THREE.Mesh(geo(new THREE.TorusGeometry(0.0068, 0.0007, 8, 40)), goldMat));
+    const glowRing = new THREE.Mesh(geo(new THREE.TorusGeometry(0.0112, 0.0007, 8, 64)), portRingMat);
+    glowRing.position.z = -0.0006;
+    port.add(glowRing);
+    port.add(new THREE.Mesh(geo(new THREE.TorusGeometry(0.0062, 0.0011, 10, 40)), goldMat));
     bodyGroup.add(port);
   }
 
@@ -229,25 +241,19 @@ export function createMarbleFigure(): FigureRig {
   const arm = armGeometry();
   disposables.push(arm.geo);
   const edgePts: THREE.Vector3[] = [];
-  for (let y = 0.002; y >= -0.14; y -= 0.006) edgePts.push(new THREE.Vector3(radiusAt(arm.pts, y) + armBend(y) - 0.0004, y, 0));
+  for (let y = 0.002; y >= -0.165; y -= 0.006) edgePts.push(new THREE.Vector3(radiusAt(arm.pts, y) + armBend(y) - 0.0004, y, 0));
   const edgeGeo = geo(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(edgePts), 60, 0.00085, 6, false));
-  const winY = -0.1, winR = radiusAt(arm.pts, winY);
-  const windowGeo = geo(new THREE.SphereGeometry(1, 24, 16));
   const arms = [-1, 1].map((side) => {
     const pivot = new THREE.Group();
     pivot.position.set(side * ARM_X, -0.012, 0.002);
     pivot.rotation.z = side * ARM_SPREAD;
     const blade = new THREE.Group();
     blade.scale.x = -side; // local +x faces the body on both sides
-    blade.add(new THREE.Mesh(arm.geo, shellMat));
+    blade.add(new THREE.Mesh(arm.geo, wingMat));
     blade.add(new THREE.Mesh(edgeGeo, goldMat));
-    const win = new THREE.Mesh(windowGeo, lightMat);
-    win.scale.set(0.0038, 0.0125, 0.0022);
-    win.position.set(-0.003 + armBend(winY), winY, winR * ARM_FLAT - 0.0012);
-    blade.add(win);
     pivot.add(blade);
     root.add(pivot);
-    return { pivot, side, win };
+    return { pivot, side };
   });
 
   // ---------- soft glow, so the light blooms even in the headset (additive, in front of each light) ----------
@@ -261,15 +267,16 @@ export function createMarbleFigure(): FigureRig {
     return { mesh, mat: m };
   };
   const eyeGlows = [-1, 1].map((side) => {
-    const g = glowMat(0.062, 0.046);
-    g.mesh.position.set(side * FACE.eyeX, FACE.eyeY, headFrontZ(side * FACE.eyeX, FACE.eyeY) + 0.004);
+    // The glow sits on the crown of each arch, where the light is fullest.
+    const g = glowMat(0.064, 0.034);
+    g.mesh.position.set(side * FACE.eyeX, FACE.eyeY + 0.011, headFrontZ(side * FACE.eyeX, FACE.eyeY + 0.011) + 0.004);
     head.add(g.mesh);
     return g;
   });
-  const browGlow = glowMat(0.036, 0.046);
-  browGlow.mesh.position.set(0, FACE.diamondY, headFrontZ(0, FACE.diamondY) + 0.004);
+  const browGlow = glowMat(0.05, 0.062);
+  browGlow.mesh.position.set(0, FACE.starY, headFrontZ(0, FACE.starY) + 0.004);
   head.add(browGlow.mesh);
-  const chestGlow = glowMat(0.05, 0.06);
+  const chestGlow = glowMat(0.048, 0.06);
   chestGlow.mesh.position.set(0, FACE.chestY, radiusAt(BODY.pts, FACE.chestY) + 0.004);
   bodyGroup.add(chestGlow.mesh);
   const jewelGlow = glowMat(0.04, 0.05);
@@ -280,10 +287,10 @@ export function createMarbleFigure(): FigureRig {
   // ---------- animated state ----------
   let fade = 0, wake = 0, eyesOpen = 0, blinkPhase = -1, nextBlink = 2.5;
   let yaw = 0, pitch = 0.16, roll = 0, levelS = 0;
-  const cur = { lid: 0, cheek: 0, lineL: 1, lineR: 1, sLx: 1, sLy: 1, sRx: 1, sRy: 1, ox: 0, oy: 0, oLy: 0, bright: 0.3, tilt: 0.1, dia: 0.3 };
+  const cur = { full: 0.011, lineL: 1, lineR: 1, sLx: 1, sLy: 1, sRx: 1, sRy: 1, ox: 0, oy: 0, oLy: 0, bright: 0.3, tilt: 0.1, dia: 0.3 };
   const _cam = new THREE.Vector3();
   let wasPortal = true;
-  const stoneMats = [headMat, bodyMat, shellMat, goldMat, glassMat];
+  const stoneMats = [headMat, bodyMat, shellMat, wingMat, goldMat, glassMat];
 
   return {
     root,
@@ -306,29 +313,28 @@ export function createMarbleFigure(): FigureRig {
       if (blinkPhase >= 0) { blinkPhase += dt / 0.24; blink = Math.sin(Math.min(1, blinkPhase) * Math.PI); if (blinkPhase >= 1) blinkPhase = -1; }
 
       // ---------- eye targets from expression + mood ----------
-      let lid = 0, cheek = 0, line = 0, sL = 1, sR = 1, oLy = 0, tilt = 0.08, ox = 0, oy = 0, bright = 0.92, dia = 0.62;
+      let full = 0.011, line = 0, sL = 1, sR = 1, oLy = 0, tilt = 0.1, ox = 0, oy = 0, bright = 0.92, dia = 0.85;
       switch (s.expression) {
-        case 'happy': cheek = 0.5; bright = 1.04; tilt = 0.03; break;
-        case 'curious': sL = 1.14; sR = 0.9; oLy = 0.002; tilt = 0.04; break;
-        case 'gentle': lid = 0.42; tilt = 0.12; break;
+        case 'happy': full = 0.0125; bright = 1.05; tilt = 0.06; break;
+        case 'curious': sL = 1.12; sR = 0.92; oLy = 0.002; tilt = 0.05; break;
+        case 'gentle': full = 0.0085; tilt = 0.13; break;
         case 'sleepy': line = 0.85; tilt = 0.08; bright = 0.6; break;
         default: break;
       }
       const breathe = 0.94 + 0.06 * Math.sin(time * Math.PI * 2 * 0.22);
       switch (s.mood) {
-        case 'listening': { const k = 1.06 + L * 0.07; sL *= k; sR *= k; } bright = 1 + L * 0.3 + 0.04 * Math.sin(time * Math.PI * 2 * 0.4); dia = 0.75 + L * 0.3; break;
+        case 'listening': { const k = 1.03 + L * 0.05; sL *= k; sR *= k; full *= 1.2 + L * 0.2; } bright = 1 + L * 0.3 + 0.04 * Math.sin(time * Math.PI * 2 * 0.4); dia = 0.75 + L * 0.3; break;
         case 'thinking': ox = 0.0055; oy = 0.004; sL *= 0.94; sR *= 0.94; bright = 0.86 + 0.06 * Math.sin(time * 2.2); dia = 0.9 + 0.35 * Math.sin(time * 3.1); break;
         case 'speaking': bright = 0.86 + L * 0.48; sL *= 1 + L * 0.04; sR *= 1 + L * 0.04; dia = 0.72 + L * 0.45; break;
         default: bright *= breathe; dia *= breathe;
       }
-      if (dormant) { lid = Math.max(lid, 0.22); bright *= 0.85; } // at the gate: calm, half-lidded, still glowing
+      if (dormant) full *= 0.88; // at the gate: calm, still glowing fully
       const closed = 1 - smooth(Math.min(1, eyesOpen));
       const lineT = Math.max(line, closed, blink);
       bright = THREE.MathUtils.lerp(0.32, bright, smooth(Math.min(1, eyesOpen)));
       dia = THREE.MathUtils.lerp(0.3 + 0.08 * Math.sin(time * 1.2), dia, awake);
       const kShape = 7, kLight = 3.2; // shapes settle in ~0.15 s, light in ~0.33 s (calm contract)
-      cur.lid = damp(cur.lid, lid, kShape, dt);
-      cur.cheek = damp(cur.cheek, cheek, kShape, dt);
+      cur.full = damp(cur.full, full, kShape, dt);
       cur.lineL = blinkPhase >= 0 ? lineT : damp(cur.lineL, lineT, kShape, dt);
       cur.lineR = blinkPhase >= 0 ? lineT : damp(cur.lineR, lineT, kShape, dt);
       cur.sLx = damp(cur.sLx, sL, kShape, dt); cur.sLy = damp(cur.sLy, sL, kShape, dt);
@@ -339,8 +345,7 @@ export function createMarbleFigure(): FigureRig {
       cur.dia = damp(cur.dia, dia, kLight, dt);
       face.uEyeL.value.set(-FACE.eyeX + cur.ox, FACE.eyeY + cur.oy + cur.oLy, cur.sLx, cur.sLy);
       face.uEyeR.value.set(FACE.eyeX + cur.ox, FACE.eyeY + cur.oy, cur.sRx, cur.sRy);
-      face.uLid.value = cur.lid;
-      face.uCheek.value = cur.cheek;
+      face.uFull.value = cur.full;
       face.uLineL.value = cur.lineL;
       face.uLineR.value = cur.lineR;
       face.uBright.value = cur.bright * fade;
@@ -349,13 +354,13 @@ export function createMarbleFigure(): FigureRig {
       // Night: a violet aurora rim; on the white page a quieter rim and a little more form shading.
       U.uRimAmt.value = THREE.MathUtils.lerp(0.3, 0.1, o.onLight);
       U.uOcclusion.value = THREE.MathUtils.lerp(0.26, 0.24, o.onLight);
-      U.uExposure.value = THREE.MathUtils.lerp(0.86, 1.0, o.onLight);
+      U.uExposure.value = THREE.MathUtils.lerp(0.78, 1.0, o.onLight); // a little shade on the stone so its lights read
       // (glowBlending is additive: brightness rides on the colour, not opacity)
-      const gk = fade * THREE.MathUtils.lerp(0.15, 0.07, o.onLight);
-      for (const g of eyeGlows) g.mat.color.set('#ffd9a3').multiplyScalar(cur.bright * gk * (1 - Math.max(cur.lineL, cur.lineR) * 0.8));
-      browGlow.mat.color.set('#ffd9a3').multiplyScalar(cur.dia * gk * 0.9);
-      chestGlow.mat.color.set('#ffd9a3').multiplyScalar(cur.dia * gk * 0.8);
-      jewelGlow.mat.color.set('#ffd9a3').multiplyScalar(cur.dia * gk * 0.7);
+      const gk = fade * THREE.MathUtils.lerp(0.5, 0.22, o.onLight);
+      for (const g of eyeGlows) g.mat.color.set('#ffbd66').multiplyScalar(cur.bright * gk * (1 - Math.max(cur.lineL, cur.lineR) * 0.8));
+      browGlow.mat.color.set('#ffbd66').multiplyScalar(cur.dia * gk * 0.9);
+      chestGlow.mat.color.set('#ffbd66').multiplyScalar(cur.dia * gk * 0.8);
+      jewelGlow.mat.color.set('#ffbd66').multiplyScalar(cur.dia * gk * 0.7);
       lightMat.color.set('#fff2dc').multiplyScalar(0.6 + cur.dia * 0.9);
 
       // ---------- the head looks at you (softly limited), with mood in its posture ----------
@@ -401,6 +406,8 @@ export function createMarbleFigure(): FigureRig {
 
       for (const m of stoneMats) m.opacity = fade;
       lightMat.opacity = fade;
+      portRingMat.opacity = fade;
+      portRingMat.color.set('#ffd9a0').multiplyScalar(0.55 + cur.dia * 0.7);
     },
     dispose() {
       for (const d of disposables) d.dispose();

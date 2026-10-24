@@ -50,7 +50,7 @@ function MemoryLights() {
     const k = day.current;
     // Before the memory, the palace brings its own low sun and sky light; these step aside for it.
     const g = useGate.getState();
-    const inPalace = g.world === 'palace' && !isDay && st !== 'album';
+    const inPalace = g.world === 'palace' && !isDay;
     palace.current += ((inPalace ? 1 : 0) - palace.current) * (1 - Math.exp(-Math.min(dt, 0.05) * 3));
     const pk = 1 - palace.current;
     scene.environmentIntensity = 0.9 - 0.4 * k;

@@ -34,6 +34,10 @@ node apps/gate/scripts/flow.mjs "$SHOTS/phone-light" --mobile --companion light 
 grep -q "final stage: album" "$OUT/flow-phone-light.txt" && pass "reached the album" || fail "journey did not finish"
 grep -E "errors: [0-9]+" "$OUT/flow-phone-light.txt" | tail -1 | sed 's/^/   /' | tee -a "$SUMMARY"
 
+step "the aurora gate still works (?world=aurora, Light)"
+node apps/gate/scripts/flow.mjs "$SHOTS/aurora-light" --world aurora --companion light > "$OUT/flow-aurora-light.txt" 2>&1
+grep -q "final stage: album" "$OUT/flow-aurora-light.txt" && pass "reached the album" || fail "aurora journey did not finish"
+
 step "headset rehearsal (emulated Quest 3)"
 node apps/gate/scripts/xr-check.mjs "$SHOTS/xr" > "$OUT/xr.txt" 2>&1
 grep -q '"stage":"album","xr":false' "$OUT/xr.txt" && pass "entered VR, formed a memory, exited to the album" || fail "headset rehearsal (see xr.txt)"
@@ -58,6 +62,9 @@ if [ "$LIVE" = "--live" ]; then
   node apps/gate/scripts/voice-e2e.mjs "${MIC_WAV:?set MIC_WAV}" "$SHOTS/voice" > "$OUT/voice.txt" 2>&1
   grep -q "stage → memory" "$OUT/voice.txt" && pass "spoken description reached the memory" || fail "voice loop (see voice.txt)"
   grep -E "heard:|companion:|errors:" "$OUT/voice.txt" | sed 's/^/   /' | tee -a "$SUMMARY"
+  step "live: two devices in the same room (nearby join, quiet guest, lights, look-here mark)"
+  node apps/gate/scripts/multiplayer-check.mjs "$SHOTS/multiplayer" > "$OUT/multiplayer.txt" 2>&1 && pass "multiplayer" || fail "multiplayer (see multiplayer.txt)"
+  grep -E "PASS|FAIL|errors:" "$OUT/multiplayer.txt" | sed 's/^/   /' | tee -a "$SUMMARY"
   step "live: photo with Claude vision"
   node apps/gate/scripts/flow.mjs "$SHOTS/photo" --live --photo fixtures/sample-photo-1938.jpg > "$OUT/photo.txt" 2>&1
   grep -q "final stage: album" "$OUT/photo.txt" && pass "photo journey reached the album" || fail "photo journey (see photo.txt)"

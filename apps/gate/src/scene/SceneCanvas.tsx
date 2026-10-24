@@ -19,7 +19,7 @@ function Effects({ quality }: { quality: number }) {
   const world = useGate((s) => s.world);
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving' || !!(window as unknown as { __scenePreview?: boolean }).__scenePreview;
   // The palace is daylight before the memory too: only its sun, oculus and stepping stones should glow.
-  const palace = world === 'palace' && !day && stage !== 'album';
+  const palace = world === 'palace' && !day;
   const gl = useThree((s) => s.gl);
   useEffect(() => {
     useGate.getState().set({ xr: presenting });

@@ -13,7 +13,7 @@ const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, i
 await ctx.addInitScript(() => { try { Object.defineProperty(Navigator.prototype, 'xr', { get: () => undefined, configurable: true }); } catch { /* ignore */ } });
 const page = await ctx.newPage();
 const errors = [];
-page.on('pageerror', (e) => errors.push(String(e).slice(0, 300)));
+page.on('pageerror', (e) => errors.push(String(e.stack ?? e).slice(0, 600)));
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().slice(0, 300)); });
 const t0 = Date.now();
 const note = (s) => console.log(`${((Date.now() - t0) / 1000).toFixed(1)}s  ${s}`);

@@ -98,8 +98,17 @@ try {
     await page.getByTestId('leave').click();
     await waitStage('album', 40000);
   } else note('Visit again button not visible');
+  await page.waitForTimeout(3000);
+  await shot('11-album-again');
   const albumInfo = await page.evaluate(() => window.__gate.store.getState().stage);
   note(`final stage: ${albumInfo}`);
+  // Visit another memory: back to the gate for a new place (the session carries on).
+  await page.getByTestId('album-begin').click();
+  note('tapped Visit another memory');
+  await waitStage('gathering', 20000);
+  await page.waitForTimeout(3500);
+  await shot('12-another-memory');
+  note(`after another: ${JSON.stringify(await state())}`);
 } catch (e) {
   note(`FAILED: ${String(e).slice(0, 400)}`);
   await shot('zz-failure').catch(() => undefined);

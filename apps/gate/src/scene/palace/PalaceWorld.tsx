@@ -8,18 +8,19 @@ import * as THREE from 'three';
 import { useGate, type Stage } from '../../state/store';
 import { HASH, SIMPLEX3 } from '../shaders/noise.glsl';
 import { damp, glowBlending } from '../util';
-import { colonnade, columnGeometry, columnSpots, figureGeometry, rotunda, terrace } from './geometry';
+import { balustrade, colonnade, columnGeometry, columnSpots, figureGeometry, lilyPads, planting, rotunda, terrace } from './geometry';
 import { PAL, palaceMaterial, palaceMaterials } from './materials';
 import { GLOW_DIR, LAGOON, R, ROT, SHORE, SUN_DIR, WATER_Y, flatWhite, sc, xrWhite } from './plan';
 import { paintClouds, skyEnvironment, skyMaterial } from './sky';
 
-const PRE: readonly Stage[] = ['portal', 'greeting', 'gathering', 'entering'];
+/** The palace is the world before the memory, and the album's backdrop after it. */
+const PRE: readonly Stage[] = ['portal', 'greeting', 'gathering', 'entering', 'album'];
 const lin = (hex: string) => new THREE.Color(hex);
 
 const WATER_FRAG = /* glsl */ `
 varying vec3 vW;
 uniform float uTime, uWhite, uHazeDen;
-uniform vec3 uTint, uSunDir, uWhiteCol, uHazeCool, uHazeWarm, uGlint;
+uniform vec3 uTint, uSunDir, uWhiteCol, uHazeCool, uHazeWarm, uGlint, uSheen;
 ${HASH}
 ${SIMPLEX3}
 void main() {
@@ -29,14 +30,20 @@ void main() {
   float n2 = snoise(vec3(p * 1.05 + 7.0, uTime * 0.16));
   vec3 N = normalize(vec3((n1 * 0.6 + n2 * 0.35) * 0.035, 1.0, (n2 * 0.6 - n1 * 0.25) * 0.035));
   float fres = 0.03 + 0.97 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
-  vec3 H = normalize(V + uSunDir);
-  float glint = pow(max(dot(N, H), 0.0), 700.0) * 3.5;
-  float a = mix(0.5, 0.1, fres);
-  vec3 col = uTint * a + uGlint * glint;
+  // Long, slow ripple bands across the water break the mirror into a living surface.
+  float band = snoise(vec3(p.x * 0.09, p.y * 1.25, uTime * 0.22));
+  float a = mix(0.5, 0.1, fres) * (0.86 + 0.28 * band);
+  vec3 col = uTint * a;
+  // More sky at grazing angles: a soft sheen of the horizon over the far water.
+  col += uSheen * (fres * 0.32 + max(band, 0.0) * 0.035);
+  // A few glints toward the low sun's glow, sparkling and gone.
+  float sp = snoise(vec3(p * 4.2, uTime * 0.6));
+  float toward = pow(max(dot(reflect(-V, N), uSunDir), 0.0), 28.0);
+  col += uGlint * smoothstep(0.86, 0.97, sp) * toward * 1.4;
   float d = length(vW - cameraPosition);
   float sunward = pow(max(dot(-V, uSunDir), 0.0), 3.0);
   vec3 haze = mix(uHazeCool, uHazeWarm, 0.35 + 0.65 * sunward);
-  float h = (1.0 - exp(-d * uHazeDen)) * 0.9;
+  float h = (1.0 - exp(-pow(d * uHazeDen, 1.6))) * 0.9 * smoothstep(4.0, 16.0, d);
   a = mix(a, 1.0, h * 0.5);
   col = mix(col, haze * a, h);
   col = mix(col, uWhiteCol * mix(a, 1.0, uWhite), uWhite);
@@ -106,18 +113,28 @@ export function PalaceWorld({ quality }: { quality: number }) {
     const col = colonnade();
     const ter = terrace();
     const spots = columnSpots();
-    const colGeo = columnGeometry(quality >= 0.9 ? 20 : 12);
-    const mirrorColGeo = columnGeometry(8);
+    const colGeo = quality >= 0.9 ? columnGeometry(20) : columnGeometry(12, false); // volutes only where they can be seen
+    const mirrorColGeo = columnGeometry(8, false);
     const colMatrices = spots.map((c) => {
       const w = sc(R.colR) / (0.05 * c.h);
       return new THREE.Matrix4().compose(new THREE.Vector3(c.x, 0, c.z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), c.yaw), new THREE.Vector3(c.h * w, c.h, c.h * w));
     });
     const figGeo = figureGeometry();
+    // The near plane: a balustrade on the shore, planting at the sides, lily pads by the edges.
+    const bal = balustrade();
+    const plant = planting();
+    const lily = lilyPads();
+    const leaf = { roughness: 0.95, metalness: 0, envMapIntensity: 0.16 };
+    const green = {
+      cypress: palaceMaterial({ ...leaf, color: '#4e5c47' }, {}, env),
+      cypressMirror: palaceMaterial({ ...leaf, color: '#4e5c47' }, { mirror: true }, env),
+      pad: palaceMaterial({ color: '#a3b493', roughness: 0.42, metalness: 0, envMapIntensity: 0.75 }, {}, env),
+    };
     const water = new THREE.ShaderMaterial({
       transparent: true, depthWrite: false, premultipliedAlpha: true,
       uniforms: {
         uTime: { value: 0 }, uWhite: PAL.uPalWhite, uHazeDen: PAL.uPalHazeDen, uTint: { value: lin('#46508a') }, uSunDir: { value: GLOW_DIR.clone() },
-        uWhiteCol: PAL.uPalWhiteCol, uHazeCool: PAL.uPalHazeCool, uHazeWarm: PAL.uPalHazeWarm, uGlint: { value: lin('#fff0d8') },
+        uWhiteCol: PAL.uPalWhiteCol, uHazeCool: PAL.uPalHazeCool, uHazeWarm: PAL.uPalHazeWarm, uGlint: { value: lin('#fff0d8') }, uSheen: { value: lin('#e6d6e6') },
       },
       vertexShader: /* glsl */ `varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
       fragmentShader: WATER_FRAG,
@@ -149,7 +166,7 @@ export function PalaceWorld({ quality }: { quality: number }) {
     moteGeo.setAttribute('position', new THREE.BufferAttribute(mpos, 3));
     moteGeo.setAttribute('aSeed', new THREE.BufferAttribute(mseed, 4));
     const moteMat = glowBlending(new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uPx: { value: 900 }, uFade: { value: 1 } }, vertexShader: MOTE_VERT, fragmentShader: MOTE_FRAG }));
-    return { clouds, env, mats, skyMat, rot, col, ter, colGeo, mirrorColGeo, colMatrices, figGeo, water, stoneZ, stoneGeo, stoneMat, glowMat, oculusMat, shaftGeo, shaftMat, moteGeo, moteMat };
+    return { clouds, env, mats, skyMat, rot, col, ter, colGeo, mirrorColGeo, colMatrices, figGeo, bal, plant, lily, green, water, stoneZ, stoneGeo, stoneMat, glowMat, oculusMat, shaftGeo, shaftMat, moteGeo, moteMat };
   }, [gl, quality]);
 
   useEffect(() => () => {
@@ -164,8 +181,18 @@ export function PalaceWorld({ quality }: { quality: number }) {
   const colMirrorRef = useRef<THREE.InstancedMesh>(null);
   const figRef = useRef<THREE.InstancedMesh>(null);
   const figMirrorRef = useRef<THREE.InstancedMesh>(null);
+  const balRef = useRef<THREE.InstancedMesh>(null);
+  const balMirrorRef = useRef<THREE.InstancedMesh>(null);
+  const cypRef = useRef<THREE.InstancedMesh>(null);
+  const cypMirrorRef = useRef<THREE.InstancedMesh>(null);
+  const padRef = useRef<THREE.InstancedMesh>(null);
   useEffect(() => {
-    for (const [ref, list] of [[colRef, built.colMatrices], [colMirrorRef, built.colMatrices], [figRef, built.col.figures], [figMirrorRef, built.col.figures]] as const) {
+    const sets = [
+      [colRef, built.colMatrices], [colMirrorRef, built.colMatrices], [figRef, built.col.figures], [figMirrorRef, built.col.figures],
+      [balRef, built.bal.balusters], [balMirrorRef, built.bal.balusters], [cypRef, built.plant.cypresses], [cypMirrorRef, built.plant.cypresses],
+      [padRef, built.lily.pads],
+    ] as const;
+    for (const [ref, list] of sets) {
       const m = ref.current;
       if (!m) continue;
       list.forEach((mat, i) => m.setMatrixAt(i, mat));
@@ -220,8 +247,8 @@ export function PalaceWorld({ quality }: { quality: number }) {
     built.moteMat.uniforms.uFade!.value = 1 - PAL.uPalWhite.value;
     built.oculusMat.color.setRGB(1, 0.94, 0.86).multiplyScalar(0.55 + L.oculus * 2.4);
     const lightK = 1 - PAL.uPalWhite.value * 0.6;
-    if (sun.current) sun.current.intensity = 3.1 * lightK;
-    if (hemi.current) hemi.current.intensity = 0.5 * lightK;
+    if (sun.current) sun.current.intensity = 4.6 * lightK;
+    if (hemi.current) hemi.current.intensity = 0.27 * lightK;
 
     // Stepping stones: each rises a little ahead of the walk and glows as it surfaces.
     const stones = stonesRef.current, glows = stoneGlowRef.current;
@@ -258,9 +285,9 @@ export function PalaceWorld({ quality }: { quality: number }) {
       <mesh ref={sky} material={built.skyMat} frustumCulled={false} renderOrder={-1000}>
         <sphereGeometry args={[60, 64, 40]} />
       </mesh>
-      <hemisphereLight ref={hemi} args={['#d4d2f2', '#ead8c4', 0]} />
+      <hemisphereLight ref={hemi} args={['#b9c0ef', '#e8cfb2', 0]} />
       <primitive object={sunTarget} />
-      <directionalLight ref={sun} color="#ffdcb4" intensity={0} position={[SUN_DIR.x * 90, SUN_DIR.y * 90, 12 + SUN_DIR.z * 90]} target={sunTarget}
+      <directionalLight ref={sun} color="#ffdfba" intensity={0} position={[SUN_DIR.x * 90, SUN_DIR.y * 90, 12 + SUN_DIR.z * 90]} target={sunTarget}
         castShadow={shadows} shadow-mapSize={[2048, 2048]} shadow-bias={-0.0006} shadow-normalBias={0.04}
         shadow-camera-left={-48} shadow-camera-right={48} shadow-camera-top={40} shadow-camera-bottom={-40} shadow-camera-near={20} shadow-camera-far={180} />
 
@@ -280,6 +307,10 @@ export function PalaceWorld({ quality }: { quality: number }) {
       <instancedMesh ref={figRef} args={[built.figGeo, m.marble, built.col.figures.length]} castShadow={shadows} />
       <mesh geometry={built.ter.floor} material={m.terrace} receiveShadow={shadows} />
       <mesh geometry={built.ter.rim} material={m.marble} receiveShadow={shadows} />
+      <mesh geometry={built.bal.rails} material={m.marble} castShadow={shadows} receiveShadow={shadows} />
+      <instancedMesh ref={balRef} args={[built.bal.baluster, m.marble, built.bal.balusters.length]} castShadow={shadows} />
+      <instancedMesh ref={cypRef} args={[built.plant.cypress, built.green.cypress, built.plant.cypresses.length]} castShadow={shadows} />
+      <instancedMesh ref={padRef} args={[built.lily.pad, built.green.pad, built.lily.pads.length]} />
 
       {/* Its reflection: the same shapes mirrored under the water's surface, lit as they are above it. */}
       <group position={[0, 2 * WATER_Y, 0]} scale={[1, -1, 1]}>
@@ -290,6 +321,9 @@ export function PalaceWorld({ quality }: { quality: number }) {
         <mesh geometry={built.rot.gold} material={mm.gold} />
         <mesh geometry={built.col.marble} material={mm.marble} />
         <instancedMesh ref={figMirrorRef} args={[built.figGeo, mm.marble, built.col.figures.length]} />
+        <mesh geometry={built.bal.rails} material={mm.marble} />
+        <instancedMesh ref={balMirrorRef} args={[built.bal.baluster, mm.marble, built.bal.balusters.length]} />
+        <instancedMesh ref={cypMirrorRef} args={[built.plant.cypress, built.green.cypressMirror, built.plant.cypresses.length]} />
       </group>
       <mesh geometry={built.ter.water} material={built.water} renderOrder={2} />
 

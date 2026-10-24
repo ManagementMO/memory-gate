@@ -225,8 +225,8 @@ export function AuroraSky({ quality = 1 }: { quality?: number }) {
     u.uWake!.value = damp(u.uWake!.value, album ? 0.55 : awake, 1.6, dt);
     u.uOpen!.value = entering ? p : damp(u.uOpen!.value, 0, 2.5, dt);
     u.uWhite!.value = entering ? THREE.MathUtils.smoothstep(p, 0.62, 0.98) : damp(u.uWhite!.value, day ? 1 : 0, 2, dt);
-    // In the palace world the aurora is only the album's backdrop; coming back to it, it fades up from dark.
-    const elsewhere = s.world === 'palace' && !album;
+    // In the palace world the aurora never shows (the palace is the album's backdrop too).
+    const elsewhere = s.world === 'palace';
     if (elsewhere) u.uFade!.value = 0;
     u.uFade!.value = damp(u.uFade!.value, day || elsewhere ? 0 : 1, 1.4, dt);
     u.uGateStrength!.value = damp(u.uGateStrength!.value, album ? 0.55 : 1, 1.2, dt);

@@ -100,6 +100,18 @@ void main() {
     float hill = (1.0 - smoothstep(ridge - 0.002, ridge + 0.002, d.y)) * smoothstep(-0.02, 0.0, d.y);
     vec3 hc = mix(uHill, uHillFar, smoothstep(0.0, ridge, d.y));
     outc = mix(outc, vec4(hc, 0.55), hill);
+    // Far away in the haze, a few slender spires afloat above the hills: barely there, the dream's own touch.
+    for (int i = 0; i < 4; i++) {
+      float fi = float(i);
+      float a0 = fi < 2.0 ? -1.15 + fi * 0.32 : 1.0 + (fi - 2.0) * 0.27;
+      float base = 0.05 + 0.025 * fract(fi * 0.618), top = base + 0.075 + 0.03 * fract(fi * 0.37);
+      float u = (d.y - base) / (top - base);
+      float w = 0.0042 * (1.0 - u) * (0.7 + 0.3 * fract(fi * 0.71)) + 0.0006;
+      float spire = step(0.0, u) * step(u, 1.0) * (1.0 - smoothstep(w * 0.6, w, abs(az - a0)));
+      // a small floating base under each spire, rounded like an island seen from afar
+      float isl = (1.0 - smoothstep(0.0, 1.0, length(vec2((az - a0) / 0.011, (d.y - base + 0.004) / 0.005))));
+      outc = mix(outc, vec4(mix(uHillFar, uLit, 0.35), 0.32), max(spire, isl * 0.85));
+    }
   }
   gl_FragColor = outc;
 }`;

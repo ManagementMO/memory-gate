@@ -30,7 +30,7 @@ const turn = (yaw: number, lx: number, lz: number) => new THREE.Vector2(lx * Mat
 const arcYaw = (theta: number) => -theta;
 
 /** One Corinthian column, height 1: base mouldings, a shaft with a gentle swell, a flared capital, the square abacus. */
-export function columnGeometry(segments: number): THREE.BufferGeometry {
+export function columnGeometry(segments: number, volutes = true): THREE.BufferGeometry {
   const prof: [number, number][] = [
     [0.0, 0.018], [0.071, 0.018], [0.071, 0.026], [0.066, 0.032], [0.068, 0.038], [0.06, 0.044], [0.057, 0.05], [0.061, 0.055],
     [0.055, 0.062], [0.052, 0.066], [0.0515, 0.2], [0.05, 0.42], [0.0475, 0.66], [0.045, 0.85], [0.049, 0.855], [0.049, 0.862],
@@ -39,7 +39,15 @@ export function columnGeometry(segments: number): THREE.BufferGeometry {
   const lathe = new THREE.LatheGeometry(prof.map(([r, y]) => new THREE.Vector2(r, y)), segments);
   const plinth = new THREE.BoxGeometry(0.15, 0.018, 0.15).translate(0, 0.009, 0);
   const abacus = new THREE.BoxGeometry(0.152, 0.028, 0.152).translate(0, 0.986, 0);
-  return merge([lathe, plinth, abacus]);
+  const parts: THREE.BufferGeometry[] = [lathe, plinth, abacus];
+  // Corinthian volutes: a small scroll curling out under each corner of the abacus.
+  if (volutes) {
+    for (let k = 0; k < 4; k++) {
+      const a = Math.PI / 4 + (k * Math.PI) / 2;
+      parts.push(new THREE.TorusGeometry(0.0105, 0.0042, 4, 9).rotateY(a + Math.PI / 2).translate(Math.sin(a) * 0.072, 0.963, Math.cos(a) * 0.072));
+    }
+  }
+  return merge(parts);
 }
 
 export type ColumnSpot = { x: number; z: number; h: number; yaw: number };
@@ -149,13 +157,33 @@ export function rotunda(quality: number): RotundaParts {
   marble.push(...octBand(sc(R.apothem + 2.15), sc(R.wall + 2.15), sc(R.entTop), sc(R.cornice)));
   marble.push(...octBand(sc(R.drumApothem), sc(1.8), sc(R.cornice), sc(R.drumTop)));
   marble.push(...octBand(sc(R.drumApothem + 0.5), sc(2.3), sc(R.drumTop - 0.7), sc(R.drumTop)));
-  // Relief panels on the drum (the real one carries Zimm's frieze): a warmer, rougher stone set into each face.
+  // Relief panels on the drum (the real one carries Zimm's frieze): carved stone set into each face, in a raised
+  // frame whose edges catch the light.
   const relief: THREE.BufferGeometry[] = [];
   for (let k = 0; k < 8; k++) {
     const a = (k / 8) * Math.PI * 2;
     const w = 2 * sc(R.drumApothem) * Math.tan(Math.PI / 8) * 0.74;
+    const h = sc(4.2), cy = sc(R.cornice + 0.7 + 2.1);
     const r = sc(R.drumApothem) + 0.02;
-    relief.push(box(w, sc(4.2), 0.08, ROT.x + Math.sin(a) * r, sc(R.cornice + 0.7 + 2.1), ROT.z + Math.cos(a) * r, a));
+    relief.push(box(w, h, 0.08, ROT.x + Math.sin(a) * r, cy, ROT.z + Math.cos(a) * r, a));
+    const fr = sc(R.drumApothem) + 0.07, t = sc(0.32);
+    for (const [fw, fh, ux, uy] of [[w + 2 * t, t, 0, (h + t) / 2], [w + 2 * t, t, 0, -(h + t) / 2], [t, h, (w + t) / 2, 0], [t, h, -(w + t) / 2, 0]] as const) {
+      const o = turn(a, ux, 0);
+      marble.push(box(fw, fh, 0.16, ROT.x + Math.sin(a) * fr + o.x, cy + uy, ROT.z + Math.cos(a) * fr + o.y, a));
+    }
+  }
+  // The architrave's two fascia steps and a dentil line under the cornice: the classical order, in small.
+  marble.push(...octBand(sc(R.apothem + 1.78), 0.08, sc(R.colH + 0.08), sc(R.colH + 0.42)));
+  marble.push(...octBand(sc(R.apothem + 1.82), 0.08, sc(R.colH + 0.5), sc(R.colH + 0.9)));
+  for (let k = 0; k < 8; k++) {
+    const a = (k / 8) * Math.PI * 2;
+    const half = sc(R.apothem + 1.85) * Math.tan(Math.PI / 8) - 0.1;
+    const n = Math.floor((2 * half) / 0.21);
+    for (let i = 0; i <= n; i++) {
+      const u = -half + (i * 2 * half) / n;
+      const o = turn(a, u, sc(R.apothem + 1.72) + 0.07);
+      marble.push(box(0.1, 0.15, 0.14, ROT.x + o.x, sc(R.entTop) - 0.1, ROT.z + o.y, a));
+    }
   }
   // The frieze band under the cornice, the same warm stone.
   relief.push(...octBand(sc(R.apothem + 1.72), 0.1, sc(R.colH + 1.0), sc(R.entTop - 0.15)));
@@ -200,6 +228,15 @@ export function colonnade(): ColonnadeParts {
         const mid = arcPoint(tm, r);
         marble.push(box(len, beam, sc(1.5), mid.x, H + beam / 2, mid.y, arcYaw(tm)));
         marble.push(box(len + 0.05, sc(0.45), sc(1.9), mid.x, H + beam + sc(0.22), mid.y, arcYaw(tm)));
+        if (dr < 0) {
+          // A dentil line under the cornice on the side that faces the lagoon.
+          const n = Math.max(2, Math.floor(len / 0.21));
+          for (let j = 0; j < n; j++) {
+            const u = -len / 2 + (j + 0.5) * (len / n);
+            const o = turn(arcYaw(tm), u, -(sc(0.75) + 0.05));
+            marble.push(box(0.1, 0.14, 0.12, mid.x + o.x, H + beam - 0.08, mid.y + o.y, arcYaw(tm)));
+          }
+        }
       }
     }
     // Cross-beams joining the rows at each column pair, and the planter boxes.
@@ -217,6 +254,14 @@ export function colonnade(): ColonnadeParts {
         marble.push(box(bw + sc(0.7), sc(0.5), bd + sc(0.7), c.x, y0 + bh + sc(0.25), c.y, yb));
         marble.push(box(bw + sc(0.5), sc(0.4), bd + sc(0.5), c.x, y0 + sc(0.2), c.y, yb));
         relief.push(box(bw * 0.72, bh * 0.5, bd + 0.06, c.x, y0 + bh * 0.52, c.y, yb));
+        // Raised frames round the carved panel on both long faces.
+        const ft = sc(0.28);
+        for (const side of [-1, 1]) {
+          for (const [fw, fh, ux, uy] of [[bw * 0.72 + 2 * ft, ft, 0, bh * 0.25 + ft / 2], [bw * 0.72 + 2 * ft, ft, 0, -(bh * 0.25 + ft / 2)], [ft, bh * 0.5, bw * 0.36 + ft / 2, 0], [ft, bh * 0.5, -(bw * 0.36 + ft / 2), 0]] as const) {
+            const o = turn(yb, ux, side * (bd / 2 + 0.05));
+            marble.push(box(fw, fh, 0.12, c.x + o.x, y0 + bh * 0.52 + uy, c.y + o.y, yb));
+          }
+        }
         // The weeping women: one at each corner, facing into the box, head bowed against it.
         for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
           const o = turn(yb, sx * (bw / 2 + sc(0.55)), sz * (bd / 2 + sc(0.55)));
@@ -275,4 +320,95 @@ export function terrace(): { floor: THREE.BufferGeometry; rim: THREE.BufferGeome
   }
   const water = new THREE.ShapeGeometry(new THREE.Shape(outline.map((p) => new THREE.Vector2(p.x, -p.y))), 4).rotateX(-Math.PI / 2).translate(0, WATER_Y, 0);
   return { floor, rim: merge([rimTop, wall]), water };
+}
+
+/** A low stone balustrade along the near shore, open in the middle where the stepping stones begin. */
+export function balustrade(): { rails: THREE.BufferGeometry; baluster: THREE.BufferGeometry; balusters: THREE.Matrix4[] } {
+  const OPEN = 1.25, REACH = 13.5, STEP = 0.27;
+  const edge: THREE.Vector2[] = [];
+  for (let i = 0; i <= 600; i++) edge.push(lagoonPoint((i / 600) * Math.PI, 0.3));
+  const near = (p: THREE.Vector2) => p.y > LAGOON.cz + LAGOON.hd * 0.55;
+  const runs = [edge.filter((p) => near(p) && p.x > OPEN && p.x < REACH), edge.filter((p) => near(p) && p.x < -OPEN && p.x > -REACH)];
+  const rails: THREE.BufferGeometry[] = [];
+  const balusters: THREE.Matrix4[] = [];
+  for (const run of runs) {
+    // Even spacing along the curve.
+    const spots: THREE.Vector2[] = [run[0]!];
+    let carry = 0;
+    for (let i = 1; i < run.length; i++) {
+      carry += run[i]!.distanceTo(run[i - 1]!);
+      if (carry >= STEP) { spots.push(run[i]!); carry = 0; }
+    }
+    for (let i = 0; i < spots.length - 1; i++) {
+      const a = spots[i]!, b = spots[i + 1]!;
+      const mid = a.clone().add(b).multiplyScalar(0.5);
+      const yaw = Math.atan2(b.x - a.x, b.y - a.y) - Math.PI / 2;
+      const len = a.distanceTo(b) + 0.02;
+      rails.push(box(len, 0.1, 0.24, mid.x, 0.14, mid.y, yaw));
+      rails.push(box(len, 0.08, 0.2, mid.x, 0.6, mid.y, yaw));
+      rails.push(box(len, 0.035, 0.25, mid.x, 0.657, mid.y, yaw));
+      balusters.push(new THREE.Matrix4().compose(new THREE.Vector3(mid.x, 0.19, mid.y), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), new THREE.Vector3(0.95, 0.72, 0.95)));
+    }
+    // Slim posts close each run, the same height as the rail: the opening onto the water stays light.
+    for (const end of [spots[0]!, spots[spots.length - 1]!]) {
+      rails.push(box(0.24, 0.66, 0.24, end.x, 0.33, end.y));
+      rails.push(box(0.29, 0.04, 0.29, end.x, 0.68, end.y));
+    }
+  }
+  const baluster = new THREE.LatheGeometry([
+    [0, 0], [0.07, 0], [0.07, 0.04], [0.045, 0.07], [0.07, 0.17], [0.082, 0.25], [0.06, 0.36], [0.036, 0.45], [0.032, 0.5],
+    [0.05, 0.52], [0.05, 0.57], [0, 0.57],
+  ].map(([r, y]) => new THREE.Vector2(r, y)), 10);
+  return { rails: merge(rails), baluster, balusters };
+}
+
+/** Planting: tall cypresses behind the colonnade, as around the real palace. */
+export function planting(): { cypress: THREE.BufferGeometry; cypresses: THREE.Matrix4[] } {
+  // A cypress: a slim flame of foliage, gently lumpy (displaced along its normals) so its edge is soft, not faceted.
+  const cypress = new THREE.LatheGeometry([
+    [0.0, 0], [0.32, 0.05], [0.62, 0.6], [0.78, 1.6], [0.8, 2.7], [0.72, 3.9], [0.56, 5.0], [0.36, 5.9], [0.17, 6.55], [0.05, 6.88], [0, 6.95],
+  ].map(([r, y]) => new THREE.Vector2(r, y)), 28);
+  for (const g of [cypress]) {
+    const pos = g.getAttribute('position') as THREE.BufferAttribute;
+    const v = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i);
+      const r = Math.hypot(v.x, v.z);
+      if (r < 1e-3) continue;
+      const k = 1 + 0.09 * Math.sin(v.y * 3.1 + Math.atan2(v.x, v.z) * 5) + 0.06 * Math.sin(v.y * 7.3 - Math.atan2(v.x, v.z) * 9);
+      pos.setXYZ(i, v.x * k, v.y, v.z * k);
+    }
+    g.computeVertexNormals();
+  }
+  // Groves of tall Italian cypress far behind the colonnade (80-95 m from where you stand), placed so that from the
+  // shore they rise in the gaps between the planter boxes, softened by the haze: behind and above, never through.
+  const tree = (azDeg: number, dist: number, h: number, yaw: number) => {
+    const a = (azDeg * Math.PI) / 180;
+    const sy = h / 6.95;
+    return new THREE.Matrix4().compose(new THREE.Vector3(Math.sin(a) * dist, 0, 42.4 - Math.cos(a) * dist), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), new THREE.Vector3(sy * 0.4, sy, sy * 0.4));
+  };
+  const cypresses: THREE.Matrix4[] = [];
+  for (const side of [-1, 1]) {
+    cypresses.push(tree(side * 13.2, 86, 25, 0), tree(side * 14.5, 91, 22, 1));
+    cypresses.push(tree(side * 23.0, 84, 27, 2), tree(side * 24.4, 89, 23, 3), tree(side * 22.0, 93, 21, 4));
+    cypresses.push(tree(side * 33.4, 82, 25, 5), tree(side * 34.9, 88, 21.5, 6));
+  }
+  return { cypress, cypresses };
+}
+
+/** Lily pads gathered near the basin's edges, away from the rotunda's reflection. */
+export function lilyPads(): { pad: THREE.BufferGeometry; pads: THREE.Matrix4[] } {
+  const pad = new THREE.CircleGeometry(1, 22, 0.35, Math.PI * 2 - 0.42).rotateX(-Math.PI / 2);
+  const pads: THREE.Matrix4[] = [];
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const clusters: [number, number, number][] = [[-6.2, 33.4, 7], [6.6, 34.2, 7], [-12.4, 24.5, 6], [12.8, 22.6, 6], [-15.4, 14.8, 5], [15.8, 13.2, 5]];
+  for (const [cx, cz, n] of clusters) {
+    for (let i = 0; i < n; i++) {
+      const r = 0.16 + rnd() * 0.16;
+      const x = cx + (rnd() - 0.5) * 4.2, z = cz + (rnd() - 0.5) * 3.2;
+      pads.push(new THREE.Matrix4().compose(new THREE.Vector3(x, WATER_Y + 0.006, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6.28), new THREE.Vector3(r, 1, r)));
+    }
+  }
+  return { pad, pads };
 }

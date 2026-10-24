@@ -13,7 +13,7 @@ export const sc = (metres: number) => metres * S;
 /** The dome's centre, on the floor. */
 export const ROT = new THREE.Vector3(MEMORY_CENTER.x, 0, MEMORY_CENTER.z);
 /** Where you stand at the start, across the lagoon (feet). */
-export const SHORE = new THREE.Vector3(0, 0, 41.5);
+export const SHORE = new THREE.Vector3(0, 0, 42.4);
 export const EYE = 1.55;
 /** Across the lagoon the view lifts only ~4°: the whole dome fits, and the companion floats a little above centre,
  *  clear of the words at the bottom of the screen (as in the aurora gate, at the same distance and size). */
@@ -49,10 +49,10 @@ export function lagoonPoint(t: number, grow = 0): THREE.Vector2 {
   return new THREE.Vector2(LAGOON.cx + x, LAGOON.cz + z);
 }
 
-/** A low golden-hour sun from your right shoulder: warm light on the facades, column flanks modelled, shade falling
- *  back to the left. The sky's own glow sits low on the right, where the sun is going down. */
-export const SUN_DIR = new THREE.Vector3(0.72, 0.36, 0.6).normalize();
-export const GLOW_DIR = new THREE.Vector3(0.93, 0.1, -0.35).normalize();
+/** A low golden-hour sun from the right: one warm flank on every column, the other in cool shade, long shadows
+ *  falling to the left. The sky's own glow sits low on the right behind the colonnade, where the sun is going down. */
+export const SUN_DIR = new THREE.Vector3(0.86, 0.33, 0.39).normalize();
+export const GLOW_DIR = new THREE.Vector3(0.62, 0.07, -0.78).normalize();
 
 /** The walk under the dome takes longer than the aurora's step through: it is a place you cross, not a door. */
 export const PALACE_ENTER_MS = 11500;
@@ -80,6 +80,17 @@ export function walkCompanion(p: number, out: THREE.Vector3): THREE.Vector3 {
   const rise = THREE.MathUtils.smoothstep(p, 0.72, 0.97);
   out.set(THREE.MathUtils.lerp(0.5, 0, centre), 1.72 + rise * 1.15, THREE.MathUtils.lerp(z, ROT.z, centre));
   return out;
+}
+
+/** Behind the album: from the near shore, a little to the right, looking diagonally back across the lagoon. The
+ *  lit rotunda sits high on the right (clear of the title), the far colonnade and its reflection run behind the
+ *  cards, and the low sun is behind you so the brightest sky stays out of frame. A slow drift along the shore. */
+export function albumView(t: number, aspect: number, eye: THREE.Vector3, look: THREE.Vector3): number {
+  const drift = Math.sin(t * 0.04);
+  const portrait = aspect < 0.8; // a narrow screen sees a slice: centre it on the rotunda, a little wider
+  eye.set(13.5 + drift * 0.8, 2.1 + Math.sin(t * 0.06) * 0.05, SHORE.z - 1.5 + drift * 0.3);
+  look.set((portrait ? -0.5 : -6.5) + Math.sin(t * 0.03) * 0.5, portrait ? 17.5 : 7.2, ROT.z + 6);
+  return portrait ? 60 : 50;
 }
 
 /** The headset never glides: the world dissolves into light, you are under the dome, and it clears around you. */

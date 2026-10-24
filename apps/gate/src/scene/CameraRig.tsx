@@ -8,7 +8,7 @@ import { useGate } from '../state/store';
 import { MEMORY_CENTER } from './layout';
 import { damp, dampVec3, easeInOutCubic } from './util';
 import { useMemory } from '../flow/memory';
-import { EYE, LOOK_Y, SHORE, walkView } from './palace/plan';
+import { EYE, LOOK_Y, SHORE, albumView, walkView } from './palace/plan';
 
 const useMemoryWater = () => !!useMemory.getState().plan?.setting.water;
 
@@ -115,6 +115,10 @@ export function CameraRig() {
       _look.set(MEMORY_CENTER.x, 0.72, cz);
       fov = aspect < 0.8 ? 64 : 54;
       rate = s.stage === 'forming' ? 1.1 : 2.2;
+    } else if (palace && s.stage === 'album') {
+      // The album rests on the palace: a view along the colonnade, across the lagoon to the rotunda.
+      fov = albumView(state.clock.elapsedTime, state.size.width / Math.max(1, state.size.height), _pos, _look);
+      rate = 1.2;
     } else if (s.stage === 'album') {
       _pos.set(0, 1.55, 0);
       _look.set(px * 0.6, 2.4 + py * 0.3, -4);
@@ -123,7 +127,7 @@ export function CameraRig() {
       _look.set(px * 0.32, 1.72 + py * 0.16, -4);
     }
     // Changing world (or coming back from the album) puts the view far away: arrive there, don't fly across.
-    if (s.stage !== 'entering' && pos.current.distanceTo(_pos) > 12) { pos.current.copy(_pos); look.current.copy(_look); }
+    if (pos.current.distanceTo(_pos) > 12) { pos.current.copy(_pos); look.current.copy(_look); }
     if (PIN) { _pos.set(PIN[0]!, PIN[1]!, PIN[2]!); _look.set(PIN[3]!, PIN[4]!, PIN[5]!); pos.current.copy(_pos); look.current.copy(_look); }
     dampVec3(pos.current, _pos, rate, dt);
     dampVec3(look.current, _look, rate, dt);
