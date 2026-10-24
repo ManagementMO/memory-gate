@@ -1,0 +1,14 @@
+
+> test:exchange:browser
+> playwright test --config tests/exchange/playwright.config.mjs
+
+
+Running 3 tests using 1 worker
+
+(node:87875) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/exchange/browser.spec.mjs:14:1 › two independent browsers pass, accept, open, reload and revoke; mobile has no overflow (4.1s)
+  ✓  2 tests/exchange/browser.spec.mjs:47:1 › revoking family sharing clears an open collection (749ms)
+  ✓  3 tests/exchange/browser.spec.mjs:57:1 › actual local Apify search, explicit choice, shared board and reload (3.6s)
+
+  3 passed (9.7s)

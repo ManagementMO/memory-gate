@@ -1,6 +1,8 @@
 # Review decisions
 
-- Preserve the supplied Convex persistence/membership foundation; do not introduce SpacetimeDB or another queue/auth service for a sponsor label.
+- Updated 2026-10-24 after the user explicitly selected SpacetimeDB: preserve existing Convex capture/media/scene state and make SpacetimeDB authoritative for the new collaborative memory exchange and reference board. Private tables plus an authenticated gateway avoid exposing the publisher credential. This supersedes the original review's no-SpacetimeDB scope.
+- Use an actual Apify Actor with public institutional sources, explicit provenance/rights and a user-selected board. Local execution is verified; cloud execution remains unclaimed until a token, deployment and real run are available.
+- Reconcile room deletions across stores using an authenticated, bounded absence query; do not infer deletion from a transient authentication or network error.
 - Implement the defining existing-object correction transaction before adding scenery polish.
 - Keep English/Spanish spatial commands deliberately bounded and visibly labeled. General narration uses Claude; placement is deterministic code.
 - Separate generated static scenery from independently interactive props and from accepted memory state.

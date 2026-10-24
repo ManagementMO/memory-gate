@@ -16,7 +16,7 @@ export type RoomGrade = {
 
 export function applyRoomGrade(room: SplatMesh, opts: { farStart?: number; farEnd?: number; warmth?: number; exposure?: number } = {}): RoomGrade {
   const reveal = dyno.dynoFloat(0);
-  const warmth = dyno.dynoFloat(opts.warmth ?? 0.85);
+  const warmth = dyno.dynoFloat(opts.warmth ?? 0.12);
   const exposure = dyno.dynoFloat(opts.exposure ?? 0.92);
   const farStart = dyno.dynoFloat(opts.farStart ?? 6.0); // splat units from the photo camera
   const farEnd = dyno.dynoFloat(opts.farEnd ?? 8.5);

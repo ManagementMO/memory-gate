@@ -2,10 +2,12 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 const exec = promisify(execFile);
 const records = [];
 async function command(...args) {
-  const { stdout } = await exec('npx', ['@iwsdk/cli', ...args], { cwd: new URL('../', import.meta.url), timeout: 45000, maxBuffer: 3e6 });
+  const cli = fileURLToPath(new URL('../node_modules/@iwsdk/cli/bin/iwsdk.js', import.meta.url));
+  const { stdout } = await exec(process.execPath, [cli, ...args], { cwd: new URL('../', import.meta.url), timeout: 45000, maxBuffer: 3e6, windowsHide: true });
   const result = JSON.parse(stdout);
   if (!result.ok) throw new Error(result.error?.message ?? 'IWSDK command failed');
   return result.data?.result ?? result.data;
@@ -16,6 +18,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 let pass = false;
 try {
+  process.env.MG_XR_FRESH_PRESENTATION = '1'; // reload only local rendering; canonical room/history stay intact
   await command('browser', 'run', 'scripts/emu-open.mjs');
   await command('browser', 'run', 'scripts/emu-enter.mjs');
   const before = await probe(); records.push({ step: 'before', ...before });
@@ -43,8 +46,8 @@ try {
   pass = true;
 } catch (error) { records.push({ step: 'failure', error: error.message }); process.exitCode = 1; }
 finally {
-  await xr('set-gamepad-state', { device: 'controller-right', buttons: [{ index: 1, value: 0 }, { index: 0, value: 0 }] }).catch(() => {});
-  const output = new URL('../../../evidence/review-2026-10-23/xr-rehearsal.json', import.meta.url);
+  await xr('set-gamepad-state', { device: 'controller-right', buttons: [{ index: 1, value: 0 }, { index: 0, value: 0 }, { index: 5, value: 0 }] }).catch(() => {});
+  const output = new URL(process.env.MG_XR_EVIDENCE ?? '../../../evidence/world-story/xr-rehearsal.json', import.meta.url);
   mkdirSync(new URL('./', output), { recursive: true });
   writeFileSync(output, JSON.stringify({ at: new Date().toISOString(), environment: 'IWSDK Meta Quest 3 emulator; no physical headset', pass, records }, null, 2));
   console.log(JSON.stringify({ pass, steps: records.map(r => ({ step: r.step, error: r.error, held: r.keepsakes?.[0]?.held, position: r.keepsakes?.[0]?.position, gateOpen: r.gateOpen })) }, null, 2));

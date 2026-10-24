@@ -2,14 +2,25 @@
 // in .convex/local/*/config.json, the worker secret in .env.worker), and a crafted ?convex= link must never be able to
 // read the stored member token.
 import { expect, test } from '@playwright/test';
+import { existsSync, mkdirSync, writeFileSync, unlinkSync } from 'node:fs';
+import path from 'node:path';
 import { backend, createRoomWithConsent, deleteOwnedRoom, IPHONE_13, lanIp, repoRoot } from './helpers.mjs';
 
 test('the dev server serves only what the app needs from outside apps/phone', async ({ request }) => {
   const origin = `http://${lanIp() ?? '127.0.0.1'}:5173`;
-  const fs = (p) => `${origin}/@fs${repoRoot}/${p}`;
-  for (const secret of ['.convex/local/default/config.json', '.env.worker', '.env.local', 'auth/memory-gate.env', 'convex/rooms.ts', 'package.json']) {
-    expect((await request.get(fs(secret))).status(), secret).toBe(403);
-  }
+  // Vite's /@fs/ URL uses forward slashes and a separator before a Windows drive.
+  const normalizedRoot = repoRoot.replaceAll('\\', '/').replace(/^\//, '');
+  const fs = (p) => `${origin}/@fs/${normalizedRoot}/${p}`;
+  // Exercise the private folder even on a fresh clone without provider keys.
+  const probe = `auth/deny-probe-${crypto.randomUUID()}.env`;
+  mkdirSync(path.join(repoRoot, 'auth'), { recursive: true });
+  writeFileSync(path.join(repoRoot, probe), 'NOT_A_SECRET=access-denial-test', { flag: 'wx' });
+  try {
+    for (const secret of [probe, '.convex/local/default/config.json', '.env.worker', '.env.local', '.env.exchange', '.spacetime/config/cli.toml', 'auth/memory-gate.env', 'convex/rooms.ts', 'package.json']) {
+      // Vite may serve the SPA fallback for nonexistent paths. Test actual files.
+      if (existsSync(path.join(repoRoot, secret))) expect((await request.get(fs(secret))).status(), secret).toBe(403);
+    }
+  } finally { unlinkSync(path.join(repoRoot, probe)); }
   for (const needed of ['convex/_generated/api.js', 'packages/shared/src/flags.ts', 'fixtures/sample-photo-1938.jpg']) {
     expect((await request.get(fs(needed))).status(), needed).toBe(200);
   }

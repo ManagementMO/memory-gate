@@ -26,13 +26,13 @@ function reasonText(error: string | null): string {
 }
 
 export function splatMessage(s: SplatRow, now: number): { tone: 'busy' | 'ok' | 'fallback' | 'failed'; text: string; detail: string } {
-  if (s.source === 'worldlabs' && (s.status === 'queued' || s.status === 'running')) return { tone: 'busy', text: 'Imagining the place from your photo…', detail: `World Labs · ${agoOf(s.createdAt, now)} · you can keep telling the story meanwhile` };
+  if (s.source === 'worldlabs' && (s.status === 'queued' || s.status === 'running')) return { tone: 'busy', text: s.sourceStory ? 'Imagining the place from the story…' : 'Imagining the place from your photo…', detail: `World Labs · ${agoOf(s.createdAt, now)} · you can keep telling the story meanwhile` };
   if (s.status === 'queued') return { tone: 'busy', text: 'Waiting for the room builder…', detail: `${agoOf(s.createdAt, now)} so far` };
   if (s.status === 'running') return { tone: 'busy', text: 'Building the room… usually under a minute', detail: `${agoOf(s.createdAt, now)} so far` };
-  if (s.status === 'failed') return { tone: 'failed', text: 'We couldn’t build a room from this photo. You can keep exploring the illustrative courtyard.', detail: reasonText(s.error) };
+  if (s.status === 'failed') return { tone: 'failed', text: s.sourceStory ? 'The imagined place could not be saved. Your story and current setting are still available.' : 'We couldn’t build a room from this photo. You can keep exploring the illustrative courtyard.', detail: reasonText(s.error) };
   if (s.source === 'prebaked' && s.error) return { tone: 'fallback', text: 'Using the sample room instead', detail: reasonText(s.error) };
   if (s.source === 'prebaked') return { tone: 'ok', text: 'Sample room ready (prebaked)', detail: 'Built during prep from the public-domain 1938 photo.' };
-  if (s.source === 'worldlabs') return { tone: 'ok', text: 'Photo world ready for review', detail: 'AI interpretation, with details the photo cannot verify. Press Show this room when you are ready.' };
+  if (s.source === 'worldlabs') return { tone: 'ok', text: s.sourceStory ? 'Story world ready for review' : 'Photo world ready for review', detail: 'AI interpretation, with generated details that are unverified. Press Show this room when you are ready.' };
   return { tone: 'ok', text: 'Your room is ready. The headset shows it now.', detail: s.readyAt ? `Ready at ${timeOf(s.readyAt)}` : '' };
 }
 
@@ -113,7 +113,7 @@ export function Photo({ session, view, onDone, onConsent }: { session: Session; 
       <div className="card current-room" data-testid="photo-current">
         <p className="muted small">The headset is showing</p>
         <p className="big-line">
-          {current ? (current.source === 'prebaked' ? 'The sample room (1938 living room)' : 'An AI interpretation of your photo') : 'Illustrative courtyard · independent of the photo'}
+          {current ? (current.source === 'prebaked' ? 'The sample room (1938 living room)' : current.sourceStory ? 'A place imagined from the story' : 'An AI interpretation of your photo') : 'Illustrative courtyard · independent of the photo'}
           {current?.source === 'prebaked' && <Chip kind="sample">Sample</Chip>}
         </p>
         {current && canUpload && <button type="button" className="btn btn-quiet" disabled={busy !== null}
@@ -189,6 +189,7 @@ export function Photo({ session, view, onDone, onConsent }: { session: Session; 
                     <strong data-testid="splat-message">{m.text}</strong>
                   </p>
                   {m.detail && <p className="muted small">{m.detail}</p>}
+                  {s.previewUrl && <img className="place-preview" src={fileUrl(s.previewUrl) ?? ''} alt="Generated setting preview" loading="lazy" />}
                   <p className="muted small">Started {timeOf(s.createdAt)}{isCurrent ? ' · showing now' : ''}</p>
                   {s.status === 'ready' && !isCurrent && canUpload && (
                     <button type="button" className="btn btn-quiet" onClick={() => run('activate', () => setActive({ code: session.code, token: session.token, splatId: s.id }))}>

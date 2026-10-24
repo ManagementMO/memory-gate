@@ -19,7 +19,7 @@ if (env.WORLD_LABS_GENERATION_LIMIT && !/^(?:0|[1-9]\d{0,2}|1000)$/.test(env.WOR
 const push = { ...Object.fromEntries(['ANTHROPIC_API_KEY', 'ANTHROPIC_WORKSPACE_ID', 'CARTESIA_API_KEY', 'TRIPO_API_KEY', 'WORLD_LABS_API_KEY', 'WORLD_LABS_GENERATION_LIMIT'].filter((k) => env[k]).map((k) => [k, env[k]])), WORKER_SECRET: worker.WORKER_SECRET, ADMIN_CODE: worker.ADMIN_CODE };
 let failed = false;
 for (const [k, v] of Object.entries(push)) {
-  const r = spawnSync('npx', ['convex', 'env', 'set', k, v], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, ['node_modules/convex/bin/main.js', 'env', 'set', k, v], { encoding: 'utf8', windowsHide: true });
   console.log(`${r.status === 0 ? 'SET ' : 'FAIL'} ${k}${r.status === 0 ? '' : ' ' + (r.stderr || '').split(v).join('<redacted>').slice(0, 160)}`);
   if (r.status !== 0) failed = true;
 }

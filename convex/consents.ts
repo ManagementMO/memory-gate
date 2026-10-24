@@ -44,7 +44,7 @@ export const deleteMemory = mutation({
     for (const t of ['objects', 'events', 'utterances', 'photos', 'splats', 'jobs', 'consents', 'members', 'corrections'] as const) {
       for (const row of await ctx.db.query(t).withIndex('by_room', (q) => q.eq('roomId', room._id)).collect()) {
         const r = row as Record<string, unknown>;
-        for (const k of ['glbFileId', 'storedGlbFileId', 'audioFileId', 'fileId', 'liteFileId']) if (r[k]) files.add(r[k] as Id<'_storage'>);
+        for (const k of ['glbFileId', 'storedGlbFileId', 'audioFileId', 'fileId', 'liteFileId', 'previewFileId']) if (r[k]) files.add(r[k] as Id<'_storage'>);
         await ctx.db.delete(row._id);
       }
     }

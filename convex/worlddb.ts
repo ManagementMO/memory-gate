@@ -4,6 +4,8 @@ import { internal } from './_generated/api';
 import { activeScopes, requireMember, requireScope } from './lib/auth';
 import type { Id } from './_generated/dataModel';
 
+const RECOVERY_MS = 10 * 60_000; // operation GET + two bounded CDN downloads + preview must fit this window
+
 export const info = internalQuery({
   args: { jobId: v.id('jobs') },
   handler: async (ctx, { jobId }) => {
@@ -12,10 +14,12 @@ export const info = internalQuery({
     const room = await ctx.db.get(job.roomId);
     const splat = await ctx.db.get(job.refId as Id<'splats'>);
     const photo = splat?.photoId ? await ctx.db.get(splat.photoId) : null;
-    if (!room || !splat || !photo || splat.roomId !== room._id) return null;
+    const story = splat?.sourceUtteranceId ? await ctx.db.get(splat.sourceUtteranceId) : null;
+    if (!room || !splat || splat.roomId !== room._id || (!photo && !story)) return null;
+    if (story && story.roomId !== room._id) return null;
     const scopes = await activeScopes(ctx, room._id);
-    if (!scopes.has('photo_processing') || !scopes.has('vendor_upload_worldlabs')) return null;
-    return { job, splat, photoUrl: await ctx.storage.getUrl(photo.fileId) };
+    if (!scopes.has(story ? 'voice_processing' : 'photo_processing') || !scopes.has('vendor_upload_worldlabs')) return null;
+    return { job, splat, story: story ? { transcript: story.transcript } : null, photoUrl: photo ? await ctx.storage.getUrl(photo.fileId) : null };
   },
 });
 
@@ -32,7 +36,7 @@ export const claim = internalMutation({
 });
 
 export const recordRequest = internalMutation({
-  args: { jobId: v.id('jobs'), requestHash: v.string(), photoHash: v.string(), model: v.string() },
+  args: { jobId: v.id('jobs'), requestHash: v.string(), photoHash: v.optional(v.string()), sourceHash: v.optional(v.string()), model: v.string() },
   handler: async (ctx, { jobId, ...request }) => {
     const job = await ctx.db.get(jobId);
     if (!job || job.provider !== 'worldlabs' || job.status !== 'running') return false;
@@ -64,18 +68,18 @@ export const recover = mutation({
   args: { code: v.string(), token: v.string(), jobId: v.id('jobs') },
   handler: async (ctx, { code, token, jobId }) => {
     const { room } = await requireMember(ctx, code, token, ['family']);
-    await requireScope(ctx, room._id, 'photo_processing');
     await requireScope(ctx, room._id, 'vendor_upload_worldlabs');
     const job = await ctx.db.get(jobId);
     if (!job || job.roomId !== room._id || job.provider !== 'worldlabs' || job.status !== 'failed'
         || typeof job.meta?.operationId !== 'string') return { resumed: false };
     const splat = await ctx.db.get(job.refId as Id<'splats'>);
     if (!splat || splat.status === 'ready') return { resumed: false };
+    await requireScope(ctx, room._id, splat.sourceUtteranceId ? 'voice_processing' : 'photo_processing');
     await ctx.db.patch(jobId, { status: 'running', finishedAt: null, lastError: null,
-      meta: { ...job.meta, pollDeadlineAt: Date.now() + 5 * 60_000, progress: 'Recovering the existing world (no new generation)' } });
+      meta: { ...job.meta, pollDeadlineAt: Date.now() + RECOVERY_MS, progress: 'Recovering the existing world (no new generation)' } });
     await ctx.db.patch(splat._id, { status: 'running', error: null });
     await ctx.scheduler.runAfter(0, internal.worldlabs.poll, { jobId, operationId: job.meta.operationId });
-    await ctx.scheduler.runAfter(5 * 60_000, internal.worlddb.expire, { jobId });
+    await ctx.scheduler.runAfter(RECOVERY_MS, internal.worlddb.expire, { jobId });
     return { resumed: true };
   },
 });
@@ -118,13 +122,15 @@ export const fail = internalMutation({
 
 export const finish = internalMutation({
   args: { jobId: v.id('jobs'), splatId: v.id('splats'), fileId: v.id('_storage'), liteFileId: v.union(v.id('_storage'), v.null()),
+    previewFileId: v.optional(v.id('_storage')),
     numSplats: v.number(), liteNumSplats: v.union(v.number(), v.null()), bytes: v.number(), floorY: v.number(), scale: v.number(), worldId: v.union(v.string(), v.null()),
     artifactHash: v.optional(v.string()), liteArtifactHash: v.optional(v.union(v.string(), v.null())) },
   handler: async (ctx, { jobId, splatId, artifactHash, liteArtifactHash, ...result }) => {
     const job = await ctx.db.get(jobId), splat = await ctx.db.get(splatId);
     if (!job || !splat || job.refId !== splatId || job.status !== 'running' || !(await ctx.db.get(job.roomId))) return false;
     const scopes = await activeScopes(ctx, job.roomId);
-    if (!scopes.has('photo_processing') || !scopes.has('vendor_upload_worldlabs')) return false;
+    if (!scopes.has(splat.sourceUtteranceId ? 'voice_processing' : 'photo_processing') || !scopes.has('vendor_upload_worldlabs')) return false;
+    if (splat.sourceUtteranceId && !(await ctx.db.get(splat.sourceUtteranceId))) return false;
     await ctx.db.patch(splatId, { ...result, status: 'ready', error: null, readyAt: Date.now() });
     await ctx.db.patch(jobId, { status: 'done', finishedAt: Date.now(), meta: { ...(job.meta ?? {}), worldId: result.worldId, needsReview: true,
       ...(artifactHash ? { artifactHash, liteArtifactHash: liteArtifactHash ?? null } : {}), bytes: result.bytes, scale: result.scale, floorY: result.floorY } });

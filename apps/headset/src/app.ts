@@ -15,6 +15,7 @@ import { Companion, type CompanionState } from './look/companion.js';
 import { Captions } from './look/captions.js';
 import { Chimes } from './look/chime.js';
 import { VIEWPORT_H } from './look/palette.js';
+import { XR_BACKGROUND, XR_SESSION_MODE, xrFramebufferScale } from './look/xrPresentation.js';
 import { api, errorCode, fileUrl, humanError, joinRoom, makeClient, newCommandId, roomCodeFromUrl, type Session } from './net.js';
 import { createUi, type TickerItem } from './ui.js';
 import { resolveVoiceFactory, type VoiceFactory } from './voiceLoader.js';
@@ -61,7 +62,7 @@ export async function startApp(world: World): Promise<void> {
     const has = ext.has.bind(ext);
     ext.has = (n: string) => (n === 'OCULUS_multiview' ? false : has(n));
   }
-  const fbScale = Number(params.get('scale') || 0.75);
+  const fbScale = xrFramebufferScale(params.get('scale'));
   world.renderer.xr.setFramebufferScaleFactor(fbScale);
   world.renderer.shadowMap.enabled = false;
   // Splats are unlit and Spark writes sRGB without tone mapping, so tone mapping would only touch the GLB objects.
@@ -69,11 +70,11 @@ export async function startApp(world: World): Promise<void> {
   const tm = params.get('tm') === 'aces' ? 'aces' : 'none';
   world.renderer.toneMapping = tm === 'aces' ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping;
   world.renderer.toneMappingExposure = 1.0;
-  const DESKTOP_BG = new THREE.Color(0x0d0a07);
+  const DESKTOP_BG = new THREE.Color(XR_BACKGROUND);
   world.scene.background = DESKTOP_BG;
   const fov = Number(params.get('fov') || 0);
   if (fov > 10 && fov < 120) { world.camera.fov = fov; world.camera.updateProjectionMatrix(); }
-  Object.assign(stats, { multiview, fbScale, toneMapping: tm, threeRevision: THREE.REVISION });
+  Object.assign(stats, { multiview, fbScale, xrSessionMode: XR_SESSION_MODE, toneMapping: tm, threeRevision: THREE.REVISION });
 
   // ---------- scene graph ----------
   const spark = makeSpark(world.renderer);
@@ -135,6 +136,8 @@ export async function startApp(world: World): Promise<void> {
   let lastOpenedAt: number | null | undefined;
   let latestPending = false;
   let pendingCorrectionId: Id<'corrections'> | null = null;
+  let pendingObjectCount = 0;
+  const renderStoryState = () => ui.setStoryState(latestPending ? 'listening' : pendingCorrectionId || pendingObjectCount ? 'review' : 'together', paused);
   let speaking: { id: string; intent: string | null } | null = null;
   const handled = new Set<string>();
   const shownLine = new Set<string>();
@@ -143,13 +146,15 @@ export async function startApp(world: World): Promise<void> {
   const report = (msg: string) => {
     stats.lastError = msg;
     ui.error(msg);
-    if (world.renderer.xr.isPresenting) captions.show('Memory Gate', msg, null, { holdS: 4 });
+    if (world.renderer.xr.isPresenting && !paused) captions.show('Memory Gate', msg, null, { holdS: 4 });
   };
   objects.onError = report;
 
   // ---------- desktop camera at the photo's camera ----------
   const placeDesktopCamera = () => {
     if (world.renderer.xr.isPresenting) return;
+    // A complete 360 world needs a human field of view. The authored 52° courtyard hero cropped it to a wall.
+    if (!fov) { world.camera.fov = room.ready && room.info?.source === 'worldlabs' ? 78 : 52; world.camera.updateProjectionMatrix(); }
     const cam = params.get('cam');
     if (cam === 'side' || cam === 'top') {
       if (cam === 'side') world.camera.position.set(7, 1.6, -3.5); else world.camera.position.set(0, 11, -3.6);
@@ -157,7 +162,7 @@ export async function startApp(world: World): Promise<void> {
       world.camera.updateMatrixWorld(true);
       return;
     }
-    if (roomView?.room.layout === 'courtyard' || (spectator && fallback && !room.ready)) {
+    if (!room.ready && (roomView?.room.layout === 'courtyard' || (spectator && fallback))) {
       world.camera.position.set(0, 1.62, 1.9);
       world.camera.lookAt(0, 1.25, -4.6);
       world.camera.updateMatrixWorld(true);
@@ -170,9 +175,10 @@ export async function startApp(world: World): Promise<void> {
     world.camera.position.set(0, room.eyeHeight, 0);
     world.camera.rotation.set(0, 0, 0);
     world.camera.updateMatrixWorld(true);
+    stats.desktopCamera = { position: world.camera.position.toArray(), fov: world.camera.fov, fromSource: true };
   };
 
-  // ---------- XR session: recenter the memory at the head (yaw only), passthrough background ----------
+  // ---------- XR session: recenter the immersive environment at the head (yaw only) ----------
   let recenterPending = false;
   let recenterFrames = 0;
   const recenter = () => { recenterPending = true; recenterFrames = 0; };
@@ -188,7 +194,7 @@ export async function startApp(world: World): Promise<void> {
     stats.recenteredAt = [+p.x.toFixed(2), +p.z.toFixed(2), +yaw.toFixed(2)];
   };
   world.renderer.xr.addEventListener('sessionstart', () => {
-    world.scene.background = null; // passthrough around the memory
+    world.scene.background = DESKTOP_BG; // the environment surrounds the visitor in immersive VR
     captions.drop = -0.34;
     captions.mesh.scale.setScalar(1);
     ui.setPresenting(true);
@@ -237,14 +243,14 @@ export async function startApp(world: World): Promise<void> {
     stats.paused = p;
     room.setPaused(p);
     objects.setPaused(p);
-    captions.visibleTarget = p ? 0 : 1;
+    captions.visibleTarget = 1;
     companion.visibleTarget = p ? 0 : memoryOpen ? 1 : 0;
     if (p) {
       voice?.cancelSpeech(); // never speak while paused
       held.length = 0;
-      captions.hide();
       replayAudio.pause();
-    }
+      captions.show('Taking a break', 'There is no rush. Press B, or ask your family to resume.', null, { pinned: true });
+    } else captions.hide();
   };
 
   // ---------- companion speech + captions: one question per turn ----------
@@ -268,7 +274,7 @@ export async function startApp(world: World): Promise<void> {
       stats.lastSpoken = text;
       stats.spokenCount = Number(stats.spokenCount ?? 0) + 1;
       try { await voice.speak(text, { language: o.language }); } catch (e) { stats.lastError = `speak: ${String((e as Error)?.message ?? e).slice(0, 80)}`; }
-      finally { speaking = null; captions.release(1.4); }
+      finally { speaking = null; if (!paused) captions.release(1.4); }
     });
   };
   const KEEP_IT = /Shall I keep it there\?\s*$/;
@@ -343,6 +349,7 @@ export async function startApp(world: World): Promise<void> {
       }
     }
     latestPending = list[0]?.status === 'pending';
+    renderStoryState();
     stats.latestUtterance = list[0] ? { status: list[0].status, intent: list[0].intent, aiMode: list[0].aiMode, aiMs: list[0].aiMs } : null;
   };
 
@@ -649,7 +656,11 @@ export async function startApp(world: World): Promise<void> {
     if (right.getButtonDown('xr-standard-trigger')) pttDown('controller', 'right');
     if (right.getButtonUp('xr-standard-trigger') && ptt?.source === 'controller') void pttUp();
     if (right.getButtonDown('a-button')) void confirmNearestGhost();
-    if (right.getButtonDown('b-button')) void setPausedRemote(!paused);
+    stats.pauseButtonValue = right.getButtonValue('b-button');
+    if (right.getButtonDown('b-button')) {
+      stats.pauseButtonPresses = Number(stats.pauseButtonPresses ?? 0) + 1;
+      void setPausedRemote(!paused);
+    }
   };
 
   // ---------- 2D page buttons ----------
@@ -681,8 +692,8 @@ export async function startApp(world: World): Promise<void> {
   (async () => {
     const xr = (navigator as Navigator & { xr?: { isSessionSupported(m: string): Promise<boolean> } }).xr;
     // A read-only embedded viewer does not request XR capabilities from its sandboxed frame.
-    const ok = !spectator && xr ? await xr.isSessionSupported('immersive-ar').catch(() => false) : false;
-    stats.arSupported = ok;
+    const ok = !spectator && xr ? await xr.isSessionSupported(XR_SESSION_MODE).catch(() => false) : false;
+    stats.vrSupported = ok;
     if (!ok) ui.setEnterReady(false, 'Open this page on the Quest to enter');
   })();
 
@@ -857,8 +868,8 @@ export async function startApp(world: World): Promise<void> {
     ui.showRoom(r.room.title);
     ui.setSceneContext(r.room.title, r.splat?.status === 'ready', r.room.demo, r.room.paused);
     if (r.splat?.status === 'ready' && r.splat.url) {
-      // splat.lite (phone admin): the 250k SPZ of the same memory, paired with XR framebuffer scale 0.5 (CLAUDE.md).
-      const lite = !!(r.flags['splat.lite'] && r.splat.liteUrl);
+      // Lite changes only the environment's splat budget; preserve eye resolution and the explicit scale option.
+      const lite = !!(!spectator && r.flags['splat.lite'] && r.splat.liteUrl); // projectors keep the full 500k; Quest retains its configured lighter option
       const url = fileUrl(lite ? r.splat.liteUrl : r.splat.url)!;
       const sameMemory = loadedSplatId === r.splat.id;
       loadedSplatId = r.splat.id;
@@ -866,7 +877,7 @@ export async function startApp(world: World): Promise<void> {
       stats.splatLite = lite;
       stats.splatUrl = url.replace(/[?#].*$/, '');
       room.load({ url, floorY: r.splat.floorY, scale: r.splat.scale, source: r.splat.source, numSplats: lite ? r.splat.liteNumSplats ?? 250_000 : r.splat.numSplats, reveal: !sameMemory });
-      const wantScale = lite ? 0.5 : fbScale;
+      const wantScale = fbScale;
       if (!world.renderer.xr.isPresenting) { world.renderer.xr.setFramebufferScaleFactor(wantScale); stats.fbScale = wantScale; }
       else pendingScale = wantScale; // applies at the next Enter
       stats.splatSource = r.splat.source;
@@ -891,6 +902,7 @@ export async function startApp(world: World): Promise<void> {
       }
     }
     applyPaused(r.room.paused);
+    renderStoryState();
     if (lastOpenedAt !== undefined && r.room.openedAt !== lastOpenedAt && r.room.openedAt) {
       // The phone tapped "Show": open the memory again (recenter in XR, replay the reveal).
       if (world.renderer.xr.isPresenting) recenter(); else room.replayReveal();
@@ -900,6 +912,8 @@ export async function startApp(world: World): Promise<void> {
   }, subError('room'));
   cl.onUpdate(api.objects.list, { code: sess.code, token: sess.token }, (list) => {
     pendingCorrectionId = list.find(o => o.pendingCorrection)?.pendingCorrection?.id ?? null;
+    pendingObjectCount = list.filter(o => o.status === 'ghost').length;
+    renderStoryState();
     stats.pendingCorrection = pendingCorrectionId;
     stats.objectRecords = list.map((o) => `${o.label}:${o.status}:${o.model}:${o.glbUrl ? o.modelSource : 'none'}`).join(',');
     onObjectTransitions(list);

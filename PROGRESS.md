@@ -1,4 +1,18 @@
-# Current review state
+# Current branch checkpoint — 2026-10-24
+
+Branch: `codex/calhacks-apify-spacetime-meta`; main is unchanged. Implemented: actual local Apify Actor, reviewed public-reference picker, SpacetimeDB memory delivery/acceptance/revocation and shared board, authenticated gateway, permission-aware source display, cross-store deletion reconciliation, and cross-platform local startup.
+
+Verified: 71 backend/domain tests, 4 renderer tests, 6 Actor tests, 5 real database/gateway tests, 3 new browser scenarios and 24 existing offline browser scenarios. Three paid-provider tests intentionally skipped. Four typechecks and both builds passed. Real database/gateway restarts retained data; deleting a room removed its exchange records. Current artifacts: `evidence/calhacks-exchange/`.
+
+Run `npm run local:up`, then `npm run demo:links`. Ports: Convex 3210, SpacetimeDB 3000, exchange 3212, phone 5173/5174, production Quest/spectator 4173. Private config, room credentials, DB files and run storage remain ignored.
+
+Latest requested extension, still outstanding: synchronized shared 3D perspectives and POV switching in VR, and an Apify path for authorized Instagram photos to become memories. The implemented Apify source is currently the Library of Congress. Do not describe the current handoff/board as already implementing shared VR camera perspectives.
+
+Remaining external checks: Apify cloud deployment/run (no token found), physical Quest comfort/performance, current native emulator input test (managed Chromium launch failed), and event/sponsor eligibility. Convex still owns legacy capture/media/scene state. No public deployment or submission. See `MORNING_REPORT.md` and `docs/CALHACKS_RUNBOOK.md`.
+
+---
+
+# Earlier macOS review state — historical
 
 Project: /Users/mo/Downloads/memory-gate-practice. Source repository: https://github.com/ManagementMO/memory-gate. Branch: main; the user requested a single initial commit containing the full reviewed application, original illustrative assets, optional earlier sample pack, provenance and evidence. Private credentials and machine-local runtime data remain ignored. Application services remain local; no public deployment or event submission. Verify remote parity with git fetch origin and git rev-list --left-right --count HEAD...origin/main.
 

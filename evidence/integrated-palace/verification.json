@@ -1,0 +1,58 @@
+{
+  "checkedAt": "2026-10-24T18:49:32.272287+00:00",
+  "fullSuite": {
+    "command": "E2E_CHANNEL=chrome E2E_SCREEN_DIR=evidence/integrated-palace/screens npm run verify:live",
+    "passed": true,
+    "domainTests": 81,
+    "rendererTestsBeforeOrderingFix": 6,
+    "browserScenarios": 29,
+    "typechecks": [
+      "backend",
+      "phone",
+      "headset"
+    ],
+    "builds": [
+      "phone",
+      "headset"
+    ],
+    "doctor": "pass"
+  },
+  "additionalChecks": {
+    "spacetimeTypecheck": "pass",
+    "actorTests": 6,
+    "palaceCLI": 5,
+    "realDatabaseGatewayTests": 5,
+    "exchangeBrowserScenarios": 3,
+    "archiveExecution": "actual local Apify SDK Actor; not cloud",
+    "rootNpmAuditAdvisories": 0,
+    "separateActorAudit": "5 high findings from transitive basic-ftp/proxy dependency chain; unresolved within supported ranges"
+  },
+  "afterFinalLoaderFix": {
+    "headsetTypecheck": "pass",
+    "rendererTests": 8,
+    "palaceCLI": 5,
+    "headsetBuild": "pass",
+    "cachedWorldBrowserFlow": "pass",
+    "nativeXRRehearsal": "pass"
+  },
+  "boundaries": {
+    "speechInput": "synthesized microphone through live providers",
+    "PalaceWorldGenerated": false,
+    "PalaceImagesProvided": false,
+    "newWorldLabsSubmissionsForPalace": 0,
+    "worldLabsLocalCap": {
+      "used": 4,
+      "limit": 4
+    },
+    "physicalQuestTested": false,
+    "realFamilyTested": false,
+    "cloudApifyTested": false,
+    "VRSharedPOVImplemented": false
+  },
+  "mergeBase": "e8f27e9",
+  "environment": {
+    "platform": "macOS arm64",
+    "node": "22.22.3",
+    "spacetimedb": "2.13.0"
+  }
+}

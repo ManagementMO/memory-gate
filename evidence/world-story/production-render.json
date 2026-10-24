@@ -1,0 +1,21 @@
+{
+  "source": "worldlabs",
+  "lite": false,
+  "camera": {
+    "position": [
+      0,
+      1.4746475219726562,
+      0
+    ],
+    "fov": 78,
+    "fromSource": true
+  },
+  "loadMs": 179,
+  "tickError": null,
+  "frameTimes": {
+    "n": 120,
+    "p50": 8.3,
+    "p95": 16.7
+  },
+  "environment": "Production desktop Chrome on this Mac, 1280x800, other browser tests running. Not physical Quest performance."
+}

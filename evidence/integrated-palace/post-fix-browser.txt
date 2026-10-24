@@ -1,0 +1,12 @@
+
+> e2e
+> playwright test --config tests/e2e/playwright.config.mjs --grep cached setting opens
+
+
+Running 1 test using 1 worker
+
+(node:90077) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/story-world.spec.mjs:10:1 › the cached setting opens without generation permission, then typed words form a reviewable 3D detail (7.4s)
+
+  1 passed (9.2s)

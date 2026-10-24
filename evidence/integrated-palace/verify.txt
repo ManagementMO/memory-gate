@@ -1,0 +1,16 @@
+
+> verify:live
+> E2E_LIVE=1 bash scripts/verify-all.sh
+
+PASS  typecheck backend (3 s)
+PASS  typecheck headset (4 s)
+PASS  typecheck phone (3 s)
+PASS  smoke tests (3 s)
+PASS  headset reconciliation (2 s)
+PASS  phone build (1 s)
+PASS  headset build (10 s)
+PASS  e2e (two phones, LAN, security) (130 s)
+PASS  doctor (1 s)
+       Test Files  16 passed (16)
+            Tests  81 passed (81)
+        29 passed (2.2m)

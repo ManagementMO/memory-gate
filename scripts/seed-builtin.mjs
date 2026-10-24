@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from '../convex/_generated/api.js';
 const readEnv = file => Object.fromEntries(readFileSync(file, 'utf8').split('\n').filter(l => /^[A-Z_]+=/.test(l)).map(l => { const i=l.indexOf('='); return [l.slice(0,i),l.slice(i+1).trim()]; }));
@@ -30,3 +30,4 @@ if(!process.argv.includes('--live')) await client.mutation(api.admin.setFlags,{s
   'splat.live':false,'objects.live':false,'ai.live':false,'stt.live':false,'tts.live':false,'worldlabs.backdrop':false,'worldlabs.generate':false,'splat.lite':false,
 }});
 console.log(`Seeded ${manifest.assets.length} original props and the permitted sample photo. Scenery: illustrative courtyard; no photo-to-3D generation claimed.`);
+if (existsSync(new URL('../fixtures/worlds/courtyard.json', import.meta.url))) await import('./seed-story-world.mjs');

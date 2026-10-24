@@ -6,7 +6,7 @@ import { api } from '../convex/_generated/api.js';
 const env = Object.fromEntries(readFileSync('.env.worker', 'utf8').trim().split('\n').map(l => l.split(/=(.*)/s).slice(0, 2)));
 const client = new ConvexHttpClient(env.CONVEX_URL);
 const files = process.argv.includes('--illustrative') ? ['.logs/practice-room.json']
-  : ['.logs/practice-room.json', '.logs/courtyard-world-room.json'];
+  : ['.logs/story-journey-room.json', '.logs/practice-room.json', '.logs/courtyard-world-room.json'];
 for (const file of files) {
   if (!existsSync(file)) continue;
   const s = JSON.parse(readFileSync(file, 'utf8'));

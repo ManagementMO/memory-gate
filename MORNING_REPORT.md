@@ -1,8 +1,40 @@
-# Heirloom / Memory Gate — review handoff
+# Heirloom / Memory Gate — current branch handoff
+
+The integrated branch is **main** in ManagementMO/memory-gate. It combines the World Labs story courtyard with the team's Apify/SpacetimeDB memory exchange. [The scene demonstration](DEMO_SCRIPT.md) and [the exchange runbook](docs/CALHACKS_RUNBOOK.md) describe separate working flows. `npm run local:up` starts the local stack on Windows/macOS/Linux after its dependencies are installed; `npm run demo:links` prints private participant URLs from the prepared room.
+
+The new Memories tab supports source-linked handoffs, recipient acceptance, a persistent collection, original text/audio under current permission, and revocation. SpacetimeDB is authoritative for the new exchange and shared archive board. The custom Apify Actor retrieves actual public institutional records with dates, rights and uncertainty; a person explicitly selects each shared reference. The existing Meta IWSDK garden and shared scene-editing flow remain.
+
+The incoming exchange branch recorded **71 backend tests, 4 renderer tests, 6 Actor tests, 5 real database/gateway tests, 3 new browser scenarios, and all 24 offline legacy browser scenarios passed** on Windows. Three paid-provider scenarios were deliberately skipped in that run. Accepted stories and references survived actual database and gateway process restarts there. Deleting a room erased its SpacetimeDB exchange records. Those records remain in evidence/calhacks-exchange/. The separately tested macOS World Labs pass is below; neither historical report is a claim that every combined path was tested on both machines.
+
+Remaining: no Apify cloud Actor deployment/run is claimed. The Windows native emulator failed to launch; the macOS World Labs pass did complete active Quest 3 emulation, including native grab/return and the gate. Physical Quest and comfort/performance testing are still open. Existing capture and scene state remain in Convex. The exchange and chosen reference board use SpacetimeDB; shared VR perspectives/POV switching and Instagram ingestion remain outstanding.
+
+The exchange branch made no paid world jobs. The macOS story pass used exactly the separately authorized one generation (1,580 credits, local cap now 4/4). Credentials stay in ignored files. No public app deployment or event submission was performed. Preserve the project's actual history when discussing event eligibility.
+
+## Immersive VR baseline after visual feedback — October 24
+
+The current experience remains technical rehearsal material, not a finished Palace scene. The next production order and visible acceptance gates are in [the Palace guide](docs/ORBIS_AND_PALACE.md). The user will provide Quest access and site photos later today; no new world was generated or generation cap increased.
+
+Two concrete presentation defects were corrected: the manifest now requests immersive VR with an opaque background, and lite scenery no longer forces the entire eye buffer to 0.5. Default eye scale remains 0.75 pending hardware measurement; explicit scale settings are validated and respected. Pause retains a pinned spatial return instruction, protected from asynchronous error messages. The phone's pause copy now describes that actual VR behavior.
+
+Fresh checks passed: backend/headset/phone TypeScript, **10 renderer tests**, both application builds, and two focused browser scenarios. Active immersive-vr emulation with lite scenery at eye scale 0.75 passed native keepsake squeeze/move/release/return and gate selection. A separate family-screen input test paused/resumed that active XR session and retained its return instruction after five seconds. Numeric emulator B injection did not register in the app's named input; that controller path remains unverified and its failed probe is preserved. The family control works. See evidence/immersive-vr/verification.json for separate passing and unresolved evidence. No physical Quest or finished-art claim is made.
+
+## Integrated macOS verification — October 24
+
+After merging all five team commits, the combined source passed **81 backend/domain tests, 8 renderer tests, 5 offline Palace intake CLI tests, 6 Actor tests, 5 real SpacetimeDB/gateway tests, 29 live legacy browser scenarios and 3 exchange browser scenarios**. The latter included an actual local Apify archive search and two independent browser clients. Four TypeScript checks, both production builds and doctor passed. After the final world-switch race fix, the renderer checks, headset typecheck/build, cached-world browser flow and native XR input rehearsal passed again. Full suite and focused post-fix evidence are distinguished in evidence/integrated-palace/verification.json.
+
+The source-to-world flow used real Cartesia/Claude with synthesized microphone input; the original stored clip replayed. Actual Quest 3 emulation remained active with the 100k World Labs background, native keepsake squeeze/move/release/return and gate selection. Physical Quest, perceived comfort and real-family review remain unverified. SpacetimeDB 2.13.0 and its local gateway are now running on this Mac, with the CLI path saved only in ignored local configuration.
+
+The next visual direction is the [Palace of Fine Arts](docs/ORBIS_AND_PALACE.md), with refined material treatment rather than forced photographic realism. An offline tool now prepares a bounded, source-hashed 2–4 photo request template. It does not upload or generate. Palace photos, a reviewed generated result, private upload/job binding, calibrated near props and Palace navigation remain to be done. No additional World Labs request was submitted for this adaptation; the cap remains 4/4.
+
+The newly integrated root WebSocket dependency was patched to ws 8.22.0; the root audit now reports zero advisories. The separate Apify Actor still reports a transitive basic-ftp advisory through its proxy dependencies. A normal audit fix could not resolve it within their version ranges; no unverified major-version override was applied. This is recorded separately from the Actor's passing functional tests.
+
+---
+
+# macOS story courtyard and earlier review evidence
 
 ## Open now
 
-The local stack is running. Open the refreshed [spectator](https://localhost:4173/?room=BFP3SK&view=spectator&drift=0), or run:
+The local stack is running. Open the new [story courtyard](https://localhost:4173/?room=2RS6FB&view=spectator&drift=0), or run:
 
 ~~~sh
 npm run demo:links
@@ -12,21 +44,31 @@ That prints the exact family phone/Quest links without creating a room, resettin
 
 ## Try these three actions
 
-1. On the HTTPS phone, join with your name, Enable microphone, then Record / say **“Mueve el banco al lado del árbol, mirando hacia la puerta”** / Stop and share. Typing the English or Spanish command also works.
-2. Review the gold bench and choose Keep this placement. Watch the accepted bench move and face the gate in the phone map and 3D scene.
-3. Select the moved bench to replay that correction's original recording with its English reading and attribution. Undo restores the prior placement and source. You can also select the gate or squeeze/grab the nearby keepsake.
+1. Run npm run seed:world then npm run demo:journey to reopen the prepared empty World Labs stage. On the HTTPS phone, join, enable the microphone, then Record / say **“There was a wooden bench. We used to sit there together after lunch.”** / Stop and share. The keyboard fallback is also available.
+2. Review the golden bench suggestion and choose Confirm. The separate object becomes solid inside the generated setting.
+3. Select the bench to replay the actual captured source. Pause/resume and undo remain available. For the four-prop bilingual correction/native-grab rehearsal use npm run demo:links -- --illustrative.
 
 ## Reached: Level B, with hardware and human gates open
 
-The defining shared editing experience, actual speech/source playback, persistent state and actual generated-world integration work. The main demo deliberately uses the cleaner **original illustrative courtyard**. A generated courtyard and a public-domain living-room interpretation are cached and load in Spark. The generated courtyard stretches its floor from wide camera views; it is available for review, not selected as the best presentation view.
+The defining shared editing experience, actual speech/source playback, persistent state and generated-world integration work. The main story demo now uses a new **World Labs courtyard generated from fictional words**, with a natural-color 500k projector view and a configured lighter Quest option. The earlier illustrative set and photo-world interpretations remain available; the stretched floor in the earlier screenshot-based generation is historical evidence, not the current selected sample.
 
 Anthropic, Cartesia and World Labs authenticated and were called successfully. Real STT tests used synthesized microphone fixtures, not a real relative. No physical Quest or real-family pass is claimed. The initial import for ManagementMO/memory-gate includes the full application, original assets, optional earlier sample pack, historical artifacts and fresh review evidence. The sample pack's source-specific terms and unresolved rights remain recorded in fixtures/LICENSES.md. Private credentials and machine-local runtime data stay local. No public application deployment or event submission was made.
 
-## Younger-onset experience refresh
+## World Labs story pass — October 24, 2026
+
+The user authorized exactly one additional Marble 1.1 generation. The provider reports 1,580 credits. The initial hotspot download timed out; recovery reused the same completed operation. Both 500k/100k variants and a WebP preview are now cached in the repository with metric metadata and SHA-256 hashes. Seeding/opening this sample never invokes generation. The private local submission cap is 4/4.
+
+Family tools can request a private place from a selected completed utterance, with exact source words, source-specific permissions, a reviewed request and one durable job per source. Original audio is not sent to World Labs. A finished place waits for activation; reset retains its source while clearing recorded audio. The new scene keeps natural color and its full environment extent, opens from its calibrated source height, and separates projector quality from the Quest option. Background architecture is not proposed as loose furniture. A coarse, truthful story status distinguishes processing, a suggestion awaiting review, shared presence and a break.
+
+Fresh verification passed: **76/76 domain tests, 6/6 renderer tests, 29/29 browser scenarios, all three TypeScript checks, both production builds and doctor.** The new live microphone test used synthesized input through real Cartesia STT/Claude, confirmed a bench in the cached world, and selected it to replay that exact stored clip with source attribution. Production Chrome sampled 120 frame intervals at 1280×800: p50 8.3 ms, p95 16.7 ms on this Mac while other checks were running. The full 500k tests use installed Chrome; the bundled headless shell was too slow to finish the time-based reveal on this Mac. This is not physical Quest performance or a real-family pass.
+
+Evidence is in evidence/world-story/: the current scene, suggested/confirmed source replay, silent actual-flow video, production metrics and native emulator records. The clinician/patient, physical hardware, generated collision and production media gates below still apply.
+
+## Earlier younger-onset experience refresh
 
 The user clarified younger-onset Alzheimer’s (diagnosed before 65), not an assumed early stage. This refresh adds a more detailed, textured original garden and props, individual leaf geometry, a supported keepsake table, eye-level stable framing, a quieter source-labeled spectator view, optional screen-based 3D and simpler storyteller controls. It removes the grandparent/1940s assumptions, avoids memory-test prompts, preserves uncertain recall as conversation, stops obsolete voice playback when the source changes, and uses bounded clear floor suggestions for unpointed narration. It does not claim medical benefit or recovered historical truth.
 
-Fresh final verification: **69/69 domain tests, 4/4 renderer tests, 27/27 browser scenarios, three TypeScript checks, both production builds and doctor all pass.** The fresh immersive emulator rehearsal also passed native squeeze/grab/move/release/return and trigger-driven gate opening with an active XR session and no render-loop error. Production browser sampling at 1440×960 recorded 120 frame intervals (p50 8.3 ms, p95 9 ms on this Mac); this is not Quest performance. The browser run explicitly exercised live Cartesia speech and original clip replay with synthesized input, bilingual shared correction/undo, screen sharing/revocation and source playback transitions. Artifacts for this refresh are in evidence/experience-refresh/. Physical Quest and patient/family evaluation remain open. The provider accounts’ existing world-generation cap was preserved; no new world was generated.
+That earlier refresh passed **69/69 domain tests, 4/4 renderer tests, 27/27 browser scenarios, three TypeScript checks, both production builds and doctor.** Its immersive emulator rehearsal passed native squeeze/grab/move/release/return and trigger-driven gate opening. Production browser sampling at 1440×960 recorded 120 frame intervals (p50 8.3 ms, p95 9 ms on this Mac), not Quest performance. Artifacts for that refresh remain in evidence/experience-refresh/. It preserved the then-current world cap and did not generate a world; the separately authorized current pass is above.
 
 The first full run exposed a desktop sticky scene covering a confirmation control. Its measured hit target was the scene invitation, not the button; removing sticky positioning fixes the exact rerun. Independent review also found unchecked automatic placement and replay/source mismatch; those paths now have focused negative and actual-playback regressions. Model-supplied relations cannot create an unsupported furniture attachment. A dedicated attachment/group-movement feature remains out of scope.
 
@@ -53,9 +95,9 @@ The review added authoritative spatial proposals, stale/idempotency protections,
 
 ## World generation and budget
 
-Three generation requests were submitted: one draft, a standard living room and a standard courtyard. The draft completed but lacked calibration metadata and was blocked. Both standard worlds completed, cached and loaded. Standard job totals were about 5.4–5.6 minutes in this run; reopening the cached scene is separate and does not generate a world.
+Four generation requests have been submitted across these reviews: a draft, a standard living room, the original screenshot-based courtyard and the newly authorized story-based courtyard. The draft lacked calibration metadata and was blocked. All three standard worlds completed and cached. The new generation completed upstream in about 5.8 minutes; hotspot download recovery happened afterwards. Reopening a cached scene never generates a world.
 
-The documented non-panorama request prices sum to an estimated 3,390 API credits for those selections (230 + 1,580 + 1,580, including panorama preparation); that is not a provider invoice. API billing is separate from Marble web credits. The durable default global submission cap is now 3/3. Existing cached worlds work. A later funded run can deliberately set WORLD_LABS_GENERATION_LIMIT in auth/memory-gate.env and run npm run env:push; the app does not automatically raise limits or buy credits. See [current provider pricing](https://docs.worldlabs.ai/api/pricing).
+The first three selections were estimated at 3,390 API credits (230 + 1,580 + 1,580). The new operation reports exactly 1,580 additional credits; these are not an account invoice. API billing is separate from Marble web credits. The private local cap is now 4/4 after the user's one-generation authorization. Cached worlds remain available. A further funded run needs a deliberate WORLD_LABS_GENERATION_LIMIT change; the app does not raise limits or buy credits. See [provider pricing](https://docs.worldlabs.ai/api/pricing).
 
 The application still lacks the brief's fully reconciled cross-provider LLM/STT/TTS dollar/unit ledger. Do not treat request caps as a guarantee of a total dollar amount.
 
@@ -63,7 +105,7 @@ The application still lacks the brief's fully reconciled cross-provider LLM/STT/
 
 1. Wear the actual Quest 3 and complete docs/QUEST_CHECKLIST.md: comfort, stereo, microphone/recording inside XR, controller behavior and measured frame pacing.
 2. Have the consenting relative/bilingual teammate test their actual language and story. Review the transcript/interpretation; the initial supported command pair is EN/ES.
-3. Improve generated-world composition from a better reference or calibration/renderer strategy before making that courtyard the default. Current movable props remain separate; arbitrary splat segmentation and generated-mesh collision are not implemented.
+3. Review the new generated composition on actual Quest hardware. Current movable props remain separate; arbitrary splat segmentation and generated-mesh collision are not implemented. The prepared courtyard is a specific reviewed sample, not proof of quality for every new description.
 4. Before external/private-family deployment, finish authenticated/expiring media, stronger invitations/per-contributor consent, aggregate provider quotas and durable hosting. Inline transcript repair, recoloring an existing prop, full history playback and memory export are also incomplete.
 
 ## Files to use

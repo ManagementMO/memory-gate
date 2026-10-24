@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { headsetLink } from '../backend';
 
 /** A screen is a first-class way to spend time together; a headset is optional. No camera or microphone access. */
-export function MemoryStage({ code, title, illustrative, sharing, paused, onConsent }: {
-  code: string; title: string; illustrative: boolean; sharing: boolean; paused: boolean; onConsent: () => void;
+export function MemoryStage({ code, title, illustrative, fromStory, sharing, paused, onConsent }: {
+  code: string; title: string; illustrative: boolean; fromStory?: boolean; sharing: boolean; paused: boolean; onConsent: () => void;
 }) {
   const [open, setOpen] = useState(false);
   useEffect(() => { if (!sharing) setOpen(false); }, [sharing]);
@@ -26,6 +26,6 @@ export function MemoryStage({ code, title, illustrative, sharing, paused, onCons
       <p><span className="stage-status-dot" aria-hidden="true" />{open && sharing ? 'Shared view · follows your conversation' : 'Screen or Quest · choose what feels comfortable'}</p>
       {open && <button className="btn btn-quiet" onClick={() => setOpen(false)}>Close view</button>}
     </div>
-    <p className="stage-provenance">{illustrative ? 'Original illustrative garden. Scenery is imagined; story objects come from your words.' : 'Generated scenery is an interpretation of a source photo, not a recovered memory.'}</p>
+    <p className="stage-provenance">{illustrative ? 'Original illustrative garden. Scenery is imagined; story objects come from your words.' : fromStory ? 'World Labs scenery imagined from the storyteller’s words. Objects and original voice remain separate; generated details are unverified.' : 'Generated scenery is an interpretation of a source photo, not a recovered memory.'}</p>
   </section>;
 }

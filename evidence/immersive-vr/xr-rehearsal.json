@@ -1,0 +1,551 @@
+{
+  "at": "2026-10-24T19:19:09.996Z",
+  "environment": "IWSDK Meta Quest 3 emulator; no physical headset",
+  "pass": false,
+  "records": [
+    {
+      "step": "before",
+      "xr": true,
+      "sessionMode": "immersive-vr",
+      "framebufferScale": 0.75,
+      "paused": false,
+      "caption": null,
+      "tickError": null,
+      "scenery": {
+        "source": "worldlabs",
+        "loaded": true,
+        "lite": true
+      },
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": false,
+            "gateAngle": 0
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "yaw": 0,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 13,
+          "held": false,
+          "active": true,
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "center": [
+            -0.550000011920929,
+            1.2599999595806004,
+            -0.8500000238418579
+          ]
+        }
+      ],
+      "gateOpen": null
+    },
+    {
+      "step": "squeeze",
+      "xr": true,
+      "sessionMode": "immersive-vr",
+      "framebufferScale": 0.75,
+      "paused": false,
+      "caption": null,
+      "tickError": null,
+      "scenery": {
+        "source": "worldlabs",
+        "loaded": true,
+        "lite": true
+      },
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": false,
+            "gateAngle": 0
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "yaw": 1.2578153630921088e-23,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 13,
+          "held": true,
+          "active": true,
+          "position": [
+            -0.550000011920929,
+            1.0499999523162842,
+            -0.8500000238418579
+          ],
+          "center": [
+            -0.550000011920929,
+            1.2599999595806004,
+            -0.8500000238418579
+          ]
+        }
+      ],
+      "gateOpen": null
+    },
+    {
+      "step": "held-movement",
+      "xr": true,
+      "sessionMode": "immersive-vr",
+      "framebufferScale": 0.75,
+      "paused": false,
+      "caption": "Memory Gate: The microphone is blocked. Allow it for this page and reload; typing works meanwhile.",
+      "tickError": null,
+      "scenery": {
+        "source": "worldlabs",
+        "loaded": true,
+        "lite": true
+      },
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": false,
+            "gateAngle": 0
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0.09999997913837433,
+            1.2400000095367432,
+            -0.800000011920929
+          ],
+          "yaw": 1.2578153630921088e-23,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 13,
+          "held": true,
+          "active": true,
+          "position": [
+            0.09999997913837433,
+            1.2400000095367432,
+            -0.800000011920929
+          ],
+          "center": [
+            0.09999997913837433,
+            1.4500000168010594,
+            -0.800000011920929
+          ]
+        }
+      ],
+      "gateOpen": null
+    },
+    {
+      "step": "release",
+      "xr": true,
+      "sessionMode": "immersive-vr",
+      "framebufferScale": 0.75,
+      "paused": false,
+      "caption": "Memory Gate: The microphone is blocked. Allow it for this page and reload; typing works meanwhile.",
+      "tickError": null,
+      "scenery": {
+        "source": "worldlabs",
+        "loaded": true,
+        "lite": true
+      },
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": false,
+            "gateAngle": 0
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.54999840259552,
+            1.0500004291534424,
+            -0.8499997854232788
+          ],
+          "yaw": 3.1145570258001976e-29,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 13,
+          "held": false,
+          "active": true,
+          "position": [
+            -0.54999840259552,
+            1.0500004291534424,
+            -0.8499997854232788
+          ],
+          "center": [
+            -0.54999840259552,
+            1.2600004364177586,
+            -0.8499997854232788
+          ]
+        }
+      ],
+      "gateOpen": null
+    },
+    {
+      "step": "gate-select",
+      "xr": true,
+      "sessionMode": "immersive-vr",
+      "framebufferScale": 0.75,
+      "paused": false,
+      "caption": "added by Ana (sample family) · 11:00 PM: “Illustrative practice prop · independent of family photos”",
+      "tickError": null,
+      "scenery": {
+        "source": "worldlabs",
+        "loaded": true,
+        "lite": true
+      },
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": true,
+            "gateAngle": -1.4802344423847542
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.5499998331069946,
+            1.0500003099441528,
+            -0.8499998450279236
+          ],
+          "yaw": 4.867655479837152e-34,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 13,
+          "held": false,
+          "active": true,
+          "position": [
+            -0.5499998331069946,
+            1.0500003099441528,
+            -0.8499998450279236
+          ],
+          "center": [
+            -0.5499998331069946,
+            1.260000317208469,
+            -0.8499998450279236
+          ]
+        }
+      ],
+      "gateOpen": true
+    },
+    {
+      "step": "pause-button",
+      "xr": true,
+      "sessionMode": "immersive-vr",
+      "framebufferScale": 0.75,
+      "paused": false,
+      "caption": "added by Ana (sample family) · 11:00 PM: “Illustrative practice prop · independent of family photos”",
+      "tickError": null,
+      "scenery": {
+        "source": "worldlabs",
+        "loaded": true,
+        "lite": true
+      },
+      "placements": [
+        {
+          "id": "k172eq99wnemz3gw1s7z8p5mn18gwcka",
+          "label": "bench",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -2,
+            0,
+            -3.3
+          ],
+          "yaw": 0.3,
+          "interaction": null
+        },
+        {
+          "id": "k171p8s4mgnaq7qa3rv3j2gz8s8gx94e",
+          "label": "tree",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            2,
+            0,
+            -5.6
+          ],
+          "yaw": 0,
+          "interaction": null
+        },
+        {
+          "id": "k17fsd0knhenas33b5wey81esx8gw2kn",
+          "label": "gate",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            0,
+            0,
+            -8.5
+          ],
+          "yaw": 0,
+          "interaction": {
+            "gateOpen": true,
+            "gateAngle": -1.5076671946705056
+          }
+        },
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "label": "photograph",
+          "preview": false,
+          "phase": "solid",
+          "position": [
+            -0.5499998927116394,
+            1.0500001907348633,
+            -0.8499999046325684
+          ],
+          "yaw": 5.594325453534555e-38,
+          "interaction": null
+        }
+      ],
+      "keepsakes": [
+        {
+          "id": "k175xrqgatdsan3ykmx728bbw98gx0x6",
+          "entityIndex": 13,
+          "held": false,
+          "active": true,
+          "position": [
+            -0.5499998927116394,
+            1.0500001907348633,
+            -0.8499999046325684
+          ],
+          "center": [
+            -0.5499998927116394,
+            1.2600001979991795,
+            -0.8499999046325684
+          ]
+        }
+      ],
+      "gateOpen": true
+    },
+    {
+      "step": "failure",
+      "error": "Controller B must toggle pause while the XR session remains active."
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "input": {
+    "place": "San Francisco",
+    "terms": "street",
+    "yearFrom": 1900,
+    "yearTo": 1980,
+    "maxItems": 4
+  },
+  "references": [
+    {
+      "id": "https://www.loc.gov/item/2015647623/",
+      "title": "Market Street, San Francisco",
+      "sourceUrl": "https://www.loc.gov/item/2015647623/",
+      "publisher": "Library of Congress",
+      "date": "1900-01-01",
+      "description": "1 photograph : photochrom print ; sheet 24 x 18 cm. | Photograph shows the Call Building, currently named Central Tower, Market Street, San Francisco, with people, trolleys, and horse-drawn wagons on the street.",
+      "rights": "No known restrictions on publication.",
+      "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/39500/39502v.jpg#h=1024&w=776",
+      "dateMatch": "overlaps-requested-period",
+      "uncertainty": "Catalog date overlaps the requested period. Search relevance is not proof of this family’s memory.",
+      "retrievedAt": "2026-10-24T13:45:19.571Z",
+      "provenance": "public-archive"
+    },
+    {
+      "id": "https://www.loc.gov/item/ca1228/",
+      "title": "Powell Street, San Francisco, San Francisco County, CA",
+      "sourceUrl": "https://www.loc.gov/item/ca1228/",
+      "publisher": "Library of Congress",
+      "date": "Date not supplied",
+      "description": "Photo(s): 1 | Photo Caption Page(s): 1",
+      "rights": "No known restrictions on images made by the U.S. Government; images copied from other sources may be restricted. https://www.loc.gov/rr/print/res/114_habs.html",
+      "imageUrl": null,
+      "dateMatch": "unknown",
+      "uncertainty": "The catalog does not supply a usable date; the requested period is unverified.",
+      "retrievedAt": "2026-10-24T13:45:19.571Z",
+      "provenance": "public-archive"
+    },
+    {
+      "id": "https://www.loc.gov/item/2018645152/",
+      "title": "Palace Hotel and Market Street, San Francisco",
+      "sourceUrl": "https://www.loc.gov/item/2018645152/",
+      "publisher": "Library of Congress",
+      "date": "1900",
+      "description": "1 print : photomechanical ; sheet 8.2 x 14 cm. (postcard format) | Postcard showing the Palace Hotel and Market Street, in San Francisco, California.",
+      "rights": "No known restrictions on publication.",
+      "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/55300/55310v.jpg#h=611&w=1024",
+      "dateMatch": "overlaps-requested-period",
+      "uncertainty": "Catalog date overlaps the requested period. Search relevance is not proof of this family’s memory.",
+      "retrievedAt": "2026-10-24T13:45:19.571Z",
+      "provenance": "public-archive"
+    },
+    {
+      "id": "https://www.loc.gov/item/2015650750/",
+      "title": "[Street in Chinatown, San Francisco, California]",
+      "sourceUrl": "https://www.loc.gov/item/2015650750/",
+      "publisher": "Library of Congress",
+      "date": "1915-01-01",
+      "description": "1 photograph : gelatin silver print ; sheet 32 x 26 cm. | Photograph shows a street in Chinatown, San Francisco, with pedestrians and automobiles.",
+      "rights": "No known restrictions on publication.",
+      "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ds/07700/07751v.jpg#h=1024&w=827",
+      "dateMatch": "overlaps-requested-period",
+      "uncertainty": "Catalog date overlaps the requested period. Search relevance is not proof of this family’s memory.",
+      "retrievedAt": "2026-10-24T13:45:19.571Z",
+      "provenance": "public-archive"
+    }
+  ],
+  "warnings": [],
+  "retrievedAt": "2026-10-24T13:45:19.571Z",
+  "source": "Library of Congress JSON API",
+  "searchUrl": "https://www.loc.gov/photos/?fo=json&q=San+Francisco+street&c=8&at=results",
+  "statement": "Public historical context, not evidence of a personal recollection. No scene is changed automatically.",
+  "execution": "apify-local",
+  "runId": "local-c7ac5a32-0bca-4d1b-ae9a-d7cf6cc1cd39"
+}

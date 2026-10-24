@@ -45,8 +45,9 @@ if (w.CONVEX_URL && w.WORKER_SECRET) {
     add('backend', 'object library', n >= 12 ? 'PASS' : n > 0 ? 'WARN' : 'FAIL', `${n} models: ${status.library.map((l) => l.key).join(', ')}`);
     add('backend', 'sample photo', status.assets.includes('photo.sample') ? 'PASS' : 'FAIL', status.assets.includes('photo.sample') ? 'permitted sample photo stored' : 'missing photo.sample (run npm run seed)');
     const hasSplat = status.assets.includes('splat.sample');
+    const hasWorld = status.assets.includes('world.practice-courtyard');
     const hasCourtyard = ['bench', 'tree', 'gate', 'photograph'].every(k => status.library.some(l => l.key === k));
-    add('backend', 'scene availability', hasSplat ? 'PASS' : hasCourtyard ? 'WARN' : 'FAIL', hasSplat ? 'prepared photo splat available' : hasCourtyard ? 'illustrative courtyard available; photo reconstruction not configured' : 'no prepared scene or courtyard props');
+    add('backend', 'scene availability', hasSplat || hasWorld ? 'PASS' : hasCourtyard ? 'WARN' : 'FAIL', hasWorld ? 'cached fictional World Labs courtyard available' : hasSplat ? 'prepared photo splat available' : hasCourtyard ? 'illustrative courtyard available; photo reconstruction not configured' : 'no prepared scene or courtyard props');
     try { // every library row and asset must still point at a stored file
       const [st, ms] = await time(() => client.query(api.doctor.seedState, { secret: w.WORKER_SECRET }));
       const gone = [...st.library, ...st.assets].filter((r) => !r.file).map((r) => r.key);

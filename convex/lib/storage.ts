@@ -6,8 +6,8 @@ export async function deleteIfUnreferenced(ctx: MutationCtx, id: Id<'_storage'>)
   for (const table of ['library', 'assets', 'objects', 'splats', 'photos', 'utterances'] as const) {
     for (const row of await ctx.db.query(table).collect()) {
       const value = row as Record<string, unknown>;
-      if (['fileId', 'liteFileId', 'glbFileId', 'storedGlbFileId', 'audioFileId'].some(key => value[key] === id)) return;
-      if (table === 'assets' && (value.meta as { liteFileId?: string } | undefined)?.liteFileId === id) return;
+      if (['fileId', 'liteFileId', 'previewFileId', 'glbFileId', 'storedGlbFileId', 'audioFileId'].some(key => value[key] === id)) return;
+      if (table === 'assets' && ['liteFileId', 'previewFileId'].some(key => (value.meta as Record<string, unknown> | undefined)?.[key] === id)) return;
     }
   }
   await ctx.storage.delete(id).catch(() => {});

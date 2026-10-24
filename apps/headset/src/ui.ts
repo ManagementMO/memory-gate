@@ -6,6 +6,7 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 
 export type Ui = ReturnType<typeof createUi>;
 export type TickerItem = { kind: string; at: number; meta: string; lead?: string; text: string; sub?: string | null };
+export type StoryState = 'together' | 'listening' | 'review';
 
 export function createUi() {
   const head = $('mg-head'), title = $('mg-title'), sub = $('mg-sub');
@@ -46,6 +47,14 @@ export function createUi() {
       $('mg-tag').textContent = `Memory Gate · ${sample ? 'fictional practice' : 'together'}`;
       $('mg-view-title').textContent = t.replace(/\s*·.*$/, '');
       $('mg-scene-kind').textContent = paused ? 'Taking a break' : generated ? 'AI scenery · family-guided interpretation' : 'Illustrative garden · imagined scenery';
+    },
+    setStoryState(state: StoryState, paused: boolean) {
+      const el = $('mg-story-state');
+      const next = paused ? 'paused' : state;
+      if (el.dataset.state === next) return;
+      el.dataset.state = next;
+      $('mg-story-step').textContent = paused ? 'Take your time' : state === 'listening' ? 'Your words are here' : state === 'review' ? 'A detail to make your own' : 'Here, together';
+      $('mg-story-hint').textContent = paused ? 'The story will wait.' : state === 'listening' ? 'A visual suggestion is taking shape.' : state === 'review' ? 'A golden outline is a suggestion. Keep it if it feels right.' : 'Tell a detail. Touch a keepsake. Hear their words again.';
     },
     setSub(html: string) { sub.innerHTML = html; },
     setStatus(text: string) { status.textContent = text; },

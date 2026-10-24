@@ -13,7 +13,7 @@ export default async function run({ frame, page }) {
     url.searchParams.set('room', code);
     if (room.key) url.searchParams.set('key', room.key);
     await f.goto(url.toString());
-  }
+  } else if (process.env.MG_XR_FRESH_PRESENTATION === '1') await f.goto(f.url());
   await f.waitForFunction(() => window.__mg?.stats?.sceneReady === true || window.__mg?.stats?.splatLoaded === true, null, { timeout: 45000 });
   await f.waitForTimeout(Number(process.env.WAIT || 4000));
   return { code, stats: await f.evaluate(() => window.__mg.stats) };

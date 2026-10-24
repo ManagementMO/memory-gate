@@ -21,14 +21,21 @@ test('a bilingual placement preview, confirmation and undo synchronize two phone
     await b.getByTestId('join-name').fill('Sam (sample)');
     await b.getByTestId('join-submit').click();
     await expect(b.getByTestId('object-item')).toHaveCount(4);
+    // The headless Windows compositor may suspend animation in background windows.
+    await head.bringToFront();
     await head.goto(`${process.env.HEADSET_URL ?? 'https://localhost:8081'}/?room=${code}&view=spectator&drift=0`);
-    await head.waitForFunction(() => window.__mg?.stats.sceneReady === true, null, { timeout: 45_000 });
-    await head.waitForFunction(() => window.__mg?.placements?.().filter(o => o.phase === 'solid').length === 4, null, { timeout: 30_000 });
+    await expect.poll(async () => {
+      if (errors.length) throw new Error(`Headset runtime: ${errors.join('; ')}`);
+      const lastError = await head.evaluate(() => window.__mg?.stats.lastError ?? null);
+      if (lastError) throw new Error(`Headset state: ${lastError}`);
+      return head.evaluate(() => ({ ready: window.__mg?.stats.sceneReady ?? false, objects: window.__mg?.placements?.().filter(o => o.phase === 'solid').length ?? 0 }));
+    }, { timeout: 45_000 }).toEqual({ ready: true, objects: 4 });
     const readBench = () => head.evaluate(() => window.__mg.placements().find(o => o.label === 'bench' && !o.preview));
     const before = await readBench();
     await a.getByTestId('tell-input').fill('Mueve el banco al lado del árbol, mirando hacia la puerta.');
     await a.getByTestId('tell-submit').click();
     for (const p of [a, b]) await expect(p.getByTestId('correction-preview')).toContainText('bench');
+    await head.bringToFront();
     await head.waitForFunction(() => window.__mg.placements().some(o => o.preview && o.label === 'bench'));
     expect((await readBench()).position).toEqual(before.position);
     await head.screenshot({ path: path.join(SCREENS, 'correction-preview-3d.png') });
@@ -51,10 +58,16 @@ test('a bilingual placement preview, confirmation and undo synchronize two phone
     await head.screenshot({ path: path.join(SCREENS, 'correction-confirmed-3d.png') });
     await a.screenshot({ path: path.join(SCREENS, 'correction-confirmed-phone.png'), fullPage: true });
     await a.getByTestId('undo-button').click();
+    await head.bringToFront();
     await expect.poll(async () => (await readBench()).position[0]).toBeCloseTo(before.position[0], 2);
     await expect.poll(async () => (await readBench()).position[2]).toBeCloseTo(before.position[2], 2);
     expect(errors).toEqual([]);
     expect(await head.evaluate(() => window.__mg.stats.tickError ?? null)).toBe(null);
+  } catch (error) {
+    console.error('Renderer diagnostic', await head.evaluate(() => ({ phase: window.__mg?.stats.phase, fps: window.__mg?.stats.fps,
+      objects: window.__mg?.stats.objectRecords, tickError: window.__mg?.stats.tickError,
+      placements: window.__mg?.placements?.().map(o => ({ label: o.label, phase: o.phase })) })).catch(() => ({})));
+    throw error;
   } finally {
     await deleteOwnedRoom(a);
     await Promise.all([ctxA.close(), ctxB.close(), ctx3d.close()]);
