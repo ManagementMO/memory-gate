@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#213b2f">
+  <title>The Red Kite · fictional concept rehearsal</title>
+  <link rel="stylesheet" href="rehearsal.css">
+  <script type="module" src="rehearsal.mjs"></script>
+</head>
+<body>
+  <main>
+    <section class="scene" aria-label="California meadow concept">
+      <img class="landscape" src="references/meadow-reference-v2.jpg" alt="Original illustrated California meadow with a curving path, an old oak and rolling hills in late-afternoon light.">
+      <div class="shade" aria-hidden="true"></div>
+      <header class="masthead">
+        <a class="wordmark" href="README.md">Memory Gate <span>/ The Red Kite</span></a>
+        <span class="concept-label">Fictional concept rehearsal · 2D</span>
+      </header>
+      <svg id="world-overlay" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1"><stop id="paper-light" stop-color="#f0e8c9"/><stop id="paper-dark" offset="1" stop-color="#cec29e"/></linearGradient>
+          <linearGradient id="wood" x1="0" x2="0.8" y2="1"><stop stop-color="#c99b5d"/><stop offset=".48" stop-color="#a4713e"/><stop offset="1" stop-color="#74502f"/></linearGradient>
+        </defs>
+        <path id="kite-string" d=""/>
+        <g id="kite" opacity="0">
+          <path id="ribbon" d=""/>
+          <path class="sail" d="M 0 -98 L 73 -15 L 0 107 L -73 -15 Z"/>
+          <path class="spar" d="M0 -98 L0 107 M-73 -15 Q0 -31 73 -15"/>
+          <path class="seam" d="M0 -98 L73 -15 L0 107 L-73 -15 Z"/>
+          <path class="bridle" d="M-52 -15 L0 29 L52 -15 M0 29 L0 93"/>
+        </g>
+        <g id="spool-art" opacity="0">
+          <ellipse class="spool-shadow" cx="0" cy="23" rx="43" ry="9"/>
+          <path fill="url(#wood)" d="M-34 -17 Q-39 -19 -40 -9 L-40 18 Q-37 25 -31 20 L-26 15 L26 15 L31 20 Q37 25 40 18 L40 -9 Q39 -19 34 -17 L26 -11 L-26 -11Z"/>
+          <rect x="-25" y="-13" width="50" height="28" rx="5" fill="#d7c5a2"/>
+          <path d="M-20 -12 V14 M-13 -12 V15 M-6 -12 V15 M1 -12 V15 M8 -12 V15 M15 -12 V15 M22 -12 V14" stroke="#9b8767" stroke-width="1" opacity=".6"/>
+          <ellipse cx="-35" cy="2" rx="6" ry="18" fill="#c0945e"/>
+          <ellipse cx="35" cy="2" rx="6" ry="18" fill="#9d6e3d"/>
+        </g>
+      </svg>
+      <button id="spool-handle" class="spool-handle" hidden aria-label="Lift the wooden spool; drag up or use Catch the breeze"></button>
+      <div class="scene-caption"><span class="location">California's Central Coast foothills</span><span>One afternoon. One old friend.</span></div>
+      <div id="paused-overlay" class="paused-overlay" hidden><p>We can stay here.</p><span>Motion and sample playback are paused.</span><button id="resume">Continue when ready</button></div>
+      <div class="scene-footer"><span id="world-state">A place to begin</span><span>Original concept art · separate objects illustrated in SVG</span></div>
+    </section>
+
+    <section class="story-desk" aria-label="Story rehearsal controls">
+      <div class="story">
+        <div class="eyebrow">Elena's afternoon <span id="source-index">Sample line 1 of 4</span></div>
+        <h1>The Red Kite</h1>
+        <blockquote id="source-quote" aria-live="polite"></blockquote>
+        <p class="source-note" id="source-note"></p>
+        <div class="story-actions"><button id="next" class="primary">Next story line <span aria-hidden="true">→</span></button><button id="read">Read sample aloud</button></div>
+        <p class="audio-note" id="audio-status">Optional browser voice; this is not an original family recording.</p>
+      </div>
+      <aside class="illustration" aria-label="Illustration choice">
+        <div class="eyebrow">Our illustration</div>
+        <p id="choice-title" class="choice-title" aria-live="polite"></p>
+        <p id="choice-description"></p>
+        <div id="choice-actions" class="choice-actions" hidden><button id="accept" class="primary">Use this look</button><button id="leave">Leave this open</button></div>
+        <div id="lift-actions" hidden><button id="breeze">Catch the breeze</button><p class="hint">Or gently drag the wooden spool upward. In VR, this will use a hand/controller grab.</p></div>
+        <p id="choice-record" class="choice-record"></p>
+      </aside>
+    </section>
+
+    <footer class="utility"><div><button id="pause">Pause</button><button id="reset">Start again</button><button id="uncertain">Try an uncertain object</button></div><p>A shared illustration, with room for uncertainty.</p><details><summary>About this rehearsal</summary><p>This is a local 2D art and story prototype. Elena and Rosa are fictional. The meadow is concept art; the moving kite is an SVG overlay. It does not test the World Labs 3D output, headset grabbing, speech recognition or the live server. “Use this look” accepts a depiction, not historical truth. No memory score or clinical outcome is inferred.</p></details></footer>
+  </main>
+</body>
+</html>

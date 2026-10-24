@@ -1,0 +1,58 @@
+{
+  "schema": "memory-gate.red-kite-world/1",
+  "label": "Original fictional California meadow; World Labs environment",
+  "sourceKind": "AI-authored fictional environment reference; not family historical evidence",
+  "model": "marble-1.1",
+  "inputSha256": "2e295d49adf645c904282aece1e940e97e535ea6a739d5faad765f8e128453fa",
+  "createdAt": "2026-10-24T21:24:43.696Z",
+  "readyAt": "2026-10-24T21:35:02.192Z",
+  "elapsedMs": 618496,
+  "floorY": -0.5775501930381995,
+  "scale": 2.6397884,
+  "numSplats": 500000,
+  "liteNumSplats": 100000,
+  "assets": [
+    {
+      "variant": "500k",
+      "file": "red-kite-500k.spz",
+      "bytes": 8009728,
+      "sha256": "ca8f70ee1d64e6543bd9be45c5d8c71acec55257cbda56bf1a45457a3b886cef"
+    },
+    {
+      "variant": "100k",
+      "file": "red-kite-100k.spz",
+      "bytes": 1417342,
+      "sha256": "e4ffb0df7f0ee47fac8378c2272e1fd19dfddf4b51a0bb91aafddee5b3d126d1"
+    },
+    {
+      "variant": "preview",
+      "file": "red-kite-preview.webp",
+      "bytes": 74464,
+      "sha256": "506dcc5b00245ec3fbb6eafa839ba153b9b8be4b47d5f78c709033384bc8c8a5"
+    }
+  ],
+  "job": {
+    "provider": "worldlabs",
+    "status": "done",
+    "attempts": 1,
+    "model": "marble-1.1",
+    "elapsedMs": 618385,
+    "artifactHash": "ca8f70ee1d64e6543bd9be45c5d8c71acec55257cbda56bf1a45457a3b886cef"
+  },
+  "worldId": "0b84554c-b182-4b3e-a7bb-78f15822a49d",
+  "sourceWords": "A fictional California childhood-story setting: an open meadow, a winding path, old live oaks, rolling hills and warm late-afternoon light. Original AI-authored concept, not a historical family photograph.",
+  "files": {
+    "red-kite-500k.spz": {
+      "bytes": 8009728,
+      "sha256": "ca8f70ee1d64e6543bd9be45c5d8c71acec55257cbda56bf1a45457a3b886cef"
+    },
+    "red-kite-100k.spz": {
+      "bytes": 1417342,
+      "sha256": "e4ffb0df7f0ee47fac8378c2272e1fd19dfddf4b51a0bb91aafddee5b3d126d1"
+    },
+    "red-kite-preview.webp": {
+      "bytes": 74464,
+      "sha256": "506dcc5b00245ec3fbb6eafa839ba153b9b8be4b47d5f78c709033384bc8c8a5"
+    }
+  }
+}

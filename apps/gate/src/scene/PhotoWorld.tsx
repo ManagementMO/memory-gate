@@ -10,6 +10,7 @@ import { api } from '../../../../convex/_generated/api';
 import { fileUrl } from '../backend/client';
 import { useGate } from '../state/store';
 import { damp } from './util';
+import { environmentFarPlane } from '../../../../packages/shared/src/worldlabs';
 
 /** The eye height of a splat's camera above its floor (metres). */
 export const splatEye = (floorY: number | null, scale: number) => (floorY !== null ? -floorY * scale : 1.2);
@@ -20,11 +21,23 @@ export function PhotoWorld() {
   const view = useQuery(api.rooms.get, session ? { code: session.code, token: session.token } : 'skip');
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
   const splat = view?.splat;
   // Real generations from this photo always; the bundled sample splat only when the sample photo was shared.
   const isSample = !!media && /sample-photo-1938/.test(media.name);
   const usable = !!splat && splat.status === 'ready' && !!splat.url && (splat.source === 'sharp' || splat.source === 'worldlabs' || (splat.source === 'prebaked' && isSample));
   const url = usable ? fileUrl(splat!.liteUrl && /OculusBrowser|Quest/i.test(navigator.userAgent) ? splat!.liteUrl : splat!.url) : null;
+
+  // The cached meadow has forward centers beyond 267m. Keep its horizon within the projection volume,
+  // restoring the prior range when this source leaves so the portal/photo presentation stays independent.
+  useEffect(() => {
+    if (!usable || !splat || !(camera instanceof THREE.PerspectiveCamera)) return;
+    const previous = camera.far, far = environmentFarPlane(splat.source);
+    camera.far = far; camera.updateProjectionMatrix();
+    return () => {
+      if (camera.far === far) { camera.far = previous; camera.updateProjectionMatrix(); }
+    };
+  }, [usable, splat?.source, camera]);
 
   const spark = useMemo(() => {
     const s = new SparkRenderer({ renderer: gl, maxStdDev: Math.sqrt(5), lodCleanupTimeoutMs: Infinity } as ConstructorParameters<typeof SparkRenderer>[0]);

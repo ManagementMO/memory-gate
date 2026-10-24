@@ -1,0 +1,24 @@
+{
+  "kind": "Actual managed-browser spectator check, not physical Quest evidence",
+  "checkedAt": "2026-10-24T21:56:46.593Z",
+  "source": "worldlabs",
+  "loaded": true,
+  "lite": false,
+  "numSplats": 500000,
+  "xrPresenting": false,
+  "desktopCamera": {
+    "position": [
+      0,
+      1.5246102809906006,
+      0
+    ],
+    "fov": 78,
+    "fromSource": true
+  },
+  "worldFarPlaneMeters": 1000,
+  "distanceFade": false,
+  "lastError": null,
+  "tickError": null,
+  "screenshot": "references/world-runtime-final.png",
+  "scope": "One fixed forward view; no native kite grab or physical Quest performance tested"
+}

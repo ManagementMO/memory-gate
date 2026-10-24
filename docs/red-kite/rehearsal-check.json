@@ -1,0 +1,250 @@
+{
+  "kind": "Actual Playwright input in local 2D concept; not an XR or clinical evaluation",
+  "at": "2026-10-24T21:50:29.786Z",
+  "results": [
+    {
+      "name": "Uncertain object identity does not create a kite",
+      "status": "passed",
+      "evidence": {
+        "beat": 0,
+        "scenario": "uncertain",
+        "identity": "absent",
+        "identitySource": null,
+        "color": null,
+        "ribbon": null,
+        "detailSource": null,
+        "proposal": null,
+        "choices": [],
+        "paused": false,
+        "flying": false,
+        "held": false,
+        "simulationSeconds": 0.01669999999999999,
+        "sampleSpeech": "idle",
+        "reducedMotion": false,
+        "spool": {
+          "x": 895,
+          "y": 677
+        },
+        "evidenceKind": "fictional local 2D rehearsal; no live server, original family audio or native XR input"
+      }
+    },
+    {
+      "name": "Unknown color stays open, including after declining a detail proposal",
+      "status": "passed",
+      "evidence": {
+        "beat": 2,
+        "scenario": "story",
+        "identity": "accepted",
+        "identitySource": "fictional-02",
+        "color": null,
+        "ribbon": null,
+        "detailSource": null,
+        "proposal": null,
+        "choices": [
+          {
+            "sourceId": "fictional-02",
+            "action": "use-this-look",
+            "scope": "identity",
+            "meaning": "illustration choice, not historical verification"
+          },
+          {
+            "sourceId": "fictional-03",
+            "action": "leave-open",
+            "scope": "details"
+          }
+        ],
+        "paused": false,
+        "flying": false,
+        "held": false,
+        "simulationSeconds": 0.19999999999999998,
+        "sampleSpeech": "idle",
+        "reducedMotion": false,
+        "spool": {
+          "x": 895,
+          "y": 677
+        },
+        "evidenceKind": "fictional local 2D rehearsal; no live server, original family audio or native XR input"
+      }
+    },
+    {
+      "name": "Choosing an illustration retains its exact fictional source",
+      "status": "passed",
+      "evidence": {
+        "beat": 2,
+        "scenario": "story",
+        "identity": "accepted",
+        "identitySource": "fictional-02",
+        "color": "red",
+        "ribbon": "cream",
+        "detailSource": "fictional-03",
+        "proposal": null,
+        "choices": [
+          {
+            "sourceId": "fictional-02",
+            "action": "use-this-look",
+            "scope": "identity",
+            "meaning": "illustration choice, not historical verification"
+          },
+          {
+            "sourceId": "fictional-03",
+            "action": "use-this-look",
+            "scope": "details",
+            "meaning": "illustration choice, not historical verification"
+          }
+        ],
+        "paused": false,
+        "flying": false,
+        "held": false,
+        "simulationSeconds": 0.1334,
+        "sampleSpeech": "idle",
+        "reducedMotion": false,
+        "spool": {
+          "x": 895,
+          "y": 677
+        },
+        "evidenceKind": "fictional local 2D rehearsal; no live server, original family audio or native XR input"
+      }
+    },
+    {
+      "name": "Pointer grab and lift catches the breeze; release returns the spool to its dock",
+      "status": "passed",
+      "evidence": {
+        "held": {
+          "beat": 2,
+          "scenario": "story",
+          "identity": "accepted",
+          "identitySource": "fictional-02",
+          "color": "red",
+          "ribbon": "cream",
+          "detailSource": "fictional-03",
+          "proposal": null,
+          "choices": [
+            {
+              "sourceId": "fictional-02",
+              "action": "use-this-look",
+              "scope": "identity",
+              "meaning": "illustration choice, not historical verification"
+            },
+            {
+              "sourceId": "fictional-03",
+              "action": "use-this-look",
+              "scope": "details",
+              "meaning": "illustration choice, not historical verification"
+            }
+          ],
+          "paused": false,
+          "flying": false,
+          "held": true,
+          "simulationSeconds": 0.3167000000000001,
+          "sampleSpeech": "idle",
+          "reducedMotion": false,
+          "spool": {
+            "x": 885,
+            "y": 587
+          },
+          "evidenceKind": "fictional local 2D rehearsal; no live server, original family audio or native XR input"
+        },
+        "released": {
+          "beat": 2,
+          "scenario": "story",
+          "identity": "accepted",
+          "identitySource": "fictional-02",
+          "color": "red",
+          "ribbon": "cream",
+          "detailSource": "fictional-03",
+          "proposal": null,
+          "choices": [
+            {
+              "sourceId": "fictional-02",
+              "action": "use-this-look",
+              "scope": "identity",
+              "meaning": "illustration choice, not historical verification"
+            },
+            {
+              "sourceId": "fictional-03",
+              "action": "use-this-look",
+              "scope": "details",
+              "meaning": "illustration choice, not historical verification"
+            }
+          ],
+          "paused": false,
+          "flying": true,
+          "held": false,
+          "simulationSeconds": 0.8333000000000004,
+          "sampleSpeech": "idle",
+          "reducedMotion": false,
+          "spool": {
+            "x": 895,
+            "y": 676
+          },
+          "evidenceKind": "fictional local 2D rehearsal; no live server, original family audio or native XR input"
+        }
+      }
+    },
+    {
+      "name": "Pause freezes motion, cancels sample speech and disables story changes",
+      "status": "passed",
+      "evidence": {
+        "beat": 2,
+        "scenario": "story",
+        "identity": "accepted",
+        "identitySource": "fictional-02",
+        "color": "red",
+        "ribbon": "cream",
+        "detailSource": "fictional-03",
+        "proposal": null,
+        "choices": [
+          {
+            "sourceId": "fictional-02",
+            "action": "use-this-look",
+            "scope": "identity",
+            "meaning": "illustration choice, not historical verification"
+          },
+          {
+            "sourceId": "fictional-03",
+            "action": "use-this-look",
+            "scope": "details",
+            "meaning": "illustration choice, not historical verification"
+          }
+        ],
+        "paused": true,
+        "flying": true,
+        "held": false,
+        "simulationSeconds": 1.0500000000000003,
+        "sampleSpeech": "idle",
+        "reducedMotion": false,
+        "spool": {
+          "x": 895,
+          "y": 677
+        },
+        "evidenceKind": "fictional local 2D rehearsal; no live server, original family audio or native XR input"
+      }
+    },
+    {
+      "name": "Mobile layout has no horizontal overflow and keeps the spool accessible; reduced-motion mode is detected",
+      "status": "passed",
+      "evidence": {
+        "viewport": [
+          390,
+          844
+        ],
+        "handle": {
+          "x": 263.734375,
+          "y": 348.109375,
+          "width": 66,
+          "height": 57
+        }
+      }
+    },
+    {
+      "name": "No page errors or external service requests",
+      "status": "passed",
+      "evidence": {
+        "errors": [],
+        "externalRequests": []
+      }
+    }
+  ],
+  "errors": [],
+  "externalRequests": []
+}

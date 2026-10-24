@@ -16,6 +16,7 @@ import { Captions } from './look/captions.js';
 import { Chimes } from './look/chime.js';
 import { VIEWPORT_H } from './look/palette.js';
 import { XR_BACKGROUND, XR_SESSION_MODE, xrFramebufferScale } from './look/xrPresentation.js';
+import { environmentFarPlane } from './look/worldPresentation.js';
 import { api, errorCode, fileUrl, humanError, joinRoom, makeClient, newCommandId, roomCodeFromUrl, type Session } from './net.js';
 import { createUi, type TickerItem } from './ui.js';
 import { resolveVoiceFactory, type VoiceFactory } from './voiceLoader.js';
@@ -868,6 +869,8 @@ export async function startApp(world: World): Promise<void> {
     ui.showRoom(r.room.title);
     ui.setSceneContext(r.room.title, r.splat?.status === 'ready', r.room.demo, r.room.paused);
     if (r.splat?.status === 'ready' && r.splat.url) {
+      const far = environmentFarPlane(r.splat.source);
+      if (world.camera.far !== far) { world.camera.far = far; world.camera.updateProjectionMatrix(); }
       // Lite changes only the environment's splat budget; preserve eye resolution and the explicit scale option.
       const lite = !!(!spectator && r.flags['splat.lite'] && r.splat.liteUrl); // projectors keep the full 500k; Quest retains its configured lighter option
       const url = fileUrl(lite ? r.splat.liteUrl : r.splat.url)!;
@@ -884,6 +887,7 @@ export async function startApp(world: World): Promise<void> {
       stats.eyeHeight = +room.eyeHeight.toFixed(3);
       if (!room.ready) placeDesktopCamera();
     } else {
+      if (world.camera.far !== 200) { world.camera.far = 200; world.camera.updateProjectionMatrix(); }
       if (loadedSplatId) {
         room.clear();
         loadedSplatId = null;

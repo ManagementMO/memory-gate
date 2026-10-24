@@ -1,3 +1,8 @@
+/** Complete generated environments can contain sky/landscape hundreds of meters from their source camera. */
+export function environmentFarPlane(source: string): number {
+  return source === 'worldlabs' ? 1000 : 200;
+}
+
 /** A background only: the live story's freestanding objects remain independently interactive. */
 export function storyWorldPrompt(transcript: string): string {
   const words = transcript.trim();

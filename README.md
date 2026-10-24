@@ -10,7 +10,7 @@ The prior review established the shared-correction foundation and recorded earli
 
 Start with [MORNING_REPORT.md](MORNING_REPORT.md), [the audit](docs/AUDIT_AND_IMPROVEMENTS.md), [plan alignment](docs/PLAN_ALIGNMENT.md) and [the two-minute demo](DEMO_SCRIPT.md).
 
-The next visual direction is the **Palace of Fine Arts**: [OrbisEngine architecture research, art direction, capture checklist and implementation boundary](docs/ORBIS_AND_PALACE.md). `npm run palace:prepare -- --template` creates a private offline capture manifest. No Palace world has been generated yet; the courtyard remains the working fallback.
+The current creative direction is **[The Red Kite](docs/red-kite/README.md)**: a fictional California childhood meadow, a childhood friend and a handmade kite. The new Marble 1.1 meadow is generated and cached; `npm run demo:kite` opens its reusable fictional room without another generation. A separate [2D concept rehearsal](docs/red-kite/rehearsal.html) demonstrates source-linked illustration choices. The [teammate brief](docs/red-kite/TEAMMATE_ASSET_BRIEF.md) specifies the separate Blender assets and native interactions still to build. The earlier [Palace research](docs/ORBIS_AND_PALACE.md) remains as reference; that scene is no longer the chosen direction.
 
 This is a pre-event practice project with subsequent review improvements. The initial public import does not establish when each feature was built. Confirm event eligibility with the organizers before submitting it.
 

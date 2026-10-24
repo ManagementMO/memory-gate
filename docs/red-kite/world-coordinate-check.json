@@ -1,0 +1,15 @@
+{
+  "kind": "Offline coordinate inspection of the actual cached legacy-v2 SPZ; not a physical Quest performance test",
+  "input": "../../fixtures/worlds/red-kite-500k.spz",
+  "spzVersion": 2,
+  "points": 500000,
+  "fractionalBits": 12,
+  "metricScaleFactor": 2.6397884,
+  "maxCenterRadiusMeters": 410.66116594049623,
+  "maxForwardCenterDepthMeters": 267.1387234290039,
+  "forwardCentersBeyond200Meters": 1081,
+  "previousFarPlaneMeters": 200,
+  "newWorldFarPlaneMeters": 1000,
+  "method": "Decode little-endian signed fixed24 positions after the 16-byte gzip SPZ v2 header; apply the per-world metric scale. World axes are converted separately by the renderer.",
+  "formatReference": "https://github.com/nianticlabs/spz/blob/main/README.md"
+}
