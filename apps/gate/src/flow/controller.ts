@@ -7,8 +7,11 @@ import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
 import { useGate, type MediaItem } from '../state/store';
 import { createEngine, type Heard, type VoiceEngine } from '../voice/engine';
+import { validatePlan } from '../../../../packages/shared/src/scene';
+import { fileUrl } from '../backend/client';
 import { memory } from './memory';
 import { moments, useMoments } from './moments';
+import type { SharedMemory } from './sync';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -276,6 +279,42 @@ class Flow {
     music.setMode('album');
     music.cue('album');
     useGate.getState().set({ stage: 'album', resting: false, heardLine: null, companionLine: null, mood: 'idle' });
+  }
+
+  /** A guest follows the host: into the same place, and every detail added after. */
+  async followHost(shared: SharedMemory): Promise<void> {
+    if (!shared.plan) return;
+    const plan = validatePlan(shared.plan);
+    const g = useGate.getState();
+    memory.adopt(plan, shared.id, shared.mediaUrl ? fileUrl(shared.mediaUrl) : null);
+    g.set({ memoryTitle: plan.title });
+    if (g.stage === 'gathering' || g.stage === 'greeting') {
+      this.clearNudge();
+      await this.say(`${shared.byName && shared.byName !== 'You' ? shared.byName : 'Your family'} is visiting ${plan.title}. Let’s go with them.`);
+      await this.enter();
+    }
+  }
+
+  /** The host, still at the gate, receives a photo a family member sent from their phone. */
+  async welcomeGuestPhoto(shared: SharedMemory): Promise<void> {
+    const g = useGate.getState();
+    if (g.stage !== 'gathering' || g.media || !shared.mediaUrl) return;
+    const url = fileUrl(shared.mediaUrl);
+    if (!url) return;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = url;
+    try { await img.decode(); } catch { return; }
+    this.clearNudge();
+    g.set({ media: { id: shared.id, kind: 'photo', url, name: 'shared photo', width: img.naturalWidth, height: img.naturalHeight }, offers: { photo: false, video: false, invite: false }, expression: 'curious' });
+    if (shared.plan) memory.adopt(validatePlan(shared.plan), shared.id, url);
+    this.turnsInPhase = Math.max(this.turnsInPhase, 1);
+    if (shared.title) { this.place = shared.title; g.set({ memoryTitle: shared.title }); }
+    this.mediaCaption = shared.caption ?? null;
+    await this.say(`${shared.byName ?? 'Someone'} sent a photo. Oh, look at this.`);
+    await this.say(shared.caption ? `I can see ${lowerFirst(shared.caption)}. Where is this place?` : 'Where is this place?');
+    useGate.getState().set({ expression: 'neutral' });
+    this.scheduleNudge();
   }
 
   /** From the album: walk back into a memory exactly as it was. */

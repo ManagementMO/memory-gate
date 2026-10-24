@@ -14,9 +14,15 @@ import { useGate } from '../state/store';
 
 (window as unknown as { __scenePreview: boolean }).__scenePreview = true;
 const params = new URLSearchParams(location.search);
+if (params.get('companion') === 'none') (window as unknown as { __hideCompanion: boolean }).__hideCompanion = true;
 const DEFAULT_TEXT = 'My grandmother’s kitchen in the morning. Yellow curtains on the window, a round wooden table with two chairs, and her radio on the counter.';
 
 async function loadPlan(): Promise<{ plan: ScenePlan; source: string }> {
+  // &compose=1: a live session, so things outside the library are composed by Claude (cached per label).
+  if (params.get('compose') === '1' && !useGate.getState().session) {
+    const s = await startSession({ name: 'Preview', invite: null });
+    if (s) useGate.getState().set({ session: s });
+  }
   const planUrl = params.get('plan');
   if (planUrl) return { plan: validatePlan(await (await fetch(planUrl)).json()), source: 'stored' };
   const text = params.get('text') ?? DEFAULT_TEXT;

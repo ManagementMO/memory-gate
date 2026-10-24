@@ -1,0 +1,80 @@
+{
+ "version": 1,
+ "title": "The porch",
+ "setting": {
+  "indoor": false,
+  "type": "porch",
+  "timeOfDay": "dusk",
+  "weather": "clear",
+  "floor": "wood",
+  "palette": [
+   "#c0504d"
+  ],
+  "walls": false,
+  "water": false
+ },
+ "ambience": "leaves",
+ "objects": [
+  {
+   "id": "swing-0",
+   "kind": "swing",
+   "label": "porch swing",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "table-1",
+   "kind": "table",
+   "label": "table",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "potted_plant-2",
+   "kind": "potted_plant",
+   "label": "potted plant",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "fence-3",
+   "kind": "fence",
+   "label": "fence",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "house-4",
+   "kind": "house",
+   "label": "house",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here we are. Can you feel the air?"
+}

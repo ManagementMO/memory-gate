@@ -77,7 +77,7 @@ export function CompanionRig() {
   });
 
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving';
-  const visible = stage !== 'album';
+  const visible = stage !== 'album' && !(window as unknown as { __hideCompanion?: boolean }).__hideCompanion;
   return (
     <group ref={outer}>
       <group ref={body}>

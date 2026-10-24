@@ -1,0 +1,82 @@
+{
+ "version": 1,
+ "title": "The beach in summer",
+ "setting": {
+  "indoor": false,
+  "type": "beach",
+  "timeOfDay": "midday",
+  "weather": "clear",
+  "floor": "sand",
+  "palette": [
+   "#2f6fb5",
+   "#f2dcae",
+   "#7fc4e0"
+  ],
+  "walls": false,
+  "water": true
+ },
+ "ambience": "none",
+ "objects": [
+  {
+   "id": "umbrella",
+   "kind": "umbrella",
+   "label": "striped umbrella",
+   "color": "#e05a4f",
+   "material": "fabric",
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1.1,
+   "quote": "A striped umbrella"
+  },
+  {
+   "id": "towel",
+   "kind": "picnic_blanket",
+   "label": "blue towel",
+   "color": "#2f6fb5",
+   "material": "fabric",
+   "zone": "center",
+   "relation": "under",
+   "target": "umbrella",
+   "scale": 0.9,
+   "quote": "a blue towel on the sand"
+  },
+  {
+   "id": "sea",
+   "kind": "custom",
+   "label": "the sea",
+   "color": "#3a8fc4",
+   "material": "water",
+   "zone": "back",
+   "relation": "none",
+   "target": null,
+   "scale": 1.6,
+   "quote": "the sea going on forever"
+  },
+  {
+   "id": "rock",
+   "kind": "rock",
+   "label": "smooth rock",
+   "color": null,
+   "material": "stone",
+   "zone": "front-right",
+   "relation": "none",
+   "target": null,
+   "scale": 0.7,
+   "quote": null
+  },
+  {
+   "id": "bird",
+   "kind": "bird",
+   "label": "seagull",
+   "color": "#ffffff",
+   "material": "ceramic",
+   "zone": "back-left",
+   "relation": "none",
+   "target": null,
+   "scale": 0.6,
+   "quote": null
+  }
+ ],
+ "intro": "Here is the beach in summer, a striped umbrella over your blue towel, and the sea going on forever."
+}

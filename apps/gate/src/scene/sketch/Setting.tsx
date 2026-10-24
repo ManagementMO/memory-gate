@@ -68,7 +68,7 @@ function floorTexture(kind: Floor, base: THREE.Color): THREE.CanvasTexture {
         g.beginPath(); g.arc(rnd() * s, rnd() * s, r, 0, Math.PI * 2); g.fill();
       }
     }
-  }, kind === 'wood' ? 1.4 : kind === 'tile' ? 1.6 : 2);
+  }, kind === 'wood' ? 3.6 : kind === 'tile' ? 2.4 : 2);
 }
 
 /** Opaque in the middle, dissolving at the edges (a rounded rectangle or a disc). */
@@ -110,7 +110,7 @@ function useFade(target: number, rate = 0.8) {
 
 function Room({ plan }: { plan: ScenePlan }) {
   const s = plan.setting;
-  const wallTint = tint(s.palette[0] ?? '#efe7dc', 0.32).multiplyScalar(0.97);
+  const wallTint = tint('#efe7dc', 0.32).lerp(tint(s.palette[0] ?? '#efe7dc', 0.32), 0.18).multiplyScalar(0.97);
   const floorColor = tint(FLOOR_BASE[s.floor], s.floor === 'carpet' && s.palette[1] ? 0.4 : 0.82).multiplyScalar(0.94);
   const mats = useMemo(() => {
     const floor = new THREE.MeshStandardMaterial({ map: floorTexture(s.floor, floorColor), alphaMap: edgeAlpha('rect'), transparent: true, roughness: 0.82, depthWrite: true, opacity: 0 });
@@ -191,7 +191,9 @@ function LightShafts({ count, warm }: { count: number; warm: boolean }) {
 
 function Water({ palette }: { palette: string[] }) {
   const mat = useMemo(() => {
-    const base = tint(palette.find((c) => /^#[0-9a-f]{6}$/i.test(c)) ?? '#7fb3c9', 0.5);
+    // Water keeps its own colour (a remembered blue if there was one), never borrowed from a red boat.
+    const blue = palette.find((c) => { const h = new THREE.Color(c).getHSL({ h: 0, s: 0, l: 0 }); return h.h > 0.45 && h.h < 0.7 && h.s > 0.15; });
+    const base = tint(blue ?? '#5f9bb5', 0.78);
     return new THREE.ShaderMaterial({
       transparent: true, depthWrite: false,
       uniforms: { uTime: { value: 0 }, uFade: { value: 0 }, uBase: { value: base }, uSky: { value: new THREE.Color('#f6f4ff') } },
@@ -204,8 +206,12 @@ function Water({ palette }: { palette: string[] }) {
           vec3 V = normalize(cameraPosition - vW);
           float fres = pow(1.0 - max(V.y, 0.0), 3.0);
           float r = n(vW.xz * 1.6 + vec2(uTime * 0.12, uTime * 0.05)) * 0.6 + n(vW.xz * 4.0 - vec2(uTime * 0.2, 0.0)) * 0.4;
-          vec3 col = mix(uBase, uSky, fres * 0.8 + r * 0.08);
-          float glint = smoothstep(0.92, 1.0, n(vW.xz * 9.0 + uTime * 0.3)) * 0.5;
+          vec3 deep = uBase * 0.78;
+          vec3 col = mix(deep, mix(uBase, uSky, 0.55), fres * 0.75 + r * 0.12);
+          // long soft ripple lines and sun glints, so it reads as water from any distance
+          float lines = smoothstep(0.82, 1.0, sin(vW.z * 7.0 + n(vW.xz * 0.8) * 4.0 + uTime * 0.5) * 0.5 + 0.5) * 0.08;
+          col += vec3(lines);
+          float glint = smoothstep(0.9, 1.0, n(vW.xz * 9.0 + uTime * 0.3)) * 0.55;
           col += vec3(glint);
           float edge = smoothstep(0.0, 0.18, vUv.y) * smoothstep(1.0, 0.6, vUv.y) * smoothstep(0.0, 0.2, vUv.x) * smoothstep(1.0, 0.8, vUv.x);
           gl_FragColor = vec4(col, edge * uFade * 0.95);
@@ -216,8 +222,8 @@ function Water({ palette }: { palette: string[] }) {
   const fade = useFade(1, 0.6);
   useFrame((_, dt) => { mat.uniforms.uTime!.value += dt; mat.uniforms.uFade!.value = fade.value; });
   return (
-    <mesh material={mat} rotation-x={-Math.PI / 2} position={[MEMORY_CENTER.x, 0.01, MEMORY_CENTER.z - 9]} renderOrder={-1}>
-      <planeGeometry args={[34, 16]} />
+    <mesh material={mat} rotation-x={-Math.PI / 2} position={[MEMORY_CENTER.x, 0.006, MEMORY_CENTER.z - 9.6]} renderOrder={-1}>
+      <planeGeometry args={[38, 18]} />
     </mesh>
   );
 }
@@ -247,8 +253,9 @@ function Outdoor({ plan }: { plan: ScenePlan }) {
   useFrame(() => { mat.opacity = fade.value; });
   return (
     <group>
-      <mesh material={mat} rotation-x={-Math.PI / 2} position={[MEMORY_CENTER.x, 0.001, MEMORY_CENTER.z]} renderOrder={-2} receiveShadow>
-        <circleGeometry args={[ROOM.outdoorRadius + 2.6, 96]} />
+      {/* By water the ground is the near shore; the lake or sea opens behind it. */}
+      <mesh material={mat} rotation-x={-Math.PI / 2} position={[MEMORY_CENTER.x, 0.001, MEMORY_CENTER.z + (s.water ? 3.2 : 0)]} renderOrder={-2} receiveShadow>
+        <circleGeometry args={[s.water ? ROOM.outdoorRadius + 0.6 : ROOM.outdoorRadius + 2.6, 96]} />
       </mesh>
       {s.water && <Water palette={s.palette} />}
       <Hills tone={s.floor === 'snow' ? '#dfe6f2' : s.floor === 'sand' ? '#c9d9de' : '#b7c9b4'} />

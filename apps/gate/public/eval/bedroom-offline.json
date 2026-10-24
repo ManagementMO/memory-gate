@@ -1,0 +1,80 @@
+{
+ "version": 1,
+ "title": "The bedroom",
+ "setting": {
+  "indoor": true,
+  "type": "bedroom",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "wood",
+  "palette": [
+   "#4a78b8"
+  ],
+  "walls": true,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "bed-0",
+   "kind": "bed",
+   "label": "bed",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "picnic_blanket-1",
+   "kind": "picnic_blanket",
+   "label": "quilt",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "cabinet-2",
+   "kind": "cabinet",
+   "label": "dresser",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "window-3",
+   "kind": "window",
+   "label": "curtains",
+   "color": "#4a78b8",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "lamp-4",
+   "kind": "lamp",
+   "label": "lamp",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "on",
+   "target": "cabinet-2",
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here we are. The bedroom, just as you described it."
+}

@@ -86,7 +86,7 @@ export const plan = action({
     }
     if (!plan || plan.objects.length === 0) { plan = planOffline(text, a.title ?? null); source = 'offline'; }
     const memoryId = gate.roomId
-      ? await ctx.runMutation(internal.memories.save, { roomId: gate.roomId, memoryId: a.memoryId, title: plan.title, words: a.words.slice(-24), plan, source, ...(a.mediaFileId ? { mediaFileId: a.mediaFileId } : {}) })
+      ? await ctx.runMutation(internal.memories.save, { roomId: gate.roomId, memberId: gate.memberId, memoryId: a.memoryId, title: plan.title, words: a.words.slice(-24), plan, source, ...(a.mediaFileId ? { mediaFileId: a.mediaFileId, mediaKind: 'photo' } : {}) })
       : null;
     return { plan, source, memoryId };
   },
@@ -113,7 +113,7 @@ export const see = action({
       }
     }
     if (!result) { const p = planOffline(a.words.join(' ') || 'a room with a window', null); result = { plan: p, caption: null, title: null, source: 'offline' }; }
-    const memoryId = await ctx.runMutation(internal.memories.save, { roomId: gate.roomId, title: result.plan.title, words: a.words.slice(-24), plan: result.plan, source: result.source, mediaFileId: a.fileId, mediaKind: a.kind === 'video' ? 'video' : 'photo', caption: result.caption ?? undefined });
+    const memoryId = await ctx.runMutation(internal.memories.save, { roomId: gate.roomId, memberId: gate.memberId, title: result.plan.title, words: a.words.slice(-24), plan: result.plan, source: result.source, mediaFileId: a.fileId, mediaKind: a.kind === 'video' ? 'video' : 'photo', caption: result.caption ?? undefined });
     return { ...result, memoryId };
   },
 });
@@ -133,7 +133,7 @@ export const detail = action({
     if (!out) return null;
     const plan = validatePlan(out, current.title);
     if (plan.objects.length === 0) return null;
-    const memoryId = await ctx.runMutation(internal.memories.save, { roomId: gate.roomId, memoryId: a.memoryId, title: plan.title, words: [a.words], plan, source: 'claude', appendWords: true });
+    const memoryId = await ctx.runMutation(internal.memories.save, { roomId: gate.roomId, memberId: gate.memberId, memoryId: a.memoryId, title: plan.title, words: [a.words], plan, source: 'claude', appendWords: true });
     return { plan, source: 'claude', memoryId };
   },
 });

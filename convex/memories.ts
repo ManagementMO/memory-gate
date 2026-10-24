@@ -18,6 +18,7 @@ export const save = internalMutation({
   args: {
     roomId: v.id('rooms'), memoryId: v.optional(v.id('memories')), title: v.string(), words: v.array(v.string()), plan: v.any(), source: v.string(),
     mediaFileId: v.optional(v.id('_storage')), mediaKind: v.optional(v.string()), caption: v.optional(v.string()), appendWords: v.optional(v.boolean()),
+    memberId: v.optional(v.id('members')),
   },
   handler: async (ctx, a) => {
     const now = Date.now();
@@ -33,6 +34,7 @@ export const save = internalMutation({
     return ctx.db.insert('memories', {
       roomId: a.roomId, title: a.title, words: a.words, plan: a.plan, source: a.source,
       mediaFileId: a.mediaFileId ?? null, mediaKind: a.mediaKind ?? null, caption: a.caption ?? null, createdAt: now, updatedAt: now,
+      ...(a.memberId ? { memberId: a.memberId } : {}),
     });
   },
 });
@@ -41,10 +43,15 @@ export const save = internalMutation({
 export const current = query({
   args: { code: v.string(), token: v.string() },
   handler: async (ctx, { code, token }) => {
-    const { room } = await requireMember(ctx, code, token);
+    const { room, member } = await requireMember(ctx, code, token);
     const m = await ctx.db.query('memories').withIndex('by_room', (q) => q.eq('roomId', room._id)).order('desc').first();
     if (!m) return null;
-    return { id: m._id, title: m.title, plan: m.plan, source: m.source, updatedAt: m.updatedAt, mediaUrl: m.mediaFileId ? await ctx.storage.getUrl(m.mediaFileId) : null, mediaKind: m.mediaKind };
+    const by = m.memberId ? await ctx.db.get(m.memberId) : null;
+    return {
+      id: m._id, title: m.title, plan: m.plan, source: m.source, updatedAt: m.updatedAt, caption: m.caption,
+      mediaUrl: m.mediaFileId ? await ctx.storage.getUrl(m.mediaFileId) : null, mediaKind: m.mediaKind,
+      mine: !m.memberId || m.memberId === member._id, byName: by?.displayName ?? null, byOwner: by?.isOwner ?? false,
+    };
   },
 });
 

@@ -1,0 +1,102 @@
+{
+ "version": 1,
+ "title": "The room",
+ "setting": {
+  "indoor": true,
+  "type": "room",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "wood",
+  "palette": [],
+  "walls": true,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "table-0",
+   "kind": "table",
+   "label": "table",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "chair-1",
+   "kind": "chair",
+   "label": "chairs",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "next_to",
+   "target": "table-0",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "cup-2",
+   "kind": "cup",
+   "label": "coffee cup",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "on",
+   "target": "table-0",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "lamp-3",
+   "kind": "lamp",
+   "label": "lamp",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "on",
+   "target": "table-0",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "lamp_post-4",
+   "kind": "lamp_post",
+   "label": "lamp post",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "chair-5",
+   "kind": "chair",
+   "label": "chair",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "next_to",
+   "target": "table-0",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "window-6",
+   "kind": "window",
+   "label": "window",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here we are. The room, just as you described it."
+}

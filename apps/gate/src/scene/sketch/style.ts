@@ -27,9 +27,15 @@ export function tint(color: string | null | undefined, strength = 0.62): THREE.C
   try { _c.set(color); } catch { return PORCELAIN.clone(); }
   const hsl = { h: 0, s: 0, l: 0 };
   _c.getHSL(hsl);
-  // Pastel glaze: clamp saturation, lift lightness, then blend toward porcelain.
-  const glaze = new THREE.Color().setHSL(hsl.h, Math.min(hsl.s, 0.62) * 0.85, THREE.MathUtils.clamp(hsl.l * 0.55 + 0.4, 0.42, 0.86));
-  return PORCELAIN.clone().lerp(glaze, strength);
+  // Very dark colours (a black piano, a navy coat) become a deep glaze, like ebony porcelain; everything else a
+  // pastel glaze: saturation clamped, lightness lifted, blended toward porcelain.
+  if (hsl.l < 0.28) {
+    const ebony = new THREE.Color().setHSL(hsl.h, Math.min(hsl.s, 0.5) * 0.7, THREE.MathUtils.clamp(0.12 + hsl.l * 0.6, 0.13, 0.3));
+    return PORCELAIN.clone().lerp(ebony, Math.max(strength, 0.92));
+  }
+  // Enough saturation that an orange tent still reads orange, never toy-bright.
+  const glaze = new THREE.Color().setHSL(hsl.h, Math.min(hsl.s, 0.72) * 0.92, THREE.MathUtils.clamp(hsl.l * 0.55 + 0.38, 0.42, 0.84));
+  return PORCELAIN.clone().lerp(glaze, Math.min(0.9, strength + 0.1));
 }
 
 const FINISH: Record<MaterialKind, { roughness: number; metalness: number; clearcoat: number; sheen: number; transmission: number; strength: number }> = {

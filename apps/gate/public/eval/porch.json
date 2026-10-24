@@ -1,0 +1,106 @@
+{
+ "version": 1,
+ "title": "The front porch at sunset",
+ "setting": {
+  "indoor": false,
+  "type": "porch",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "wood",
+  "palette": [
+   "#e8915a",
+   "#c0392b",
+   "#f3e27a"
+  ],
+  "walls": false,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "swing",
+   "kind": "swing",
+   "label": "wooden porch swing",
+   "color": "#a0703f",
+   "material": "wood",
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": "A wooden porch swing"
+  },
+  {
+   "id": "geraniums",
+   "kind": "flowers",
+   "label": "red geraniums",
+   "color": "#c0392b",
+   "material": "plant",
+   "zone": "front-left",
+   "relation": "none",
+   "target": null,
+   "scale": 0.8,
+   "quote": "a pot of red geraniums"
+  },
+  {
+   "id": "table",
+   "kind": "table",
+   "label": "little table",
+   "color": "#b8875a",
+   "material": "wood",
+   "zone": "right",
+   "relation": "next_to",
+   "target": "swing",
+   "scale": 0.7,
+   "quote": "on a little table"
+  },
+  {
+   "id": "lemonade",
+   "kind": "teapot",
+   "label": "pitcher of lemonade",
+   "color": "#f3e27a",
+   "material": "glass",
+   "zone": "right",
+   "relation": "on",
+   "target": "table",
+   "scale": 0.8,
+   "quote": "a pitcher of lemonade"
+  },
+  {
+   "id": "house",
+   "kind": "house",
+   "label": "house front",
+   "color": "#efe6d6",
+   "material": "wood",
+   "zone": "back",
+   "relation": "none",
+   "target": null,
+   "scale": 1.3,
+   "quote": null
+  },
+  {
+   "id": "door",
+   "kind": "door",
+   "label": "front door",
+   "color": null,
+   "material": "wood",
+   "zone": "back-left",
+   "relation": "against_wall",
+   "target": "house",
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "fence",
+   "kind": "fence",
+   "label": "porch railing",
+   "color": "#f5f0e6",
+   "material": "wood",
+   "zone": "front-right",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "The sun is setting over the front porch. The wooden swing sways gently, and cool lemonade waits on the little table."
+}

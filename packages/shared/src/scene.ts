@@ -257,10 +257,12 @@ export function planOffline(text: string, title?: string | null): ScenePlan {
   for (const m of mentions) {
     if (used.has(m.key) && !['chair', 'tree', 'pine_tree', 'bench'].includes(m.key)) continue;
     used.add(m.key);
-    const before = t.slice(Math.max(0, m.at - 24), m.at);
+    // A colour said just before the thing ("the yellow curtains"); include the space before the noun.
+    const before = t.slice(Math.max(0, m.at - 24), m.at + 1);
     const cw = COLOR_WORDS.find((c) => before.includes(` ${c} `));
     const id = `${m.key}-${objects.length}`;
     objects.push({ id, kind: m.key, label: m.label, color: cw ? COLORS[cw]! : null, material: null, zone: 'center', relation: 'none', target: null, scale: 1, quote: null });
+    (objects[objects.length - 1] as PlanObject & { _at?: number })._at = m.at + m.label.length + 1;
   }
   // A few things the setting implies, so a sparse description still forms a place.
   for (const k of setting.seed) {
@@ -269,13 +271,25 @@ export function planOffline(text: string, title?: string | null): ScenePlan {
     used.add(k);
     objects.push({ id: `${k}-${objects.length}`, kind: k, label: k.replace(/_/g, ' '), color: null, material: null, zone: 'center', relation: 'none', target: null, scale: 1, quote: null });
   }
-  // Small things go on the first surface; chairs go by the table.
+  // "... on the counter", "... by the fireplace": the words right after a thing name what it relates to.
+  const after = (o: PlanObject) => t.slice((o as PlanObject & { _at?: number })._at ?? 0, ((o as PlanObject & { _at?: number })._at ?? 0) + 40);
+  const named = (phrase: string) => objects.find((x) => LIBRARY[x.kind]?.syn.some((sy) => phrase.startsWith(sy)));
+  for (const o of objects) {
+    const m = after(o).match(/^\s*(on|by|next to|beside|near|under) (?:the |a |an |her |his |my |our |their )?([\p{L} ]{3,30})/u);
+    if (!m) continue;
+    const host = named(m[2]!);
+    if (!host || host === o) continue;
+    o.relation = m[1] === 'on' ? 'on' : m[1] === 'under' ? 'under' : 'next_to';
+    o.target = host.id;
+  }
+  // Small things go on the first surface (unless they already have one); chairs go by the table.
   const surface = objects.find((o) => (LIBRARY[o.kind]?.surface ?? 0) > 0 && LIBRARY[o.kind]?.place !== 'wall-mounted');
   for (const o of objects) {
     const e = LIBRARY[o.kind];
-    if (e?.place === 'surface' && surface) { o.relation = 'on'; o.target = surface.id; }
+    if (e?.place === 'surface' && surface && o.relation !== 'on') { o.relation = 'on'; o.target = surface.id; }
     if (o.kind === 'chair') { const table = objects.find((x) => x.kind === 'table' || x.kind === 'round_table'); if (table) { o.relation = 'next_to'; o.target = table.id; } }
   }
+  for (const o of objects) delete (o as PlanObject & { _at?: number })._at;
   const palette = COLOR_WORDS.filter((c) => t.includes(` ${c} `)).slice(0, 3).map((c) => COLORS[c]!);
   const plan = validatePlan({
     title: title ?? inferTitle(text, setting.type),
@@ -316,7 +330,8 @@ export function layout(plan: ScenePlan): Placement[] {
   const footprint = (o: PlanObject): [number, number] => { const e = entryOf(o.kind); return [e.fp[0] * o.scale, e.fp[1] * o.scale]; };
   const facingCenter = (x: number, z: number) => Math.atan2(-x, -z + 0.6);
 
-  const free = (b: Box) => !boxes.some((o) => overlaps(o, b)) && Math.abs(b.x) + b.w / 2 <= halfW + 0.6 && b.z - b.d / 2 >= backZ - 0.05 && b.z + b.d / 2 <= 2.3;
+  const shore = !indoor && plan.setting.water ? -1.15 : -Infinity; // by water, land things stay on the near shore
+  const free = (b: Box) => !boxes.some((o) => overlaps(o, b)) && Math.abs(b.x) + b.w / 2 <= halfW + 0.6 && b.z - b.d / 2 >= Math.max(backZ - 0.05, shore) && b.z + b.d / 2 <= 2.3;
   const settle = (o: PlanObject, x0: number, z0: number): Box => {
     const [w, d] = footprint(o);
     const seed = hashStr(o.id);
@@ -343,18 +358,31 @@ export function layout(plan: ScenePlan): Placement[] {
     const y = o.kind === 'door' ? 0 : o.kind === 'window' ? 0.85 : 1.4;
     out.set(o.id, { id: o.id, x, y, z: backZ + 0.04, yaw: 0, scale: o.scale, on: null });
   });
-  // 3. Furniture against walls, packed along the back wall then the sides.
-  let cursor = -halfW + 0.2;
+  // 3. Furniture against walls: the nearest free stretch of the back wall to where it belongs, else along a side
+  //    wall (turned to face into the room), so nothing stands in front of anything else.
   const wallers = plan.objects.filter((o) => entryOf(o.kind).place === 'wall' || o.relation === 'against_wall');
+  const sideZ0 = backZ + 0.5, sideZ1 = indoor ? backZ + ROOM.depth * 0.62 : 1.0;
   for (const o of wallers) {
     const [w, d] = footprint(o);
-    const zoneX = o.zone.includes('left') ? -halfW * 0.55 : o.zone.includes('right') ? halfW * 0.55 : null;
-    let b: Box = { id: o.id, x: zoneX ?? cursor + w / 2, z: backZ + d / 2 + 0.06, w, d };
-    if (!free(b)) b = settle(o, b.x, b.z + 0.2);
-    cursor = Math.max(cursor, b.x + w / 2 + 0.25);
-    if (cursor > halfW - 0.4) cursor = -halfW + 0.2;
-    boxes.push(b);
-    out.set(o.id, { id: o.id, x: b.x, y: 0, z: b.z, yaw: 0, scale: o.scale, on: null });
+    const want = o.zone.includes('left') ? -halfW * 0.5 : o.zone.includes('right') ? halfW * 0.5 : 0;
+    let placed: { b: Box; yaw: number } | null = null;
+    for (let i = 0; i < 80 && !placed; i++) {
+      const x = want + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 0.12;
+      if (Math.abs(x) + w / 2 > halfW + 0.05) continue;
+      const b: Box = { id: o.id, x, z: backZ + d / 2 + 0.06, w, d };
+      if (free(b)) placed = { b, yaw: 0 };
+    }
+    // Side walls: the footprint turns, so width runs along z.
+    const sides = o.zone.includes('right') ? [1, -1] : [-1, 1];
+    for (const side of sides) {
+      for (let z = sideZ0 + w / 2; !placed && z <= sideZ1 - w / 2; z += 0.12) {
+        const b: Box = { id: o.id, x: side * (halfW - d / 2 + 0.05), z, w: d, d: w };
+        if (free(b)) placed = { b, yaw: side < 0 ? Math.PI / 2 : -Math.PI / 2 };
+      }
+    }
+    if (!placed) placed = { b: settle(o, want, backZ + d / 2 + 0.5), yaw: 0 };
+    boxes.push(placed.b);
+    out.set(o.id, { id: o.id, x: placed.b.x, y: 0, z: placed.b.z, yaw: placed.yaw, scale: o.scale, on: null });
   }
   // 4. Freestanding floor things: tables first (others relate to them), then the rest, by zone.
   const floorers = plan.objects.filter((o) => ['floor', 'edge', 'water', 'backdrop'].includes(entryOf(o.kind).place) && !out.has(o.id) && o.relation !== 'on');
@@ -363,8 +391,14 @@ export function layout(plan: ScenePlan): Placement[] {
     const e = entryOf(o.kind);
     const target = o.target ? out.get(o.target) : undefined;
     let x0: number, z0: number;
-    if (e.place === 'backdrop') { x0 = 0; z0 = backZ - e.fp[1] / 2 - 1.2; out.set(o.id, { id: o.id, x: x0, y: 0, z: z0, yaw: 0, scale: o.scale, on: null }); continue; }
-    if (e.place === 'water') { x0 = indoor ? 0 : 1.4; z0 = backZ - 0.8; }
+    if (e.place === 'backdrop') {
+      // A house stands behind the place; by water it sits on the shore to one side, so the water stays open.
+      const byWater = plan.setting.water;
+      x0 = byWater ? -5.6 : 0; z0 = byWater ? -2.2 : backZ - e.fp[1] / 2 - 1.2;
+      out.set(o.id, { id: o.id, x: x0, y: 0, z: z0, yaw: byWater ? Math.PI / 2 : 0, scale: o.scale, on: null });
+      continue;
+    }
+    if (e.place === 'water') { x0 = indoor ? 0 : 1.3; z0 = -1.1 - entryOf(o.kind).fp[1] * o.scale / 2; }
     else if (target && (o.relation === 'next_to' || o.relation === 'none')) {
       const t = byId.get(o.target!);
       const [tw] = t ? footprint(t) : [1, 1];
@@ -372,10 +406,24 @@ export function layout(plan: ScenePlan): Placement[] {
       x0 = target.x + side * (tw / 2 + footprint(o)[0] / 2 + 0.15); z0 = target.z + (o.kind === 'chair' ? 0.35 : 0);
     } else if (target && o.relation === 'in_front_of') { x0 = target.x; z0 = target.z + 1.1; }
     else if (target && o.relation === 'behind') { x0 = target.x; z0 = target.z - 1.0; }
-    else { [x0, z0] = ZONE_ANCHOR[o.zone]; if (!indoor) { x0 *= 1.25; z0 *= 1.25; } }
-    const b = settle(o, x0, z0);
+    else {
+      // Tall things (trees, lamp posts, a swing frame) never stand in front: they frame the place from the sides
+      // and the back, so the view into the memory stays open.
+      const tall = e.h * o.scale >= 2.0;
+      const zone: Zone = tall ? (({ 'front-left': 'left', 'front-right': 'right', center: 'back' } as Partial<Record<Zone, Zone>>)[o.zone] ?? o.zone) : o.zone;
+      [x0, z0] = ZONE_ANCHOR[zone];
+      if (!indoor) { x0 *= 1.25; z0 *= 1.25; }
+      if (tall && !indoor && /tree|palm|pine/.test(o.kind)) {
+        // Trees frame the place from its sides and back; by water they keep to the shore.
+        if (Math.abs(x0) < 3.0) x0 = (x0 === 0 ? (hashStr(o.id) % 2 ? 1 : -1) : Math.sign(x0)) * 3.4;
+        z0 = plan.setting.water ? -0.9 : Math.min(z0, -1.2);
+      }
+    }
+    const onWater = e.place === 'water' && !indoor;
+    // On the water: beside whatever is already there, toward the open middle first (a boat alongside the dock).
+    const b = onWater ? (() => { const [w, d] = footprint(o); let bx: Box = { id: o.id, x: x0, z: z0, w, d }; for (let i = 1; i < 20 && boxes.some((q) => overlaps(q, bx)); i++) bx = { ...bx, x: x0 + (i % 2 ? -1 : 1) * Math.ceil(i / 2) * 1.1, z: z0 - 0.4 }; return bx; })() : settle(o, x0, z0);
     boxes.push(b);
-    let yaw = facingCenter(b.x, b.z);
+    let yaw = onWater ? 0 : facingCenter(b.x, b.z);
     if (o.kind === 'chair' && target) yaw = Math.atan2(target.x - b.x, target.z - b.z);
     if (e.place === 'edge') yaw = 0;
     out.set(o.id, { id: o.id, x: b.x, y: 0, z: b.z, yaw, scale: o.scale, on: null });

@@ -121,7 +121,8 @@ export function SketchObject({ obj, place, delay, onLight = 1 }: { obj: PlanObje
   const [parts, setParts] = useState<Part[] | null>(null);
   const entry = entryOf(obj.kind);
   const built = useMemo(() => {
-    const o: BuildOptions = { color: obj.color, material: obj.material ?? entry.material, scale: obj.scale, seed: hash(obj.id), reveal, label: obj.label };
+    // Only a remembered material overrides the builder's own per-part finishes.
+    const o: BuildOptions = { color: obj.color, material: obj.material, scale: obj.scale, seed: hash(obj.id), reveal, label: obj.label };
     const builder = LIBRARY_BUILDERS[obj.kind];
     if (builder) {
       try { return builder(o); } catch (e) { console.warn('[sketch] builder failed', obj.kind, e); }

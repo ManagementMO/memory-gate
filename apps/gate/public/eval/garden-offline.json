@@ -1,0 +1,81 @@
+{
+ "version": 1,
+ "title": "The garden",
+ "setting": {
+  "indoor": false,
+  "type": "garden",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "grass",
+  "palette": [
+   "#f4f2ee",
+   "#e8a0b4"
+  ],
+  "walls": false,
+  "water": false
+ },
+ "ambience": "leaves",
+ "objects": [
+  {
+   "id": "flowers-0",
+   "kind": "flowers",
+   "label": "tulips",
+   "color": "#e8a0b4",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "fence-1",
+   "kind": "fence",
+   "label": "picket fence",
+   "color": "#f4f2ee",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "tree-2",
+   "kind": "tree",
+   "label": "apple tree",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "swing-3",
+   "kind": "swing",
+   "label": "swing",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "bench-4",
+   "kind": "bench",
+   "label": "bench",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here we are. Can you feel the air?"
+}

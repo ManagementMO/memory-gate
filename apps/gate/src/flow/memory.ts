@@ -132,6 +132,15 @@ class Memory {
   wordsSoFar(): string[] { return [...this.words]; }
   get kind() { return this.mediaKind; }
 
+  /** Take on a memory someone else in the session began (a guest following the host, the host taking a guest's photo). */
+  adopt(plan: ScenePlan, memoryId: string, photoUrl: string | null) {
+    this.memoryId = memoryId as Id<'memories'>;
+    this.title = plan.title;
+    this.planned = this.words.join(' ').trim();
+    const next = keepIdentities(useMemory.getState().plan, plan);
+    useMemory.setState((st) => ({ plan: next, version: st.version + 1, planning: false, source: 'claude', ...(photoUrl ? { photoUrl } : {}) }));
+  }
+
   /** Bring back a memory exactly as it was drawn (from the album). */
   restore(plan: ScenePlan) {
     this.reset();

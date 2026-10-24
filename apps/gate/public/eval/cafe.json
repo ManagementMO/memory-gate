@@ -1,0 +1,118 @@
+{
+ "version": 1,
+ "title": "The little café in Paris",
+ "setting": {
+  "indoor": false,
+  "type": "café",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "stone",
+  "palette": [
+   "#e8e4dc",
+   "#2f3a3a",
+   "#c9a46a"
+  ],
+  "walls": false,
+  "water": false
+ },
+ "ambience": "leaves",
+ "objects": [
+  {
+   "id": "table",
+   "kind": "round_table",
+   "label": "small marble table",
+   "color": "#e8e4dc",
+   "material": "stone",
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 0.8,
+   "quote": "A small round marble table outside"
+  },
+  {
+   "id": "chair",
+   "kind": "chair",
+   "label": "metal chair",
+   "color": "#2f3a3a",
+   "material": "metal",
+   "zone": "left",
+   "relation": "next_to",
+   "target": "table",
+   "scale": 1,
+   "quote": "two metal chairs"
+  },
+  {
+   "id": "chair-2",
+   "kind": "chair",
+   "label": "metal chair",
+   "color": "#2f3a3a",
+   "material": "metal",
+   "zone": "right",
+   "relation": "next_to",
+   "target": "table",
+   "scale": 1,
+   "quote": "two metal chairs"
+  },
+  {
+   "id": "cup",
+   "kind": "cup",
+   "label": "coffee cup",
+   "color": "#ffffff",
+   "material": "ceramic",
+   "zone": "center",
+   "relation": "on",
+   "target": "table",
+   "scale": 1,
+   "quote": "two coffee cups"
+  },
+  {
+   "id": "cup-2",
+   "kind": "cup",
+   "label": "coffee cup",
+   "color": "#ffffff",
+   "material": "ceramic",
+   "zone": "center",
+   "relation": "on",
+   "target": "table",
+   "scale": 1,
+   "quote": "two coffee cups"
+  },
+  {
+   "id": "lamppost",
+   "kind": "lamp_post",
+   "label": "corner lamp post",
+   "color": "#2f3a3a",
+   "material": "metal",
+   "zone": "back-right",
+   "relation": "none",
+   "target": null,
+   "scale": 1.2,
+   "quote": "a lamp post on the corner"
+  },
+  {
+   "id": "cafe",
+   "kind": "house",
+   "label": "little café",
+   "color": "#c9a46a",
+   "material": "stone",
+   "zone": "back",
+   "relation": "behind",
+   "target": "table",
+   "scale": 1.3,
+   "quote": "The little café in Paris where we met"
+  },
+  {
+   "id": "awning",
+   "kind": "umbrella",
+   "label": "café awning",
+   "color": "#8b2e2e",
+   "material": "fabric",
+   "zone": "back-left",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here's the little café in Paris, with the small marble table and two coffee cups waiting outside."
+}

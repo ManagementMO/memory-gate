@@ -1,0 +1,69 @@
+{
+ "version": 1,
+ "title": "The campsite",
+ "setting": {
+  "indoor": false,
+  "type": "campsite",
+  "timeOfDay": "night",
+  "weather": "clear",
+  "floor": "grass",
+  "palette": [
+   "#e08a3c",
+   "#8cc3e8"
+  ],
+  "walls": false,
+  "water": false
+ },
+ "ambience": "fireflies",
+ "objects": [
+  {
+   "id": "tent-0",
+   "kind": "tent",
+   "label": "tent",
+   "color": "#e08a3c",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "campfire-1",
+   "kind": "campfire",
+   "label": "campfire",
+   "color": "#e08a3c",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "rock-2",
+   "kind": "rock",
+   "label": "stones",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "pine_tree-3",
+   "kind": "pine_tree",
+   "label": "pine tree",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here we are. Can you feel the air?"
+}

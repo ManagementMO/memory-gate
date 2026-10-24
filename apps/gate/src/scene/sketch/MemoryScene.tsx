@@ -69,10 +69,10 @@ export function MemoryScene() {
   // Fog that matches the memory's horizon gives the place depth and lets distant things dissolve into the dream.
   useEffect(() => {
     if (!active) { scene.fog = null; return; }
-    const fog = new THREE.Fog(new THREE.Color('#f2f2f6'), 9, 30);
+    const fog = new THREE.Fog(new THREE.Color('#f2f2f6'), plan?.setting.water ? 16 : 9, plan?.setting.water ? 52 : 30);
     scene.fog = fog;
     return () => { if (scene.fog === fog) scene.fog = null; };
-  }, [active, scene]);
+  }, [active, scene, plan?.setting.water]);
 
   const lastFormed = useRef(0);
   useFrame((_, dtRaw) => {

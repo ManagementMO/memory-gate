@@ -4,6 +4,9 @@ import { SceneCanvas } from './scene/SceneCanvas';
 import { GlassFilters } from './ui/GlassFilters';
 import { Overlay } from './ui/Overlay';
 import './flow/controller';
+import { useSessionSync } from './flow/sync';
+
+function Sync() { useSessionSync(); return null; }
 
 export default function App() {
   return (
@@ -12,6 +15,7 @@ export default function App() {
         <SceneCanvas />
         <Overlay />
         <GlassFilters />
+        <Sync />
       </div>
     </ConvexProvider>
   );

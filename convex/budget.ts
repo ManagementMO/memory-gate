@@ -20,11 +20,11 @@ export const usageV = v.object({ input: v.number(), output: v.number(), cacheRea
 export const gate = internalQuery({
   args: { code: v.string(), token: v.string() },
   handler: async (ctx, { code, token }) => {
-    const { room } = await requireMember(ctx, code, token, ['storyteller', 'family']);
+    const { room, member } = await requireMember(ctx, code, token, ['storyteller', 'family']);
     const flags = await readFlags(ctx, room);
     const row = await ctx.db.query('spend').withIndex('by_key', (q) => q.eq('key', 'anthropic')).unique();
     const spent = row?.usd ?? 0;
-    return { ok: flags['ai.live'] && !!process.env.ANTHROPIC_API_KEY && spent < budgetUsd(), roomId: room._id, spent, budget: budgetUsd() };
+    return { ok: flags['ai.live'] && !!process.env.ANTHROPIC_API_KEY && spent < budgetUsd(), roomId: room._id, memberId: member._id, spent, budget: budgetUsd() };
   },
 });
 

@@ -1,0 +1,106 @@
+{
+ "version": 1,
+ "title": "Grandmother's kitchen",
+ "setting": {
+  "indoor": true,
+  "type": "kitchen",
+  "timeOfDay": "morning",
+  "weather": "clear",
+  "floor": "tile",
+  "palette": [
+   "#e8c547",
+   "#a0703c",
+   "#f5ecd7"
+  ],
+  "walls": true,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "window",
+   "kind": "window",
+   "label": "window with yellow curtains",
+   "color": "#e8c547",
+   "material": "fabric",
+   "zone": "back",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1,
+   "quote": "Yellow curtains on the window"
+  },
+  {
+   "id": "table",
+   "kind": "round_table",
+   "label": "round wooden table",
+   "color": "#a0703c",
+   "material": "wood",
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": "a round wooden table"
+  },
+  {
+   "id": "chair",
+   "kind": "chair",
+   "label": "wooden chair",
+   "color": "#a0703c",
+   "material": "wood",
+   "zone": "left",
+   "relation": "next_to",
+   "target": "table",
+   "scale": 1,
+   "quote": "two chairs"
+  },
+  {
+   "id": "chair-2",
+   "kind": "chair",
+   "label": "wooden chair",
+   "color": "#a0703c",
+   "material": "wood",
+   "zone": "right",
+   "relation": "next_to",
+   "target": "table",
+   "scale": 1,
+   "quote": "two chairs"
+  },
+  {
+   "id": "counter",
+   "kind": "counter",
+   "label": "kitchen counter",
+   "color": null,
+   "material": "wood",
+   "zone": "back-right",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1,
+   "quote": "on the counter"
+  },
+  {
+   "id": "radio",
+   "kind": "radio",
+   "label": "her radio",
+   "color": null,
+   "material": "wood",
+   "zone": "back-right",
+   "relation": "on",
+   "target": "counter",
+   "scale": 1,
+   "quote": "her radio on the counter"
+  },
+  {
+   "id": "stove",
+   "kind": "stove",
+   "label": "stove",
+   "color": null,
+   "material": "metal",
+   "zone": "back-left",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here is your grandmother's kitchen this morning, sunlight through the yellow curtains, her radio waiting on the counter."
+}

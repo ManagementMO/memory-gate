@@ -7,6 +7,9 @@ import * as THREE from 'three';
 import { useGate } from '../state/store';
 import { MEMORY_CENTER } from './layout';
 import { damp, dampVec3, easeInOutCubic } from './util';
+import { useMemory } from '../flow/memory';
+
+const useMemoryWater = () => !!useMemory.getState().plan?.setting.water;
 
 const _pos = new THREE.Vector3();
 const _look = new THREE.Vector3();
@@ -16,7 +19,7 @@ export function CameraRig() {
   const gl = useThree((s) => s.gl);
   const pos = useRef(new THREE.Vector3(0, 1.55, 0));
   const look = useRef(new THREE.Vector3(0, 1.72, -4));
-  const orbit = useRef({ az: 0, el: 0.3, targetAz: 0, targetEl: 0.3, dragging: false, x: 0, y: 0, idle: 0 });
+  const orbit = useRef({ az: 0, el: 0.26, targetAz: 0, targetEl: 0.26, dragging: false, x: 0, y: 0, idle: 0 });
   const tilt = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -74,14 +77,17 @@ export function CameraRig() {
       if (!o.dragging) {
         o.idle += dt;
         // After a few untouched seconds, ease back toward the front view with a very slow sway.
-        if (o.idle > 4) { o.targetAz = damp(o.targetAz, Math.sin(state.clock.elapsedTime * 0.05) * 0.18, 0.4, dt); o.targetEl = damp(o.targetEl, 0.3, 0.4, dt); }
+        if (o.idle > 4) { o.targetAz = damp(o.targetAz, Math.sin(state.clock.elapsedTime * 0.05) * 0.18, 0.4, dt); o.targetEl = damp(o.targetEl, 0.26, 0.4, dt); }
       }
       o.az = damp(o.az, o.targetAz, 4, dt);
       o.el = damp(o.el, o.targetEl, 4, dt);
-      const r = 4.5;
-      _pos.set(MEMORY_CENTER.x + Math.sin(o.az) * Math.cos(o.el) * r, 0.25 + MEMORY_CENTER.y + Math.sin(o.el) * r, MEMORY_CENTER.z + Math.cos(o.az) * Math.cos(o.el) * r);
-      _look.set(MEMORY_CENTER.x, MEMORY_CENTER.y + 0.55, MEMORY_CENTER.z);
-      fov = 52;
+      // Frame the whole room: a little further back, a little lower, looking toward its back half.
+      const r = 5.3;
+      const cz = MEMORY_CENTER.z - 0.45;
+      const lift = useMemoryWater() ? 0.55 : 0; // by water, look down a little more so the surface shows
+      _pos.set(MEMORY_CENTER.x + Math.sin(o.az) * Math.cos(o.el) * r, 0.35 + lift + Math.sin(o.el) * r, cz + Math.cos(o.az) * Math.cos(o.el) * r);
+      _look.set(MEMORY_CENTER.x, 0.72, cz);
+      fov = 54;
       rate = s.stage === 'forming' ? 1.1 : 2.2;
     } else if (s.stage === 'album') {
       _pos.set(0, 1.55, 0);

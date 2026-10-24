@@ -1,0 +1,166 @@
+{
+ "version": 1,
+ "title": "Our little white chapel",
+ "setting": {
+  "indoor": true,
+  "type": "chapel",
+  "timeOfDay": "golden",
+  "weather": "clear",
+  "floor": "wood",
+  "palette": [
+   "#ffffff",
+   "#8b5a2b",
+   "#f5e6c8"
+  ],
+  "walls": true,
+  "water": false
+ },
+ "ambience": "dust",
+ "objects": [
+  {
+   "id": "bench",
+   "kind": "bench",
+   "label": "wooden bench",
+   "color": "#8b5a2b",
+   "material": "wood",
+   "zone": "front-left",
+   "relation": "none",
+   "target": null,
+   "scale": 1.2,
+   "quote": "Rows of wooden benches"
+  },
+  {
+   "id": "bench-2",
+   "kind": "bench",
+   "label": "wooden bench",
+   "color": "#8b5a2b",
+   "material": "wood",
+   "zone": "front-right",
+   "relation": "none",
+   "target": null,
+   "scale": 1.2,
+   "quote": "Rows of wooden benches"
+  },
+  {
+   "id": "bench-3",
+   "kind": "bench",
+   "label": "wooden bench",
+   "color": "#8b5a2b",
+   "material": "wood",
+   "zone": "left",
+   "relation": "none",
+   "target": null,
+   "scale": 1.2,
+   "quote": "Rows of wooden benches"
+  },
+  {
+   "id": "bench-4",
+   "kind": "bench",
+   "label": "wooden bench",
+   "color": "#8b5a2b",
+   "material": "wood",
+   "zone": "right",
+   "relation": "none",
+   "target": null,
+   "scale": 1.2,
+   "quote": "Rows of wooden benches"
+  },
+  {
+   "id": "altar",
+   "kind": "table",
+   "label": "the altar",
+   "color": "#ffffff",
+   "material": "wood",
+   "zone": "back",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1.1,
+   "quote": "by the altar"
+  },
+  {
+   "id": "candle",
+   "kind": "candle",
+   "label": "altar candles",
+   "color": "#f5e6c8",
+   "material": "light",
+   "zone": "back",
+   "relation": "on",
+   "target": "altar",
+   "scale": 1,
+   "quote": "candles by the altar"
+  },
+  {
+   "id": "candle-2",
+   "kind": "candle",
+   "label": "altar candles",
+   "color": "#f5e6c8",
+   "material": "light",
+   "zone": "back",
+   "relation": "on",
+   "target": "altar",
+   "scale": 1,
+   "quote": "candles by the altar"
+  },
+  {
+   "id": "flowers",
+   "kind": "vase_flowers",
+   "label": "white flowers",
+   "color": "#ffffff",
+   "material": "plant",
+   "zone": "back",
+   "relation": "on",
+   "target": "altar",
+   "scale": 1,
+   "quote": "white flowers everywhere"
+  },
+  {
+   "id": "flowers-2",
+   "kind": "vase_flowers",
+   "label": "white flowers",
+   "color": "#ffffff",
+   "material": "plant",
+   "zone": "back-left",
+   "relation": "next_to",
+   "target": "altar",
+   "scale": 1.1,
+   "quote": "white flowers everywhere"
+  },
+  {
+   "id": "flowers-3",
+   "kind": "vase_flowers",
+   "label": "white flowers",
+   "color": "#ffffff",
+   "material": "plant",
+   "zone": "back-right",
+   "relation": "next_to",
+   "target": "altar",
+   "scale": 1.1,
+   "quote": "white flowers everywhere"
+  },
+  {
+   "id": "window",
+   "kind": "window",
+   "label": "chapel window",
+   "color": null,
+   "material": "glass",
+   "zone": "left",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "door",
+   "kind": "door",
+   "label": "chapel door",
+   "color": "#ffffff",
+   "material": "wood",
+   "zone": "front-right",
+   "relation": "against_wall",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here is the little white chapel, candles glowing by the altar and white flowers everywhere among the wooden benches."
+}

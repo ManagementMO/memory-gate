@@ -1,0 +1,81 @@
+{
+ "version": 1,
+ "title": "The lake",
+ "setting": {
+  "indoor": false,
+  "type": "lake",
+  "timeOfDay": "dusk",
+  "weather": "clear",
+  "floor": "grass",
+  "palette": [
+   "#d9b98a",
+   "#c0504d"
+  ],
+  "walls": false,
+  "water": true
+ },
+ "ambience": "leaves",
+ "objects": [
+  {
+   "id": "house-0",
+   "kind": "house",
+   "label": "cabin",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "dock-1",
+   "kind": "dock",
+   "label": "dock",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "boat-2",
+   "kind": "boat",
+   "label": "rowboat",
+   "color": "#c0504d",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "pine_tree-3",
+   "kind": "pine_tree",
+   "label": "pine tree",
+   "color": null,
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  },
+  {
+   "id": "tree-4",
+   "kind": "tree",
+   "label": "trees",
+   "color": "#d9b98a",
+   "material": null,
+   "zone": "center",
+   "relation": "none",
+   "target": null,
+   "scale": 1,
+   "quote": null
+  }
+ ],
+ "intro": "Here we are. Can you feel the air?"
+}
