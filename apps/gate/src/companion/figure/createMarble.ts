@@ -288,6 +288,7 @@ export function createMarbleFigure(): FigureRig {
   const cur = { cut: 0.004, lineL: 1, lineR: 1, sLx: 1, sLy: 1, sRx: 1, sRy: 1, ox: 0, oy: 0, oLy: 0, bright: 0.3, tilt: 0.1, dia: 0.3 };
   const _cam = new THREE.Vector3();
   let wasPortal = true;
+  let lastStage: string = 'portal', greetAt = -10;
   const stoneMats = [headMat, bodyMat, shellMat, wingMat, goldMat, glassMat];
 
   return {
@@ -388,16 +389,23 @@ export function createMarbleFigure(): FigureRig {
       lower.rotation.y += dt * 0.22;
       pendant.rotation.z = Math.sin(time * 1.25) * 0.09;
       pendant.rotation.x = Math.sin(time * 0.95 + 0.6) * 0.06;
+      // Hello: the first moments of the greeting, one wing waves.
+      if (s.stage === 'greeting' && lastStage !== 'greeting') greetAt = time;
+      lastStage = s.stage;
+      const waving = s.stage === 'greeting' && time - greetAt < 3.4;
       for (const a of arms) {
-        // Wings held open, breathing slowly; they fold in to listen and open a little more to speak.
-        let z = a.side * (ARM_SPREAD + Math.sin(time * 0.74 + (a.side > 0 ? 0 : 1.7)) * 0.035);
-        let x = Math.sin(time * 0.52 + a.side) * 0.02;
-        if (s.mood === 'speaking') z += a.side * L * 0.12;
-        if (s.mood === 'listening') { x -= 0.1; z -= a.side * 0.1; }
-        if (s.mood === 'thinking' && a.side > 0) { x -= 0.3; z += 0.08; }
-        z = THREE.MathUtils.lerp(a.side * (ARM_SPREAD - 0.12), z, awake);
-        a.pivot.rotation.z = damp(a.pivot.rotation.z, z, 2.4, dt);
-        a.pivot.rotation.x = damp(a.pivot.rotation.x, x, 2.4, dt);
+        // Wings breathe open and closed, slowly and visibly; they gesture as it speaks, fold in to listen, and one
+        // lifts toward the face while it thinks.
+        let z = a.side * (ARM_SPREAD + Math.sin(time * 0.9 + (a.side > 0 ? 0 : 0.5)) * 0.075);
+        let x = Math.sin(time * 0.6 + a.side) * 0.05;
+        let rate = 3;
+        if (s.mood === 'speaking') { z += a.side * (0.05 + L * 0.24); x -= L * 0.1 + Math.sin(time * 2.1 + a.side) * 0.04; }
+        if (s.mood === 'listening') { x -= 0.15; z -= a.side * 0.12; }
+        if (s.mood === 'thinking') { if (a.side > 0) { x -= 0.5; z += 0.22; } else z -= 0.05; }
+        if (waving && a.side > 0) { z = ARM_SPREAD + 0.45 + Math.sin((time - greetAt) * 7) * 0.2; x = -0.25; rate = 9; }
+        z = THREE.MathUtils.lerp(a.side * (ARM_SPREAD - 0.1) + a.side * Math.sin(time * 0.9) * 0.04, z, awake);
+        a.pivot.rotation.z = damp(a.pivot.rotation.z, z, rate, dt);
+        a.pivot.rotation.x = damp(a.pivot.rotation.x, x, rate, dt);
         a.pivot.position.y = -0.012 + Math.sin(time * 0.8 + a.side * 1.3) * 0.003;
       }
 

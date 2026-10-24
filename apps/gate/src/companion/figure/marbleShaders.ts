@@ -199,12 +199,14 @@ function featureBlock(feature: MarbleFeature): string {
   // One light across the whole arch: brightest at its crown, easing warmer toward the tips (no edge/core split).
   float mgEx = min(abs(mgP.x - uEyeL.x), abs(mgP.x - uEyeR.x)) / 0.0235;
   float mgArc = 1.0 - smoothstep(0.1, 1.0, mgEx);
-  float mgHalo = exp(-max(mgD, 0.0) / mgHaloW) * (1.0 - mgEye) * mgFront;
+  // A hard gold outline round each eye, like the rims of the wing windows; the glow starts beyond it.
+  float mgEyeRim = (smoothstep(-mgW, mgW, mgD) - smoothstep(0.0009 - mgW, 0.0009 + mgW, mgD)) * mgFront;
+  float mgHalo = exp(-max(mgD - 0.0009, 0.0) / mgHaloW) * (1.0 - mgEye) * (1.0 - mgEyeRim) * mgFront;
   mgGlowMask = max(mgEye, mgDia);
-  mgGoldMask = mgSeam * 0.85;
+  mgGoldMask = max(mgSeam * 0.85, mgEyeRim);
   // Carving: the plate sits a little lower than the head; the seam is a fine V-cut; the eyes and star are set in.
   mgH = (-0.0008 * mgPlate - 0.00035 * mgSeamLine * mgSeamFade
-        - 0.0004 * (1.0 - smoothstep(-0.0006, 0.0007, mgD)) - 0.0011 * (1.0 - smoothstep(-0.05, 0.08, mgSf))) * mgFront;
+        - 0.0004 * (1.0 - smoothstep(-0.0006, 0.0007, mgD)) + 0.00035 * mgEyeRim - 0.0011 * (1.0 - smoothstep(-0.05, 0.08, mgSf))) * mgFront;
   mgEmit = mix(uGlowEdge, uGlowCore, 0.3 + 0.7 * mgArc) * mgEye * uBright * (3.8 + 1.2 * mgArc) + uGlowEdge * mgHalo * uBright * 1.35
          + (mix(uGlowEdge, uGlowCore, mgDiaCore) * mgDia * 4.4 + uGlowEdge * mgDiaHalo * 1.15) * uDiaBright
          + mix(uGlowEdge, uGlowCore, 0.5) * mgRing * (0.12 + uDiaBright * 0.12);`;
