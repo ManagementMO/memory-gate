@@ -15,18 +15,18 @@ export function Offers() {
   return (
     <div className="offers" data-testid="offers" style={{ opacity: any ? 1 : 0, transition: 'opacity 900ms var(--ease-soft)' }} aria-hidden={!any}>
       {offers.photo && (
-        <button type="button" className="pill glass offer" onClick={() => photo.current?.click()} data-testid="offer-photo">
-          <PhotoIcon /><span className="label">Show a photo<small>From this device</small></span>
+        <button type="button" className="pill glass offer" onClick={() => photo.current?.click()} data-testid="offer-photo" aria-label="Show a photo">
+          <PhotoIcon /><span className="label">Photo</span>
         </button>
       )}
       {offers.video && (
-        <button type="button" className="pill glass offer" onClick={() => video.current?.click()} data-testid="offer-video">
-          <VideoIcon /><span className="label">Share a video<small>A short clip is plenty</small></span>
+        <button type="button" className="pill glass offer" onClick={() => video.current?.click()} data-testid="offer-video" aria-label="Share a video">
+          <VideoIcon /><span className="label">Video</span>
         </button>
       )}
       {offers.invite && (
-        <button type="button" className="pill glass offer" onClick={() => useGate.getState().set({ inviteOpen: true })} data-testid="offer-invite">
-          <PeopleIcon /><span className="label">Invite someone<small>They can send photos</small></span>
+        <button type="button" className="pill glass offer" onClick={() => useGate.getState().set({ inviteOpen: true })} data-testid="offer-invite" aria-label="Invite someone to join">
+          <PeopleIcon /><span className="label">Invite</span>
         </button>
       )}
       <input ref={photo} type="file" accept="image/*" hidden data-testid="photo-input"

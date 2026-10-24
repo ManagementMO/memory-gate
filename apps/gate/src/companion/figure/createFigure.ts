@@ -1,7 +1,7 @@
-// The Figure: a serene porcelain being. An egg-shaped head floats a breath above a smooth, tapering body; a black
-// glass visor wears two soft LED eyes; teardrop arms hang free at its sides; a hairline orbit turns slowly around
-// its head when it thinks. Inspired by EVE's calm industrial grace and the quiet "higher-dimensional" figures of
-// dreamcore, kept clean and kind. Every surface is one of two materials; all motion is eased and unhurried.
+// The Figure: a small porcelain being of its own. A round pearl of a head floats a breath above a soft pebble body,
+// with a gentle glow in the gap; a round window of dark glass holds two soft aqua eyes; two little orbs float where
+// hands would be; a hairline orbit turns around its head when it thinks (the quiet "higher-dimensional" touch of
+// dreamcore figures). A crisp glazed shell, no grain. All motion is eased and unhurried.
 //   portal     dormant: eyes closed to thin dim lines, head bowed, slow breath
 //   idle       soft open eyes that breathe with the light, occasional blinks, tiny head tilts
 //   listening  eyes widen a little and brighten with your voice; head tilts, arms come in
@@ -21,10 +21,10 @@ export type FigureRig = {
 };
 
 // Proportions (metres). Total ≈ 0.53 m; the root's origin is the figure's visual centre.
-const HEAD_R = new THREE.Vector3(0.108, 0.08, 0.095);
-const BODY_H = 0.33;
-const GAP = 0.021;
-const HEAD_BOTTOM = HEAD_R.y * 0.82;
+const HEAD_R = new THREE.Vector3(0.1, 0.1, 0.1);
+const BODY_H = 0.25;
+const GAP = 0.024;
+const HEAD_BOTTOM = HEAD_R.y;
 const TOTAL = BODY_H + GAP + HEAD_BOTTOM + HEAD_R.y;
 const BODY_TOP = TOTAL / 2 - (HEAD_R.y + HEAD_BOTTOM + GAP);
 const HEAD_Y = BODY_TOP + GAP + HEAD_BOTTOM;
@@ -33,9 +33,7 @@ function headGeometry(): THREE.BufferGeometry {
   const g = new THREE.SphereGeometry(1, 72, 54);
   const p = g.attributes.position as THREE.BufferAttribute;
   for (let i = 0; i < p.count; i++) {
-    let y = p.getY(i);
-    if (y < 0) y *= 0.82; // a slightly flattened underside: the head rests in the air like a stone in water
-    p.setXYZ(i, p.getX(i) * HEAD_R.x, y * HEAD_R.y, p.getZ(i) * HEAD_R.z);
+    p.setXYZ(i, p.getX(i) * HEAD_R.x, p.getY(i) * HEAD_R.y, p.getZ(i) * HEAD_R.z); // a true sphere: a pearl
   }
   g.computeVertexNormals();
   return g;
@@ -49,22 +47,18 @@ function lathe(points: [number, number][], segments: number, samples: number): T
   return g;
 }
 
-/** The body: an egg turned upside down, widest at the shoulders, with a shallow dish where the head hovers. */
+/** The body: a soft pebble, fullest low down, rounded underneath and gently domed on top. */
 function bodyGeometry(): THREE.BufferGeometry {
   return lathe([
-    [0.0004, -BODY_H], [0.024, -0.326], [0.045, -0.312], [0.063, -0.29], [0.077, -0.26], [0.088, -0.222], [0.0955, -0.18],
-    [0.0995, -0.136], [0.1005, -0.095], [0.099, -0.06], [0.095, -0.032], [0.088, -0.013], [0.0805, -0.003], [0.0735, 0.0],
-    [0.068, 0.0005], [0.0625, -0.004], [0.042, -0.011], [0.0004, -0.013],
+    [0.0004, -BODY_H], [0.03, -0.247], [0.055, -0.238], [0.074, -0.222], [0.087, -0.2], [0.094, -0.172], [0.096, -0.14],
+    [0.094, -0.105], [0.089, -0.072], [0.081, -0.045], [0.07, -0.022], [0.057, -0.007], [0.042, 0.0], [0.022, 0.003], [0.0004, 0.004],
   ], 72, 120);
 }
 
-/** A teardrop arm: rounded at the shoulder, tapering to a soft point. Pivot at the shoulder. */
+/** A floating orb where a hand would be, hanging a little below its pivot so a turn of the pivot swings it. */
 function armGeometry(): THREE.BufferGeometry {
-  const g = lathe([
-    [0.0004, -0.152], [0.005, -0.147], [0.0095, -0.135], [0.014, -0.111], [0.0185, -0.079], [0.0218, -0.045], [0.0234, -0.02],
-    [0.023, -0.004], [0.0195, 0.009], [0.012, 0.0175], [0.0004, 0.0205],
-  ], 40, 60);
-  g.scale(1, 1, 0.64); // flattened, like a blade of porcelain
+  const g = new THREE.SphereGeometry(0.024, 40, 28);
+  g.translate(0, -0.062, 0);
   return g;
 }
 
@@ -99,15 +93,16 @@ export function createFigure(): FigureRig {
 
   // Porcelain with a faint pearl iridescence (the "higher-dimensional" sheen), glossy clearcoat over a soft base.
   const shellParams: THREE.MeshPhysicalMaterialParameters = {
-    color: '#ebebe7', roughness: 0.26, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08,
-    iridescence: 0.32, iridescenceIOR: 1.32, iridescenceThicknessRange: [160, 420], sheen: 0.25, sheenRoughness: 0.5,
-    sheenColor: new THREE.Color('#e9e4ff'), envMapIntensity: 0.72, transparent: true, opacity: 1,
+    // A clean, crisp glaze: one smooth clearcoat, no pearl sheen or iridescence (they read as grain from a distance).
+    color: '#efefec', roughness: 0.2, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.035,
+    envMapIntensity: 0.9, transparent: true, opacity: 1,
   };
   const headMat = new THREE.MeshPhysicalMaterial(shellParams);
   applyFace(headMat, face);
   const shellMat = new THREE.MeshPhysicalMaterial(shellParams);
   applyShell(shellMat, shellU);
-  const seamMat = new THREE.MeshPhysicalMaterial({ color: '#30333c', roughness: 0.3, metalness: 0.2, clearcoat: 0.6, transparent: true });
+  // The levitation glow in the gap between head and body (a thin ring of soft aqua light, not a mechanical seam).
+  const seamMat = new THREE.MeshPhysicalMaterial({ color: '#d9fbff', emissive: new THREE.Color('#7fe9f2'), emissiveIntensity: 0.9, roughness: 0.4, transparent: true });
 
   const head = new THREE.Mesh(headGeometry(), headMat);
   const headPivot = new THREE.Group(); // rotates the head (look, tilt, nod)
@@ -119,16 +114,16 @@ export function createFigure(): FigureRig {
   bodyGroup.position.y = BODY_TOP;
   const body = new THREE.Mesh(bodyGeometry(), shellMat);
   bodyGroup.add(body);
-  const seam = new THREE.Mesh(new THREE.TorusGeometry(0.069, 0.0026, 12, 96), seamMat);
+  const seam = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.0022, 12, 72), seamMat);
   seam.rotation.x = Math.PI / 2;
-  seam.position.y = -0.0015;
+  seam.position.y = GAP * 0.45;
   bodyGroup.add(seam);
   root.add(bodyGroup);
 
   const armGeo = armGeometry();
   const arms = [-1, 1].map((side) => {
     const pivot = new THREE.Group();
-    pivot.position.set(side * 0.118, BODY_TOP - 0.034, 0.004);
+    pivot.position.set(side * 0.112, BODY_TOP - 0.05, 0.006);
     const arm = new THREE.Mesh(armGeo, shellMat);
     pivot.add(arm);
     root.add(pivot);
@@ -139,7 +134,7 @@ export function createFigure(): FigureRig {
   const glowTex = radialTexture();
   const glowMat = glowBlending(new THREE.MeshBasicMaterial({ map: glowTex, color: new THREE.Color('#3f9bff'), transparent: true, opacity: 1, depthWrite: false, toneMapped: false }));
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.12), glowMat);
-  glow.position.set(0, -0.004, HEAD_R.z + 0.006);
+  glow.position.set(0, 0.0, HEAD_R.z + 0.006);
   glow.renderOrder = 40;
   head.add(glow);
 
@@ -230,8 +225,8 @@ export function createFigure(): FigureRig {
       cur.bright = damp(cur.bright, bright, kLight, dt);
       cur.tilt = damp(cur.tilt, tilt, kShape, dt);
       scan += dt * (s.mood === 'thinking' ? 0.9 : 0.12);
-      face.uEyeL.value.set(-0.36 + cur.ox, 0.0 + cur.oy + cur.oLy, cur.sLx, cur.sLy);
-      face.uEyeR.value.set(0.36 + cur.ox, 0.0 + cur.oy, cur.sRx, cur.sRy);
+      face.uEyeL.value.set(-0.25 + cur.ox, 0.0 + cur.oy + cur.oLy, cur.sLx, cur.sLy);
+      face.uEyeR.value.set(0.25 + cur.ox, 0.0 + cur.oy, cur.sRx, cur.sRy);
       face.uArc.value = cur.arc;
       face.uLid.value = cur.lid;
       face.uLineL.value = cur.lineL;

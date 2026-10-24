@@ -54,7 +54,7 @@ export function createLight(): LightRig {
       vec3 warm = mix(vec3(1.0, 0.78, 0.5), vec3(1.0, 0.86, 0.66), uWarm);
       vec3 col = mix(warm, vec3(1.0, 0.98, 0.94), hot);
       if (uOnLight > 0.5) col = mix(vec3(1.0, 0.72, 0.38), vec3(1.0, 0.93, 0.8), hot);
-      float a = clamp((hot * 0.95 + body * 0.5) * uIntensity, 0.0, 1.0);
+      float a = clamp((hot * 0.95 + body * (uOnLight > 0.5 ? 0.85 : 0.5)) * uIntensity, 0.0, 1.0);
       gl_FragColor = emit(col, a);
     }`);
   const core = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), coreMat);
@@ -67,7 +67,7 @@ export function createLight(): LightRig {
       float g = exp(-r2 * 3.2);
       // A faint iridescent edge: the halo is a little greener at its rim.
       vec3 col = mix(uTint, vec3(0.62, 0.95, 0.84), smoothstep(0.15, 0.9, r2) * 0.55);
-      float a = g * uIntensity * (uOnLight > 0.5 ? 0.85 : 1.0);
+      float a = g * uIntensity * (uOnLight > 0.5 ? 1.35 : 1.0);
       gl_FragColor = emit(col, clamp(a, 0.0, 1.0));
     }`);
   const halo = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7), haloMat);

@@ -12,6 +12,7 @@ import { AuroraSky } from './AuroraSky';
 import { CameraRig } from './CameraRig';
 import { GateDust } from './GateDust';
 import { MediaCard } from './MediaCard';
+import { PhotoWorld } from './PhotoWorld';
 import { MemoryScene } from './sketch/MemoryScene';
 import { WhiteSpace } from './WhiteSpace';
 import { XrLayer } from './XrLayer';
@@ -75,6 +76,7 @@ export function World({ quality }: { quality: number }) {
       <AuroraSky quality={quality} />
       <GateDust />
       <WhiteSpace />
+      <PhotoWorld />
       <MemoryScene />
       <MediaCard />
       <CompanionRig />

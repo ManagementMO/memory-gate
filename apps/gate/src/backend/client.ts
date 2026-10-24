@@ -38,7 +38,9 @@ export function rememberSession(s: Session, title?: string | null): void {
   } catch { /* private mode: this session simply isn't remembered */ }
 }
 
-const CONSENT_SCOPES = ['voice_processing', 'voice_recording', 'photo_processing', 'share_with_family'] as const;
+// What Begin agrees to (the portal says it in plain words): listening, keeping the voice with the memories,
+// turning shared photos into 3D (on our GPU worker), and sharing with family who join.
+const CONSENT_SCOPES = ['voice_processing', 'voice_recording', 'photo_processing', 'vendor_upload_modal', 'share_with_family'] as const;
 
 const withTimeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>
   Promise.race([p, new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);

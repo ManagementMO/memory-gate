@@ -10,6 +10,9 @@ import { useGate } from '../state/store';
 import { World } from './World';
 import { xrStore } from './xr';
 
+/** Diagnostic switches for performance work (?ao=0, ?shadows=0, ?fx=0); never needed in normal use. */
+const DIAG = new URLSearchParams(location.search);
+
 function Effects({ quality }: { quality: number }) {
   const presenting = useXR((s) => s.session != null);
   const stage = useGate((s) => s.stage);
@@ -20,12 +23,13 @@ function Effects({ quality }: { quality: number }) {
     // The composer tone-maps on flat screens; in the headset the renderer must do it itself.
     if (presenting) gl.toneMapping = THREE.NeutralToneMapping;
   }, [presenting, gl]);
-  if (presenting) return null;
+  if (presenting || DIAG.get('fx') === '0') return null;
   return (
     <EffectComposer multisampling={4} enableNormalPass={false}>
       {/* On the white side, ambient occlusion gives porcelain its weight; bloom would wash it out. */}
-      {day && quality >= 1 ? <N8AO aoRadius={0.45} intensity={2.2} distanceFalloff={0.6} quality="medium" halfRes color="#4b4766" /> : <></>}
-      <Bloom mipmapBlur intensity={day ? 0.18 : 0.85} luminanceThreshold={day ? 0.92 : 0.55} luminanceSmoothing={0.25} radius={0.72} />
+      {day && quality >= 1 && DIAG.get('ao') === '1' ? <N8AO aoRadius={0.45} intensity={2.2} distanceFalloff={0.6} quality="performance" halfRes color="#4b4766" /> : <></>}
+      {/* Only light itself blooms (the gate, eyes, lamps), never white porcelain: keeps the companion crisp. */}
+      <Bloom mipmapBlur intensity={day ? 0.18 : 0.72} luminanceThreshold={day ? 0.92 : 0.8} luminanceSmoothing={0.2} radius={0.7} />
       <ToneMapping mode={ToneMappingMode.NEUTRAL} />
       <Vignette offset={0.28} darkness={day || stage === 'entering' ? 0.22 : 0.42} />
       <Noise opacity={day ? 0.018 : 0.028} premultiply />
@@ -53,7 +57,7 @@ export function SceneCanvas() {
       dpr={quality < 1 ? [1, 1.5] : [1, 2]}
       gl={{ antialias: false, powerPreference: 'high-performance', alpha: false, preserveDrawingBuffer: false }}
       camera={{ fov: 50, near: 0.05, far: 200, position: [0, 1.55, 0] }}
-      shadows={quality >= 0.45 ? 'soft' : false}
+      shadows={quality >= 0.45 && DIAG.get('shadows') !== '0' ? 'soft' : false}
       onCreated={({ gl, scene }) => {
         gl.toneMapping = THREE.NeutralToneMapping;
         gl.setClearColor('#04050c');

@@ -43,12 +43,12 @@ const FINISH: Record<MaterialKind, { roughness: number; metalness: number; clear
   wood: { roughness: 0.55, metalness: 0, clearcoat: 0.25, sheen: 0, transmission: 0, strength: 0.66 },
   fabric: { roughness: 0.85, metalness: 0, clearcoat: 0, sheen: 0.7, transmission: 0, strength: 0.7 },
   metal: { roughness: 0.3, metalness: 0.55, clearcoat: 0.4, sheen: 0, transmission: 0, strength: 0.5 },
-  glass: { roughness: 0.08, metalness: 0, clearcoat: 1, sheen: 0, transmission: 0.85, strength: 0.35 },
+  glass: { roughness: 0.08, metalness: 0, clearcoat: 1, sheen: 0, transmission: 0, strength: 0.35 },
   paper: { roughness: 0.9, metalness: 0, clearcoat: 0, sheen: 0.2, transmission: 0, strength: 0.55 },
   plant: { roughness: 0.6, metalness: 0, clearcoat: 0.15, sheen: 0.35, transmission: 0, strength: 0.72 },
   stone: { roughness: 0.75, metalness: 0, clearcoat: 0.05, sheen: 0, transmission: 0, strength: 0.55 },
   plastic: { roughness: 0.4, metalness: 0, clearcoat: 0.6, sheen: 0, transmission: 0, strength: 0.7 },
-  water: { roughness: 0.05, metalness: 0, clearcoat: 1, sheen: 0, transmission: 0.6, strength: 0.6 },
+  water: { roughness: 0.05, metalness: 0, clearcoat: 1, sheen: 0, transmission: 0, strength: 0.6 },
   light: { roughness: 0.4, metalness: 0, clearcoat: 0, sheen: 0, transmission: 0, strength: 0.4 },
 };
 
@@ -79,6 +79,9 @@ export function porcelain(color: string | null | undefined, kind: MaterialKind =
     emissive: kind === 'light' ? new THREE.Color('#fff1d6') : new THREE.Color('#000000'),
     emissiveIntensity: kind === 'light' ? 0.9 : 0,
   });
+  // Glass and water read as glass through translucency alone. (Physical transmission would re-render the whole scene
+  // every frame for refraction: too costly for a headset.)
+  if (kind === 'glass' || kind === 'water') { m.transparent = true; m.opacity = kind === 'glass' ? 0.42 : 0.7; m.depthWrite = false; }
   if (reveal) applyReveal(m, reveal);
   cache.set(key, m);
   return m;

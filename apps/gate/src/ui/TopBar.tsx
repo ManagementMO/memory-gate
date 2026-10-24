@@ -26,9 +26,9 @@ function ListeningChip() {
   const text = resting ? 'Resting' : voice === 'blocked' ? 'Microphone is off' : voice === 'unsupported' ? 'Voice isn’t available here' : voice === 'starting' ? 'Getting ready' : mood === 'speaking' ? 'Speaking' : mood === 'thinking' ? 'Thinking' : 'Listening';
   const tone = resting ? 'rest' : live ? 'on' : 'off';
   return (
-    <div className="status glass" role="status" aria-live="polite" data-tone={tone} data-testid="listening">
+    <div className="status glass dot-only" role="status" aria-live="polite" data-tone={tone} data-testid="listening" title={text}>
       <span className="dot" ref={dot} aria-hidden="true" />
-      {text}
+      <span className="visually-hidden">{text}</span>
     </div>
   );
 }

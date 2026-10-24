@@ -37,8 +37,8 @@ float stars(vec3 d) {
   return smoothstep(size, 0.0, length(fp)) * twinkle * (0.45 + fract(h * 37.1));
 }
 
-// The gate: a few fine lines of light that spiral into a luminous opening. Contour lines of a slowly warped field
-// laid out on a log-spiral around the gate direction; confined to a ring so the night sky stays quiet around it.
+// The gate: built only from light. A soft luminous opening, a breathing halo, faint rays turning slowly as if
+// through mist, and a nebula haze around it — no lines, nothing drawn; the aurora and the motes do the rest.
 vec3 gate(vec3 d, float strength, float lines) {
   vec3 f = normalize(uGateDir);
   vec3 r = normalize(cross(f, vec3(0.0, 1.0, 0.0)));
@@ -46,36 +46,30 @@ vec3 gate(vec3 d, float strength, float lines) {
   float rad = acos(clamp(dot(d, f), -1.0, 1.0));
   vec2 p = vec2(dot(d, r), dot(d, u));
   float th = atan(p.y, p.x);
-  float lr = log(rad + 0.02);
   float t = uTime;
-  float swirl = th - lr * (1.25 + uOpen * 0.9) + t * (0.022 + uOpen * 0.2);
-  vec3 q = vec3(cos(swirl) * 1.1, sin(swirl) * 1.1, lr * 0.9 - t * (0.035 + uOpen * 0.25));
-  vec3 w = vec3(snoise(q * 0.7 + vec3(0.0, 0.0, t * 0.02)), snoise(q * 0.7 + vec3(4.1, 1.7, -t * 0.016)), 0.0);
-  // A slow galaxy: five arms of fine lines winding into the opening (an integer arm count keeps the spiral seamless),
-  // each line drifting a little on a warped field so it reads as silk, not geometry.
-  float g = lr * 2.3 + (th + t * (0.02 + uOpen * 0.3)) * (5.0 / 6.2831853) + snoise(q + w * 0.35) * 0.42;
-  // Screen-space derivatives are only valid outside branches; the mirrored call (inside the lake branch) uses a
-  // fixed soft width instead, which also suits a reflection.
-  float wd = max(fwidth(g), 1e-4);
-  float dist = 0.5 - abs(fract(g) - 0.5);                   // distance to the nearest line, in line spacings
-  float px = dist / wd;                                     // ... and in pixels
-  float line = (1.0 - smoothstep(0.3, 1.2, px)) * lines;   // a hairline at any distance
-  float glow = (exp(-px * 0.5) * 0.06 + exp(-dist * 9.0) * 0.07) * lines; // a soft silk sheen around each line
-  float h = hash12(vec2(floor(g + 0.5), 3.7));              // each line its own brightness and colour
-  float reach = 0.34 + uOpen * 1.6;
-  float env = smoothstep(0.012, 0.075, rad) * (1.0 - smoothstep(reach * 0.45, reach, rad));
-  float k = 0.5 + 0.5 * sin(th * 1.0 + t * 0.035 + h * 2.4);
-  vec3 col = mix(uViolet, uGreen, smoothstep(0.2, 0.8, k));
-  col = mix(col, uPurple, smoothstep(0.6, 1.0, h) * 0.5);
-  col = mix(col, uSilver, step(0.82, fract(h * 7.13)) * 0.9);
-  float bright = (line * (0.22 + 0.78 * h * h) + glow) * env;
-  float haze = (fbm3(vec3(p * 4.0, t * 0.015)) * 0.5 + 0.5) * exp(-pow((rad - 0.16) / 0.16, 2.0)) * 0.05;
-  vec3 hazeCol = mix(uViolet, uTeal, 0.5 + 0.5 * sin(th * 2.0 + t * 0.03));
-  float coreR = 0.05 + uOpen * 1.5;
+  // Rays: a few broad, soft beams that turn very slowly and breathe (smooth noise, no hard edges).
+  float n1 = snoise(vec3(cos(th) * 1.6, sin(th) * 1.6, t * 0.035));
+  float n2 = snoise(vec3(cos(th) * 3.4 + 7.0, sin(th) * 3.4, t * 0.05 + 3.0));
+  float rays = smoothstep(0.05, 0.9, n1 * 0.65 + n2 * 0.35 + 0.25);
+  float rayFall = exp(-rad * (5.2 - uOpen * 3.5)) * smoothstep(0.02, 0.1, rad);
+  vec3 rayCol = mix(uViolet, uGreen, 0.5 + 0.5 * sin(th * 0.5 + t * 0.03)) * 0.9 + uSilver * 0.15;
+  // A halo of light (not a line): a wide, soft ring that breathes at 0.12 Hz.
+  float breathe = 0.85 + 0.15 * sin(t * 0.75);
+  float ringR = 0.12 + uOpen * 0.6;
+  float halo = exp(-pow((rad - ringR) / (0.05 + uOpen * 0.2), 2.0)) * breathe;
+  vec3 haloCol = mix(uViolet, uTeal, 0.5 + 0.5 * sin(th + t * 0.05));
+  // Mist: a slow nebula around the opening.
+  float haze = (fbm3(vec3(p * 3.2, t * 0.015)) * 0.5 + 0.5) * exp(-pow((rad - 0.22) / 0.26, 2.0));
+  vec3 hazeCol = mix(uPurple, uTeal, 0.5 + 0.5 * sin(th * 2.0 + t * 0.03));
+  // The opening itself.
+  float coreR = 0.055 + uOpen * 1.5;
   float core = exp(-pow(rad / coreR, 2.0) * 2.0);
-  float rim = exp(-pow((rad - 0.07 - uOpen * 0.4) / 0.012, 2.0)) * 0.18 * (1.0 - uOpen);
-  vec3 coreCol = mix(vec3(0.76, 0.72, 1.0), vec3(1.0), smoothstep(0.0, 0.6, uOpen));
-  return (col * bright * 1.1 + hazeCol * haze + coreCol * core * (0.28 + 0.3 * uWake + uOpen * 3.2) + uSilver * rim * uWake) * strength;
+  vec3 coreCol = mix(vec3(0.82, 0.78, 1.0), vec3(1.0), smoothstep(0.0, 0.6, uOpen));
+  vec3 c = rayCol * rays * rayFall * (0.16 + 0.12 * uWake)
+         + haloCol * halo * (0.07 + 0.09 * uWake)
+         + hazeCol * haze * 0.085
+         + coreCol * core * (0.32 + 0.32 * uWake + uOpen * 3.2);
+  return c * strength * (0.6 + 0.4 * lines);
 }
 
 // The gate's glow without its hairlines (no derivatives, so it is safe inside the lake branch and cheap).

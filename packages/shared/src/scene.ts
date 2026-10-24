@@ -237,7 +237,7 @@ function inferTitle(words: string, type: string): string {
   return `The ${type}`;
 }
 
-export function planOffline(text: string, title?: string | null): ScenePlan {
+export function planOffline(text: string, title?: string | null, opts: { seeds?: boolean } = {}): ScenePlan {
   const t = ` ${text.toLowerCase().replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ')} `;
   const setting = SETTINGS.find((s) => s.re.test(t)) ?? { type: 'room', indoor: true, floor: 'wood' as Floor, seed: ['table', 'chair', 'window'] };
   const timeOfDay = TIME_WORDS.find(([re]) => re.test(t))?.[1] ?? (setting.indoor ? 'golden' : 'golden');
@@ -255,6 +255,8 @@ export function planOffline(text: string, title?: string | null): ScenePlan {
   }
   mentions.sort((a, b) => a.at - b.at);
   for (const m of mentions) {
+    // "a round wooden table": a round table, even with a word between.
+    if (m.key === 'table' && /\bround(?: \w+)? $/.test(t.slice(Math.max(0, m.at - 22), m.at + 1))) m.key = 'round_table';
     if (used.has(m.key) && !['chair', 'tree', 'pine_tree', 'bench'].includes(m.key)) continue;
     used.add(m.key);
     // A colour said just before the thing ("the yellow curtains"); include the space before the noun.
@@ -265,9 +267,10 @@ export function planOffline(text: string, title?: string | null): ScenePlan {
     (objects[objects.length - 1] as PlanObject & { _at?: number })._at = m.at + m.label.length + 1;
   }
   // A few things the setting implies, so a sparse description still forms a place.
-  for (const k of setting.seed) {
+  const family = (k: string) => (k === 'round_table' ? 'table' : k);
+  for (const k of opts.seeds === false ? [] : setting.seed) {
     if (objects.length >= 7) break;
-    if (used.has(k) && k !== 'chair') continue;
+    if ([...used].some((u) => family(u) === family(k)) && k !== 'chair') continue;
     used.add(k);
     objects.push({ id: `${k}-${objects.length}`, kind: k, label: k.replace(/_/g, ' '), color: null, material: null, zone: 'center', relation: 'none', target: null, scale: 1, quote: null });
   }

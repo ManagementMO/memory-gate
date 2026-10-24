@@ -72,6 +72,13 @@ export function CameraRig() {
       _look.set(0, 1.7 + p * 0.1, -6);
       fov = 50 - p * 9;
       rate = 6;
+    } else if (s.photoWorld && (s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving')) {
+      // A living photograph only looks right from where it was taken: stand there, with a breath of parallax.
+      const eye = s.photoWorld.eye;
+      _pos.set(px * 0.18 + tilt.current.x * 0.1, eye + py * 0.06, 0.05);
+      _look.set(px * 0.6, eye - 0.08 + py * 0.25, -3);
+      fov = 58;
+      rate = 1.6;
     } else if (s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving') {
       const o = orbit.current;
       if (!o.dragging) {
@@ -81,13 +88,16 @@ export function CameraRig() {
       }
       o.az = damp(o.az, o.targetAz, 4, dt);
       o.el = damp(o.el, o.targetEl, 4, dt);
-      // Frame the whole room: a little further back, a little lower, looking toward its back half.
-      const r = 5.3;
+      // Frame the whole room: a little further back, a little lower, looking toward its back half. Portrait phones
+      // step further back with a wider view so the room still fits across the narrow screen.
+      const aspect = state.size.width / Math.max(1, state.size.height);
+      const portrait = Math.min(1, Math.max(0.45, aspect));
+      const r = 5.3 / Math.pow(portrait, 0.55);
       const cz = MEMORY_CENTER.z - 0.45;
       const lift = useMemoryWater() ? 0.55 : 0; // by water, look down a little more so the surface shows
       _pos.set(MEMORY_CENTER.x + Math.sin(o.az) * Math.cos(o.el) * r, 0.35 + lift + Math.sin(o.el) * r, cz + Math.cos(o.az) * Math.cos(o.el) * r);
       _look.set(MEMORY_CENTER.x, 0.72, cz);
-      fov = 54;
+      fov = aspect < 0.8 ? 64 : 54;
       rate = s.stage === 'forming' ? 1.1 : 2.2;
     } else if (s.stage === 'album') {
       _pos.set(0, 1.55, 0);

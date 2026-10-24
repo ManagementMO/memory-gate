@@ -81,6 +81,21 @@ try {
   await waitStage('album', 40000);
   await page.waitForTimeout(3500);
   await shot('09-album');
+  // Visit again: open the first moment, choose "Visit again", and come back into the same place.
+  const pane = page.locator('[data-testid=moment]').first();
+  if (mobile) await pane.tap(); else await pane.hover();
+  await page.waitForTimeout(1200);
+  const revisit = page.getByTestId('moment-revisit').first();
+  if (await revisit.isVisible().catch(() => false)) {
+    await revisit.click();
+    note('tapped Visit again');
+    await waitStage('memory', 40000);
+    await page.waitForTimeout(3000);
+    await shot('10-revisited');
+    note(`revisited: ${JSON.stringify(await state())}`);
+    await page.getByTestId('leave').click();
+    await waitStage('album', 40000);
+  } else note('Visit again button not visible');
   const albumInfo = await page.evaluate(() => window.__gate.store.getState().stage);
   note(`final stage: ${albumInfo}`);
 } catch (e) {

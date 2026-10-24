@@ -1,0 +1,33 @@
+4.0s  shot 01-portal
+4.5s  tapped Begin
+4.5s  stage → greeting
+7.0s  shot 02-greeting
+13.9s  stage → gathering
+15.8s  shot 03-gathering
+15.8s  state: {"stage":"gathering","said":"Is there a moment you’d like to visit today? You can tell me about it, or show me a photo.","heard":null,"voice":"unsupported","session":true,"title":null,"offers":{"photo":true,"video":true,"invite":true}}
+15.8s  shares a photo: fixtures/sample-photo-1938.jpg
+19.9s  companion: I can see a bright living room with a sofa, round rug, and radiator. Where is this place?
+22.8s  shot 03b-photo
+22.8s  person says: It was my aunt’s living room. We sat there every Sunday afternoon.
+34.0s  companion: I can almost see the living room. Shall we go there together?
+37.2s  shot 04-described
+40.2s  person says: Yes, let’s go there.
+44.4s  stage → entering
+47.5s  shot 05-entering
+51.5s  stage → forming
+55.0s  shot 06-forming
+57.6s  stage → memory
+62.3s  shot 07-memory
+62.3s  state: {"stage":"memory","said":"Here is your aunt's living room, warm with Sunday afternoon light across the sofa and the round rug.","heard":null,"voice":"unsupported","session":true,"title":"Aunt's living room","offers":{"photo":false,"video":false,"invite":false}}
+68.3s  person says: There was a little cat sleeping on one of the chairs.
+78.7s  shot 08-detail
+78.9s  tapped Leave
+83.0s  stage → album
+86.9s  shot 09-album
+88.3s  tapped Visit again
+98.3s  stage → memory
+102.1s  shot 10-revisited
+102.1s  revisited: {"stage":"memory","said":"Here we are again.","heard":null,"voice":"unsupported","session":true,"title":"Aunt's living room","offers":{"photo":false,"video":false,"invite":false}}
+106.4s  stage → album
+106.4s  final stage: album
+106.4s  errors: 0

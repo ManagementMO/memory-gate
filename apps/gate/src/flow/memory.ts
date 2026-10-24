@@ -76,6 +76,8 @@ class Memory {
       const url = await convex.mutation(api.memories.uploadUrl, { code: s.code, token: s.token });
       const fileId = await uploadFile(url, still);
       this.mediaFileId = fileId;
+      // Ask for the photo in 3D too (SHARP on the GPU worker when it's deployed); it appears when it's ready.
+      void convex.mutation(api.splats.addPhoto, { code: s.code, token: s.token, fileId: fileId as Id<'_storage'>, width: media.width, height: media.height, tone: 'muted', credit: 'Shared in the session', builder: 'auto' }).catch((e) => console.warn('[memory] photo to 3D', e));
       // A quick look first (the companion can say what it sees), then the full plan in the background.
       const r = await convex.action(api.sketch.caption, { code: s.code, token: s.token, fileId: fileId as Id<'_storage'>, kind: media.kind });
       if (r?.title) this.title = r.title;
@@ -106,7 +108,8 @@ class Memory {
       }
       if (!next && current) {
         // Offline: plan the new words on their own and add whatever new things they mention.
-        const extra = planOffline(text, current.title).objects.filter((o) => !current.objects.some((c) => c.kind === o.kind && c.label === o.label)).slice(0, 2);
+        // Only what these words name (never the setting's default furniture), and nothing already there.
+        const extra = planOffline(text, current.title, { seeds: false }).objects.filter((o) => !current.objects.some((c) => c.kind === o.kind)).slice(0, 2);
         next = { ...current, objects: [...current.objects, ...extra.map((o, i) => ({ ...o, id: `${o.id}-x${current.objects.length + i}` }))].slice(0, 16) };
       }
       if (next) { next = keepIdentities(current, next); useMemory.setState((st) => ({ plan: next, version: st.version + 1 })); }

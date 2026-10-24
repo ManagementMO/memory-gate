@@ -1,0 +1,1 @@
+{"openWhileHovering":1,"openAfterLeave":0,"openAfterEsc":0,"phoneOpenAfterTap":1,"errors":[]}

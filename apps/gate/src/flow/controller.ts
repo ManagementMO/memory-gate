@@ -63,9 +63,12 @@ class Flow {
         if (kind === 'blocked') useGate.getState().set({ voice: 'blocked' });
         else if (kind === 'unsupported') useGate.getState().set({ voice: 'unsupported' });
         console.warn('[voice]', message);
+        // A turn lost to the network: say so kindly and ask again, rather than leaving a silence.
+        if (/dropped|wasn.t heard|couldn.t be saved/i.test(message) && !useGate.getState().resting) void this.say('I’m sorry, I missed that. Could you say it again?');
       },
     });
-    await withTimeout(this.engine.ready, 8000, undefined);
+    // Don't wait for the listening socket before saying hello: speech only needs the voice token (about a second).
+    for (let i = 0; i < 30 && !this.engine.canSpeak(); i++) await sleep(100);
     const v = useGate.getState().voice;
     if (v === 'starting') useGate.getState().set({ voice: this.engine.kind === 'cartesia' ? 'cartesia' : this.engine.kind === 'browser' ? 'browser' : 'unsupported' });
     await sleep(500);

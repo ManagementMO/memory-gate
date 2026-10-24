@@ -45,9 +45,16 @@ export function CompanionRig() {
       _target.copy(s.media ? COMPANION_SPOT.gatheringWithMedia : COMPANION_SPOT.gathering).lerp(COMPANION_SPOT.entering, p);
       targetScale = 1.1 - p * 0.3;
       rate = 5;
+    } else if (day && s.photoWorld) {
+      _target.set(-0.85, s.photoWorld.eye - 0.22, -1.35); // beside you, inside the photograph
+      targetScale = s.companion === 'light' ? 1.1 : 0.85;
     } else if (day) {
       _target.copy(COMPANION_SPOT.memory);
-      targetScale = 0.95;
+      // On a portrait phone the companion comes in from the edge so it stays in view.
+      const aspect = state.size.width / Math.max(1, state.size.height);
+      if (aspect < 0.8) _target.set(-0.62, 1.02, -0.1);
+      // The Light is mostly glow; on white it needs more presence to be found at a few metres.
+      targetScale = (aspect < 0.8 ? 0.8 : 0.95) * (s.companion === 'light' ? 1.45 : 1);
       rate = s.stage === 'forming' ? 0.9 : 1.6;
     } else if (s.stage === 'gathering' || s.stage === 'greeting') {
       _target.copy(s.media ? COMPANION_SPOT.gatheringWithMedia : COMPANION_SPOT.gathering);

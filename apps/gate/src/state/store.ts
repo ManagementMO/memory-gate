@@ -43,6 +43,8 @@ export interface GateState {
   status: string;
   /** Freezes the conversation: no listening, no speech, the place stays visible and calm. */
   resting: boolean;
+  /** Set while a shared photo is shown as a 3D splat (SHARP / World Labs): the memory is seen from the photo's eye. */
+  photoWorld: { eye: number } | null;
 
   set: (patch: Partial<GateState>) => void;
   setStage: (stage: Stage) => void;
@@ -86,6 +88,7 @@ export const useGate = create<GateState>((set, get) => ({
   invite: null,
   status: '',
   resting: false,
+  photoWorld: null,
 
   set: (patch) => set(patch),
   setStage: (stage) => set({ stage }),

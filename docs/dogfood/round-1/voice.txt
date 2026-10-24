@@ -1,0 +1,10 @@
+3.4s  tapped Begin (the only tap; everything after is spoken)
+3.4s  voice engine: starting
+3.4s  stage → greeting
+10.5s  voice engine: cartesia
+11.0s  companion: Hello. I’m so glad you’re here.
+19.1s  companion: Is there a moment you’d like to visit today? You can tell me about it, or show me a photo.
+36.4s  stage → gathering
+62.3s  console [voice] The voice connection dropped, so that wasn’t heard. Please try again, or type it.
+62.3s  console [voice] turn 3.02 s -> 0 chars in 11017 ms
+123.6s  errors: 0

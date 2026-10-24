@@ -27,6 +27,8 @@ export interface VoiceEngine {
   setListening(on: boolean): void;
   /** 0..1 for the companion: the voice while it speaks, the person while they speak. */
   level(): number;
+  /** True once the companion can speak aloud (the speaking token is in hand). */
+  canSpeak(): boolean;
   speaking(): boolean;
   hearing(): boolean;
   dispose(): void;
@@ -145,6 +147,7 @@ function cartesiaEngine(session: Session, ev: EngineEvents): VoiceEngine {
     },
     speaking: () => speakingNow,
     hearing: () => hearingNow,
+    canSpeak: () => { const m = voice.debug.metrics(); return m.ttsLive && m.tokenValidForMs > 0; },
     dispose() { disposed = true; clearInterval(timer); voice.dispose(); },
   };
 }
@@ -247,6 +250,7 @@ function browserEngine(ev: EngineEvents): VoiceEngine {
     },
     speaking: () => speakingNow,
     hearing: () => hearingNow,
+    canSpeak: () => true,
     dispose() { disposed = true; stopRec(); window.speechSynthesis?.cancel(); void actx?.close().catch(() => undefined); },
   };
 }
@@ -263,6 +267,7 @@ export function silentEngine(): VoiceEngine {
     level: () => (speakingNow ? 0.4 : 0),
     speaking: () => speakingNow,
     hearing: () => false,
+    canSpeak: () => true,
     dispose() { /* nothing held */ },
   };
 }

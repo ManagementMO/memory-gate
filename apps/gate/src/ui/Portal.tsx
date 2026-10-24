@@ -8,12 +8,11 @@ export function Portal() {
   return (
     <section className="portal" aria-labelledby="portal-h" data-testid="portal">
       <h1 id="portal-h">{guestOf ? `Join ${guestOf} in a memory` : 'Visit a place you remember'}</h1>
-      <p className="lede">{guestOf ? 'You’ll see the same place and hear the same companion.' : 'A gentle companion will walk there with you. Talk, or share a photo; nothing to type.'}</p>
       <button type="button" className="pill big glass begin refract" onClick={() => void flow.begin()} data-testid="begin">
         <span className="glow" aria-hidden="true" />
         {guestOf ? 'Join' : 'Begin'}
       </button>
-      <p className="fine">The companion listens while you talk and keeps your words with your memories. Sound and the microphone turn on when you begin, and you can rest or stop at any time.</p>
+      <p className="fine">It listens while you talk and keeps your words, voice and photos with your memories. Rest or stop any time.</p>
     </section>
   );
 }

@@ -40,6 +40,10 @@ export function MemoryScene() {
   const active = preview || stage === 'forming' || stage === 'memory' || stage === 'leaving';
   const scene = useThree((s) => s.scene);
   const placed = useRef(new Map<string, Placement>());
+  const photoWorld = useGate((s) => s.photoWorld);
+  const coveredByPhoto = useRef(new Set<string>());
+  // When the photo becomes the world, everything planned from it so far is already in the picture.
+  useEffect(() => { if (photoWorld && plan && coveredByPhoto.current.size === 0) coveredByPhoto.current = new Set(plan.objects.map((o) => o.id)); if (!photoWorld) coveredByPhoto.current = new Set(); }, [photoWorld, plan]);
   const delays = useRef(new Map<string, number>());
   const firstShown = useRef<number | null>(null);
 
@@ -80,9 +84,10 @@ export function MemoryScene() {
     stepAtmosphere(dt, active && !!plan);
     if (scene.fog instanceof THREE.Fog) scene.fog.color.copy(atmoLive.horizon).lerp(new THREE.Color('#f2f2f6'), 1 - atmoLive.amount);
     if (!plan) { if (lastFormed.current !== 0) { lastFormed.current = 0; useMemory.setState({ formed: 0 }); } return; }
+    const counted = useGate.getState().photoWorld ? plan.objects.filter((o) => !coveredByPhoto.current.has(o.id)) : plan.objects;
     let sum = 0;
-    for (const o of plan.objects) sum += formation.get(o.id) ?? 0;
-    const formed = plan.objects.length ? sum / plan.objects.length : 1;
+    for (const o of counted) sum += formation.get(o.id) ?? 0;
+    const formed = counted.length ? sum / counted.length : 1;
     if (Math.abs(formed - lastFormed.current) > 0.02 || (formed === 1 && lastFormed.current !== 1)) {
       lastFormed.current = formed;
       useMemory.setState({ formed });
@@ -90,10 +95,12 @@ export function MemoryScene() {
   });
 
   if (!active || !plan) return null;
-  const sorted = [...plan.objects].sort((a, b) => (ORDER[entryOf(a.kind).place] ?? 3) - (ORDER[entryOf(b.kind).place] ?? 3));
+  // Inside a living photograph the photo already shows the room and its furniture; only what's said after forms.
+  const shown = photoWorld ? plan.objects.filter((o) => !coveredByPhoto.current.has(o.id)) : plan.objects;
+  const sorted = [...shown].sort((a, b) => (ORDER[entryOf(a.kind).place] ?? 3) - (ORDER[entryOf(b.kind).place] ?? 3));
   return (
     <group name="memory">
-      <Setting plan={plan} />
+      {!photoWorld && <Setting plan={plan} />}
       <Ambience kind={plan.ambience} />
       {sorted.map((o, i) => {
         const p = placements.get(o.id);
