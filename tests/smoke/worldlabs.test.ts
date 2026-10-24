@@ -57,6 +57,8 @@ test('the world brief preserves the source and reserves open space for live stor
   expect(prompt).toContain(`<story>\n${story}\n</story>`);
   expect(prompt).toContain('separate interactive');
   expect(prompt).toContain('not a historically verified');
+  expect(prompt).toContain('Subtle painterly simplification is welcome');
+  expect(prompt).not.toContain('No illustration');
   expect(() => storyWorldPrompt('hello')).toThrow();
   expect(() => storyWorldPrompt('a'.repeat(2001))).toThrow();
 });

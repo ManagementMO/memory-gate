@@ -10,6 +10,16 @@ Remaining: no Apify cloud Actor deployment/run is claimed. The Windows native em
 
 The exchange branch made no paid world jobs. The macOS story pass used exactly the separately authorized one generation (1,580 credits, local cap now 4/4). Credentials stay in ignored files. No public app deployment or event submission was performed. Preserve the project's actual history when discussing event eligibility.
 
+## Integrated macOS verification — October 24
+
+After merging all five team commits, the combined source passed **81 backend/domain tests, 8 renderer tests, 5 offline Palace intake CLI tests, 6 Actor tests, 5 real SpacetimeDB/gateway tests, 29 live legacy browser scenarios and 3 exchange browser scenarios**. The latter included an actual local Apify archive search and two independent browser clients. Four TypeScript checks, both production builds and doctor passed. After the final world-switch race fix, the renderer checks, headset typecheck/build, cached-world browser flow and native XR input rehearsal passed again. Full suite and focused post-fix evidence are distinguished in evidence/integrated-palace/verification.json.
+
+The source-to-world flow used real Cartesia/Claude with synthesized microphone input; the original stored clip replayed. Actual Quest 3 emulation remained active with the 100k World Labs background, native keepsake squeeze/move/release/return and gate selection. Physical Quest, perceived comfort and real-family review remain unverified. SpacetimeDB 2.13.0 and its local gateway are now running on this Mac, with the CLI path saved only in ignored local configuration.
+
+The next visual direction is the [Palace of Fine Arts](docs/ORBIS_AND_PALACE.md), with refined material treatment rather than forced photographic realism. An offline tool now prepares a bounded, source-hashed 2–4 photo request template. It does not upload or generate. Palace photos, a reviewed generated result, private upload/job binding, calibrated near props and Palace navigation remain to be done. No additional World Labs request was submitted for this adaptation; the cap remains 4/4.
+
+The newly integrated root WebSocket dependency was patched to ws 8.22.0; the root audit now reports zero advisories. The separate Apify Actor still reports a transitive basic-ftp advisory through its proxy dependencies. A normal audit fix could not resolve it within their version ranges; no unverified major-version override was applied. This is recorded separately from the Actor's passing functional tests.
+
 ---
 
 # macOS story courtyard and earlier review evidence

@@ -1,19 +1,19 @@
-doctor 2026-10-24T18:21:06.532Z
+doctor 2026-10-24T18:42:43.850Z
 PASS  local     node                                                    v22.22.3
 PASS  local     .env.worker                                             CONVEX_URL http://127.0.0.1:3210, WORKER_SECRET set
-PASS  backend   convex reachable (admin.status)                  32 ms  10 rooms
+PASS  backend   convex reachable (admin.status)                  40 ms  16 rooms
 PASS  backend   flags                                                   on: ai.live, splat.lite, stt.live, tts.live, worldlabs.generate
 WARN  backend   world generation reservations                           4/4; cached worlds still work; changing the cap is an explicit operator setting
 PASS  backend   object library                                          12 models: bench, tree, gate, photograph, chair, armchair, piano, radio, lamp, clock, rug, teapot
 PASS  backend   sample photo                                            permitted sample photo stored
 PASS  backend   scene availability                                      cached fictional World Labs courtyard available
-PASS  backend   stored files (library + assets)                  17 ms  16 files, 11.4 MB
+PASS  backend   stored files (library + assets)                  11 ms  16 files, 11.4 MB
 SKIP  worker    GPU worker heartbeat                                    never started; splat.live off
-PASS  provider  anthropic GET /v1/models/claude-sonnet-5-5      516 ms  Claude Sonnet 5.5
-PASS  provider  cartesia GET /voices?limit=1                    393 ms  voices returned: 1
+PASS  provider  anthropic GET /v1/models/claude-sonnet-5-5      523 ms  Claude Sonnet 5.5
+PASS  provider  cartesia GET /voices?limit=1                    116 ms  voices returned: 1
 SKIP  provider  tripo                                                   TRIPO_API_KEY not set in Convex env
-PASS  provider  worldlabs GET /marble/v1/credits                514 ms  credits {"remaining_credits":8050}
-PASS  provider  doctor action round trip (convex/doctor.ts)     525 ms  env keys set: anthropic anthropic_workspace cartesia worker_secret world_labs
+PASS  provider  worldlabs GET /marble/v1/credits                638 ms  credits {"remaining_credits":8050}
+PASS  provider  doctor action round trip (convex/doctor.ts)     644 ms  env keys set: anthropic anthropic_workspace cartesia worker_secret world_labs
 PASS  fixtures  sample-sharp-500k.spz                                   6.97 MB
 PASS  fixtures  sample-worldlabs-500k.spz                               5.53 MB
 PASS  fixtures  library GLBs <= 1.5 MB                                  12 files, largest 0.91 MB

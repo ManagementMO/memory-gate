@@ -1,0 +1,47 @@
+
+> test:exchange
+> node --import tsx --test tests/exchange/*.test.mjs
+
+TAP version 13
+# ℹ️ INFO Connecting to SpacetimeDB WS...
+# Subtest: room deletion erases handoffs and board records from real SpacetimeDB
+ok 1 - room deletion erases handoffs and board records from real SpacetimeDB
+  ---
+  duration_ms: 4345.36725
+  type: 'test'
+  ...
+# Subtest: real gateway: two-person handoff, private recipient, reload, idempotency and revocation
+ok 2 - real gateway: two-person handoff, private recipient, reload, idempotency and revocation
+  ---
+  duration_ms: 464.195875
+  type: 'test'
+  ...
+# Subtest: gateway rejects viewers, cross-room credentials and fixture archive calls
+ok 3 - gateway rejects viewers, cross-room credentials and fixture archive calls
+  ---
+  duration_ms: 154.242542
+  type: 'test'
+  ...
+# ℹ️ INFO Connecting to SpacetimeDB WS...
+# ℹ️ INFO Connecting to SpacetimeDB WS...
+# Subtest: real SpacetimeDB: private tables reject anonymous reads and direct reducer calls
+ok 4 - real SpacetimeDB: private tables reject anonymous reads and direct reducer calls
+  ---
+  duration_ms: 67.768875
+  type: 'test'
+  ...
+# Subtest: real SpacetimeDB: board is persistent and only its contributor can remove an item
+ok 5 - real SpacetimeDB: board is persistent and only its contributor can remove an item
+  ---
+  duration_ms: 60.015542
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5393.177959

@@ -57,9 +57,11 @@ export class SplatRoom {
     // loads of other URLs so a quick lite on→off ends on the requested file.
     const live = this.items.filter((i) => !i.dying);
     const want = live.find((i) => i.url === info.url);
+    // Cancel obsolete pending work for NEW URLs too. The last ready scene stays visible
+    // until this selection is ready, even if an older download finishes first.
+    for (const o of live) if (o !== want && !o.ready) o.dying = true;
     if (want) {
       this.info = info;
-      for (const o of live) if (o !== want && !o.ready) o.dying = true;
       return;
     }
     this.info = info;
@@ -82,6 +84,7 @@ export class SplatRoom {
       for (const o of this.items) if (o !== item) o.dying = true; // cross-fade the previous memory out
       this.onReady?.(this.loadMs, info.reveal !== false);
     }).catch((e: unknown) => {
+      if (item.dying) return;
       this.error = String((e as Error)?.message ?? e).slice(0, 160);
       item.dying = true;
     });

@@ -20,6 +20,8 @@
     "demo:world": "node scripts/story-world-demo.mjs",
     "demo:journey": "node scripts/story-journey-room.mjs",
     "demo:links": "node scripts/demo-links.mjs",
+    "palace:prepare": "node --experimental-transform-types scripts/prepare-palace.mjs",
+    "test:palace": "node --test tests/palace/preparation.test.mjs",
     "test:xr": "node apps/headset/scripts/xr-rehearsal.mjs",
     "e2e": "playwright test --config tests/e2e/playwright.config.mjs",
     "e2e:live": "E2E_LIVE=1 playwright test --config tests/e2e/playwright.config.mjs",
@@ -36,7 +38,7 @@
     "convex": "1.46.0",
     "spacetimedb": "2.13.0",
     "tsx": "4.20.6",
-    "ws": "8.18.3",
+    "ws": "8.22.0",
     "zod": "4.6.7"
   },
   "devDependencies": {

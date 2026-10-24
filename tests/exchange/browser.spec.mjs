@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { backend, ref, makeRoom } from './helpers.mjs';
+const evidenceDir = process.env.EXCHANGE_EVIDENCE_DIR ?? 'evidence/calhacks-exchange';
 
 async function enter(browser, auth, name, role, viewport) {
   const context = await browser.newContext({ viewport });
@@ -20,17 +21,17 @@ test('two independent browsers pass, accept, open, reload and revoke; mobile has
     await sender.page.getByRole('combobox', { name: 'For someone in this room', exact: true }).selectOption(room.recipientId);
     await sender.page.getByRole('button', { name: 'Pass this memory' }).click();
     await expect(recipient.page.getByTestId('incoming-memory')).toContainText('The afternoon light');
-    await mkdir('evidence/calhacks-exchange', { recursive: true });
+    await mkdir(evidenceDir, { recursive: true });
     await sender.page.evaluate(() => scrollTo(0, 0));
-    await sender.page.screenshot({ path: 'evidence/calhacks-exchange/desktop-pass.png', fullPage: true });
-    await recipient.page.screenshot({ path: 'evidence/calhacks-exchange/mobile-receive.png', fullPage: true });
+    await sender.page.screenshot({ path: `${evidenceDir}/desktop-pass.png`, fullPage: true });
+    await recipient.page.screenshot({ path: `${evidenceDir}/mobile-receive.png`, fullPage: true });
     await recipient.page.getByRole('button', { name: 'Accept memory', exact: true }).click();
     await expect(recipient.page.getByTestId('saved-memory')).toContainText('The afternoon light');
     await recipient.page.getByRole('button', { name: 'Open memory', exact: true }).click();
     await expect(recipient.page.getByTestId('opened-memory')).toContainText('fictional test story');
     await expect(recipient.page.getByTestId('opened-memory')).toContainText('Original typed words');
     await recipient.page.getByTestId('opened-memory').scrollIntoViewIfNeeded();
-    await recipient.page.screenshot({ path: 'evidence/calhacks-exchange/mobile-open.png', fullPage: true });
+    await recipient.page.screenshot({ path: `${evidenceDir}/mobile-open.png`, fullPage: true });
     expect(await recipient.page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await recipient.page.reload();
     await expect(recipient.page.getByTestId('saved-memory')).toContainText('The afternoon light');
@@ -74,7 +75,8 @@ test('actual local Apify search, explicit choice, shared board and reload', asyn
     await recipient.page.reload();
     await expect(recipient.page.getByTestId('reference-board')).toContainText(title);
     await recipient.page.getByTestId('reference-board').scrollIntoViewIfNeeded();
-    await recipient.page.screenshot({ path: 'evidence/calhacks-exchange/mobile-archive.png', fullPage: true });
+    await mkdir(evidenceDir, { recursive: true });
+    await recipient.page.screenshot({ path: `${evidenceDir}/mobile-archive.png`, fullPage: true });
     expect(await recipient.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await mkdir('.logs', { recursive: true });
     await writeFile('.logs/archive-restart.json', JSON.stringify({ owner, guest, title }));

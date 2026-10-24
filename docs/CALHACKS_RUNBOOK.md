@@ -1,5 +1,7 @@
 # Heirloom: a story someone else can hold
 
+This exchange work is now integrated into main alongside the cached World Labs story courtyard. [DEMO_SCRIPT.md](../DEMO_SCRIPT.md) covers live scene formation, and [ORBIS_AND_PALACE.md](ORBIS_AND_PALACE.md) covers the next Palace direction. The Windows results below remain evidence of that branch's run; the combined macOS verification is recorded in MORNING_REPORT.md and evidence/integrated-palace/.
+
 Branch: `codex/calhacks-apify-spacetime-meta`. The new **Memories** tab connects original stories, an explicit recipient choice, and public historical references. All three parts run locally. This branch retains the project's pre-event history; ask organizers about eligibility before submitting.
 
 ## What each track actually does
