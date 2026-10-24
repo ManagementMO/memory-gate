@@ -48,7 +48,7 @@ export function marbleUniforms(): MarbleUniforms {
     uOcclusion: { value: 0.2 },
     uExposure: { value: 1 },
     uWarm: { value: new THREE.Color('#ffd6a8') },
-    uGold: { value: new THREE.Color('#d8b578') },
+    uGold: { value: new THREE.Color('#b08a4c') },
     uChrome: { value: new THREE.Color('#d9d4cb') },
     uVein: { value: 1 },
     uGlowCore: { value: new THREE.Color('#fff1cc') },
@@ -120,6 +120,15 @@ vec3 mgPerturb(vec3 surfPos, vec3 surfNorm, float h, float faceDir) {
 const FACE_COMMON = /* glsl */ `
 uniform vec4 uEyeL; uniform vec4 uEyeR;
 uniform float uFull, uLineL, uLineR, uBright, uTilt;
+// Inigo Quilez's exact crescent ("moon") distance: a circle of radius ra with one of radius rb, d along +x, cut out.
+// Exact around the tips too, so a glow hugs the arch instead of tracing the hidden circle underneath.
+float mgMoon(vec2 p, float d, float ra, float rb) {
+  p.y = abs(p.y);
+  float a = (ra * ra - rb * rb + d * d) / (2.0 * d);
+  float b = sqrt(max(ra * ra - a * a, 0.0));
+  if (d * (p.x * b - p.y * a) > d * d * max(b - p.y, 0.0)) return length(p - vec2(a, b));
+  return max(length(p) - ra, -(length(p - vec2(d, 0.0)) - rb));
+}
 // An arched eye of light, thickest at its crown with its tips curving down (a calm, smiling eye): a circle with a
 // slightly smaller one lowered out of it. A blink thins it to a fine arc.
 float mgEyeSd(vec2 p, vec4 e, float side, float line) {
@@ -132,9 +141,8 @@ float mgEyeSd(vec2 p, vec4 e, float side, float line) {
   const float SY = 0.76;
   float k = mix(uFull, 0.0012, line);
   vec2 qq = vec2(q.x, q.y / SY);
-  float dO = length(qq) - R0;
-  float dI = length(qq + vec2(0.0, k)) - R1;
-  return max(dO, -dI) * SY * min(e.z, e.w);
+  // The cut-out circle sits below the eye's centre: turn the frame so "below" is the moon's +x.
+  return mgMoon(vec2(-qq.y, qq.x), k, R0, R1) * SY * min(e.z, e.w);
 }
 // The brow star: a four-pointed diamond with softly drawn-in sides.
 float mgStar(vec2 p, vec2 r) {
@@ -150,7 +158,7 @@ float mgBend(float y) { float t = max(0.0, -y) / ${f(WING.len)}; return ${f(WING
 function featureBlock(feature: MarbleFeature): string {
   const base = /* glsl */ `
   float mgFront = smoothstep(0.18, 0.55, normalize(vMNor).z);
-  float mgGoldMask = 0.0, mgChromeMask = 0.0, mgGlowMask = 0.0, mgH = 0.0, mgShadePlate = 0.0;
+  float mgGoldMask = 0.0, mgChromeMask = 0.0, mgGlowMask = 0.0, mgH = 0.0, mgShadePlate = 0.0, mgCut = 0.0;
   vec3 mgEmit = vec3(0.0);
   vec2 mgP = vMPos.xy;
   // Carving fades where a pixel spans more than a few millimetres (no shimmer far away); glow does the opposite: its
@@ -176,6 +184,7 @@ function featureBlock(feature: MarbleFeature): string {
   float mgRc = abs(mgC);
   float mgRw = max(fwidth(mgRc), 1e-5);
   float mgRing = (1.0 - smoothstep(0.0004 - mgRw, 0.0004 + mgRw, mgRc)) * mgFront;
+  mgCut = (1.0 - smoothstep(0.0009 - mgRw, 0.0009 + mgRw, mgRc)) * mgFront;
   float mgPlate = (1.0 - smoothstep(-0.0016, 0.0, mgC)) * mgFront;
   mgShadePlate = mgPlate;
   // The seam: from the crown down through the star, fading out between the eyes.
@@ -187,16 +196,18 @@ function featureBlock(feature: MarbleFeature): string {
   float mgD = min(mgEyeSd(mgP, uEyeL, -1.0, uLineL), mgEyeSd(mgP, uEyeR, 1.0, uLineR));
   float mgW = max(fwidth(mgD), 1e-5);
   float mgEye = (1.0 - smoothstep(-mgW, mgW, mgD)) * mgFront;
-  float mgCore = smoothstep(-0.0006, -0.0042, mgD);
+  // One light across the whole arch: brightest at its crown, easing warmer toward the tips (no edge/core split).
+  float mgEx = min(abs(mgP.x - uEyeL.x), abs(mgP.x - uEyeR.x)) / 0.0235;
+  float mgArc = 1.0 - smoothstep(0.1, 1.0, mgEx);
   float mgHalo = exp(-max(mgD, 0.0) / mgHaloW) * (1.0 - mgEye) * mgFront;
   mgGlowMask = max(mgEye, mgDia);
   mgGoldMask = mgSeam * 0.85;
   // Carving: the plate sits a little lower than the head; the seam is a fine V-cut; the eyes and star are set in.
   mgH = (-0.0008 * mgPlate - 0.00035 * mgSeamLine * mgSeamFade
-        - 0.0011 * (1.0 - smoothstep(-0.0006, 0.0007, mgD)) - 0.0011 * (1.0 - smoothstep(-0.05, 0.08, mgSf))) * mgFront;
-  mgEmit = mix(uGlowEdge, uGlowCore, mgCore) * mgEye * uBright * 4.6 + uGlowEdge * mgHalo * uBright * 1.35
+        - 0.0004 * (1.0 - smoothstep(-0.0006, 0.0007, mgD)) - 0.0011 * (1.0 - smoothstep(-0.05, 0.08, mgSf))) * mgFront;
+  mgEmit = mix(uGlowEdge, uGlowCore, 0.3 + 0.7 * mgArc) * mgEye * uBright * (3.8 + 1.2 * mgArc) + uGlowEdge * mgHalo * uBright * 1.35
          + (mix(uGlowEdge, uGlowCore, mgDiaCore) * mgDia * 4.4 + uGlowEdge * mgDiaHalo * 1.15) * uDiaBright
-         + mix(uGlowEdge, uGlowCore, 0.5) * mgRing * (0.6 + uDiaBright * 0.6);`;
+         + mix(uGlowEdge, uGlowCore, 0.5) * mgRing * (0.12 + uDiaBright * 0.12);`;
   }
   if (feature === 'chest') {
     return base + /* glsl */ `
@@ -261,17 +272,18 @@ export function applyMarble(m: THREE.MeshPhysicalMaterial, u: MarbleUniforms, fe
   vec2 mgV = mgVeins(vMPos) * uVein * (1.0 - mgGlowMask) * (1.0 - mgChromeMask);
   diffuseColor.rgb *= 0.965 + 0.035 * mgFbm(vMPos * 7.0 + 3.0); // soft clouding in the stone
   diffuseColor.rgb *= 1.0 - mgShadePlate * 0.22 * (1.0 - mgGlowMask);
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.55, 0.515, 0.47), mgV.x * 0.66);
+  diffuseColor.rgb *= 1.0 - mgCut * 0.62; // incised lines read dark
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.46, 0.425, 0.385), mgV.x * 0.72);
   diffuseColor.rgb = mix(diffuseColor.rgb, uGold, mgV.y * 0.65);
   diffuseColor.rgb = mix(diffuseColor.rgb, uChrome, mgChromeMask);
   diffuseColor.rgb = mix(diffuseColor.rgb, uGold, mgGoldMask);`)
       .replace('#include <roughnessmap_fragment>', /* glsl */ `#include <roughnessmap_fragment>
-  roughnessFactor = mix(roughnessFactor, 0.24, max(mgGoldMask, mgV.y * 0.6));
+  roughnessFactor = mix(roughnessFactor, 0.34, max(mgGoldMask, mgV.y * 0.6));
   roughnessFactor = mix(roughnessFactor, 0.1, mgChromeMask);`)
       .replace('#include <metalnessmap_fragment>', /* glsl */ `#include <metalnessmap_fragment>
   metalnessFactor = mix(metalnessFactor, 1.0, max(max(mgGoldMask, mgV.y * 0.6), mgChromeMask));`)
       .replace('#include <emissivemap_fragment>', /* glsl */ `#include <emissivemap_fragment>
-  totalEmissiveRadiance += mgEmit + uGold * mgGoldMask * 0.14 + uChrome * mgChromeMask * 0.08;`)
+  totalEmissiveRadiance += mgEmit + uGold * mgGoldMask * 0.05 + uChrome * mgChromeMask * 0.08;`)
       .replace('#include <opaque_fragment>', /* glsl */ `
   {
     float mgMask = 1.0 - mgGlowMask;

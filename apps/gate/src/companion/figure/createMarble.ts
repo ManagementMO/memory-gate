@@ -132,9 +132,7 @@ function radialTexture(): THREE.CanvasTexture {
   c.width = c.height = 128;
   const g = c.getContext('2d')!;
   const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-  grad.addColorStop(0, 'rgb(255,255,255)');
-  grad.addColorStop(0.3, 'rgb(110,110,110)');
-  grad.addColorStop(1, 'rgb(0,0,0)');
+  for (let i = 0; i <= 16; i++) { const t = i / 16, v = Math.round(255 * Math.exp(-t * t * 4.5) * (1 - t)); grad.addColorStop(t, `rgb(${v},${v},${v})`); }
   g.fillStyle = grad;
   g.fillRect(0, 0, 128, 128);
   const t = new THREE.CanvasTexture(c);
@@ -267,9 +265,9 @@ export function createMarbleFigure(): FigureRig {
     return { mesh, mat: m };
   };
   const eyeGlows = [-1, 1].map((side) => {
-    // The glow sits on the crown of each arch, where the light is fullest.
-    const g = glowMat(0.064, 0.034);
-    g.mesh.position.set(side * FACE.eyeX, FACE.eyeY + 0.011, headFrontZ(side * FACE.eyeX, FACE.eyeY + 0.011) + 0.004);
+    // A soft glow shaped to the arch (wide and low), centred on it so the eye reads as one light.
+    const g = glowMat(0.078, 0.036);
+    g.mesh.position.set(side * FACE.eyeX, FACE.eyeY + 0.008, headFrontZ(side * FACE.eyeX, FACE.eyeY + 0.008) + 0.004);
     head.add(g.mesh);
     return g;
   });
