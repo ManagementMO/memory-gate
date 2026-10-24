@@ -41,7 +41,7 @@ export const deleteMemory = mutation({
     const { room } = await requireOwner(ctx, code, token);
     if (confirmText.trim().toUpperCase() !== room.code) throw new ConvexError({ code: 'CONFIRM', message: 'Type the room code to confirm.' });
     const files = new Set<Id<'_storage'>>();
-    for (const t of ['objects', 'events', 'utterances', 'photos', 'splats', 'jobs', 'consents', 'members', 'corrections'] as const) {
+    for (const t of ['objects', 'events', 'utterances', 'photos', 'splats', 'jobs', 'consents', 'members', 'corrections', 'redKiteTellings'] as const) {
       for (const row of await ctx.db.query(t).withIndex('by_room', (q) => q.eq('roomId', room._id)).collect()) {
         const r = row as Record<string, unknown>;
         for (const k of ['glbFileId', 'storedGlbFileId', 'audioFileId', 'fileId', 'liteFileId', 'previewFileId']) if (r[k]) files.add(r[k] as Id<'_storage'>);

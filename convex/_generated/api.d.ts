@@ -27,6 +27,7 @@ import type * as memories from "../memories.js";
 import type * as moments from "../moments.js";
 import type * as objects from "../objects.js";
 import type * as presence from "../presence.js";
+import type * as redKite from "../redKite.js";
 import type * as rooms from "../rooms.js";
 import type * as sketch from "../sketch.js";
 import type * as splats from "../splats.js";
@@ -61,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   moments: typeof moments;
   objects: typeof objects;
   presence: typeof presence;
+  redKite: typeof redKite;
   rooms: typeof rooms;
   sketch: typeof sketch;
   splats: typeof splats;
