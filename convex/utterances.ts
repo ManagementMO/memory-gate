@@ -9,9 +9,9 @@ import { pointerV } from './schema';
 
 async function isReferenced(ctx: MutationCtx, id: Id<'_storage'>): Promise<boolean> {
   if ((await ctx.db.query('library').collect()).some((r) => r.fileId === id)) return true;
-  if ((await ctx.db.query('assets').collect()).some((r) => r.fileId === id)) return true;
+  if ((await ctx.db.query('assets').collect()).some((r) => r.fileId === id || ['liteFileId', 'previewFileId'].some(key => r.meta?.[key] === id))) return true;
   if ((await ctx.db.query('photos').collect()).some((r) => r.fileId === id)) return true;
-  if ((await ctx.db.query('splats').collect()).some((r) => r.fileId === id || r.liteFileId === id)) return true;
+  if ((await ctx.db.query('splats').collect()).some((r) => r.fileId === id || r.liteFileId === id || r.previewFileId === id)) return true;
   if ((await ctx.db.query('objects').collect()).some((r) => r.glbFileId === id || r.storedGlbFileId === id)) return true;
   return (await ctx.db.query('utterances').collect()).some((r) => r.audioFileId === id);
 }

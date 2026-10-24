@@ -3,16 +3,17 @@
 // quaternion (1,0,0,0); the splat floor lands on y = 0 of the memory root (position.y = -floorY * scale).
 // Spark settings follow the Quest-tested setup (V14): maxStdDev √5, lodCleanupTimeoutMs Infinity, forceSinglePass,
 // raycastable false (never raycast the splat per frame).
-import * as THREE from 'three';
+import * as THREE from '@iwsdk/core';
 import { SparkRenderer, SplatMesh } from '@sparkjsdev/spark';
 import { applyRoomGrade, type RoomGrade } from './look/roomGrade.js';
 import { easeInOutCubic, easeOutCubic } from './look/palette.js';
+import { roomPresentation } from './look/worldPresentation.js';
 
 export type SplatInfo = { url: string; floorY: number | null; scale: number; source: string; numSplats: number;
   /** false when only the variant changes (full ↔ lite of the same memory): cross-fade without replaying the reveal */
   reveal?: boolean };
 
-type Loaded = { mesh: SplatMesh; grade: RoomGrade; url: string; ready: boolean; revealT: number; fade: number; dying: boolean };
+type Loaded = { mesh: SplatMesh; grade: RoomGrade; radius: number; url: string; ready: boolean; revealT: number; fade: number; dying: boolean };
 
 const DEFAULT_EYE = 1.2; // when a splat has no floor estimate: the photo camera at a seated eye height
 
@@ -69,9 +70,9 @@ export class SplatRoom {
     mesh.scale.setScalar(info.scale);
     mesh.position.set(0, info.floorY !== null ? -info.floorY * info.scale : DEFAULT_EYE, 0);
     mesh.opacity = 0;
-    const metric = info.source === 'sharp' || info.source === 'prebaked';
-    const grade = applyRoomGrade(mesh, metric ? { farStart: 6.0, farEnd: 8.5 } : { farStart: 4.6, farEnd: 7.0 });
-    const item: Loaded = { mesh, grade, url: info.url, ready: false, revealT: info.reveal === false ? 3.4 : 0, fade: 0, dying: false };
+    const look = roomPresentation(info.source, info.scale);
+    const grade = applyRoomGrade(mesh, look);
+    const item: Loaded = { mesh, grade, radius: look.revealRadius, url: info.url, ready: false, revealT: info.reveal === false ? 3.4 : 0, fade: 0, dying: false };
     this.items.push(item);
     this.root.add(mesh);
     mesh.initialized.then(() => {
@@ -121,9 +122,9 @@ export class SplatRoom {
         if (i.fade <= 0) { this.root.remove(i.mesh); i.mesh.dispose(); this.items.splice(n, 1); continue; }
       } else if (i.ready) {
         i.fade = Math.min(1, i.fade + dt / 0.8);
-        if (i.revealT < 3.6) {
+        if (!this.paused && i.revealT < 3.6) {
           i.revealT += dt;
-          i.grade.reveal.value = 0.2 + 11.0 * easeOutCubic(Math.min(1, i.revealT / 3.4));
+          i.grade.reveal.value = 0.2 + (i.radius - 0.2) * easeOutCubic(Math.min(1, i.revealT / 3.4));
           i.mesh.updateVersion();
         }
       }

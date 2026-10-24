@@ -27,3 +27,13 @@ test('a supported visual suggestion does not impose an invented historical era',
 test('the fallback leaves the pace with the storyteller', () => {
   expect(FALLBACK_REPLY).not.toMatch(/\?|remember|recall|try harder/i);
 });
+
+test('background architecture is not dropped on the floor as separate story props', () => {
+  for (const object of ['wooden pergola', 'green shutters', 'stone wall', 'paving']) {
+    const result = validate(`There was a ${object}.`, { ...proposal, proposals: [{ ...proposal.proposals[0]!, object, quote: object }] });
+    expect(result.actions).toEqual([]);
+    expect(result.dropped.join(' ')).toContain('background context');
+  }
+  const lamp = validate('There was a floor lamp.', { ...proposal, proposals: [{ ...proposal.proposals[0]!, object: 'floor lamp', quote: 'floor lamp' }] });
+  expect(lamp.actions[0]?.type).toBe('propose_object');
+});

@@ -13,6 +13,7 @@ import { Chip, Notice, Spinner, useToast } from '../ui';
 import { Corrections } from './Corrections';
 import { StoryRecorder } from './StoryRecorder';
 import { MemoryStage } from './MemoryStage';
+import { StoryPlace } from './StoryPlace';
 
 type RoomView = FunctionReturnType<typeof api.rooms.get>;
 type Obj = FunctionReturnType<typeof api.objects.list>[number];
@@ -280,6 +281,7 @@ export function Live({ session, view, headsetConnected, onConsent }: { session: 
       )}
 
       <MemoryStage code={code} title={view.room.title} illustrative={!view.splat?.url || view.splat.status !== 'ready'}
+        fromStory={!!view.splat?.sourceStory}
         sharing={scopes.has('share_with_family')} paused={paused} onConsent={onConsent} />
       <div className="family-tools">
         <details className="card compact">
@@ -298,6 +300,8 @@ export function Live({ session, view, headsetConnected, onConsent }: { session: 
       </section>
 
       <div className="family-tools" data-testid="family-story-tools">
+
+      {isFamily && <StoryPlace session={session} view={view} latest={recent.data?.[0]} onConsent={onConsent} />}
 
       {objects.data && objects.data.length > 0 && <Corrections code={code} token={token} revision={view.room.revision}
         objects={objects.data} canAct={canAct} paused={paused} />}

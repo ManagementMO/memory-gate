@@ -1,0 +1,26 @@
+{
+  "kind": "Project-generated fictional courtyard, not a family photograph or recovered memory",
+  "model": "marble-1.1",
+  "worldId": "22679f51-8b8b-4f1c-85dc-6df65b1c5da8",
+  "generatedAt": "2026-10-24T17:37:57Z",
+  "credits": 1580,
+  "sourceWords": "Our courtyard had pale limestone walls, deep green shutters and a wooden pergola covered in grape vines. Warm afternoon light fell across the worn stone paving. We would sit together in that quiet open space and talk while the birds sang.",
+  "floorY": -0.6439322583775089,
+  "scale": 2.2900662,
+  "numSplats": 500000,
+  "liteNumSplats": 100000,
+  "files": {
+    "courtyard-500k.spz": {
+      "bytes": 7400090,
+      "sha256": "2481a766b0fea4d40d12b09a724a93784d46fe7d29f09a6e097e8a2746283384"
+    },
+    "courtyard-100k.spz": {
+      "bytes": 1210470,
+      "sha256": "ac5ef161753a38fc8074796684a8d5a66cb246499d265328673d0017428fd325"
+    },
+    "courtyard-preview.webp": {
+      "bytes": 26254,
+      "sha256": "89b89d077b731f9420fecd200c52463bb63cbbe8b59c222e3e4782526278f0e4"
+    }
+  }
+}

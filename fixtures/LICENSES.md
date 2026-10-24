@@ -1,5 +1,9 @@
 # Fixture sources, licenses and credits
 
+## New story courtyard (October 24, 2026)
+
+fixtures/worlds/ contains a project-generated Marble 1.1 courtyard made from fictional, project-authored words. It uses no family photograph, relative's identity or claimed historical event. courtyard.json records those exact words, model, generation date, provider-reported 1,580-credit cost, metric metadata and SHA-256 hashes. The 500k/100k SPZ files and WebP review image are generated World Labs outputs, not CC0 stock assets. Reuse remains subject to the World Labs account's terms. Earlier photo and model credits below remain specific to those earlier assets.
+
 **Sample content only.** These are clearly labeled public-domain photos and generated or CC0 models. No family
 identity, history or testimonial is attached to any of them.
 

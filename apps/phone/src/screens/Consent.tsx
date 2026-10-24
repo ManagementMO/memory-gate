@@ -29,7 +29,7 @@ export const SCOPE_TEXT: Record<Scope, { title: string; plain: string }> = {
   voice_processing: { title: 'Talk with the companion', plain: 'Live speech goes to Cartesia to become text, and the words go to Claude (Anthropic) to suggest objects.' },
   voice_recording: { title: 'Keep the voice recordings', plain: 'Keep the original clips so the family can replay them later. Off unless you choose it. Turning it off deletes them.' },
   vendor_upload_modal: { title: 'Build the room on our GPU service', plain: 'Send the photo to Modal, our GPU provider, to build a detailed room. Without it, the sample room is used.' },
-  vendor_upload_worldlabs: { title: 'Wider backdrop (World Labs)', plain: 'Send the photo to World Labs to build a wider backdrop around the room.' },
+  vendor_upload_worldlabs: { title: 'Imagine a setting (World Labs)', plain: 'Send a chosen photo or selected story words to World Labs to imagine a setting. This does not send the original voice recording or verify a memory. A family member must request each generation.' },
   share_with_family: { title: 'Share with family', plain: 'Family members who join with the room code can see the story and replay clips.' },
 };
 

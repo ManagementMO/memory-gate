@@ -1,23 +1,25 @@
 # Two-minute demonstration
 
-The current scripted experience is an original illustrative courtyard with separate original props. Generated backdrops are cached for review; the courtyard generation has visible floor stretching in wide views, so the cleaner illustrative set is selected for the main demo. The source recording in automated evidence is synthesized. Use a consenting relative's actual words only after their language/content review.
+The current story demo opens a World Labs courtyard prepared from fictional sample words. A new spoken detail becomes a separate, reviewable object inside that place. World generation happened during preparation; it is not instantaneous. Automated voice evidence uses synthesized microphone input. Use a consenting relative's actual words after their language/content review.
 
-Prepare with scripts/start-all.sh and npm run demo:links. Put the spectator view and storyteller phone side by side. Open the family headset link on the Quest and complete docs/QUEST_CHECKLIST.md first. Keep the illustrative courtyard available on Photo; do not wait for a new world generation during judging.
+Prepare with scripts/start-all.sh, npm run seed:world, npm run demo:journey and npm run demo:links. Put the spectator and storyteller phone side by side. demo:journey reopens the current sample; --new explicitly makes an empty one. Open the family headset link on the Quest only after completing docs/QUEST_CHECKLIST.md. Keep the illustrative garden available on Photo; do not wait for a generation during judging.
 
 The intended audience is adults living with younger-onset Alzheimer’s (diagnosed before 65) and someone close to them. This does not assume a disease stage or level of ability. Let the storyteller choose a screen or the optional seated Quest and set the pace. The family can use the simpler storyteller view, watch the shared place, hear the original words, or pause immediately. Present this as a shared reminiscence prototype; no patient benefit or clinical validation has been established.
 
 | Time | Exact spoken line | Operator action / visible result |
 |---|---|---|
-| 0:00–0:15 | “We’re building Memory Gate for adults living with younger-onset Alzheimer’s and the people close to them. A story becomes a place they can shape together, with their own voice behind each detail. This is our fictional sample.” | Show the garden with the phone connected. Open the shared screen view; the Quest is optional. |
-| 0:15–0:35 | Storyteller: “Mueve el banco al lado del árbol, mirando hacia la puerta.” | Phone: Record, speak, Stop and share. The source sentence and gold placement preview appear. |
-| 0:35–0:55 | “She remembers it beside the tree, facing the gate. Her words make a proposal; the remembered place stays unchanged until someone confirms.” | Review the gold bench, then Keep this placement. The accepted bench moves and turns in both views. |
-| 0:55–1:15 | “Every correction can keep the voice that gave it.” | Select the moved bench. Let the original sentence play; point out its English reading and contributor attribution. |
-| 1:15–1:35 | “You can change this live. Choose a supported reference for where the bench should face.” | Use the placement form or a supported English/Spanish turn. Show a fresh proposal and confirm it. |
-| 1:35–1:50 | “And we can go back without losing the story.” | Undo moving bench. Both views restore the previous placement and source association. |
-| 1:50–2:00 | “Claude interprets ordinary narration. Our code validates and positions objects. The family confirms. The original voice stays attached to the accepted detail.” | Show the saved source, open the gate, or briefly hold/release the nearby keepsake if time allows. |
+| 0:00–0:15 | “Memory Gate is a place to spend time together for adults living with younger-onset Alzheimer’s and people close to them. This is a fictional sample, and the storyteller sets the pace.” | Show the empty World Labs courtyard and the connected phone. The screen is a complete participation option. |
+| 0:15–0:30 | “We prepared this setting from the opening words about limestone walls, green shutters and afternoon light. World Labs imagined the backdrop; those details are an interpretation.” | Briefly show the source quote and preview in family tools, then open the shared view. The world is cached, with no generation wait. |
+| 0:30–0:50 | Storyteller: “There was a wooden bench. We used to sit there together after lunch.” | Phone: Record, speak, Stop and share. The sentence and a golden bench suggestion appear. Let the visual moment breathe. |
+| 0:50–1:10 | “Her own words gave us the detail. The golden shape is a suggestion we can keep or change together.” | Review the quote and choose Confirm. Watch the bench become solid in the same place on both screens. |
+| 1:10–1:30 | “Now this place holds the voice that gave it meaning.” | Select the rendered bench. Stop speaking while the actual captured sentence plays. Point out who said it; this is the same recording, without a cloned voice. |
+| 1:30–1:45 | “There is no test and no rush. We can simply pause.” | Pause the session. The setting fades and the clear break state appears. Resume only when the storyteller is ready. |
+| 1:45–2:00 | “World Labs prepares the setting. Claude interprets narration; our code validates and positions separate objects. People confirm. The source voice stays attached, and changes can be undone.” | Undo confirmation if desired: the bench returns to a suggestion while the story stays saved. |
 
 If speech fails, say “We can use the same confirmation flow from the keyboard,” then type the correction. If a proposal is stale, dismiss it and make a fresh one. If generated scenery is distracting, choose Use illustrative courtyard on Photo; objects and story remain.
 
 No lo muevas / Don't move it preserve the current placement. They do not confirm a preview. Never claim the guided spatial grammar is unrestricted multilingual reasoning, a static splat is editable game geometry, or emulator evidence is physical Quest evidence.
 
-The recorded backup is evidence/review-2026-10-23/demo-correction.webm. It is a silent browser capture of the actual synthesized-speech test, not a replacement for the live demo.
+For the separate bilingual correction/interaction rehearsal, run npm run demo:links -- --illustrative and use the four-prop sample. “Mueve el banco al lado del árbol, mirando hacia la puerta” creates the supported source-linked placement preview. Confirm, select to replay, and undo. The gate hinge and squeeze/grab/return remain available there; they are separate from static splat scenery.
+
+The current backup is evidence/world-story/world-story-demo.webm. It is a silent browser capture of the actual synthesized-speech story test; audio playback is separately asserted by the test. Earlier Spanish correction footage remains in evidence/review-2026-10-23/demo-correction.webm.

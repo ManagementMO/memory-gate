@@ -63,13 +63,18 @@ export const get = query({
     const members = await ctx.db.query('members').withIndex('by_room', (q) => q.eq('roomId', room._id)).collect();
     const consents = await ctx.db.query('consents').withIndex('by_room', (q) => q.eq('roomId', room._id)).collect();
     const splats = await ctx.db.query('splats').withIndex('by_room', (q) => q.eq('roomId', room._id)).order('desc').take(5);
+    const sourceOf = async (s: typeof splat) => {
+      const u = s?.sourceUtteranceId ? await ctx.db.get(s.sourceUtteranceId) : null;
+      return u && u.roomId === room._id ? { id: u._id, speaker: u.speaker, transcript: u.transcript, source: u.source, at: u.createdAt } : null;
+    };
     return {
       room: { code: room.code, title: room.title, paused: room.paused, openedAt: room.openedAt, headsetLastSeenAt: room.headsetLastSeenAt,
         soundLevel: room.soundLevel, echoEnabled: room.echoEnabled, familyNames: room.familyNames, revision: room.revision, demo: room.demo, offline: room.offline ?? false, layout: room.layout ?? 'photo' },
       me: { displayName: member.displayName, role: member.role, isOwner: member.isOwner },
       joinKey: member.role === 'family' ? room.joinKey ?? null : null, // only family can share the privileged links
-      splat: splat ? { id: splat._id, status: splat.status, source: splat.source, url: splatUrl, liteUrl, numSplats: splat.numSplats, liteNumSplats: splat.liteNumSplats ?? null, floorY: splat.floorY, scale: splat.scale } : null,
-      recentSplats: splats.map((s) => ({ id: s._id, status: s.status, source: s.source, error: s.error, createdAt: s.createdAt, readyAt: s.readyAt })),
+      splat: splat ? { id: splat._id, status: splat.status, source: splat.source, url: splatUrl, liteUrl, numSplats: splat.numSplats, liteNumSplats: splat.liteNumSplats ?? null, floorY: splat.floorY, scale: splat.scale, sourceStory: await sourceOf(splat) } : null,
+      recentSplats: await Promise.all(splats.map(async (s) => ({ id: s._id, status: s.status, source: s.source, error: s.error, createdAt: s.createdAt, readyAt: s.readyAt, sourceStory: await sourceOf(s), previewUrl: s.previewFileId ? await ctx.storage.getUrl(s.previewFileId) : null }))),
+      preparedCourtyardAvailable: !!(await ctx.db.query('assets').withIndex('by_key', q => q.eq('key', 'world.practice-courtyard')).unique()),
       flags: await readFlags(ctx, room),
       members: members.filter((m) => m.revokedAt === null).map((m) => ({ displayName: m.displayName, role: m.role })),
       consents: consents.filter((c) => c.revokedAt === null).map((c) => ({ id: c._id, givenBy: c.givenBy, scopes: c.scopes, createdAt: c.createdAt })),
@@ -149,9 +154,11 @@ export const resetDemo = mutation({
     }
     for (const e of await ctx.db.query('events').withIndex('by_room', (q) => q.eq('roomId', room._id)).collect()) await ctx.db.delete(e._id);
     for (const p of await ctx.db.query('corrections').withIndex('by_room', q => q.eq('roomId', room._id)).collect()) await ctx.db.delete(p._id);
+    const worldSources = new Set((await ctx.db.query('splats').withIndex('by_room', q => q.eq('roomId', room._id)).collect()).map(s => s.sourceUtteranceId).filter(Boolean));
     for (const u of await ctx.db.query('utterances').withIndex('by_room', (q) => q.eq('roomId', room._id)).collect()) {
       if (u.audioFileId) files.add(u.audioFileId);
-      await ctx.db.delete(u._id);
+      if (worldSources.has(u._id)) await ctx.db.patch(u._id, { audioFileId: null }); // retain the exact generated-world source, reset recorded audio
+      else await ctx.db.delete(u._id);
     }
     for (const j of await ctx.db.query('jobs').withIndex('by_room', (q) => q.eq('roomId', room._id)).collect()) {
       if (!['splat', 'world'].includes(j.kind)) await ctx.db.delete(j._id);

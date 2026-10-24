@@ -17,6 +17,7 @@ import type * as generate from "../generate.js";
 import type * as jobsdb from "../jobsdb.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_storage from "../lib/storage.js";
+import type * as lib_worldAssetDownload from "../lib/worldAssetDownload.js";
 import type * as library from "../library.js";
 import type * as objects from "../objects.js";
 import type * as rooms from "../rooms.js";
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   jobsdb: typeof jobsdb;
   "lib/auth": typeof lib_auth;
   "lib/storage": typeof lib_storage;
+  "lib/worldAssetDownload": typeof lib_worldAssetDownload;
   library: typeof library;
   objects: typeof objects;
   rooms: typeof rooms;

@@ -1,0 +1,51 @@
+{
+  "checkedAt": "2026-10-24T18:24:38.358276+00:00",
+  "command": "E2E_SCREEN_DIR=evidence/world-story/screens npm run verify:live",
+  "typechecks": {
+    "backend": "pass",
+    "phone": "pass",
+    "headset": "pass"
+  },
+  "builds": {
+    "phone": "pass",
+    "headset": "pass"
+  },
+  "domainTests": {
+    "passed": 76,
+    "failed": 0
+  },
+  "rendererTests": {
+    "passed": 6,
+    "failed": 0
+  },
+  "browserTests": {
+    "passed": 29,
+    "failed": 0
+  },
+  "nativeXR": {
+    "passed": true,
+    "kind": "IWSDK Meta Quest 3 emulator; no physical headset",
+    "scenery": {
+      "source": "worldlabs",
+      "loaded": true,
+      "lite": true
+    },
+    "initialGateAngle": 0,
+    "finalGateAngle": -1.5011563539114305
+  },
+  "worldGeneration": {
+    "model": "marble-1.1",
+    "newPaidSubmissions": 1,
+    "providerReportedCredits": 1580,
+    "capUsed": 4,
+    "capLimit": 4,
+    "source": "fictional project-authored words",
+    "downloadRecovery": "reused the completed operation; no additional generation"
+  },
+  "extraChecks": [
+    "390px phone cached-world/source card has no horizontal overflow",
+    "cached seed hashes verified on repeat run",
+    "Chrome live microphone and actual stored-clip playback verified",
+    "physical Quest and real family not tested"
+  ]
+}

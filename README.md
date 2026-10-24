@@ -2,7 +2,7 @@
 
 An adult living with younger-onset Alzheimer’s shares a story with someone close to them. Their words can suggest objects in a shared place, on a screen or an optional Quest 3. Family members review visual suggestions together. Original recordings, translations and contributor attribution stay with the story. This is a reminiscence and conversation prototype; clinical benefit has not been established.
 
-The experience now has a shaded illustrative garden, more natural original props, an eye-level stable camera, an embedded shared view, and an optional simpler storyteller screen. A spoken correction still creates a gold placement preview; confirmation moves and turns the bench in both views. Selecting it replays the original sentence. Undo restores its previous placement and source. Uncertain recall stays as conversation, rather than becoming scene evidence. See [the current handoff](MORNING_REPORT.md) for verification and remaining gates.
+The main story demo now opens a realistic World Labs courtyard prepared from fictional sample words. A spoken detail forms a separate golden object; the family reviews it, confirmation gives it a solid form, and selecting it replays the original captured sentence. A family member can also explicitly request a private setting from selected story words. The original illustrative garden, shared correction/undo, simpler storyteller screen and immediate pause remain available. Uncertain recall stays as conversation, rather than becoming scene evidence. See [the current handoff](MORNING_REPORT.md) for verification and remaining gates.
 
 This is the reviewed local Heirloom foundation, not an untested overnight completion claim. The defining shared correction, real speech/source replay, generated scenery and native emulator interactions have evidence. Physical Quest 3 and real-family validation remain open.
 
@@ -61,7 +61,9 @@ On the phone, **Simpler storyteller view** hides arrangement tools while keeping
 
 ## Scenery and credentials
 
-The main demo uses the **original illustrative courtyard** and four separate interactive models. A World Labs Marble 1.1 interpretation of our original empty set is also cached on Photo, with 100k/500k variants. Both are fictional, not a family's photograph. The generated courtyard shows floor stretching from the wide spectator camera, so it is available for review rather than selected as the presentation default. Photo can switch scenery without deleting objects or story. A separate generated living-room sample verified the full photo-world path.
+The main story demo uses the **new cached World Labs courtyard**, generated directly from fictional words rather than an image of the illustrative set. Both 500k/100k SPZ variants, a preview and hashed metric metadata are checked into fixtures/worlds/. Run npm run seed:world once, then npm run demo:journey for a ready, empty stage; it reopens the existing sample unless --new is explicit. npm run demo:links prefers that room. No generation credits are used by these commands. The projector uses the full 500k world with a 78° field of view; the Quest keeps its configured lighter option. Generated details are unverified, and movable objects remain separate.
+
+The earlier illustrative courtyard and cached photo interpretations remain available. npm run demo:links -- --illustrative selects the original four-prop rehearsal. Photo can switch scenery without deleting objects or story.
 
 Credentials live only in ignored auth/memory-gate.env (permissions 600), or a file selected by MEMORY_GATE_ENV. The teammate's MEMGATE_AUTH_FILE override remains supported; MEMORY_GATE_ENV takes precedence. See [.env.example](.env.example). Never put provider keys in frontend environment variables.
 
@@ -73,9 +75,9 @@ npm run doctor
 
 Anthropic, Cartesia and World Labs authenticated and were called successfully. Optional Tripo/Modal credentials are not needed for the default experience.
 
-World Labs explicitly requests a private Marble 1.1 world, currently documented at 1,580 API credits for an ordinary photo, including panorama preparation. A generation is asynchronous and waits for family review before display. The backend caches bounded assets and metric metadata; a lost download can recover its saved operation without another generation. The first live draft lacked calibration metadata and was correctly blocked.
+World Labs explicitly requests a private Marble 1.1 world, currently documented at 1,580 API credits for text or an ordinary photo, including panorama preparation. In family tools, review the selected words and explicitly approve generation. Original audio is not sent to World Labs. Generation takes minutes and waits for review before display. Repeated clicks reuse the source's existing job. The backend caches bounded assets and metric metadata; download recovery reuses the saved operation with validated byte ranges and bounded free retries. The first live draft lacked calibration metadata and was correctly blocked.
 
-There is one active generation and three submissions per room, plus a durable deployment-wide cap (default three). **The review used those three submissions**: one draft and two standard worlds. Reopening either cached standard world costs no generation credits. A later funded run can deliberately set WORLD_LABS_GENERATION_LIMIT in the private configuration and run env:push; nothing raises it automatically. This is not a guaranteed dollar cap.
+There is one active generation and three submissions per room, plus a durable deployment-wide cap (default three). The user authorized exactly one additional generation for this pass: the private local limit is now four and all four reservations are used. The new courtyard operation reports exactly 1,580 credits; it was not resubmitted during download recovery. Reopening cached worlds costs no generation credits. A further funded run needs a deliberate operator change to WORLD_LABS_GENERATION_LIMIT; nothing raises it automatically. This is not a guaranteed dollar cap.
 
 ## Verify
 

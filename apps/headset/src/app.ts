@@ -135,6 +135,8 @@ export async function startApp(world: World): Promise<void> {
   let lastOpenedAt: number | null | undefined;
   let latestPending = false;
   let pendingCorrectionId: Id<'corrections'> | null = null;
+  let pendingObjectCount = 0;
+  const renderStoryState = () => ui.setStoryState(latestPending ? 'listening' : pendingCorrectionId || pendingObjectCount ? 'review' : 'together', paused);
   let speaking: { id: string; intent: string | null } | null = null;
   const handled = new Set<string>();
   const shownLine = new Set<string>();
@@ -150,6 +152,8 @@ export async function startApp(world: World): Promise<void> {
   // ---------- desktop camera at the photo's camera ----------
   const placeDesktopCamera = () => {
     if (world.renderer.xr.isPresenting) return;
+    // A complete 360 world needs a human field of view. The authored 52° courtyard hero cropped it to a wall.
+    if (!fov) { world.camera.fov = room.ready && room.info?.source === 'worldlabs' ? 78 : 52; world.camera.updateProjectionMatrix(); }
     const cam = params.get('cam');
     if (cam === 'side' || cam === 'top') {
       if (cam === 'side') world.camera.position.set(7, 1.6, -3.5); else world.camera.position.set(0, 11, -3.6);
@@ -157,7 +161,7 @@ export async function startApp(world: World): Promise<void> {
       world.camera.updateMatrixWorld(true);
       return;
     }
-    if (roomView?.room.layout === 'courtyard' || (spectator && fallback && !room.ready)) {
+    if (!room.ready && (roomView?.room.layout === 'courtyard' || (spectator && fallback))) {
       world.camera.position.set(0, 1.62, 1.9);
       world.camera.lookAt(0, 1.25, -4.6);
       world.camera.updateMatrixWorld(true);
@@ -170,6 +174,7 @@ export async function startApp(world: World): Promise<void> {
     world.camera.position.set(0, room.eyeHeight, 0);
     world.camera.rotation.set(0, 0, 0);
     world.camera.updateMatrixWorld(true);
+    stats.desktopCamera = { position: world.camera.position.toArray(), fov: world.camera.fov, fromSource: true };
   };
 
   // ---------- XR session: recenter the memory at the head (yaw only), passthrough background ----------
@@ -343,6 +348,7 @@ export async function startApp(world: World): Promise<void> {
       }
     }
     latestPending = list[0]?.status === 'pending';
+    renderStoryState();
     stats.latestUtterance = list[0] ? { status: list[0].status, intent: list[0].intent, aiMode: list[0].aiMode, aiMs: list[0].aiMs } : null;
   };
 
@@ -858,7 +864,7 @@ export async function startApp(world: World): Promise<void> {
     ui.setSceneContext(r.room.title, r.splat?.status === 'ready', r.room.demo, r.room.paused);
     if (r.splat?.status === 'ready' && r.splat.url) {
       // splat.lite (phone admin): the 250k SPZ of the same memory, paired with XR framebuffer scale 0.5 (CLAUDE.md).
-      const lite = !!(r.flags['splat.lite'] && r.splat.liteUrl);
+      const lite = !!(!spectator && r.flags['splat.lite'] && r.splat.liteUrl); // projectors keep the full 500k; Quest retains its configured lighter option
       const url = fileUrl(lite ? r.splat.liteUrl : r.splat.url)!;
       const sameMemory = loadedSplatId === r.splat.id;
       loadedSplatId = r.splat.id;
@@ -891,6 +897,7 @@ export async function startApp(world: World): Promise<void> {
       }
     }
     applyPaused(r.room.paused);
+    renderStoryState();
     if (lastOpenedAt !== undefined && r.room.openedAt !== lastOpenedAt && r.room.openedAt) {
       // The phone tapped "Show": open the memory again (recenter in XR, replay the reveal).
       if (world.renderer.xr.isPresenting) recenter(); else room.replayReveal();
@@ -900,6 +907,8 @@ export async function startApp(world: World): Promise<void> {
   }, subError('room'));
   cl.onUpdate(api.objects.list, { code: sess.code, token: sess.token }, (list) => {
     pendingCorrectionId = list.find(o => o.pendingCorrection)?.pendingCorrection?.id ?? null;
+    pendingObjectCount = list.filter(o => o.status === 'ghost').length;
+    renderStoryState();
     stats.pendingCorrection = pendingCorrectionId;
     stats.objectRecords = list.map((o) => `${o.label}:${o.status}:${o.model}:${o.glbUrl ? o.modelSource : 'none'}`).join(',');
     onObjectTransitions(list);

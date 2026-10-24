@@ -1,0 +1,35 @@
+{
+  "kind": "Live STT and stored synthesized microphone capture, cached World Labs world, actual rendered pointer selection",
+  "recognized": "Ana (synthetic test)’s words“There was a wooden bench. We used to sit there together after lunch.”▶ReplayThere is no right answer. You can change the scene, keep talking, or simply enjoy being here.",
+  "proof": {
+    "source": "worldlabs",
+    "lite": false,
+    "camera": {
+      "position": [
+        0,
+        1.4746475219726562,
+        0
+      ],
+      "fov": 78,
+      "fromSource": true
+    },
+    "replay": "said by Ana (synthetic test) · 11:15 AM: “There was a wooden bench.”",
+    "caption": "said by Ana (synthetic test) · 11:15 AM: “There was a wooden bench.”",
+    "tickError": null,
+    "objects": [
+      {
+        "id": "k17f20pt41weyng61774vemh6x8gx6r2",
+        "label": "wooden bench",
+        "preview": false,
+        "phase": "solid",
+        "position": [
+          -0.9,
+          0,
+          -2.4
+        ],
+        "yaw": 0.35877067027057225,
+        "interaction": null
+      }
+    ]
+  }
+}

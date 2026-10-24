@@ -59,6 +59,8 @@ export default defineSchema({
   splats: defineTable({
     roomId: v.id('rooms'),
     photoId: v.union(v.id('photos'), v.null()),
+    sourceUtteranceId: v.optional(v.id('utterances')), // exact words that requested this imagined place
+    previewFileId: v.optional(v.id('_storage')), // cached provider thumbnail, reviewed before Show
     status: v.string(), // queued | running | ready | failed
     fileId: v.union(v.id('_storage'), v.null()),
     liteFileId: v.union(v.id('_storage'), v.null()),

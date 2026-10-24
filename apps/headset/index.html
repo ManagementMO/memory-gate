@@ -115,7 +115,15 @@
       body.mg-embedded .mg-ticker { left: 12px; bottom: 12px; width: calc(100% - 24px); padding: 6px 12px; }
       body.mg-embedded .mg-tick .text { font-size: 17px; }
       body.mg-embedded .mg-tick:not([data-kind="line"]) { display: none; }
+      .mg-story-state { display: none; position: fixed; right: 28px; top: 64px; z-index: 15; max-width: 270px; padding: 16px 18px; border: 1px solid #c0ceb9; border-radius: 12px; background: rgba(239,244,230,.95); color: #23432e; box-shadow: 0 6px 24px #17332422; }
+      .mg-story-state strong { display: block; font: 500 20px/1.2 var(--serif); margin-bottom: 6px; }
+      .mg-story-state span { font: 400 12px/1.5 var(--sans); }
+      .mg-story-state[data-state="review"] { background: #f8edcc; border-color: #cba968; color: #61491c; }
+      .mg-story-state[data-state="listening"] { background: #e5eddf; border-color: #7f9e76; }
+      body.mg-spectator .mg-story-state { display: block; }
+      body.mg-presenting .mg-story-state, body.mg-embedded .mg-story-state { display: none; }
       @media (max-width: 640px) {
+        body.mg-spectator .mg-story-state { display: none; }
         .mg-panel { bottom: 10px; padding: 14px; }
         .mg-sep { display: none; }
         #mg-mic, #mg-enter { flex: 1 1 40%; }
@@ -128,6 +136,7 @@
 
     <div class="mg-tag" id="mg-tag" data-testid="sample-tag">Memory Gate · together</div>
     <div class="mg-view-heading"><h1 id="mg-view-title"></h1><p id="mg-scene-kind"></p></div>
+    <aside class="mg-story-state" id="mg-story-state" data-testid="story-state" aria-live="polite"><strong id="mg-story-step"></strong><span id="mg-story-hint"></span></aside>
 
     <header class="mg-head mg-hidden" id="mg-head">
       <h1 class="mg-title" id="mg-title" data-testid="room-title">…</h1>
