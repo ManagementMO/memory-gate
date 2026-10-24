@@ -1,0 +1,136 @@
+import http from 'node:http';
+import { createHash } from 'node:crypto';
+import { WebSocketServer, WebSocket } from 'ws';
+import { ConvexHttpClient } from 'convex/browser';
+import { makeFunctionReference } from 'convex/server';
+import { DbConnection } from './bindings/index.ts';
+import { runArchive } from './archive-runner.mjs';
+
+const token = process.env.SPACETIME_TOKEN;
+if (!token) throw new Error('SPACETIME_TOKEN is required by the private exchange gateway.');
+const convex = new ConvexHttpClient(process.env.CONVEX_URL ?? 'http://127.0.0.1:3210');
+const contextRef = makeFunctionReference('exchange:context');
+const sourceRef = makeFunctionReference('exchange:source');
+const origins = new Set((process.env.EXCHANGE_ORIGINS ?? 'http://127.0.0.1:5173,http://localhost:5173,https://localhost:5174').split(','));
+const clients = new Set();
+let ready = false; let archiveBusy = false;
+const archiveCooldown = new Map();
+const db = DbConnection.builder().withUri(process.env.SPACETIME_URL ?? 'ws://127.0.0.1:3000')
+  .withDatabaseName(process.env.SPACETIME_DATABASE ?? 'heirloom-exchange').withToken(token).withConfirmedReads(true)
+  .withAutomaticReconnect()
+  .onConnect(conn => {
+    conn.subscriptionBuilder().onApplied(() => { ready = true; refreshAll(); }).onError(() => { ready = false; invalidateAll(); })
+      .subscribe(['SELECT * FROM capsule', 'SELECT * FROM reference']);
+  }).onDisconnect(() => { ready = false; invalidateAll(); })
+  .onConnectError(() => { ready = false; invalidateAll(); }).build();
+
+function send(client, data) { if (client.socket.readyState === WebSocket.OPEN) client.socket.send(JSON.stringify(data)); }
+function invalidateAll() { for (const c of clients) send(c, { type: 'unavailable', message: 'The memory exchange is reconnecting. Please wait before trying again.' }); }
+async function authorize(c) {
+  if (!c.auth) throw new Error('Join this room first.');
+  return convex.query(contextRef, c.auth);
+}
+function visibleCapsules(context) {
+  const active = new Set(context.members.map(m => m.id));
+  return [...db.db.capsule.iter()].filter(c => c.roomId === context.roomId && (c.senderId === context.memberId || c.recipientId === context.memberId)).map(c => ({ ...c,
+    senderName: context.members.find(m => m.id === c.senderId)?.name ?? 'Former contributor',
+    recipientName: context.members.find(m => m.id === c.recipientId)?.name ?? 'Former participant',
+    sourceAvailable: active.has(c.senderId),
+  }));
+}
+async function refresh(c) {
+  if (!ready || !c.auth || c.refreshing) return;
+  c.refreshing = true;
+  try {
+    const context = await authorize(c);
+    if (!ready) return;
+    const board = [...db.db.reference.iter()].filter(r => r.roomId === context.roomId).map(r => ({ ...JSON.parse(r.data), id: r.id, addedBy: r.addedBy, contributor: context.members.find(m => m.id === r.addedBy)?.name ?? 'Former participant' }));
+    const online = [...clients].filter(other => other.context?.roomId === context.roomId && Date.now() - other.authorizedAt < 10_000).map(other => other.context.memberId);
+    c.context = context; c.authorizedAt = Date.now();
+    send(c, { type: 'snapshot', context, capsules: visibleCapsules(context), references: board,
+      online: [...new Set([...online, context.memberId])], archiveMode: context.offline ? 'disabled-offline' : process.env.ATLAS_MODE ?? 'disabled' });
+  } catch {
+    c.context = null; c.authorizedAt = 0;
+    send(c, { type: 'unavailable', message: 'Sharing is unavailable. Check your room membership and family-sharing permission.' });
+  } finally { c.refreshing = false; }
+}
+function refreshAll() { for (const c of clients) void refresh(c); }
+for (const table of [db.db.capsule, db.db.reference]) {
+  table.onInsert(refreshAll); table.onDelete(refreshAll); table.onUpdate(refreshAll);
+}
+function requireReady(context) { if (!ready) throw new Error('The exchange is not connected.'); if (context.paused) throw new Error('This room is paused. Resume it before changing memories.'); }
+async function action(c, message) {
+  if (message.type === 'join') {
+    if (c.auth) throw new Error('This connection has already joined a room.');
+    if (typeof message.code !== 'string' || typeof message.token !== 'string' || message.token.length > 100) throw new Error('Invalid room session.');
+    c.auth = { code: message.code, token: message.token }; await authorize(c); await refresh(c); return;
+  }
+  const context = await authorize(c); requireReady(context);
+  const { memberId, roomId } = context;
+  if (message.type === 'pass') {
+    if (!context.sources.some(s => s.id === message.sourceId)) throw new Error('Choose one of your own completed stories.');
+    if (!context.members.some(m => m.id === message.recipientId) || message.recipientId === memberId) throw new Error('Choose another current participant.');
+    if (typeof message.title !== 'string' || !message.title.trim() || message.title.length > 80 || !/^[a-f0-9-]{36}$/.test(message.commandId ?? '')) throw new Error('A short title and valid command are required.');
+    await db.reducers.passMemory({ id: `${roomId}:${message.commandId}`, roomId, sourceId: message.sourceId, senderId: memberId, recipientId: message.recipientId, title: message.title.trim() });
+  } else if (message.type === 'respond') {
+    if (!Number.isInteger(message.revision) || message.revision < 0 || message.revision > 0xffffffff) throw new Error('Invalid memory revision.');
+    await db.reducers.respondMemory({ id: message.capsuleId, roomId, memberId, status: message.status, expectedRevision: message.revision });
+  } else if (message.type === 'open') {
+    const capsule = db.db.capsule.id.find(message.capsuleId);
+    if (!capsule || capsule.roomId !== roomId || capsule.status === 'revoked' || capsule.status === 'dismissed' || (capsule.senderId !== memberId && !(capsule.recipientId === memberId && capsule.status === 'accepted'))) throw new Error('Accept a memory addressed to you before opening it.');
+    const source = await convex.query(sourceRef, { ...c.auth, sourceId: capsule.sourceId });
+    // Recheck authoritative state after asynchronous media authorization (revocation can race).
+    const current = db.db.capsule.id.find(capsule.id);
+    if (!current || current.revision !== capsule.revision) throw new Error('The memory changed while opening. Please review it again.');
+    send(c, { type: 'opened', capsuleId: capsule.id, source });
+  } else if (message.type === 'search') {
+    if (context.offline) throw new Error('Public archive requests are disabled in fixture-only rooms.');
+    if (archiveBusy || Date.now() - (archiveCooldown.get(roomId) ?? 0) < 30_000) throw new Error('Please allow the current archive search to finish before searching again.');
+    archiveBusy = true; archiveCooldown.set(roomId, Date.now());
+    try {
+      const result = await runArchive(message.input);
+      await authorize(c);
+      c.references = new Map(result.references.map(r => [r.id, r]));
+      send(c, { type: 'search-results', result });
+    } finally { archiveBusy = false; }
+  } else if (message.type === 'pin') {
+    const ref = c.references?.get(message.referenceId);
+    if (!ref) throw new Error('Search and review a reference before adding it to the board.');
+    const id = `${roomId}:${createHash('sha256').update(ref.sourceUrl).digest('hex')}`;
+    await db.reducers.pinReference({ id, roomId, memberId, data: JSON.stringify(ref) });
+  } else if (message.type === 'unpin') {
+    await db.reducers.unpinReference({ id: message.referenceId, roomId, memberId });
+  } else throw new Error('Unknown exchange action.');
+  await refresh(c);
+}
+const server = http.createServer((req, res) => { res.writeHead(req.url === '/health' ? (ready ? 200 : 503) : 404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ready, backend: 'SpacetimeDB' })); });
+const wss = new WebSocketServer({ noServer: true, maxPayload: 16_384 });
+server.on('upgrade', (req, socket, head) => {
+  if (req.url !== '/exchange' || !origins.has(req.headers.origin) || clients.size >= 64) { socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
+  wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws));
+});
+wss.on('connection', socket => {
+  const c = { socket, auth: null, context: null, authorizedAt: 0, refreshing: false, busy: false, count: 0, window: Date.now() }; clients.add(c);
+  const authTimeout = setTimeout(() => { if (!c.context) socket.close(1008, 'Join timeout'); }, 10_000);
+  socket.on('message', async raw => {
+    let message;
+    try {
+      if (Date.now() - c.window > 60_000) { c.count = 0; c.window = Date.now(); }
+      if (++c.count > 60) throw new Error('Please slow down.');
+      message = JSON.parse(raw.toString());
+      if (!message || typeof message !== 'object' || typeof message.requestId !== 'string' || message.requestId.length > 80) throw new Error('Invalid request.');
+      if (c.busy) throw new Error('Your previous action is still being saved.');
+      c.busy = true;
+      try { await action(c, message); send(c, { type: 'ack', requestId: message.requestId }); } finally { c.busy = false; }
+    } catch (error) {
+      // Never forward provider errors, auth arguments, stack traces or token-bearing URLs.
+      const safe = error instanceof Error && !/token|stack|http|convex|requestid|server error/i.test(error.message) ? error.message.slice(0, 200) : 'This action could not complete. Check your connection and sharing permission.';
+      send(c, { type: 'error', requestId: message?.requestId, message: safe });
+    }
+  });
+  socket.on('close', () => { clearTimeout(authTimeout); clients.delete(c); refreshAll(); });
+});
+const poll = setInterval(refreshAll, 5000);
+server.listen(Number(process.env.EXCHANGE_PORT ?? 3212), '127.0.0.1', () => console.log('Memory exchange gateway listening on 127.0.0.1:3212; private SpacetimeDB subscriptions enabled.'));
+function stop() { clearInterval(poll); for (const c of clients) c.socket.close(); wss.close(); server.close(); db.disconnect(); }
+process.on('SIGTERM', stop); process.on('SIGINT', stop);

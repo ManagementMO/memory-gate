@@ -6,9 +6,9 @@ Branch: `codex/calhacks-apify-spacetime-meta`. User explicitly requested regular
 
 - [x] Fresh isolated clone; clean starting main; feature branch created on GitHub.
 - [x] Read supplied project brief and hacker guide. No Apify token found in the two supplied notes. Other provider credentials are not copied into the repository or used for paid calls.
-- [ ] Establish fixture baseline and portable local startup.
-- [ ] Custom Apify historical-reference Actor with bounded public archive retrieval, source dates, rights, honest uncertainty, and reproducible input/output.
-- [ ] SpacetimeDB authoritative memory handoff and shared reference board, integrated into the existing phone app. Convex retains existing capture, scene editing and media.
+- [x] Baseline: original 69 tests passed. Added authorization tests bring this to 71/71. Phone production build and three typechecks pass; renderer 4/4 passes. Local Convex and SpacetimeDB 2.13.0 started.
+- [x] Custom Apify historical-reference Actor implemented with bounded public archive retrieval, source dates, rights, honest uncertainty, input/output schemas. Five offline Actor tests pass. Live archive execution still to verify.
+- [x] SpacetimeDB private tables/reducers published locally; subscribed gateway and integrated Memories screen implemented. Convex retains existing capture, scene editing and media. End-to-end verification pending.
 - [ ] Recipient acceptance, persistence, revocation, authorization, and two-client synchronization verification.
 - [ ] Accessible UI, source replay, rendered mobile/desktop inspection, demo runbook.
 - [ ] Final validation and pushed checkpoint.

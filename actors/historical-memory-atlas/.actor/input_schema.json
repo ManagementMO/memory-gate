@@ -1,0 +1,13 @@
+{
+  "title": "Explore a place through public archives",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "place": { "title": "Public place name", "type": "string", "description": "A city, neighborhood or public landmark. Do not send private family stories or addresses.", "editor": "textfield", "prefill": "San Francisco" },
+    "yearFrom": { "title": "From year", "type": "integer", "minimum": 1000, "maximum": 2100, "default": 1900 },
+    "yearTo": { "title": "To year", "type": "integer", "minimum": 1000, "maximum": 2100, "default": 1980 },
+    "terms": { "title": "Optional public search terms", "type": "string", "editor": "textfield", "default": "street" },
+    "maxItems": { "title": "Maximum references", "type": "integer", "minimum": 1, "maximum": 8, "default": 4 }
+  },
+  "required": ["place", "yearFrom", "yearTo"]
+}

@@ -1,0 +1,8 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "Archival references and provenance",
+  "properties": {
+    "references": { "type": "string", "title": "References", "template": "{{links.apiDefaultDatasetUrl}}/items" },
+    "manifest": { "type": "string", "title": "Input and retrieval manifest", "template": "{{links.apiDefaultKeyValueStoreUrl}}/records/OUTPUT" }
+  }
+}

@@ -22,7 +22,10 @@ function backendTarget(): string {
   return 'http://127.0.0.1:3210';
 }
 
-const proxy: Record<string, ProxyOptions> = { '/api': { target: backendTarget(), changeOrigin: true, ws: true } };
+const proxy: Record<string, ProxyOptions> = {
+  '/api': { target: backendTarget(), changeOrigin: true, ws: true },
+  '/exchange': { target: process.env.EXCHANGE_PROXY_TARGET ?? 'http://127.0.0.1:3212', ws: true },
+};
 const securePhone = process.env.PHONE_HTTPS === '1';
 
 export default defineConfig({

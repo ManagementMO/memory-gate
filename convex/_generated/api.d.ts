@@ -13,6 +13,7 @@ import type * as ai from "../ai.js";
 import type * as consents from "../consents.js";
 import type * as corrections from "../corrections.js";
 import type * as doctor from "../doctor.js";
+import type * as exchange from "../exchange.js";
 import type * as generate from "../generate.js";
 import type * as jobsdb from "../jobsdb.js";
 import type * as lib_auth from "../lib/auth.js";
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   consents: typeof consents;
   corrections: typeof corrections;
   doctor: typeof doctor;
+  exchange: typeof exchange;
   generate: typeof generate;
   jobsdb: typeof jobsdb;
   "lib/auth": typeof lib_auth;

@@ -1,0 +1,16 @@
+{
+  "name": "heirloom-memory-exchange-module",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "memory-gate-practice": "file:..",
+    "spacetimedb": "2.13.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}
