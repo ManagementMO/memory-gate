@@ -51,8 +51,8 @@ export function marbleUniforms(): MarbleUniforms {
     uGold: { value: new THREE.Color('#b08a4c') },
     uChrome: { value: new THREE.Color('#d9d4cb') },
     uVein: { value: 1 },
-    uGlowCore: { value: new THREE.Color('#fff1cc') },
-    uGlowEdge: { value: new THREE.Color('#ffaa45') },
+    uGlowCore: { value: new THREE.Color('#fff7e8') },
+    uGlowEdge: { value: new THREE.Color('#ffc580') },
     uDiaBright: { value: 0.6 },
   };
 }
