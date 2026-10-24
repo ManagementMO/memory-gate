@@ -1,3 +1,5 @@
+import type { ScenePlan } from '../../../../packages/shared/src/scene';
+
 // What the moments album shows. A memory is one visit through the gate; a moment is a beat inside it (arriving,
 // something added, leaving), captured as a picture of the place with the words that shaped it.
 export type AlbumMoment = {
@@ -25,4 +27,8 @@ export type AlbumMemory = {
   /** Up to three remembered colours, used to tint the memory's glass. */
   palette: string[];
   moments: AlbumMoment[];
+  /** Fictional preview content, labelled as such wherever it's shown. */
+  sample?: boolean;
+  /** The plan the place was drawn from, so "Visit again" can bring it back exactly. */
+  plan?: ScenePlan;
 };

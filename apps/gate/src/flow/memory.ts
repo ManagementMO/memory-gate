@@ -60,6 +60,7 @@ class Memory {
       }
       if (!plan) plan = planOffline(text || 'a quiet room with a window', this.title);
       if (this.title && plan.title !== this.title) plan = { ...plan, title: this.title };
+      plan = keepIdentities(useMemory.getState().plan, plan);
       useMemory.setState((st) => ({ plan, version: st.version + 1, planning: false, source }));
     })().finally(() => { this.inflight = null; });
   }
@@ -75,19 +76,21 @@ class Memory {
       const url = await convex.mutation(api.memories.uploadUrl, { code: s.code, token: s.token });
       const fileId = await uploadFile(url, still);
       this.mediaFileId = fileId;
-      const r = await convex.action(api.sketch.see, { code: s.code, token: s.token, fileId: fileId as Id<'_storage'>, kind: media.kind, words: this.words.slice(-6) });
-      if (r?.plan) {
-        const plan = validatePlan(r.plan, r.title ?? undefined);
-        this.memoryId = r.memoryId;
-        this.planned = this.words.join(' ').trim();
-        useMemory.setState((st) => ({ plan, version: st.version + 1, planning: false, source: r.source === 'claude' ? 'claude' : 'offline' }));
-      }
+      // A quick look first (the companion can say what it sees), then the full plan in the background.
+      const r = await convex.action(api.sketch.caption, { code: s.code, token: s.token, fileId: fileId as Id<'_storage'>, kind: media.kind });
       if (r?.title) this.title = r.title;
+      this.planFromPhoto();
       return { caption: r?.caption ?? null, title: r?.title ?? null };
     } catch (e) {
       console.warn('[memory] photo', e);
       return null;
     }
+  }
+
+  /** Plan from the shared photo plus whatever has been said (runs while the conversation continues). */
+  private planFromPhoto(): void {
+    this.planned = '';
+    this.plan();
   }
 
   /** "There was a cat on the chair": add to the place that's already there. */
@@ -106,7 +109,7 @@ class Memory {
         const extra = planOffline(text, current.title).objects.filter((o) => !current.objects.some((c) => c.kind === o.kind && c.label === o.label)).slice(0, 2);
         next = { ...current, objects: [...current.objects, ...extra.map((o, i) => ({ ...o, id: `${o.id}-x${current.objects.length + i}` }))].slice(0, 16) };
       }
-      if (next) useMemory.setState((st) => ({ plan: next, version: st.version + 1 }));
+      if (next) { next = keepIdentities(current, next); useMemory.setState((st) => ({ plan: next, version: st.version + 1 })); }
     })();
   }
 
@@ -116,7 +119,7 @@ class Memory {
       const t0 = performance.now();
       const check = () => {
         const st = useMemory.getState();
-        if (st.plan && st.formed >= 0.85) return resolve(true);
+        if (st.plan && st.formed >= 0.8) return resolve(true);
         if (performance.now() - t0 > ms) return resolve(false);
         setTimeout(check, 150);
       };
@@ -129,10 +132,35 @@ class Memory {
   wordsSoFar(): string[] { return [...this.words]; }
   get kind() { return this.mediaKind; }
 
+  /** Bring back a memory exactly as it was drawn (from the album). */
+  restore(plan: ScenePlan) {
+    this.reset();
+    this.title = plan.title;
+    useMemory.setState({ plan, version: 1, planning: false, formed: 0, source: 'offline' });
+  }
+
   reset() {
     this.words = []; this.title = null; this.memoryId = null; this.planned = ''; this.mediaFileId = null; this.mediaKind = null;
     useMemory.setState({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null });
   }
+}
+
+/**
+ * A re-plan should feel like the place growing, not being rebuilt: carry earlier ids over to the same things
+ * (same kind, and the same label or colour) so what has already formed stays put.
+ */
+function keepIdentities(prev: ScenePlan | null, next: ScenePlan): ScenePlan {
+  if (!prev) return next;
+  const free = [...prev.objects];
+  const rename = new Map<string, string>();
+  const objects = next.objects.map((o) => {
+    const i = free.findIndex((p) => p.kind === o.kind && (p.label === o.label || (p.color && p.color === o.color) || p.kind !== 'custom'));
+    if (i < 0) return o;
+    const match = free.splice(i, 1)[0]!;
+    rename.set(o.id, match.id);
+    return { ...o, id: match.id };
+  });
+  return { ...next, objects: objects.map((o) => (o.target && rename.has(o.target) ? { ...o, target: rename.get(o.target)! } : o)) };
 }
 
 async function downscale(file: Blob, max: number): Promise<Blob> {

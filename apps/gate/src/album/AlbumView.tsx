@@ -1,15 +1,84 @@
-// PLACEHOLDER (replaced by the full liquid-glass album): lists the moments taken on this device.
-import { useMoments } from '../flow/moments';
+// The moments album. When someone leaves a memory, every moment they kept becomes a pane of liquid glass over the
+// aurora, grouped by visit. Reach for a moment (hover, keyboard focus or a tap) and it opens: the place widens, its
+// words and the person's own voice come forward, and the moments beside it make room. One opens at a time.
+import { motion, useReducedMotion } from 'motion/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { summaryLine, todayLine } from './format';
+import { MemoryChapter } from './MemoryChapter';
+import { useAlbum } from './useAlbum';
+import './album.css';
 
-export default function AlbumView({ onBeginAnother }: { onBeginAnother: () => void }) {
-  const memories = useMoments((s) => s.memories);
+export type AlbumViewProps = { onBeginAnother: () => void; onRevisit?: (memoryId: string) => void };
+
+const HOVER_OPEN_MS = 130;
+const HOVER_CLOSE_MS = 320;
+
+export default function AlbumView({ onBeginAnother, onRevisit }: AlbumViewProps) {
+  const memories = useAlbum();
+  const reduce = useReducedMotion();
+  const [openId, setOpenId] = useState<string | null>(null);
+  const pinned = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clear = () => { if (timer.current) clearTimeout(timer.current); timer.current = null; };
+
+  const onEnter = useCallback((id: string) => {
+    if (pinned.current) return;
+    clear();
+    timer.current = setTimeout(() => setOpenId(id), HOVER_OPEN_MS);
+  }, []);
+  const onLeaveStrip = useCallback(() => {
+    if (pinned.current) return;
+    clear();
+    timer.current = setTimeout(() => setOpenId(null), HOVER_CLOSE_MS);
+  }, []);
+  const onToggle = useCallback((id: string) => {
+    clear();
+    setOpenId((cur) => {
+      if (cur === id && pinned.current) { pinned.current = false; return null; }
+      pinned.current = true;
+      return id;
+    });
+  }, []);
+  const onFocusOpen = useCallback((id: string) => { clear(); pinned.current = true; setOpenId(id); }, []);
+
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') { clear(); pinned.current = false; setOpenId(null); } };
+    window.addEventListener('keydown', esc);
+    return () => { window.removeEventListener('keydown', esc); clear(); };
+  }, []);
+
+  const empty = memories.length === 0;
   return (
-    <section className="album-placeholder" data-testid="album">
-      <h1>Your moments</h1>
-      {memories.map((m) => (
-        <div key={m.id}><h2>{m.title}</h2>{m.moments.map((x) => <p key={x.id}>{x.caption}</p>)}</div>
-      ))}
-      <button type="button" className="pill glass" onClick={onBeginAnother}>Visit another memory</button>
+    <section className="album" aria-labelledby="album-h" data-testid="album">
+      <div className="album-scrim" aria-hidden="true" />
+      <div className="album-scroll" onClick={(e) => { if (!(e.target as Element).closest('.pane')) { clear(); pinned.current = false; setOpenId(null); } }}>
+      <div className="album-inner">
+        <div className="album-top"><div className="wordmark">Memory Gate</div></div>
+        <motion.header className="album-head" initial={{ opacity: 0, y: reduce ? 0 : 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}>
+          <h1 id="album-h">Your moments</h1>
+          <p className="album-date">{todayLine()}</p>
+          {!empty && <p className="album-summary">{summaryLine(memories)}</p>}
+        </motion.header>
+        {empty ? (
+          <motion.div className="album-empty" initial={{ opacity: 0, y: reduce ? 0 : 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }} data-testid="album-empty">
+            <h2>Your first visit will be kept here</h2>
+            <p>Each place you visit with the companion becomes a few moments: a picture of the place, and the words you shared there, in your own voice.</p>
+            <button type="button" className="pill big album-cta" onClick={onBeginAnother} data-testid="album-begin">Visit a memory</button>
+          </motion.div>
+        ) : (
+          memories.map((m, i) => (
+            <MemoryChapter key={m.id} memory={m} index={i} openId={openId} onEnter={onEnter} onLeaveStrip={onLeaveStrip}
+              onToggle={onToggle} onFocusOpen={onFocusOpen} onRevisit={onRevisit} />
+          ))
+        )}
+      </div>
+      </div>
+      {!empty && <div className="album-fade" aria-hidden="true" />}
+      {!empty && (
+        <motion.div className="album-dock" initial={{ opacity: 0, y: reduce ? 0 : 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.9, ease: [0.22, 1, 0.36, 1] }}>
+          <button type="button" className="pill big album-cta" onClick={onBeginAnother} data-testid="album-begin">Visit another memory</button>
+        </motion.div>
+      )}
     </section>
   );
 }

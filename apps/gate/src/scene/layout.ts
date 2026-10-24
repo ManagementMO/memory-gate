@@ -12,7 +12,7 @@ export const COMPANION_SPOT = {
   gathering: new THREE.Vector3(0, 1.66, -2.3),
   gatheringWithMedia: new THREE.Vector3(-0.66, 1.62, -2.3),
   entering: new THREE.Vector3(0, 1.62, -7.5),
-  memory: new THREE.Vector3(-1.45, 1.25, -1.35),
+  memory: new THREE.Vector3(-1.85, 1.3, -0.45),
   album: new THREE.Vector3(0, 1.3, -3.4),
 } as const;
 

@@ -3,7 +3,7 @@
 // Stage drives four uniforms: wake (after Begin), open (walking through), white (the far side is white), fade.
 // It doubles as the album's backdrop: liquid glass needs something beautiful to bend.
 import { useFrame, useThree } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useGate } from '../state/store';
 import { HASH, SIMPLEX3 } from './shaders/noise.glsl';
@@ -21,9 +21,106 @@ const FRAG = /* glsl */ `
 varying vec3 vDir;
 uniform float uTime, uFade, uWake, uOpen, uWhite, uQuality, uGateStrength;
 uniform vec3 uGateDir, uGreen, uTeal, uViolet, uPurple, uSilver;
+uniform sampler2D uAurora;
+vec2 equirect(vec3 d) { return vec2(atan(d.x, -d.z) / 6.2831853 + 0.5, asin(clamp(d.y, -1.0, 1.0)) / 3.14159265 + 0.5); }
 ${HASH}
 ${SIMPLEX3}
 
+float stars(vec3 d) {
+  vec3 p = d * 260.0;
+  vec3 id = floor(p);
+  vec3 fp = fract(p) - 0.5;
+  float h = hash13(id);
+  if (h < 0.9955) return 0.0;
+  float twinkle = 0.65 + 0.35 * sin(uTime * (0.35 + fract(h * 91.7) * 0.9) + h * 60.0);
+  float size = mix(0.07, 0.2, fract(h * 13.7));
+  return smoothstep(size, 0.0, length(fp)) * twinkle * (0.45 + fract(h * 37.1));
+}
+
+// The gate: a few fine lines of light that spiral into a luminous opening. Contour lines of a slowly warped field
+// laid out on a log-spiral around the gate direction; confined to a ring so the night sky stays quiet around it.
+vec3 gate(vec3 d, float strength, float lines) {
+  vec3 f = normalize(uGateDir);
+  vec3 r = normalize(cross(f, vec3(0.0, 1.0, 0.0)));
+  vec3 u = normalize(cross(r, f));
+  float rad = acos(clamp(dot(d, f), -1.0, 1.0));
+  vec2 p = vec2(dot(d, r), dot(d, u));
+  float th = atan(p.y, p.x);
+  float lr = log(rad + 0.02);
+  float t = uTime;
+  float swirl = th - lr * (1.25 + uOpen * 0.9) + t * (0.022 + uOpen * 0.2);
+  vec3 q = vec3(cos(swirl) * 1.1, sin(swirl) * 1.1, lr * 0.9 - t * (0.035 + uOpen * 0.25));
+  vec3 w = vec3(snoise(q * 0.7 + vec3(0.0, 0.0, t * 0.02)), snoise(q * 0.7 + vec3(4.1, 1.7, -t * 0.016)), 0.0);
+  // A slow galaxy: five arms of fine lines winding into the opening (an integer arm count keeps the spiral seamless),
+  // each line drifting a little on a warped field so it reads as silk, not geometry.
+  float g = lr * 2.3 + (th + t * (0.02 + uOpen * 0.3)) * (5.0 / 6.2831853) + snoise(q + w * 0.35) * 0.42;
+  // Screen-space derivatives are only valid outside branches; the mirrored call (inside the lake branch) uses a
+  // fixed soft width instead, which also suits a reflection.
+  float wd = max(fwidth(g), 1e-4);
+  float dist = 0.5 - abs(fract(g) - 0.5);                   // distance to the nearest line, in line spacings
+  float px = dist / wd;                                     // ... and in pixels
+  float line = (1.0 - smoothstep(0.3, 1.2, px)) * lines;   // a hairline at any distance
+  float glow = (exp(-px * 0.5) * 0.06 + exp(-dist * 9.0) * 0.07) * lines; // a soft silk sheen around each line
+  float h = hash12(vec2(floor(g + 0.5), 3.7));              // each line its own brightness and colour
+  float reach = 0.34 + uOpen * 1.6;
+  float env = smoothstep(0.012, 0.075, rad) * (1.0 - smoothstep(reach * 0.45, reach, rad));
+  float k = 0.5 + 0.5 * sin(th * 1.0 + t * 0.035 + h * 2.4);
+  vec3 col = mix(uViolet, uGreen, smoothstep(0.2, 0.8, k));
+  col = mix(col, uPurple, smoothstep(0.6, 1.0, h) * 0.5);
+  col = mix(col, uSilver, step(0.82, fract(h * 7.13)) * 0.9);
+  float bright = (line * (0.22 + 0.78 * h * h) + glow) * env;
+  float haze = (fbm3(vec3(p * 4.0, t * 0.015)) * 0.5 + 0.5) * exp(-pow((rad - 0.16) / 0.16, 2.0)) * 0.05;
+  vec3 hazeCol = mix(uViolet, uTeal, 0.5 + 0.5 * sin(th * 2.0 + t * 0.03));
+  float coreR = 0.05 + uOpen * 1.5;
+  float core = exp(-pow(rad / coreR, 2.0) * 2.0);
+  float rim = exp(-pow((rad - 0.07 - uOpen * 0.4) / 0.012, 2.0)) * 0.18 * (1.0 - uOpen);
+  vec3 coreCol = mix(vec3(0.76, 0.72, 1.0), vec3(1.0), smoothstep(0.0, 0.6, uOpen));
+  return (col * bright * 1.1 + hazeCol * haze + coreCol * core * (0.28 + 0.3 * uWake + uOpen * 3.2) + uSilver * rim * uWake) * strength;
+}
+
+// The gate's glow without its hairlines (no derivatives, so it is safe inside the lake branch and cheap).
+vec3 gateGlow(vec3 d, float strength) {
+  vec3 f = normalize(uGateDir);
+  float rad = acos(clamp(dot(d, f), -1.0, 1.0));
+  vec3 r = normalize(cross(f, vec3(0.0, 1.0, 0.0)));
+  vec3 u = normalize(cross(r, f));
+  float th = atan(dot(d, u), dot(d, r));
+  float ring = exp(-pow((rad - 0.2) / 0.14, 2.0)) * (0.5 + 0.5 * sin(th * 5.0 - log(rad + 0.02) * 2.3 * 6.2831853 / 5.0 + uTime * 0.1));
+  vec3 col = mix(uViolet, uGreen, 0.5 + 0.5 * sin(th + uTime * 0.035));
+  float coreR = 0.05 + uOpen * 1.5;
+  float core = exp(-pow(rad / coreR, 2.0) * 2.0);
+  return (col * ring * 0.12 + vec3(0.8, 0.76, 1.0) * core * (0.28 + 0.3 * uWake + uOpen * 3.2)) * strength;
+}
+
+void main() {
+  vec3 d = normalize(vDir);
+  float y = d.y;
+  vec3 col = mix(vec3(0.005, 0.006, 0.016), vec3(0.019, 0.021, 0.052), smoothstep(-0.15, 0.9, y));
+  col += vec3(0.04, 0.032, 0.08) * exp(-abs(y) * 9.0);
+  float sky = smoothstep(-0.03, 0.04, y);
+  float front = 0.42 + 0.58 * smoothstep(-0.35, 0.75, -d.z);
+  col += vec3(0.86, 0.88, 1.0) * stars(d) * sky * (1.0 - uOpen);
+  col += texture2D(uAurora, equirect(d)).rgb * sky * front * (0.5 + 0.5 * uWake) * (1.0 - uOpen * 0.85);
+  col += gate(d, uGateStrength, 1.0);
+  // A still lake below the horizon: the gate's glow mirrored and softened (no hairlines, so it never competes).
+  float below = smoothstep(0.004, -0.03, y);
+  if (below > 0.0) {
+    vec3 rd = vec3(d.x, -y, d.z);
+    rd.x += snoise(vec3(d.xz * 30.0, uTime * 0.16)) * 0.006 * (1.0 + uOpen);
+    float fres = 0.08 + 0.35 * pow(1.0 - min(1.0, -y * 3.0), 4.0);
+    col += gateGlow(normalize(rd), uGateStrength * 0.55) * fres * below;
+  }
+  col = mix(col, vec3(0.94, 0.945, 0.965), uWhite);
+  gl_FragColor = vec4(col * uFade, 1.0);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}`;
+
+const AURORA_FRAG = /* glsl */ `
+varying vec2 vUv;
+uniform float uTime, uQuality;
+uniform vec3 uGreen, uTeal, uViolet, uPurple;
+${HASH}
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, s, -s, c); }
 float tri(float x) { return clamp(abs(fract(x) - 0.5), 0.01, 0.49); }
 vec2 tri2(vec2 p) { return vec2(tri(p.x) + tri(p.y), tri(p.y + tri(p.x))); }
@@ -65,78 +162,10 @@ vec3 aurora(vec3 d) {
   return acc * clamp(d.y * 15.0 + 0.4, 0.0, 1.0) * 1.8;
 }
 
-float stars(vec3 d) {
-  vec3 p = d * 260.0;
-  vec3 id = floor(p);
-  vec3 fp = fract(p) - 0.5;
-  float h = hash13(id);
-  if (h < 0.9955) return 0.0;
-  float twinkle = 0.65 + 0.35 * sin(uTime * (0.35 + fract(h * 91.7) * 0.9) + h * 60.0);
-  float size = mix(0.07, 0.2, fract(h * 13.7));
-  return smoothstep(size, 0.0, length(fp)) * twinkle * (0.45 + fract(h * 37.1));
-}
-
-// The gate: a few fine lines of light that spiral into a luminous opening. Contour lines of a slowly warped field
-// laid out on a log-spiral around the gate direction; confined to a ring so the night sky stays quiet around it.
-vec3 gate(vec3 d, float strength, float lines) {
-  vec3 f = normalize(uGateDir);
-  vec3 r = normalize(cross(f, vec3(0.0, 1.0, 0.0)));
-  vec3 u = normalize(cross(r, f));
-  float rad = acos(clamp(dot(d, f), -1.0, 1.0));
-  vec2 p = vec2(dot(d, r), dot(d, u));
-  float th = atan(p.y, p.x);
-  float lr = log(rad + 0.02);
-  float t = uTime;
-  float swirl = th - lr * (1.25 + uOpen * 0.9) + t * (0.022 + uOpen * 0.2);
-  vec3 q = vec3(cos(swirl) * 1.1, sin(swirl) * 1.1, lr * 0.9 - t * (0.035 + uOpen * 0.25));
-  vec3 w = vec3(snoise(q * 0.7 + vec3(0.0, 0.0, t * 0.02)), snoise(q * 0.7 + vec3(4.1, 1.7, -t * 0.016)), 0.0);
-  // A slow galaxy: five arms of fine lines winding into the opening (an integer arm count keeps the spiral seamless),
-  // each line drifting a little on a warped field so it reads as silk, not geometry.
-  float g = lr * 2.3 + (th + t * (0.02 + uOpen * 0.3)) * (5.0 / 6.2831853) + snoise(q + w * 0.35) * 0.42;
-  float wd = max(fwidth(g), 1e-4);
-  float dist = 0.5 - abs(fract(g) - 0.5);                   // distance to the nearest line, in line spacings
-  float px = dist / wd;                                     // ... and in pixels
-  float line = (1.0 - smoothstep(0.3, 1.2, px)) * lines;   // a hairline at any distance
-  float glow = (exp(-px * 0.5) * 0.06 + exp(-dist * 9.0) * 0.07) * lines; // a soft silk sheen around each line
-  float h = hash12(vec2(floor(g + 0.5), 3.7));              // each line its own brightness and colour
-  float reach = 0.34 + uOpen * 1.6;
-  float env = smoothstep(0.012, 0.075, rad) * (1.0 - smoothstep(reach * 0.45, reach, rad));
-  float k = 0.5 + 0.5 * sin(th * 1.0 + t * 0.035 + h * 2.4);
-  vec3 col = mix(uViolet, uGreen, smoothstep(0.2, 0.8, k));
-  col = mix(col, uPurple, smoothstep(0.6, 1.0, h) * 0.5);
-  col = mix(col, uSilver, step(0.82, fract(h * 7.13)) * 0.9);
-  float bright = (line * (0.22 + 0.78 * h * h) + glow) * env;
-  float haze = (fbm3(vec3(p * 4.0, t * 0.015)) * 0.5 + 0.5) * exp(-pow((rad - 0.16) / 0.16, 2.0)) * 0.05;
-  vec3 hazeCol = mix(uViolet, uTeal, 0.5 + 0.5 * sin(th * 2.0 + t * 0.03));
-  float coreR = 0.05 + uOpen * 1.5;
-  float core = exp(-pow(rad / coreR, 2.0) * 2.0);
-  float rim = exp(-pow((rad - 0.07 - uOpen * 0.4) / 0.012, 2.0)) * 0.18 * (1.0 - uOpen);
-  vec3 coreCol = mix(vec3(0.76, 0.72, 1.0), vec3(1.0), smoothstep(0.0, 0.6, uOpen));
-  return (col * bright * 1.1 + hazeCol * haze + coreCol * core * (0.28 + 0.3 * uWake + uOpen * 3.2) + uSilver * rim * uWake) * strength;
-}
-
 void main() {
-  vec3 d = normalize(vDir);
-  float y = d.y;
-  vec3 col = mix(vec3(0.005, 0.006, 0.016), vec3(0.019, 0.021, 0.052), smoothstep(-0.15, 0.9, y));
-  col += vec3(0.04, 0.032, 0.08) * exp(-abs(y) * 9.0);
-  float sky = smoothstep(-0.03, 0.04, y);
-  float front = 0.42 + 0.58 * smoothstep(-0.35, 0.75, -d.z);
-  col += vec3(0.86, 0.88, 1.0) * stars(d) * sky * (1.0 - uOpen);
-  col += aurora(d) * sky * front * (0.5 + 0.5 * uWake) * (1.0 - uOpen * 0.85);
-  col += gate(d, uGateStrength, 1.0);
-  // A still lake below the horizon: the gate's glow mirrored and softened (no hairlines, so it never competes).
-  float below = smoothstep(0.004, -0.03, y);
-  if (below > 0.0) {
-    vec3 rd = vec3(d.x, -y, d.z);
-    rd.x += snoise(vec3(d.xz * 30.0, uTime * 0.16)) * 0.006 * (1.0 + uOpen);
-    float fres = 0.08 + 0.35 * pow(1.0 - min(1.0, -y * 3.0), 4.0);
-    col += gate(normalize(rd), uGateStrength * 0.55, 0.25) * fres * below;
-  }
-  col = mix(col, vec3(0.94, 0.945, 0.965), uWhite);
-  gl_FragColor = vec4(col * uFade, 1.0);
-  #include <tonemapping_fragment>
-  #include <colorspace_fragment>
+  float lon = (vUv.x - 0.5) * 6.2831853, lat = (vUv.y - 0.5) * 3.14159265;
+  vec3 d = vec3(cos(lat) * sin(lon), sin(lat), -cos(lat) * cos(lon));
+  gl_FragColor = vec4(d.y > -0.05 ? aurora(d) : vec3(0.0), 1.0);
 }`;
 
 const lin = (hex: string) => new THREE.Color(hex); // THREE.Color parses hex as sRGB and stores linear
@@ -145,6 +174,35 @@ export function AuroraSky({ quality = 1 }: { quality?: number }) {
   const group = useRef<THREE.Group>(null);
   const mesh = useRef<THREE.Mesh>(null);
   const camera = useThree((s) => s.camera);
+  const gl = useThree((s) => s.gl);
+  // The aurora curtains are soft, so they are painted into a small equirectangular texture (refreshed every other
+  // frame); only the gate's hairlines and the stars are drawn at full resolution.
+  const aurora = useMemo(() => {
+    const w = quality >= 0.9 ? 1024 : 768;
+    const target = new THREE.WebGLRenderTarget(w, w / 2, { type: THREE.HalfFloatType, depthBuffer: false, generateMipmaps: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, wrapS: THREE.RepeatWrapping, wrapT: THREE.ClampToEdgeWrapping });
+    const mat = new THREE.ShaderMaterial({
+      vertexShader: /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+      fragmentShader: AURORA_FRAG,
+      depthTest: false, depthWrite: false,
+      uniforms: { uTime: { value: 0 }, uQuality: { value: Math.max(0.35, quality) }, uGreen: { value: lin('#3ee8b0') }, uTeal: { value: lin('#2fc4d6') }, uViolet: { value: lin('#8a6cff') }, uPurple: { value: lin('#c38cff') } },
+    });
+    const scene = new THREE.Scene();
+    scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat));
+    return { target, mat, scene, cam: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), frame: 0 };
+  }, [quality]);
+  useEffect(() => () => { aurora.target.dispose(); aurora.mat.dispose(); }, [aurora]);
+  useFrame((_, dt) => {
+    aurora.mat.uniforms.uTime!.value += Math.min(dt, 0.05);
+    if (!mesh.current?.visible) return;
+    if (aurora.frame++ % 2 && aurora.frame > 2) return;
+    const xr = gl.xr.enabled;
+    const prev = gl.getRenderTarget();
+    gl.xr.enabled = false; // an offscreen pass, not a headset view
+    gl.setRenderTarget(aurora.target);
+    gl.render(aurora.scene, aurora.cam);
+    gl.setRenderTarget(prev);
+    gl.xr.enabled = xr;
+  }, -1);
   const material = useMemo(() => new THREE.ShaderMaterial({
     vertexShader: VERT,
     fragmentShader: FRAG,
@@ -153,12 +211,12 @@ export function AuroraSky({ quality = 1 }: { quality?: number }) {
     depthTest: false,
     uniforms: {
       uTime: { value: 0 }, uFade: { value: 1 }, uWake: { value: 0 }, uOpen: { value: 0 }, uWhite: { value: 0 },
-      uQuality: { value: quality }, uGateStrength: { value: 1 },
+      uQuality: { value: quality }, uGateStrength: { value: 1 }, uAurora: { value: aurora.target.texture },
       uGateDir: { value: new THREE.Vector3(0, 0.12, -1).normalize() },
       uGreen: { value: lin('#3ee8b0') }, uTeal: { value: lin('#2fc4d6') }, uViolet: { value: lin('#8a6cff') },
       uPurple: { value: lin('#c38cff') }, uSilver: { value: lin('#eef0fb') },
     },
-  }), [quality]);
+  }), [quality, aurora]);
 
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05);

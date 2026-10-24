@@ -88,7 +88,7 @@ export function MediaCard() {
     if (s.stage === 'entering') {
       const p = easeInOutCubic(s.enterProgress);
       target.current.copy(MEDIA_SPOT).lerp(COMPANION_SPOT.entering, p).setY(MEDIA_SPOT.y + p * 0.3);
-      u.uFade!.value = 1 - THREE.MathUtils.smoothstep(s.enterProgress, 0.55, 0.85);
+      u.uFade!.value = media ? 1 - THREE.MathUtils.smoothstep(s.enterProgress, 0.55, 0.85) : 0;
     } else {
       target.current.copy(MEDIA_SPOT);
       u.uFade!.value = damp(u.uFade!.value, showing ? 1 : 0, 2.2, dt);

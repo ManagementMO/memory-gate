@@ -251,8 +251,25 @@ function browserEngine(ev: EngineEvents): VoiceEngine {
   };
 }
 
+/** No voice at all (?voice=off, used by automated runs): captions at speaking pace, nothing heard. */
+export function silentEngine(): VoiceEngine {
+  let speakingNow = false;
+  return {
+    kind: 'none',
+    ready: Promise.resolve(),
+    async say(text) { speakingNow = true; await new Promise((r) => setTimeout(r, 700 + text.split(/\s+/).length * 260)); speakingNow = false; },
+    hush() { speakingNow = false; },
+    setListening() { /* nothing to listen with */ },
+    level: () => (speakingNow ? 0.4 : 0),
+    speaking: () => speakingNow,
+    hearing: () => false,
+    dispose() { /* nothing held */ },
+  };
+}
+
 /** Prefer Cartesia when this device has a session that can mint a voice token; fall back to the browser. */
 export async function createEngine(session: Session | null, ev: EngineEvents): Promise<VoiceEngine> {
+  if (new URLSearchParams(location.search).get('voice') === 'off') return silentEngine();
   if (session) {
     try {
       const mint = await session.client.action(api.voice.mintToken, { code: session.code, token: session.token });

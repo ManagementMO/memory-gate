@@ -293,7 +293,7 @@ export const ROOM = { width: 6.2, depth: 4.6, outdoorRadius: 5.2 };
 
 const ZONE_ANCHOR: Record<Zone, [number, number]> = {
   center: [0, 0.1], back: [0, -1.55], left: [-2.2, -0.2], right: [2.2, -0.2],
-  'back-left': [-1.9, -1.4], 'back-right': [1.9, -1.4], 'front-left': [-1.7, 1.2], 'front-right': [1.7, 1.2],
+  'back-left': [-1.9, -1.4], 'back-right': [1.9, -1.4], 'front-left': [-1.8, 0.75], 'front-right': [1.8, 0.75],
 };
 
 type Box = { id: string; x: number; z: number; w: number; d: number };

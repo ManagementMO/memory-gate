@@ -78,7 +78,7 @@ export function CameraRig() {
       }
       o.az = damp(o.az, o.targetAz, 4, dt);
       o.el = damp(o.el, o.targetEl, 4, dt);
-      const r = 4.1;
+      const r = 4.5;
       _pos.set(MEMORY_CENTER.x + Math.sin(o.az) * Math.cos(o.el) * r, 0.25 + MEMORY_CENTER.y + Math.sin(o.el) * r, MEMORY_CENTER.z + Math.cos(o.az) * Math.cos(o.el) * r);
       _look.set(MEMORY_CENTER.x, MEMORY_CENTER.y + 0.55, MEMORY_CENTER.z);
       fov = 52;

@@ -30,7 +30,7 @@ class Moments {
     let m = st.memories.find((x) => x.id === this.currentId);
     if (!m) {
       this.currentId = `mem-${++memorySeq}-${newId()}`;
-      m = { id: this.currentId, title: plan?.title ?? g.memoryTitle ?? 'A remembered place', at: Date.now(), source: g.media?.kind ?? 'words', palette: plan?.setting.palette ?? [], moments: [] };
+      m = { id: this.currentId, title: plan?.title ?? g.memoryTitle ?? 'A remembered place', at: Date.now(), source: g.media?.kind ?? 'words', palette: plan?.setting.palette ?? [], moments: [], ...(plan ? { plan } : {}) };
       useMoments.setState({ memories: [m, ...st.memories] });
     }
     return m;
@@ -52,7 +52,7 @@ class Moments {
       id: newId(), memoryId: mem.id, memoryTitle: plan?.title ?? mem.title, caption: caption.trim(), speaker: arrival ? 'companion' : 'you',
       at: Date.now(), imageUrl, sourceUrl: useMemory.getState().photoUrl, audioUrl: null, kind: arrival ? 'arrival' : 'detail',
     };
-    this.update((m) => ({ ...m, title: plan?.title ?? m.title, palette: plan?.setting.palette ?? m.palette, moments: [...m.moments, moment] }));
+    this.update((m) => ({ ...m, title: plan?.title ?? m.title, palette: plan?.setting.palette ?? m.palette, moments: [...m.moments, moment], ...(plan ? { plan } : {}) }));
     // Save to the session (picture + words + the original clip id) without holding anything up.
     const s = g.session;
     if (s) void (async () => {
@@ -78,6 +78,8 @@ class Moments {
 
   /** A new visit starts a new memory in the album. */
   reset() { this.currentId = null; }
+  /** Returning to a memory from the album adds new moments to it. */
+  resume(memoryId: string) { this.currentId = memoryId; }
 }
 
 export const moments = new Moments();

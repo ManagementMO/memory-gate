@@ -1,22 +1,25 @@
-// PLACEHOLDER (replaced by the full Figure build): a smooth white capsule so the app composes while the figure is made.
-import { useGate } from '../../state/store';
+// The Figure companion as a React Three Fiber node. CompanionRig positions, scales and turns it toward the viewer;
+// the Figure itself aims its head and eyes, breathes, blinks and shows mood and expression (see createFigure.ts).
+// `debug` (previews only) overrides the shared store so several Figures can show different states side by side.
+import { useFrame, useThree } from '@react-three/fiber';
+import { useEffect, useMemo } from 'react';
+import { useGate, type Expression, type Mood, type Stage } from '../../state/store';
+import { createFigure } from './createFigure';
 
-export function FigureCompanion({ visible = true }: { visible?: boolean; onLight?: number }) {
-  const mood = useGate((s) => s.mood);
-  return (
-    <group visible={visible}>
-      <mesh position={[0, 0.06, 0]}>
-        <sphereGeometry args={[0.11, 48, 32]} />
-        <meshPhysicalMaterial color="#f4f4f6" roughness={0.18} clearcoat={1} clearcoatRoughness={0.06} />
-      </mesh>
-      <mesh position={[0, -0.12, 0]}>
-        <capsuleGeometry args={[0.07, 0.12, 12, 32]} />
-        <meshPhysicalMaterial color="#f4f4f6" roughness={0.2} clearcoat={1} />
-      </mesh>
-      <mesh position={[0, 0.07, 0.09]}>
-        <sphereGeometry args={[0.02, 16, 16]} />
-        <meshBasicMaterial color={mood === 'listening' ? '#7fe8ff' : '#4fb7ff'} toneMapped={false} />
-      </mesh>
-    </group>
-  );
+export type FigureDebug = Partial<{ mood: Mood; expression: Expression; stage: Stage; level: number }>;
+
+export function FigureCompanion({ visible = true, onLight = 0, debug }: { visible?: boolean; onLight?: number; debug?: FigureDebug }) {
+  const rig = useMemo(() => createFigure(), []);
+  const camera = useThree((s) => s.camera);
+  useEffect(() => () => rig.dispose(), [rig]);
+  useFrame((state, dt) => {
+    const g = useGate.getState();
+    rig.update(Math.min(dt, 0.05), state.clock.elapsedTime, {
+      mood: debug?.mood ?? g.mood,
+      expression: debug?.expression ?? g.expression,
+      level: debug?.level ?? g.level,
+      stage: debug?.stage ?? g.stage,
+    }, { camera, fade: visible ? 1 : 0, onLight });
+  });
+  return <primitive object={rig.root} />;
 }

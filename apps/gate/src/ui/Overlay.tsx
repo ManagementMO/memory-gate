@@ -18,14 +18,14 @@ export function Overlay() {
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving';
   return (
     <div className={`overlay ${day ? 'on-paper' : ''}`} data-stage={stage}>
-      {stage !== 'album' && <TopBar />}
+      {stage !== 'album' && stage !== 'entering' && <TopBar />}
       {stage === 'portal' && <Portal />}
       <Captions />
       <Offers />
       {stage === 'forming' && <FormingNote />}
       {stage === 'album' && (
         <Suspense fallback={null}>
-          <AlbumView onBeginAnother={() => flow.again()} />
+          <AlbumView onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} />
         </Suspense>
       )}
       <XrButton />

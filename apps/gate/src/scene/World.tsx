@@ -1,8 +1,9 @@
 // Everything in the 3D world, composed once and kept alive across the journey; each part fades itself by stage.
 import { Environment } from '@react-three/drei';
 import { Snapshotter } from './Snapshotter';
-import { useThree } from '@react-three/fiber';
-import { useMemo } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import { useMemo, useRef } from 'react';
+import { atmoLive } from './sketch/atmosphere';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import * as THREE from 'three';
 import { CompanionRig } from '../companion/CompanionRig';
@@ -12,6 +13,7 @@ import { GateDust } from './GateDust';
 import { MediaCard } from './MediaCard';
 import { MemoryScene } from './sketch/MemoryScene';
 import { WhiteSpace } from './WhiteSpace';
+import { XrLayer } from './XrLayer';
 
 /** A soft studio environment for glossy surfaces (the figure's shell, sketch objects). Generated, no download. */
 function StudioEnvironment() {
@@ -25,12 +27,36 @@ function StudioEnvironment() {
   return <Environment map={texture} environmentIntensity={0.9} />;
 }
 
+/** Sun and sky light that take on the remembered hour once a memory forms (neutral studio light otherwise). */
+function MemoryLights() {
+  const sun = useRef<THREE.DirectionalLight>(null);
+  const sky = useRef<THREE.HemisphereLight>(null);
+  useFrame(() => {
+    if (sun.current) {
+      sun.current.color.copy(atmoLive.sun);
+      sun.current.intensity = atmoLive.sunIntensity;
+      // The sun is placed relative to the memory's centre so its shadows fall across the room.
+      sun.current.position.set(atmoLive.sunDir.x, atmoLive.sunDir.y, -2.6 + atmoLive.sunDir.z);
+    }
+    if (sky.current) { sky.current.color.copy(atmoLive.sky); sky.current.groundColor.copy(atmoLive.groundLight); sky.current.intensity = atmoLive.hemi; }
+  });
+  return (
+    <>
+      <hemisphereLight ref={sky} args={['#f4f2ff', '#cfd2e0', 0.65]} />
+      <directionalLight ref={sun} position={[-3, 6, 3]} intensity={1.15} color="#fff6ea" castShadow
+        shadow-mapSize={[2048, 2048]} shadow-bias={-0.0004} shadow-normalBias={0.02} shadow-radius={6}
+        shadow-camera-left={-6} shadow-camera-right={6} shadow-camera-top={6} shadow-camera-bottom={-6} shadow-camera-near={0.5} shadow-camera-far={30}>
+        <object3D attach="target" position={[0, 0, -2.6]} />
+      </directionalLight>
+    </>
+  );
+}
+
 export function World({ quality }: { quality: number }) {
   return (
     <>
       <StudioEnvironment />
-      <hemisphereLight args={['#f4f2ff', '#cfd2e0', 0.65]} />
-      <directionalLight position={[-3, 6, 3]} intensity={1.15} color="#fff6ea" />
+      <MemoryLights />
       <CameraRig />
       <AuroraSky quality={quality} />
       <GateDust />
@@ -39,6 +65,7 @@ export function World({ quality }: { quality: number }) {
       <MediaCard />
       <CompanionRig />
       <Snapshotter />
+      <XrLayer />
     </>
   );
 }

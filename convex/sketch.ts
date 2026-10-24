@@ -40,6 +40,25 @@ const PlanOut = z.object({
   intro: z.string(),
 });
 const SeeOut = z.object({ caption: z.string(), title: z.string(), plan: PlanOut });
+const CaptionOut = z.object({ caption: z.string(), title: z.string() });
+
+/** A fast first look at a shared photo (a few seconds): what the companion can say it sees, and a name for it. */
+export const caption = action({
+  args: { code: v.string(), token: v.string(), fileId: v.id('_storage'), kind: v.string() },
+  handler: async (ctx, a): Promise<{ caption: string | null; title: string | null }> => {
+    const gate = await ctx.runQuery(internal.budget.gate, { code: a.code, token: a.token });
+    if (!gate.ok) return { caption: null, title: null };
+    const url = await ctx.runQuery(internal.memories.fileUrl, { fileId: a.fileId });
+    const img = url ? await imageBlock(url) : null;
+    if (!img) return { caption: null, title: null };
+    const out = await structured(ctx, {
+      system: 'You help a gentle companion look at a photo someone shared of a place they remember. Describe only the place and things in it, never who people are, their ages or when it was. Plain, warm, specific.',
+      content: [img, { type: 'text', text: `This is a ${a.kind === 'video' ? 'still from a home video' : 'photo'}. Return JSON: caption = what you see in at most 12 plain words, starting lowercase (e.g. "a sunny kitchen with yellow curtains"); title = a warm name for the place, at most 4 words (e.g. "The sunny kitchen").` }],
+      schema: CaptionOut, maxTokens: 1500, effort: 'low',
+    });
+    return { caption: out ? cap(out.caption, 90) || null : null, title: out ? cap(out.title, 48) || null : null };
+  },
+});
 
 const SCHEMA_NOTE = 'For any field with nothing to say, use "" (strings) and "none" (material, relation). Colours are hex like "#e8c547".';
 const cap = (s: unknown, n: number) => (typeof s === 'string' ? s.replace(/\s+/g, ' ').trim().slice(0, n) : '');

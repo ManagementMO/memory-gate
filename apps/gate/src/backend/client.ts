@@ -52,7 +52,9 @@ export async function startSession(opts: { name: string; invite: { code: string;
       rememberSession(s);
       return s;
     }
-    const r = await withTimeout(convex.mutation(api.rooms.create, { title: 'A new memory', displayName: opts.name, demo: false, offline: false }), 6000);
+    // ?mode=offline creates an immutable offline room: the server forces every paid service off (tests, demos without keys).
+    const offline = new URLSearchParams(location.search).get('mode') === 'offline';
+    const r = await withTimeout(convex.mutation(api.rooms.create, { title: 'A new memory', displayName: opts.name, demo: false, offline }), 6000);
     await withTimeout(convex.mutation(api.consents.give, { code: r.code, token: r.token, scopes: [...CONSENT_SCOPES] }), 6000);
     const view = await withTimeout(convex.query(api.rooms.get, { code: r.code, token: r.token }), 6000);
     const s: Session = { code: r.code, token: r.token, joinKey: view.joinKey ?? null, role: 'host', name: opts.name };

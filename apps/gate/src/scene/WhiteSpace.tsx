@@ -8,24 +8,33 @@ import { useGate } from '../state/store';
 import { MEMORY_CENTER } from './layout';
 import { HASH, SIMPLEX3 } from './shaders/noise.glsl';
 import { damp, glowBlending } from './util';
+import { atmoLive } from './sketch/atmosphere';
 
 const SKY_FRAG = /* glsl */ `
 varying vec3 vDir;
-uniform float uFade, uTime;
+uniform float uFade, uTime, uAmount;
+uniform vec3 uZenith, uHorizon, uGround;
 ${HASH}
 ${SIMPLEX3}
 void main() {
   vec3 d = normalize(vDir);
   float y = d.y;
-  vec3 zenith = vec3(0.86, 0.87, 0.93);
-  vec3 horizon = vec3(0.985, 0.985, 0.99);
-  vec3 ground = vec3(0.93, 0.932, 0.95);
+  vec3 zenith = mix(vec3(0.78, 0.79, 0.86), uZenith, uAmount);
+  vec3 horizon = mix(vec3(0.93, 0.93, 0.945), uHorizon, uAmount);
+  vec3 ground = mix(vec3(0.86, 0.862, 0.885), uGround, uAmount);
   vec3 col = y > 0.0 ? mix(horizon, zenith, pow(smoothstep(0.0, 1.0, y), 0.7)) : mix(horizon, ground, smoothstep(0.0, -0.25, y));
   // A memory of the aurora: barely-there tints that drift along the horizon.
   float band = exp(-abs(y - 0.06) * 7.0);
   float n = snoise(vec3(d.x * 1.4, d.z * 1.4, uTime * 0.02)) * 0.5 + 0.5;
   vec3 mint = vec3(0.80, 0.97, 0.91), lav = vec3(0.89, 0.86, 1.0);
-  col = mix(col, mix(lav, mint, smoothstep(-0.6, 0.6, d.x + (n - 0.5) * 0.8)), band * 0.55);
+  col = mix(col, mix(lav, mint, smoothstep(-0.6, 0.6, d.x + (n - 0.5) * 0.8)), band * 0.55 * (1.0 - uAmount * 0.7));
+  // A remembered night keeps a few soft stars.
+  float night = uAmount * (1.0 - smoothstep(0.08, 0.35, dot(uZenith, vec3(0.299, 0.587, 0.114))));
+  if (night > 0.0 && y > 0.02) {
+    vec3 sp = d * 180.0; vec3 id = floor(sp); float h = hash13(id);
+    float star = step(0.9965, h) * smoothstep(0.35, 0.0, length(fract(sp) - 0.5)) * (0.6 + 0.4 * sin(uTime * (0.4 + h) + h * 50.0));
+    col += vec3(star) * night * smoothstep(0.02, 0.3, y);
+  }
   gl_FragColor = vec4(mix(vec3(0.94, 0.945, 0.965), col, uFade), 1.0);
   #include <colorspace_fragment>
 }`;
@@ -55,7 +64,7 @@ export function WhiteSpace() {
   const camera = useThree((s) => s.camera);
   const skyMat = useMemo(() => new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, depthTest: false,
-    uniforms: { uFade: { value: 0 }, uTime: { value: 0 } },
+    uniforms: { uFade: { value: 0 }, uTime: { value: 0 }, uAmount: { value: 0 }, uZenith: { value: atmoLive.zenith }, uHorizon: { value: atmoLive.horizon }, uGround: { value: atmoLive.ground } },
     vertexShader: /* glsl */ `varying vec3 vDir; void main(){ vDir = position; vec4 c = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = c.xyww; }`,
     fragmentShader: SKY_FRAG,
   }), []);
@@ -119,6 +128,7 @@ export function WhiteSpace() {
     const u = skyMat.uniforms;
     u.uFade!.value = damp(u.uFade!.value, target, day ? 1.2 : 3, dt);
     u.uTime!.value += dt;
+    u.uAmount!.value = atmoLive.amount;
     floorMat.uniforms.uFade!.value = damp(floorMat.uniforms.uFade!.value, target, 0.9, dt);
     moteMat.uniforms.uFade!.value = damp(moteMat.uniforms.uFade!.value, target, 0.6, dt);
     moteMat.uniforms.uTime!.value += dt;

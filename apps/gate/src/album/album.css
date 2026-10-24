@@ -1,0 +1,247 @@
+/* The moments album: liquid glass over the aurora.
+   Each moment is a thick pane: the place mounted behind it, a bright rim that catches the light (with a breath of
+   mint and lavender, like glass splitting the aurora), a highlight that follows your hand, and a frosted plate that
+   bends the picture beneath it. Everything else stays quiet. */
+
+.album { position: absolute; inset: 0; overflow: hidden; color: var(--ink); }
+.album-scroll {
+  position: absolute; inset: 0; z-index: 1;
+  overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.album-scroll::-webkit-scrollbar { display: none; }
+/* Content softens into the night before it reaches the dock: a progressive blur, as glass does at its edge. */
+.album-fade {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 190px; z-index: 7; pointer-events: none;
+  background: linear-gradient(to top, rgba(4, 5, 14, 0.78), rgba(4, 5, 14, 0.32) 55%, rgba(4, 5, 14, 0));
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  -webkit-mask-image: linear-gradient(to top, #000 35%, transparent); mask-image: linear-gradient(to top, #000 35%, transparent);
+}
+
+/* Legibility without a wall: darker at the top where the title sits and at the bottom under the dock. */
+.album-scrim {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(4, 5, 14, 0.62) 0%, rgba(4, 5, 14, 0.18) 26%, rgba(4, 5, 14, 0.08) 62%, rgba(4, 5, 14, 0.56) 100%),
+    radial-gradient(120% 70% at 50% 120%, rgba(4, 5, 14, 0.5), transparent 60%);
+}
+
+.album-inner { position: relative; z-index: 1; width: min(1260px, calc(100vw - 56px)); margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 0 170px; }
+.album-top { display: flex; align-items: center; min-height: 48px; }
+
+.album-head { margin: clamp(14px, 3.4vh, 40px) 0 clamp(22px, 4vh, 40px); max-width: 760px; }
+.album-head h1 {
+  margin: 0; font: 400 clamp(52px, 5.8vw, 92px)/0.94 var(--serif); letter-spacing: -0.022em; color: var(--ink);
+  text-shadow: 0 6px 60px rgba(8, 6, 40, 0.55);
+}
+.album-date { margin: 14px 0 0; font: 400 19px/1.4 var(--sans); color: var(--ink-soft); }
+.album-summary { margin: 4px 0 0; font: 400 16px/1.5 var(--sans); color: var(--ink-faint); }
+
+/* ---------- a visit ---------- */
+.memory { margin: 0 0 clamp(44px, 8vh, 84px); scroll-margin-top: 24px; }
+.memory-head { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 20px; row-gap: 4px; margin: 0 0 18px; padding: 0 4px; }
+.memory-head h2 { margin: 0; font: 400 clamp(34px, 3.4vw, 50px)/1.02 var(--serif); letter-spacing: -0.012em; color: var(--ink); text-shadow: 0 4px 36px rgba(8, 6, 40, 0.5); }
+.memory-head p { margin: 0; font: 400 16px/1.45 var(--sans); color: var(--ink-soft); }
+.sample-chip {
+  display: inline-block; margin-left: 10px; vertical-align: 1px;
+  font: 600 12px/1 var(--sans); letter-spacing: 0.02em; color: var(--ink); padding: 6px 10px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.strip { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; height: clamp(320px, 46vh, 470px); }
+.strip + .strip { margin-top: 14px; }
+
+/* ---------- the pane ---------- */
+.pane {
+  --frame: 11px;
+  --r: 36px;
+  position: relative; flex: var(--grow) 1 0px; min-width: 92px;
+  border-radius: var(--r);
+  isolation: isolate;
+  container-type: inline-size;
+  background:
+    radial-gradient(140% 90% at 8% -6%, rgba(255, 255, 255, 0.26), transparent 42%),
+    radial-gradient(120% 80% at 104% 108%, color-mix(in oklab, var(--tint) 34%, transparent), transparent 52%),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.045) 60%, rgba(255, 255, 255, 0.09));
+  -webkit-backdrop-filter: blur(16px) saturate(185%) brightness(1.1);
+  backdrop-filter: blur(16px) saturate(185%) brightness(1.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 18px 40px -26px rgba(255, 255, 255, 0.35),
+    0 30px 70px -18px rgba(2, 3, 16, 0.6),
+    0 6px 18px rgba(2, 3, 16, 0.28);
+  transition: flex-grow 820ms var(--ease-out), box-shadow 700ms var(--ease-soft);
+  cursor: pointer;
+}
+/* (The SVG refraction filter was measured here and made no visible difference behind a frame this thin, so panes
+   use blur alone. Touch devices get a lighter blur: phones and the Quest browser re-filter every frame.) */
+@media (pointer: coarse) {
+  .pane { -webkit-backdrop-filter: blur(11px) saturate(170%); backdrop-filter: blur(11px) saturate(170%); }
+  .plate { -webkit-backdrop-filter: blur(16px) saturate(180%); backdrop-filter: blur(16px) saturate(180%); }
+}
+.pane[data-open='true'] {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 18px 40px -24px rgba(255, 255, 255, 0.45),
+    0 0 0 1px color-mix(in oklab, var(--tint) 30%, transparent),
+    0 40px 90px -20px rgba(2, 3, 16, 0.7),
+    0 0 70px -10px color-mix(in oklab, var(--tint) 40%, transparent);
+}
+
+/* The rim: a hairline of light around the whole pane, brightest where a curved edge would catch it, with the faint
+   mint/lavender split of real glass. */
+.pane::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.3px; pointer-events: none; z-index: 5;
+  background: conic-gradient(from 200deg,
+    rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.1) 14%, rgba(176, 248, 222, 0.42) 27%, rgba(255, 255, 255, 0.05) 40%,
+    rgba(255, 255, 255, 0.55) 55%, rgba(208, 192, 255, 0.4) 70%, rgba(255, 255, 255, 0.08) 84%, rgba(255, 255, 255, 0.85));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+/* The highlight that follows your hand across the glass. */
+.pane::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 4;
+  background: radial-gradient(360px circle at var(--mx, 24%) var(--my, 0%), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06) 38%, transparent 64%);
+  mix-blend-mode: screen; opacity: 0.35; transition: opacity 700ms var(--ease-soft);
+}
+.pane:hover::after, .pane[data-open='true']::after { opacity: 0.9; }
+
+/* The place, mounted behind the glass with a little depth at its edges. */
+.pane-img { position: absolute; inset: var(--frame); border-radius: calc(var(--r) - var(--frame) + 2px); overflow: hidden; background: #e9e8f2; z-index: 1; }
+.pane-img img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.06); transition: transform 1.6s var(--ease-out), filter 1s var(--ease-soft); filter: saturate(0.92) brightness(0.98); }
+.pane[data-open='true'] .pane-img img { transform: scale(1); filter: none; }
+.pane-img::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), inset 0 14px 26px -12px rgba(255, 255, 255, 0.42), inset 0 -40px 50px -36px rgba(30, 24, 70, 0.16);
+}
+.pane-fallback { width: 100%; height: 100%; background: radial-gradient(120% 90% at 30% 20%, #ffffff, #e6e4f2 55%, #d8d4ec); }
+
+/* As the album forms, one soft sheet of light passes across each pane, once. */
+.pane-sheen { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; z-index: 4; }
+.pane-sheen::before {
+  content: ''; position: absolute; top: -20%; bottom: -20%; left: 0; width: 42%;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0) 10%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 90%);
+  transform: translateX(-140%) skewX(-12deg); opacity: 0;
+  animation: pane-sheen 2.2s var(--ease-soft) both; animation-delay: calc(1.05s + var(--i, 0) * 0.13s);
+}
+@keyframes pane-sheen {
+  0% { transform: translateX(-140%) skewX(-12deg); opacity: 0; }
+  18% { opacity: 1; }
+  82% { opacity: 1; }
+  100% { transform: translateX(330%) skewX(-12deg); opacity: 0; }
+}
+
+/* The whole pane is the control; the plate's buttons sit above it. */
+.pane-hit { position: absolute; inset: 0; z-index: 3; border: 0; border-radius: inherit; background: transparent; cursor: pointer; }
+.pane-hit:focus-visible { outline: 3px solid rgba(196, 180, 255, 0.95); outline-offset: 5px; }
+
+/* ---------- the plate: frosted glass over the picture ---------- */
+.plate {
+  position: absolute; left: calc(var(--frame) + 12px); right: calc(var(--frame) + 12px); bottom: calc(var(--frame) + 12px); z-index: 6;
+  padding: 13px 18px 14px; border-radius: 22px;
+  color: var(--paper-ink);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.56));
+  -webkit-backdrop-filter: blur(22px) saturate(190%) brightness(1.05);
+  backdrop-filter: blur(22px) saturate(190%) brightness(1.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.98), inset 0 -1px 0 rgba(255, 255, 255, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 14px 34px -8px rgba(12, 10, 44, 0.32);
+  pointer-events: none;
+  transition: opacity 500ms var(--ease-soft), transform 600ms var(--ease-out), padding 700ms var(--ease-out);
+}
+.plate-actions, .plate-actions * { pointer-events: auto; }
+.plate-label { margin: 0 0 4px; display: flex; justify-content: space-between; gap: 12px; font: 600 13px/1.3 var(--sans); color: var(--paper-ink-soft); letter-spacing: 0.005em; }
+.plate-label span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.plate-time { font-weight: 400; font-variant-numeric: tabular-nums; flex: none; }
+.plate-caption {
+  margin: 0; font: 450 17px/1.38 var(--sans); color: var(--paper-ink);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  text-wrap: pretty;
+}
+.plate-caption.by-companion { font: 400 italic 20px/1.28 var(--serif); }
+.pane[data-open='true'] .plate { padding: 18px 22px 18px; }
+.pane[data-open='true'] .plate-caption { -webkit-line-clamp: 6; font-size: clamp(19px, 1.7vw, 24px); line-height: 1.34; }
+.pane[data-open='true'] .plate-caption.by-companion { font-size: clamp(23px, 2vw, 28px); line-height: 1.22; }
+.plate-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.plate-btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px 0 14px; border-radius: 999px; border: 0; cursor: pointer;
+  font: 600 15px/1 var(--sans); color: #fff; background: linear-gradient(180deg, #34324f, #1f1d34);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 6px 16px rgba(16, 12, 48, 0.28);
+  transition: transform var(--quick) var(--ease-out), box-shadow var(--calm);
+}
+.plate-btn:hover { transform: translateY(-1px); }
+.plate-btn.quiet { color: var(--paper-ink); background: rgba(255, 255, 255, 0.55); box-shadow: inset 0 0 0 1px rgba(29, 28, 46, 0.18); padding: 0 18px; }
+.plate-btn:focus-visible { outline: 3px solid rgba(120, 96, 230, 0.9); outline-offset: 2px; }
+
+/* A narrow pane is a sliver of the place: the plate waits until there's room for words. */
+@container (max-width: 236px) {
+  .plate { opacity: 0; transform: translateY(10px); }
+}
+/* Medium panes: the moment's words matter more than its clock time. */
+@container (max-width: 330px) {
+  .plate-time { display: none; }
+}
+
+/* The photo it began from, set into the corner like a print tucked behind the glass. */
+.pane-source {
+  position: absolute; top: calc(var(--frame) + 14px); right: calc(var(--frame) + 14px); z-index: 6; margin: 0; width: clamp(96px, 22cqw, 150px);
+  padding: 6px 6px 8px; border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.5));
+  -webkit-backdrop-filter: blur(16px) saturate(180%); backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: inset 0 1px 0 #fff, 0 10px 26px rgba(12, 10, 44, 0.3);
+}
+.pane-source img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 11px; }
+.pane-source figcaption { margin: 6px 2px 0; font: 600 11.5px/1.2 var(--sans); color: var(--paper-ink-soft); }
+
+/* ---------- the dock: one way onward ---------- */
+.album-dock {
+  position: absolute; left: 0; right: 0; bottom: max(26px, calc(env(safe-area-inset-bottom) + 14px)); z-index: 8;
+  display: flex; justify-content: center; pointer-events: none;
+}
+.album-dock > * { pointer-events: auto; }
+.album-cta {
+  position: relative; color: var(--ink); isolation: isolate; overflow: hidden;
+  /* smoked glass: reads over the night and over a bright memory alike */
+  background: linear-gradient(180deg, rgba(58, 52, 104, 0.58), rgba(22, 20, 50, 0.66));
+  -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.14), 0 18px 46px rgba(2, 3, 16, 0.55);
+}
+.album-cta::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; opacity: 0.7; transition: opacity var(--calm);
+  background: radial-gradient(110% 160% at 50% 130%, rgba(98, 243, 198, 0.32), transparent 55%), radial-gradient(90% 140% at 0% 0%, rgba(154, 124, 255, 0.36), transparent 60%);
+}
+.album-cta:hover::before { opacity: 1; }
+
+/* ---------- nothing kept yet ---------- */
+.album-empty {
+  max-width: 560px; margin: 4vh 0 0; padding: 38px 38px 34px; border-radius: 34px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+  -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 30px 70px -18px rgba(2, 3, 16, 0.6);
+}
+.album-empty h2 { margin: 0 0 12px; font: 400 clamp(32px, 3.2vw, 44px)/1.05 var(--serif); }
+.album-empty p { margin: 0 0 26px; font: 400 18px/1.55 var(--sans); color: var(--ink-soft); max-width: 42ch; }
+
+/* ---------- phones: one column, a moment opens downward ---------- */
+@media (max-width: 720px) {
+  .album-inner { width: calc(100vw - 32px); padding-bottom: 150px; }
+  .album-head h1 { font-size: clamp(50px, 14vw, 64px); }
+  .memory-head h2 { font-size: 34px; }
+  .sample-chip { display: block; width: max-content; margin: 8px 0 0; }
+  .strip { flex-direction: column; height: auto; gap: 12px; }
+  .pane { --frame: 9px; --r: 30px; flex: 0 0 auto; height: 168px; min-width: 0; scroll-margin: 24px 0 150px; transition: height 760ms var(--ease-out), box-shadow 700ms var(--ease-soft); }
+  .pane[data-kind='arrival'] { height: 230px; }
+  .pane[data-open='true'] { height: min(560px, 74vh); }
+  .plate { left: calc(var(--frame) + 10px); right: calc(var(--frame) + 10px); bottom: calc(var(--frame) + 10px); padding: 11px 15px 12px; }
+  .plate-caption { font-size: 16px; }
+  .album-empty { padding: 30px 24px 26px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pane-sheen { display: none; }
+  .pane, .pane-img img, .plate, .pane::after { transition: none !important; }
+  .pane-img img { transform: none; }
+}

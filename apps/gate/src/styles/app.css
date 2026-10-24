@@ -164,3 +164,7 @@ button { font: inherit; color: inherit; }
 .sheet .muted { color: var(--ink-faint); }
 .sheet-close { position: absolute; top: 14px; right: 14px; background: transparent; color: var(--ink-soft); }
 .album-placeholder { position: absolute; inset: 0; overflow: auto; padding: 80px 40px; }
+
+/* In the memory, words sit low so the place stays in view. */
+.on-paper .captions { bottom: max(44px, calc(env(safe-area-inset-bottom) + 30px)); gap: 8px; }
+.on-paper .captions .said { font-size: clamp(22px, 2.3vw, 34px); max-width: 32ch; }

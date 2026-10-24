@@ -8,7 +8,7 @@ import { convex, readInvite, startSession, uploadFile } from '../backend/client'
 import { useGate, type MediaItem } from '../state/store';
 import { createEngine, type Heard, type VoiceEngine } from '../voice/engine';
 import { memory } from './memory';
-import { moments } from './moments';
+import { moments, useMoments } from './moments';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -88,7 +88,7 @@ class Flow {
       music.duck(true);
       const words = text.split(/\s+/).length;
       try {
-        if (this.engine && this.engine.kind !== 'none') await withTimeout(this.engine.say(text), 4000 + words * 650, undefined);
+        if (this.engine) await withTimeout(this.engine.say(text), 4000 + words * 650, undefined);
         else await sleep(900 + words * 330);
       } finally {
         music.duck(false);
@@ -115,10 +115,11 @@ class Flow {
     if (g.stage === 'memory' || g.stage === 'forming') return void this.heardInMemory(text, h);
     if (g.stage !== 'gathering' && g.stage !== 'greeting') return;
     this.turnsInPhase++;
-    memory.addWords(text, h.audioFileId);
     this.thinking = true;
     const reply = await this.ask({ phase: 'gathering', transcript: text });
     this.thinking = false;
+    // Only words that describe the place feed the drawing ("yes, let's go" doesn't).
+    if (reply.intent === 'describe' || (reply.intent === 'chat' && text.split(/\s+/).length >= 5)) memory.addWords(text, h.audioFileId);
     if (reply.place) { this.place = reply.place; useGate.getState().set({ memoryTitle: reply.place }); memory.setTitle(reply.place); }
     switch (reply.intent) {
       case 'enter':
@@ -275,6 +276,38 @@ class Flow {
     music.setMode('album');
     music.cue('album');
     useGate.getState().set({ stage: 'album', resting: false, heardLine: null, companionLine: null, mood: 'idle' });
+  }
+
+  /** From the album: walk back into a memory exactly as it was. */
+  async revisit(memoryId: string): Promise<void> {
+    const m = useMoments.getState().memories.find((x) => x.id === memoryId);
+    if (!m?.plan) { this.again(); return; }
+    this.leaving = false;
+    this.history = [];
+    this.invitedToEnter = false;
+    this.place = m.title;
+    memory.restore(m.plan);
+    moments.resume(memoryId);
+    music.setMode('white');
+    music.cue('enter');
+    const g = useGate.getState();
+    g.set({ stage: 'entering', enterProgress: 0.55, memoryTitle: m.title, media: null, offers: { photo: false, video: false, invite: false } });
+    g.clearLines();
+    const t0 = performance.now();
+    await new Promise<void>((resolve) => {
+      const step = () => {
+        const p = Math.min(1, 0.55 + (performance.now() - t0) / 3600 * 0.45);
+        useGate.getState().set({ enterProgress: p });
+        if (p < 1) requestAnimationFrame(step); else resolve();
+      };
+      requestAnimationFrame(step);
+    });
+    useGate.getState().set({ stage: 'forming', enterProgress: 1, expression: 'gentle' });
+    await memory.whenDrawn(16_000);
+    useGate.getState().set({ stage: 'memory', expression: 'happy' });
+    await this.say('Here we are again.');
+    useGate.getState().set({ expression: 'neutral' });
+    this.listen(true);
   }
 
   /** From the album: back to the gate for another memory (the session continues). */
