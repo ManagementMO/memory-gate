@@ -19,6 +19,17 @@ import { PalaceWorld } from './palace/PalaceWorld';
 import { SHORE, XR_MOVE_AT } from './palace/plan';
 import { WhiteSpace } from './WhiteSpace';
 import { PresenceLights } from '../presence/PresenceLights';
+import { pointBus } from '../presence/presence';
+import type { ThreeEvent } from '@react-three/fiber';
+
+/** In the headset, a pinch (hands) or trigger (controllers) on something in the memory marks it for everyone: the
+ *  same "look here" as a tap on a phone. (Flat screens use the tap handler in PresenceLights.) */
+function pointInHeadset(e: ThreeEvent<MouseEvent>) {
+  const g = useGate.getState();
+  if (!g.xr || !(g.stage === 'memory' || g.stage === 'forming') || !pointBus.send) return;
+  e.stopPropagation();
+  pointBus.send([e.point.x, e.point.y, e.point.z]);
+}
 import { XrLayer } from './XrLayer';
 
 /** A soft studio environment for glossy surfaces (the figure's shell, sketch objects). Generated, no download. */
@@ -104,7 +115,9 @@ export function World({ quality }: { quality: number }) {
       <GateDust />
       <WhiteSpace />
       <PhotoWorld />
-      <MemoryScene />
+      <group onClick={pointInHeadset}>
+        <MemoryScene />
+      </group>
       <MediaCard />
       <CompanionRig />
       <PresenceLights />

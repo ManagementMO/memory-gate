@@ -12,6 +12,7 @@ import { ContactShadow } from '../scene/ContactShadow';
 import { SPOT, XR_MOVE_AT, walkCompanion } from '../scene/palace/plan';
 
 const _target = new THREE.Vector3();
+const _settle = new THREE.Vector3(0, 0.12, 0); // settles gently down into place as the memory forms
 const _head = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 const _e = new THREE.Euler();
@@ -26,6 +27,7 @@ export function CompanionRig() {
   const pos = useRef(COMPANION_SPOT.portal.clone());
   const yaw = useRef(0);
   const scale = useRef(1.0);
+  const lastStage = useRef<string>('portal');
 
   useFrame((state, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05);
@@ -73,7 +75,7 @@ export function CompanionRig() {
       if (aspect < 0.8) _target.set(-0.62, 1.02, -0.1);
       // The Light is mostly glow; on white it needs more presence to be found at a few metres.
       targetScale = (aspect < 0.8 ? 0.8 : 0.95) * (s.companion === 'light' ? 1.45 : 1);
-      rate = s.stage === 'forming' ? 0.9 : 1.6;
+      rate = s.stage === 'forming' ? 1.3 : 1.6;
     } else if (s.stage === 'gathering' || s.stage === 'greeting') {
       // In the palace the conversation happens across the lagoon, the companion a little higher in view.
       _target.copy(palace ? (s.media ? SPOT.gatheringWithMedia : SPOT.gathering) : s.media ? COMPANION_SPOT.gatheringWithMedia : COMPANION_SPOT.gathering);
@@ -84,6 +86,16 @@ export function CompanionRig() {
       _target.copy(palace ? SPOT.portal : COMPANION_SPOT.portal);
       targetScale = 1.0;
     }
+    // In the headset the companion keeps to the wearer's own eye height (seated or standing): its face just below
+    // eye level wherever it is, except under the dome, where it rises into the light on its own.
+    const underDome = palace && s.stage === 'entering' && s.enterProgress >= XR_MOVE_AT;
+    if (gl.xr.isPresenting && !underDome && !day) {
+      camera.getWorldPosition(_head);
+      _target.y = _head.y - 0.19 * targetScale;
+    }
+    // As a memory begins to form (the screen is white), the companion is already beside you, settling in.
+    if (!gl.xr.isPresenting && s.stage === 'forming' && lastStage.current !== 'forming') pos.current.copy(_target).add(_settle);
+    lastStage.current = s.stage;
     // A change of world (or the album) moves the conversation far away: arrive there, don't fly.
     if (!gl.xr.isPresenting && s.stage !== 'entering' && pos.current.distanceTo(_target) > 12) pos.current.copy(_target);
     dampVec3(pos.current, _target, rate, dt);
