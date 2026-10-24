@@ -28,7 +28,7 @@ export type MarbleFaceUniforms = {
   /** Per eye: centre (x, y) in metres on the face, scale (x, y). */
   uEyeL: { value: THREE.Vector4 };
   uEyeR: { value: THREE.Vector4 };
-  uFull: { value: number };          // how full the arched eyes are (metres): ~0.011 calm, ~0.014 attentive
+  uCut: { value: number };           // where the eye's soft base sits above its centre (metres): 0 a near half-oval, higher a slimmer arch
   uLineL: { value: number };         // 0 open → 1 a thin arc (blink, sleep)
   uLineR: { value: number };
   uBright: { value: number };
@@ -37,7 +37,7 @@ export type MarbleFaceUniforms = {
 
 /** Where the face sits on the head (metres, head space): a recessed oval plate following the head's shape, the brow
  *  star inside its top, the arched eyes below. Shared with the glow sprites in createMarble.ts. */
-export const FACE = { ovalY: 0.0, ovalA: 0.094, ovalB: 0.066, starY: 0.034, star: [0.011, 0.018] as const, eyeX: 0.047, eyeY: -0.016, chestY: -0.05, chest: [0.0085, 0.0135] as const };
+export const FACE = { ovalY: 0.0, ovalA: 0.094, ovalB: 0.066, starY: 0.034, star: [0.011, 0.018] as const, eyeX: 0.047, eyeY: -0.009, chestY: -0.05, chest: [0.0085, 0.0135] as const };
 /** The wings' length and sweep (metres), shared with the geometry in createMarble.ts. */
 export const WING = { len: 0.215, bend: -0.012, windowY: -0.15 };
 
@@ -61,7 +61,7 @@ export function marbleFaceUniforms(): MarbleFaceUniforms {
   return {
     uEyeL: { value: new THREE.Vector4(-FACE.eyeX, FACE.eyeY, 1, 1) },
     uEyeR: { value: new THREE.Vector4(FACE.eyeX, FACE.eyeY, 1, 1) },
-    uFull: { value: 0.011 },
+    uCut: { value: 0.004 },
     uLineL: { value: 0 },
     uLineR: { value: 0 },
     uBright: { value: 0.3 },
@@ -119,7 +119,7 @@ vec3 mgPerturb(vec3 surfPos, vec3 surfNorm, float h, float faceDir) {
 
 const FACE_COMMON = /* glsl */ `
 uniform vec4 uEyeL; uniform vec4 uEyeR;
-uniform float uFull, uLineL, uLineR, uBright, uTilt;
+uniform float uCut, uLineL, uLineR, uBright, uTilt;
 // Inigo Quilez's exact crescent ("moon") distance: a circle of radius ra with one of radius rb, d along +x, cut out.
 // Exact around the tips too, so a glow hugs the arch instead of tracing the hidden circle underneath.
 float mgMoon(vec2 p, float d, float ra, float rb) {
@@ -129,20 +129,20 @@ float mgMoon(vec2 p, float d, float ra, float rb) {
   if (d * (p.x * b - p.y * a) > d * d * max(b - p.y, 0.0)) return length(p - vec2(a, b));
   return max(length(p) - ra, -(length(p - vec2(d, 0.0)) - rb));
 }
-// An arched eye of light, thickest at its crown with its tips curving down (a calm, smiling eye): a circle with a
-// slightly smaller one lowered out of it. A blink thins it to a fine arc.
+// An eye of light: the top of an oval over a softly curved base (between a calm arch and a half-oval), cut by a large
+// circle below. Lowering the base opens the eye; a blink raises it to a fine arc.
 float mgEyeSd(vec2 p, vec4 e, float side, float line) {
   vec2 q = p - e.xy;
   float c = cos(uTilt * side), s = sin(uTilt * side);
   q = mat2(c, -s, s, c) * q;
   q /= e.zw;
   const float R0 = 0.0235;
-  const float R1 = 0.0224;
+  const float RB = 0.04;
   const float SY = 0.76;
-  float k = mix(uFull, 0.0012, line);
+  float cut = mix(uCut, R0 - 0.0016, line);
   vec2 qq = vec2(q.x, q.y / SY);
   // The cut-out circle sits below the eye's centre: turn the frame so "below" is the moon's +x.
-  return mgMoon(vec2(-qq.y, qq.x), k, R0, R1) * SY * min(e.z, e.w);
+  return mgMoon(vec2(-qq.y, qq.x), RB - cut, R0, RB) * SY * min(e.z, e.w);
 }
 // The brow star: a four-pointed diamond with softly drawn-in sides.
 float mgStar(vec2 p, vec2 r) {

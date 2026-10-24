@@ -267,7 +267,7 @@ export function createMarbleFigure(): FigureRig {
   const eyeGlows = [-1, 1].map((side) => {
     // A soft glow shaped to the arch (wide and low), centred on it so the eye reads as one light.
     const g = glowMat(0.078, 0.036);
-    g.mesh.position.set(side * FACE.eyeX, FACE.eyeY + 0.008, headFrontZ(side * FACE.eyeX, FACE.eyeY + 0.008) + 0.004);
+    g.mesh.position.set(side * FACE.eyeX, FACE.eyeY + 0.009, headFrontZ(side * FACE.eyeX, FACE.eyeY + 0.009) + 0.004);
     head.add(g.mesh);
     return g;
   });
@@ -285,7 +285,7 @@ export function createMarbleFigure(): FigureRig {
   // ---------- animated state ----------
   let fade = 0, wake = 0, eyesOpen = 0, blinkPhase = -1, nextBlink = 2.5;
   let yaw = 0, pitch = 0.16, roll = 0, levelS = 0;
-  const cur = { full: 0.011, lineL: 1, lineR: 1, sLx: 1, sLy: 1, sRx: 1, sRy: 1, ox: 0, oy: 0, oLy: 0, bright: 0.3, tilt: 0.1, dia: 0.3 };
+  const cur = { cut: 0.004, lineL: 1, lineR: 1, sLx: 1, sLy: 1, sRx: 1, sRy: 1, ox: 0, oy: 0, oLy: 0, bright: 0.3, tilt: 0.1, dia: 0.3 };
   const _cam = new THREE.Vector3();
   let wasPortal = true;
   const stoneMats = [headMat, bodyMat, shellMat, wingMat, goldMat, glassMat];
@@ -311,28 +311,28 @@ export function createMarbleFigure(): FigureRig {
       if (blinkPhase >= 0) { blinkPhase += dt / 0.24; blink = Math.sin(Math.min(1, blinkPhase) * Math.PI); if (blinkPhase >= 1) blinkPhase = -1; }
 
       // ---------- eye targets from expression + mood ----------
-      let full = 0.011, line = 0, sL = 1, sR = 1, oLy = 0, tilt = 0.1, ox = 0, oy = 0, bright = 0.92, dia = 0.85;
+      let cut = 0.004, line = 0, sL = 1, sR = 1, oLy = 0, tilt = 0.08, ox = 0, oy = 0, bright = 0.92, dia = 0.85;
       switch (s.expression) {
-        case 'happy': full = 0.0125; bright = 1.05; tilt = 0.06; break;
+        case 'happy': cut = 0.007; bright = 1.05; tilt = 0.05; break;
         case 'curious': sL = 1.12; sR = 0.92; oLy = 0.002; tilt = 0.05; break;
-        case 'gentle': full = 0.0085; tilt = 0.13; break;
+        case 'gentle': cut = 0.009; tilt = 0.11; break;
         case 'sleepy': line = 0.85; tilt = 0.08; bright = 0.6; break;
         default: break;
       }
       const breathe = 0.94 + 0.06 * Math.sin(time * Math.PI * 2 * 0.22);
       switch (s.mood) {
-        case 'listening': { const k = 1.03 + L * 0.05; sL *= k; sR *= k; full *= 1.2 + L * 0.2; } bright = 1 + L * 0.3 + 0.04 * Math.sin(time * Math.PI * 2 * 0.4); dia = 0.75 + L * 0.3; break;
+        case 'listening': { const k = 1.03 + L * 0.05; sL *= k; sR *= k; cut = Math.min(cut, 0.0) - L * 0.002; } bright = 1 + L * 0.3 + 0.04 * Math.sin(time * Math.PI * 2 * 0.4); dia = 0.75 + L * 0.3; break;
         case 'thinking': ox = 0.0055; oy = 0.004; sL *= 0.94; sR *= 0.94; bright = 0.86 + 0.06 * Math.sin(time * 2.2); dia = 0.9 + 0.35 * Math.sin(time * 3.1); break;
         case 'speaking': bright = 0.86 + L * 0.48; sL *= 1 + L * 0.04; sR *= 1 + L * 0.04; dia = 0.72 + L * 0.45; break;
         default: bright *= breathe; dia *= breathe;
       }
-      if (dormant) full *= 0.88; // at the gate: calm, still glowing fully
+      if (dormant) cut = Math.max(cut, 0.006); // at the gate: calm, still glowing fully
       const closed = 1 - smooth(Math.min(1, eyesOpen));
       const lineT = Math.max(line, closed, blink);
       bright = THREE.MathUtils.lerp(0.32, bright, smooth(Math.min(1, eyesOpen)));
       dia = THREE.MathUtils.lerp(0.3 + 0.08 * Math.sin(time * 1.2), dia, awake);
       const kShape = 7, kLight = 3.2; // shapes settle in ~0.15 s, light in ~0.33 s (calm contract)
-      cur.full = damp(cur.full, full, kShape, dt);
+      cur.cut = damp(cur.cut, cut, kShape, dt);
       cur.lineL = blinkPhase >= 0 ? lineT : damp(cur.lineL, lineT, kShape, dt);
       cur.lineR = blinkPhase >= 0 ? lineT : damp(cur.lineR, lineT, kShape, dt);
       cur.sLx = damp(cur.sLx, sL, kShape, dt); cur.sLy = damp(cur.sLy, sL, kShape, dt);
@@ -343,7 +343,7 @@ export function createMarbleFigure(): FigureRig {
       cur.dia = damp(cur.dia, dia, kLight, dt);
       face.uEyeL.value.set(-FACE.eyeX + cur.ox, FACE.eyeY + cur.oy + cur.oLy, cur.sLx, cur.sLy);
       face.uEyeR.value.set(FACE.eyeX + cur.ox, FACE.eyeY + cur.oy, cur.sRx, cur.sRy);
-      face.uFull.value = cur.full;
+      face.uCut.value = cur.cut;
       face.uLineL.value = cur.lineL;
       face.uLineR.value = cur.lineR;
       face.uBright.value = cur.bright * fade;
@@ -354,7 +354,7 @@ export function createMarbleFigure(): FigureRig {
       U.uOcclusion.value = THREE.MathUtils.lerp(0.26, 0.24, o.onLight);
       U.uExposure.value = THREE.MathUtils.lerp(0.78, 1.0, o.onLight); // a little shade on the stone so its lights read
       // (glowBlending is additive: brightness rides on the colour, not opacity)
-      const gk = fade * THREE.MathUtils.lerp(0.5, 0.22, o.onLight);
+      const gk = fade * THREE.MathUtils.lerp(0.5, 0.07, o.onLight); // on the white page additive glow only tints the stone
       for (const g of eyeGlows) g.mat.color.set('#ffbd66').multiplyScalar(cur.bright * gk * (1 - Math.max(cur.lineL, cur.lineR) * 0.8));
       browGlow.mat.color.set('#ffbd66').multiplyScalar(cur.dia * gk * 0.9);
       chestGlow.mat.color.set('#ffbd66').multiplyScalar(cur.dia * gk * 0.8);
