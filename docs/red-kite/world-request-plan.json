@@ -1,0 +1,71 @@
+{
+  "schema": "memory-gate.red-kite-generation-plan/1",
+  "status": "ready_cached",
+  "input": "references/meadow-reference-v2.jpg",
+  "inputSha256": "2e295d49adf645c904282aece1e940e97e535ea6a739d5faad765f8e128453fa",
+  "inputKind": "original AI-authored fictional reference; regular perspective JPEG, not panorama",
+  "generationRoute": "existing consented photo -> durable World Labs job -> reservation counter -> private media upload -> single POST -> polling -> cache -> explicit activation",
+  "model": "marble-1.1",
+  "estimatedCredits": 1580,
+  "estimatedUsd": 1.264,
+  "existingUsage": 4,
+  "existingLimit": 4,
+  "proposedLimitIfApproved": 5,
+  "retryPolicy": "No automatic second paid POST",
+  "currentBackendTextPrompt": "A grounded, static interpretation of this place. Preserve the visible layout and architectural character. Keep the foreground open for separate interactive objects; do not invent freestanding benches, gates, trees, or photographs in that space. No people, no written words.",
+  "preferredArtPrompt": "WORLD_LABS_PROMPT.txt; requires explicit integration if used instead of the current generic image prompt",
+  "requestTemplate": {
+    "display_name": "The Red Kite - fictional meadow",
+    "model": "marble-1.1",
+    "permission": {
+      "public": false,
+      "allow_id_access": false
+    },
+    "world_prompt": {
+      "type": "image",
+      "image_prompt": {
+        "source": "media_asset",
+        "media_asset_id": "PENDING_PRIVATE_UPLOAD"
+      },
+      "is_pano": false,
+      "text_prompt": "A grounded, static interpretation of this place. Preserve the visible layout and architectural character. Keep the foreground open for separate interactive objects; do not invent freestanding benches, gates, trees, or photographs in that space. No people, no written words."
+    }
+  },
+  "notes": [
+    "The user explicitly authorized raising the cap from four to five for exactly one new meadow generation; this generation has completed.",
+    "The current backend controls its actual display name, request hash and photo prompt; do not claim the preferred art prompt was submitted if it was not.",
+    "No family faces, voices or private source photos are in this input.",
+    "Do not activate into an existing family room without the usual explicit selection."
+  ],
+  "approval": {
+    "date": "2026-10-24",
+    "additionalGenerations": 1,
+    "approvedLimit": 5,
+    "scope": "One Marble 1.1 world from meadow-reference-v2.jpg"
+  },
+  "actualDisplayName": "Family memory interpretation",
+  "isPanoSubmitted": "omitted; regular perspective JPEG; not labeled as panorama",
+  "elapsedMs": 618496,
+  "artifactManifest": "../../fixtures/worlds/red-kite.json",
+  "usageAfter": 5,
+  "limitAfter": 5,
+  "actualRequest": {
+    "display_name": "Family memory interpretation",
+    "model": "marble-1.1",
+    "permission": {
+      "public": false,
+      "allow_id_access": false
+    },
+    "world_prompt": {
+      "type": "image",
+      "image_prompt": {
+        "source": "media_asset",
+        "media_asset_id": "PRIVATE_UPLOAD_ID_OMITTED"
+      },
+      "text_prompt": "A grounded, static interpretation of this place. Preserve the visible layout and architectural character. Keep the foreground open for separate interactive objects; do not invent freestanding benches, gates, trees, or photographs in that space. No people, no written words."
+    },
+    "isPanoField": "omitted; provider auto-detection used for a regular perspective JPEG"
+  },
+  "worldId": "0b84554c-b182-4b3e-a7bb-78f15822a49d",
+  "actualCostStatus": "1,580 credits estimated from documented image pricing; no settled billing audit performed"
+}

@@ -4,6 +4,7 @@ import { Group } from '@iwsdk/core';
 const pending = vi.hoisted(() => [] as (() => void)[]);
 const failures = vi.hoisted(() => [] as ((error: Error) => void)[]);
 const grades = vi.hoisted(() => [] as { reveal: { value: number } }[]);
+const gradeOptions = vi.hoisted(() => [] as { distanceFade?: boolean }[]);
 vi.mock('@sparkjsdev/spark', async () => {
   const { Group } = await import('@iwsdk/core');
   return { SparkRenderer: class {}, SplatMesh: class extends Group {
@@ -13,9 +14,17 @@ vi.mock('@sparkjsdev/spark', async () => {
     updateVersion() {}
   } };
 });
-vi.mock('./look/roomGrade.js', () => ({ applyRoomGrade: () => { const grade = { reveal: { value: 0 } }; grades.push(grade); return grade; } }));
+vi.mock('./look/roomGrade.js', () => ({ applyRoomGrade: (_mesh: unknown, options: { distanceFade?: boolean }) => { const grade = { reveal: { value: 0 } }; grades.push(grade); gradeOptions.push(options); return grade; } }));
 import { SplatRoom } from './room.js';
-beforeEach(() => { pending.length = 0; failures.length = 0; grades.length = 0; });
+beforeEach(() => { pending.length = 0; failures.length = 0; grades.length = 0; gradeOptions.length = 0; });
+
+test('worlds retain their distant scenery while photo reconstructions keep their bounded edge treatment', () => {
+  const room = new SplatRoom();
+  room.load({ url: 'https://example.com/world.spz', floorY: -1.5, scale: 2.6, source: 'worldlabs', numSplats: 500000 });
+  expect(gradeOptions.at(-1)?.distanceFade).toBe(false);
+  room.load({ url: 'https://example.com/photo.spz', floorY: -1.5, scale: 1, source: 'sharp', numSplats: 500000 });
+  expect(gradeOptions.at(-1)?.distanceFade).toBe(true);
+});
 
 test('switching to the courtyard releases the rendered generated room', async () => {
   const room = new SplatRoom();

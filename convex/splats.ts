@@ -96,18 +96,19 @@ export const fromStory = mutation({
   },
 });
 
-/** The public, fictional rehearsal world is cached once; opening it never invokes a provider. */
+/** Fictional rehearsal worlds are cached once; opening one never invokes a provider. */
 export const usePracticeWorld = mutation({
-  args: { code: v.string(), token: v.string() },
-  handler: async (ctx, { code, token }) => {
+  args: { code: v.string(), token: v.string(), setting: v.optional(v.union(v.literal('courtyard'), v.literal('red-kite'))) },
+  handler: async (ctx, { code, token, setting = 'courtyard' }) => {
     const { room, member } = await requireMember(ctx, code, token, ['family']);
     if (!room.demo) throw new ConvexError({ code: 'FORBIDDEN', message: 'The fictional practice world is available only in a labeled sample room.' });
     if (room.paused) throw new ConvexError({ code: 'PAUSED', message: 'Resume when everyone is ready before changing the setting.' });
-    const asset = await ctx.db.query('assets').withIndex('by_key', q => q.eq('key', 'world.practice-courtyard')).unique();
+    const assetKey = setting === 'red-kite' ? 'world.practice-red-kite' : 'world.practice-courtyard';
+    const asset = await ctx.db.query('assets').withIndex('by_key', q => q.eq('key', assetKey)).unique();
     const m = asset?.meta as { floorY: number; scale: number; numSplats: number; liteNumSplats: number; bytes: number; worldId: string; sourceWords: string;
       liteFileId?: import('./_generated/dataModel').Id<'_storage'>; previewFileId?: import('./_generated/dataModel').Id<'_storage'> } | undefined;
     if (!asset || !m || !Number.isFinite(m.scale) || m.scale <= 0 || !Number.isFinite(m.floorY) || typeof m.sourceWords !== 'string') {
-      throw new ConvexError({ code: 'UNAVAILABLE', message: 'Run npm run seed:world to load the cached fictional courtyard.' });
+      throw new ConvexError({ code: 'UNAVAILABLE', message: setting === 'red-kite' ? 'Run node scripts/red-kite-room.mjs to load the cached fictional meadow.' : 'Run npm run seed:world to load the cached fictional courtyard.' });
     }
     const existing = (await ctx.db.query('splats').withIndex('by_room', q => q.eq('roomId', room._id)).collect()).find(s => s.worldId === m.worldId && s.status === 'ready');
     if (existing) { await ctx.db.patch(room._id, { activeSplatId: existing._id, layout: 'courtyard', openedAt: Date.now() }); return { splatId: existing._id, reused: true }; }

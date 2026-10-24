@@ -14,7 +14,7 @@ export type RoomGrade = {
   farEnd: { value: number };
 };
 
-export function applyRoomGrade(room: SplatMesh, opts: { farStart?: number; farEnd?: number; warmth?: number; exposure?: number } = {}): RoomGrade {
+export function applyRoomGrade(room: SplatMesh, opts: { farStart?: number; farEnd?: number; warmth?: number; exposure?: number; distanceFade?: boolean } = {}): RoomGrade {
   const reveal = dyno.dynoFloat(0);
   const warmth = dyno.dynoFloat(opts.warmth ?? 0.12);
   const exposure = dyno.dynoFloat(opts.exposure ?? 0.92);
@@ -33,9 +33,12 @@ export function applyRoomGrade(room: SplatMesh, opts: { farStart?: number; farEn
         vec3 mgS = mix(mix(vec3(0.15, 0.105, 0.07), vec3(0.58, 0.46, 0.33), smoothstep(0.0, 0.55, mgL)),
                        vec3(0.93, 0.86, 0.72), smoothstep(0.5, 1.0, mgL));
         float mgD = length(${inputs.gsplat}.center);
-        float mgIn = 1.0 - smoothstep(${inputs.reveal} - 0.9, ${inputs.reveal}, mgD);
-        float mgBand = smoothstep(${inputs.reveal} - 1.3, ${inputs.reveal} - 0.45, mgD) * mgIn;
-        float mgFar = 1.0 - smoothstep(${inputs.farStart}, ${inputs.farEnd}, mgD);
+        // Complete World Labs environments include distant landscape and sky. A photo's finite reveal/fade
+        // window cut those away at 36 metric meters, exposing the dark VR background behind the meadow.
+        float mgWindow = ${opts.distanceFade === false ? '0.0' : '1.0'};
+        float mgIn = mix(1.0, 1.0 - smoothstep(${inputs.reveal} - 0.9, ${inputs.reveal}, mgD), mgWindow);
+        float mgBand = smoothstep(${inputs.reveal} - 1.3, ${inputs.reveal} - 0.45, mgD) * mgIn * mgWindow;
+        float mgFar = mix(1.0, 1.0 - smoothstep(${inputs.farStart}, ${inputs.farEnd}, mgD), mgWindow);
         vec3 mgOut = mix(mgC, mgS, ${inputs.warmth}) * ${inputs.exposure};
         ${outputs.gsplat}.rgba.rgb = min(mgOut + mgBand * vec3(0.30, 0.20, 0.08), vec3(1.0));
         ${outputs.gsplat}.rgba.a = ${inputs.gsplat}.rgba.a * mgIn * mgFar;
