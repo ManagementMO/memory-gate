@@ -1,0 +1,32 @@
+== backend runs the current shared code
+   PASS backend redeployed
+== typecheck
+   PASS apps/gate typecheck
+== production build
+   PASS vite build (built in 1.63s)
+== journey: desktop, words, Figure (offline room, no voice)
+   PASS reached the album
+   111.3s  errors: 0
+== journey: phone 390x844, words, Light (offline room, no voice)
+   PASS reached the album
+   97.0s  errors: 0
+== the aurora gate still works (?world=aurora, Light)
+   PASS reached the album
+== headset rehearsal (emulated Quest 3)
+   PASS entered VR, formed a memory, exited to the album
+   9.2s  XR frames rendered in 3 s: 147
+   61.5s  errors: 0
+== album interactions
+   PASS album shots
+   {"openWhileHovering":1,"openAfterLeave":0,"openAfterEsc":0,"phoneOpenAfterTap":1,"errors":[]}
+== frame rate (headless Chrome on this Mac, not a Quest measurement)
+   portal https://localhost:5180/?voice=off&mode=offline → 63.0 fps
+   memory https://localhost:5180/?preview=scene&plan=/eval/livingroom.json&companion=none → 102.0 fps
+   portal at headset quality https://localhost:5180/?voice=off&mode=offline&q=0.15 → 90.8 fps
+== generation renders
+   PASS rendered kitchen
+   PASS rendered lake
+   PASS rendered livingroom
+   PASS rendered cafe
+done: docs/dogfood/round-5
+multiplayer exit 0
