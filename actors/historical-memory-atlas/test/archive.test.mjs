@@ -14,7 +14,8 @@ test('does not turn missing rights or dates into historical certainty', () => {
 test('only displays institution images with explicit rights and retains exact rights', () => {
   const r = normalizeReference(row, { item: { date: '1930-1940', rights_advisory: 'No known restrictions on publication.' } }, input, 'test');
   assert.equal(r.imageUrl, row.image_url[0]); assert.match(r.rights, /No known/);
-  for (const url of ['http://www.loc.gov/item/x', 'https://www.loc.gov.evil.test/x', 'https://user@www.loc.gov/x', 'https://127.0.0.1/x', 'javascript:alert(1)']) assert.equal(safeArchiveUrl(url), null);
+  assert.equal(safeArchiveUrl('http://www.loc.gov/item/x'), 'https://www.loc.gov/item/x');
+  for (const url of ['https://www.loc.gov.evil.test/x', 'https://user@www.loc.gov/x', 'https://127.0.0.1/x', 'javascript:alert(1)']) assert.equal(safeArchiveUrl(url), null);
 });
 test('bounds requests, deduplicates records, and records retrieval provenance', async () => {
   const calls = [];
@@ -25,4 +26,8 @@ test('bounds requests, deduplicates records, and records retrieval provenance', 
 });
 test('upstream errors remain errors rather than fabricated results', async () => {
   await assert.rejects(searchArchive(input, { fetcher: async () => new Response('', { status: 429 }) }), /429/);
+});
+test('conditional rights never authorize automatic image reuse', () => {
+  const r = normalizeReference(row, { item: { date: '1935', rights_advisory: 'No known restrictions on images made by the U.S. Government; images copied from other sources may be restricted.' } }, input, 'test');
+  assert.equal(r.imageUrl, null);
 });

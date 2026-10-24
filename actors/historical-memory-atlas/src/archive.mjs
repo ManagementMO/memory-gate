@@ -14,6 +14,8 @@ export function safeArchiveUrl(value, image = false) {
   try {
     const u = new URL(value);
     const hosts = image ? ['tile.loc.gov', 'www.loc.gov', 'cdn.loc.gov', 'loc.gov'] : ['www.loc.gov', 'loc.gov'];
+    // The official API still returns http catalog IDs. Upgrade only allowlisted hosts.
+    if (u.protocol === 'http:' && hosts.includes(u.hostname) && !u.port) u.protocol = 'https:';
     return u.protocol === 'https:' && hosts.includes(u.hostname) && !u.username && !u.password && !u.port ? u.href : null;
   } catch { return null; }
 }
@@ -27,7 +29,8 @@ export function normalizeReference(result, detail, input, retrievedAt) {
   // Exclude clearly out-of-period items, keep unknown dates visibly uncertain.
   if (years.length && (Math.max(...years) < input.yearFrom || Math.min(...years) > input.yearTo)) return null;
   const rights = plain(item.rights_advisory ?? item.rights_information ?? item.rights ?? detail?.rights) || 'Rights not supplied. Check the institution record before reuse.';
-  const imagePermitted = /no known (?:restrictions|copyright restrictions)|public domain/i.test(rights);
+  const imagePermitted = /no known (?:restrictions|copyright restrictions) on publication|public domain/i.test(rights)
+    && !/may be restricted|other sources|except|permission required/i.test(rights);
   const images = Array.isArray(result.image_url) ? result.image_url : [];
   const imageUrl = imagePermitted ? images.map(u => safeArchiveUrl(u, true)).filter(Boolean).at(-1) ?? null : null;
   return {
@@ -63,11 +66,14 @@ export async function searchArchive(rawInput, { fetcher = fetch, now = () => new
   if (!Array.isArray(response.results)) throw new Error('Archive returned an unrecognized response.');
   const references = []; const seen = new Set(); const warnings = [];
   // At most nine requests per run. Details provide rights; failed details never imply permission.
-  for (const result of response.results.slice(0, input.maxItems)) {
+  let detailRequests = 0;
+  for (const result of response.results.slice(0, 16)) {
+    if (references.length >= input.maxItems || detailRequests >= 8) break;
     const sourceUrl = safeArchiveUrl(result.id ?? result.url);
     if (!sourceUrl || seen.has(sourceUrl)) continue; seen.add(sourceUrl);
+    if (!normalizeReference(result, null, input, retrievedAt)) continue;
     let detail = null;
-    try { const detailUrl = new URL(sourceUrl); detailUrl.searchParams.set('fo', 'json'); detail = await readJson(detailUrl, fetcher); }
+    try { detailRequests++; const detailUrl = new URL(sourceUrl); detailUrl.searchParams.set('fo', 'json'); detail = await readJson(detailUrl, fetcher); }
     catch { warnings.push(`Details unavailable for ${sourceUrl}; image reuse is not enabled.`); }
     const ref = normalizeReference(result, detail, input, retrievedAt);
     if (ref) references.push(ref);

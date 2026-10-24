@@ -18,7 +18,7 @@ export async function runArchive(input) {
       const child = spawn(process.execPath, ['src/main.mjs'], {
         cwd: path.join(root, 'actors/historical-memory-atlas'), windowsHide: true,
         env: { PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, TEMP: process.env.TEMP, HOME: process.env.HOME,
-          APIFY_LOCAL_STORAGE_DIR: storage, APIFY_PURGE_ON_START: '0', APIFY_DISABLE_OUTDATED_WARNING: '1' },
+          CRAWLEE_STORAGE_DIR: storage, CRAWLEE_PURGE_ON_START: 'false', APIFY_DISABLE_OUTDATED_WARNING: '1' },
         stdio: ['ignore', 'ignore', 'ignore'],
       });
       const timer = setTimeout(() => { child.kill(); reject(new Error('The archive timed out. Please try again later.')); }, 150_000);

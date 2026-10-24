@@ -3,6 +3,7 @@ import { useExchange, type ArchiveReference, type Capsule } from '../exchange';
 import type { Session } from '../session';
 import { Notice } from '../ui';
 import '../exchange.css';
+import { fileUrl } from '../backend';
 
 function ReferenceCard({ reference: r, children }: { reference: ArchiveReference; children?: React.ReactNode }) {
   return <article className="atlas-card">
@@ -66,7 +67,7 @@ export function Memories({ session, onStory }: { session: Session; onStory: () =
       </section></div>
       {opened && <section className="opened-memory" data-testid="opened-memory" aria-label="Opened memory"><div className="exchange-actions"><p className="eyebrow">In {opened.source.speaker}’s own words</p><button className="btn btn-quiet" onClick={exchange.close}>Close memory</button></div><blockquote>{opened.source.transcript}</blockquote>
         {opened.source.translation && <p><span className="small muted">Translation</span><br />{opened.source.translation}</p>}
-        {opened.source.audioUrl ? <><p className="small">Original recording · {opened.source.speaker}</p><audio ref={audio} controls src={opened.source.audioUrl} preload="none" /></> : <p className="small muted">{opened.source.source === 'typed' ? 'Original typed words. No recording was made.' : 'Original audio is not available with the current recording permission.'}</p>}
+        {opened.source.audioUrl ? <><p className="small">Original recording · {opened.source.speaker}</p><audio ref={audio} controls src={fileUrl(opened.source.audioUrl) ?? undefined} preload="none" /></> : <p className="small muted">{opened.source.source === 'typed' ? 'Original typed words. No recording was made.' : 'Original audio is not available with the current recording permission.'}</p>}
         {opened.source.objects.length > 0 && <p className="small">Connected to: {opened.source.objects.map(o => o.label).join(', ')}. <button className="btn btn-quiet" onClick={onStory}>Return to the shared place</button></p>}
       </section>}
       {sent.length > 0 && <details className="exchange-panel sent-memories"><summary>Memories you passed · {sent.length}</summary>{sent.map(c => <article key={c.id}><div><strong>{c.title}</strong><p className="small">For {c.recipientName} · {c.status === 'pending' ? 'Waiting for their choice' : c.status}</p></div>{c.status !== 'revoked' && <button className="btn btn-quiet" disabled={disabled} onClick={() => void respond(c, 'revoked')}>Revoke access</button>}</article>)}<p className="small muted">Revocation blocks future opens here. It cannot erase a recording someone has already downloaded.</p></details>}

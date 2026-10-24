@@ -4,7 +4,7 @@ import type { Session } from './session';
 export type ArchiveReference = { id: string; sourceUrl: string; title: string; publisher: string; date: string; description: string; rights: string; imageUrl: string | null; dateMatch: string; uncertainty: string; retrievedAt: string; provenance: string; addedBy?: string; contributor?: string };
 export type Capsule = { id: string; title: string; sourceId: string; senderId: string; recipientId: string; senderName: string; recipientName: string; status: string; revision: number; sourceAvailable: boolean; createdAt: number };
 export type ExchangeSnapshot = {
-  context: { memberId: string; paused: boolean; members: { id: string; name: string; role: string }[]; sources: { id: string; transcript: string; source: string; language: string | null }[] };
+  context: { memberId: string; paused: boolean; recordingAllowed: boolean; members: { id: string; name: string; role: string }[]; sources: { id: string; transcript: string; source: string; language: string | null }[] };
   capsules: Capsule[]; references: ArchiveReference[]; online: string[]; archiveMode: string;
 };
 export type OpenedMemory = { capsuleId: string; source: { transcript: string; translation: string | null; language: string | null; speaker: string; source: string; audioUrl: string | null; objects: { id: string; label: string; position: number[] }[] } };
@@ -63,6 +63,7 @@ export function useExchange(session: Session) {
     if (!opened || !snapshot) return;
     const capsule = snapshot.capsules.find(c => c.id === opened.capsuleId);
     if (!capsule || !capsule.sourceAvailable || ['revoked', 'dismissed'].includes(capsule.status)) setOpened(null);
+    else if (!snapshot.context.recordingAllowed && opened.source.audioUrl) setOpened({ ...opened, source: { ...opened.source, audioUrl: null } });
   }, [snapshot, opened]);
   return { snapshot, opened, results, status, problem, request, close: () => setOpened(null) };
 }
