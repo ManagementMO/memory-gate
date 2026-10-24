@@ -59,7 +59,7 @@ export function GateDust() {
     const s = useGate.getState();
     const u = material.uniforms;
     u.uTime!.value += dt;
-    const night = s.stage === 'portal' || s.stage === 'greeting' || s.stage === 'gathering' || s.stage === 'entering' || s.stage === 'album';
+    const night = (s.stage === 'portal' || s.stage === 'greeting' || s.stage === 'gathering' || s.stage === 'entering' || s.stage === 'album') && !(s.world === 'palace' && s.stage !== 'album');
     u.uFade!.value = damp(u.uFade!.value, night ? (s.stage === 'portal' ? 0.6 : 1) : 0, 1.5, dt);
     u.uPull!.value = s.stage === 'entering' ? s.enterProgress : damp(u.uPull!.value, 0, 2, dt);
     u.uPx!.value = (size.height * viewport.dpr) * 0.9;

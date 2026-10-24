@@ -19,6 +19,23 @@ function useRevealed(id: number | undefined, words: number): number {
   return n;
 }
 
+/**
+ * Where each caption page starts: a sentence (or, in a long sentence, a phrase) at a time, so the words on screen
+ * stay within two lines and never reach the companion above them.
+ */
+function pageStarts(words: string[], max = 10): number[] {
+  const starts = [0];
+  let count = 0;
+  for (let i = 0; i < words.length - 1; i++) {
+    count += 1;
+    const w = words[i]!;
+    const sentenceEnd = /[.!?…]["”’)]*$/.test(w);
+    const pause = /[,;:—]$/.test(w);
+    if ((sentenceEnd && count >= 3) || (pause && count >= 6) || count >= max) { starts.push(i + 1); count = 0; }
+  }
+  return starts;
+}
+
 export function Captions() {
   const said = useGate((s) => s.companionLine);
   const heard = useGate((s) => s.heardLine);
@@ -26,12 +43,18 @@ export function Captions() {
   const words = said ? said.text.split(/\s+/).filter(Boolean) : [];
   const shown = useRevealed(said?.id, words.length);
   if (stage === 'portal' || stage === 'album') return null;
+  const starts = pageStarts(words);
+  const page = starts.filter((st) => st <= Math.max(0, shown - 1)).length - 1;
+  const from = starts[page] ?? 0;
+  const to = starts[page + 1] ?? words.length;
   return (
     <div className="captions" data-testid="captions">
-      <p className="said" aria-live="polite" data-testid="companion-line" data-full={said?.text ?? ''}>
-        {words.map((w, i) => (
-          <span key={`${said?.id}-${i}`} className={`w ${i < shown ? 'on' : ''}`}>{w}{i < words.length - 1 ? ' ' : ''}</span>
-        ))}
+      <p className="visually-hidden" aria-live="polite">{said?.text ?? ''}</p>
+      <p className="said" aria-hidden="true" data-testid="companion-line" data-full={said?.text ?? ''}>
+        {words.slice(from, to).map((w, j) => {
+          const i = from + j;
+          return <span key={`${said?.id}-${i}`} className={`w ${i < shown ? 'on' : ''}`}>{w}{i < to - 1 ? ' ' : ''}</span>;
+        })}
       </p>
       <p className="heard" data-interim={heard?.interim ? 'true' : 'false'} data-testid="heard-line">
         {heard ? `“${heard.text}”` : ' '}

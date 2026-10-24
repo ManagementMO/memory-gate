@@ -8,11 +8,14 @@ import { useGate } from '../state/store';
 import { MEMORY_CENTER } from './layout';
 import { damp, dampVec3, easeInOutCubic } from './util';
 import { useMemory } from '../flow/memory';
+import { EYE, LOOK_Y, SHORE, walkView } from './palace/plan';
 
 const useMemoryWater = () => !!useMemory.getState().plan?.setting.water;
 
 const _pos = new THREE.Vector3();
 const _look = new THREE.Vector3();
+/** Diagnostics for visual work: ?cam=x,y,z,tx,ty,tz pins the flat camera (never used in normal visits). */
+const PIN = (() => { const v = new URLSearchParams(location.search).get('cam')?.split(',').map(Number); return v && v.length === 6 && v.every(Number.isFinite) ? v : null; })();
 
 export function CameraRig() {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
@@ -66,7 +69,20 @@ export function CameraRig() {
     const py = state.pointer.y * 0.6 - tilt.current.y * 0.4;
     let fov = 50;
     let rate = 1.6;
-    if (s.stage === 'entering') {
+    const palace = s.world === 'palace';
+    if (palace && s.stage === 'entering') {
+      // Across the lagoon on the stepping stones, through the great arch, then a look up into the dome's light.
+      fov = walkView(s.enterProgress, _pos, _look);
+      _pos.x += px * 0.04;
+      _look.x += px * 0.3;
+      rate = 5;
+    } else if (palace && (s.stage === 'portal' || s.stage === 'greeting' || s.stage === 'gathering')) {
+      // At the lagoon's edge, looking across the water to the rotunda; portrait phones step back for the whole dome.
+      const aspect = state.size.width / Math.max(1, state.size.height);
+      _pos.set(SHORE.x + px * 0.08, EYE + py * 0.04, SHORE.z);
+      _look.set(SHORE.x + px * 0.4, LOOK_Y + py * 0.18, SHORE.z - 4);
+      fov = aspect < 0.8 ? 62 : 50;
+    } else if (s.stage === 'entering') {
       const p = easeInOutCubic(s.enterProgress);
       _pos.set(0, 1.55 + p * 0.12, -p * 3.2);
       _look.set(0, 1.7 + p * 0.1, -6);
@@ -106,6 +122,9 @@ export function CameraRig() {
       _pos.set(px * 0.06, 1.55 + py * 0.03, 0);
       _look.set(px * 0.32, 1.72 + py * 0.16, -4);
     }
+    // Changing world (or coming back from the album) puts the view far away: arrive there, don't fly across.
+    if (s.stage !== 'entering' && pos.current.distanceTo(_pos) > 12) { pos.current.copy(_pos); look.current.copy(_look); }
+    if (PIN) { _pos.set(PIN[0]!, PIN[1]!, PIN[2]!); _look.set(PIN[3]!, PIN[4]!, PIN[5]!); pos.current.copy(_pos); look.current.copy(_look); }
     dampVec3(pos.current, _pos, rate, dt);
     dampVec3(look.current, _look, rate, dt);
     camera.position.copy(pos.current);

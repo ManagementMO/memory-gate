@@ -1,7 +1,7 @@
 // End-to-end walk through the whole journey, the way a person would take it, with screenshots at every stage.
 // Free by default: an offline room (paid services forced off by the server) and no voice engine; the person's words
 // are delivered through the page's test hook because a headless browser can't speak.
-//   node apps/gate/scripts/flow.mjs <outDir> [--base https://localhost:5180] [--mobile] [--companion light|figure]
+//   node apps/gate/scripts/flow.mjs <outDir> [--base https://localhost:5180] [--mobile] [--companion light|figure] [--world palace|aurora]
 //        [--words "..."] [--live] (live = real Claude through the backend; spends tokens)
 import { chromium } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -16,7 +16,8 @@ const mobile = flag('mobile');
 const companion = opt('companion', 'figure');
 const photo = opt('photo', null);
 const words = opt('words', 'My grandmother’s kitchen, in the morning. Yellow curtains on the window, a round wooden table with two chairs, and her radio on the counter.');
-const url = `${base}/?voice=off&companion=${companion}${flag('live') ? '' : '&mode=offline'}`;
+const world = opt('world', 'palace');
+const url = `${base}/?voice=off&companion=${companion}&world=${world}${flag('live') ? '' : '&mode=offline'}`;
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--ignore-gpu-blocklist', '--use-angle=metal', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
 const ctx = await browser.newContext({ viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 900 }, deviceScaleFactor: mobile ? 2 : 1, isMobile: mobile, hasTouch: mobile, ignoreHTTPSErrors: true });
@@ -65,6 +66,7 @@ try {
   await waitStage('entering', 40000);
   await page.waitForTimeout(2600);
   await shot('05-entering');
+  if (world === 'palace') { await page.waitForTimeout(5400); await shot('05b-under-the-dome'); }
   await waitStage('forming', 20000);
   await page.waitForTimeout(2500);
   await shot('06-forming');

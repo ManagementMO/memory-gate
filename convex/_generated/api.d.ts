@@ -24,6 +24,7 @@ import type * as library from "../library.js";
 import type * as memories from "../memories.js";
 import type * as moments from "../moments.js";
 import type * as objects from "../objects.js";
+import type * as presence from "../presence.js";
 import type * as rooms from "../rooms.js";
 import type * as sketch from "../sketch.js";
 import type * as splats from "../splats.js";
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   memories: typeof memories;
   moments: typeof moments;
   objects: typeof objects;
+  presence: typeof presence;
   rooms: typeof rooms;
   sketch: typeof sketch;
   splats: typeof splats;

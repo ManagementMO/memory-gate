@@ -5,6 +5,8 @@ import { create } from 'zustand';
 
 export type Stage = 'portal' | 'greeting' | 'gathering' | 'entering' | 'forming' | 'memory' | 'leaving' | 'album';
 export type CompanionKind = 'light' | 'figure';
+/** Where a visit begins: the aurora gate at night, or the Palace of Fine Arts at golden hour. */
+export type WorldKind = 'aurora' | 'palace';
 /** What the companion is doing. Both companions express all four. */
 export type Mood = 'idle' | 'listening' | 'thinking' | 'speaking';
 /** Finer emotional colour. The figure shows it in its eyes; the light shows it in its halo's warmth. */
@@ -13,11 +15,13 @@ export type Expression = 'neutral' | 'happy' | 'curious' | 'gentle' | 'sleepy';
 export type Line = { id: number; text: string; interim: boolean; at: number };
 export type MediaItem = { id: string; kind: 'photo' | 'video'; url: string; name: string; width: number; height: number; poster?: string; file?: Blob };
 export type Session = { code: string; token: string; joinKey: string | null; role: 'host' | 'guest'; name: string };
-export type VoiceMode = 'off' | 'starting' | 'cartesia' | 'browser' | 'blocked' | 'unsupported';
+/** 'shared': a device that joined a visit in the same room stays quiet; the main device listens and speaks. */
+export type VoiceMode = 'off' | 'starting' | 'cartesia' | 'browser' | 'blocked' | 'unsupported' | 'shared';
 
 export interface GateState {
   stage: Stage;
   companion: CompanionKind;
+  world: WorldKind;
   mood: Mood;
   expression: Expression;
   /** 0..1: the microphone while listening, the voice envelope while speaking. */
@@ -49,6 +53,7 @@ export interface GateState {
   set: (patch: Partial<GateState>) => void;
   setStage: (stage: Stage) => void;
   setCompanion: (kind: CompanionKind) => void;
+  setWorld: (world: WorldKind) => void;
   toggleCompanion: () => void;
   speakLine: (text: string) => number;
   hearLine: (text: string, interim: boolean) => void;
@@ -57,19 +62,20 @@ export interface GateState {
 
 let lineSeq = 0;
 
+/** The Figure is the companion; ?companion=light brings back the Light for testing (nothing is remembered). */
 function initialCompanion(): CompanionKind {
-  const fromUrl = new URLSearchParams(location.search).get('companion');
-  if (fromUrl === 'light' || fromUrl === 'figure') return fromUrl;
-  try {
-    const saved = localStorage.getItem('mg.companion');
-    if (saved === 'light' || saved === 'figure') return saved;
-  } catch { /* storage blocked: fall through */ }
-  return 'figure';
+  return new URLSearchParams(location.search).get('companion') === 'light' ? 'light' : 'figure';
+}
+
+/** Every visit begins at the palace; ?world=aurora brings back the aurora gate for testing (nothing is remembered). */
+function initialWorld(): WorldKind {
+  return new URLSearchParams(location.search).get('world') === 'aurora' ? 'aurora' : 'palace';
 }
 
 export const useGate = create<GateState>((set, get) => ({
   stage: 'portal',
   companion: initialCompanion(),
+  world: initialWorld(),
   mood: 'idle',
   expression: 'neutral',
   level: 0,
@@ -92,11 +98,9 @@ export const useGate = create<GateState>((set, get) => ({
 
   set: (patch) => set(patch),
   setStage: (stage) => set({ stage }),
-  setCompanion: (kind) => {
-    try { localStorage.setItem('mg.companion', kind); } catch { /* ignore */ }
-    set({ companion: kind });
-  },
+  setCompanion: (kind) => set({ companion: kind }),
   toggleCompanion: () => get().setCompanion(get().companion === 'light' ? 'figure' : 'light'),
+  setWorld: (world) => set({ world }),
   speakLine: (text) => {
     const id = ++lineSeq;
     set({ companionLine: { id, text, interim: false, at: performance.now() } });

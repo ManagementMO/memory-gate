@@ -6,12 +6,13 @@ import { asksToEnter, guideOffline, safeReply, type GuideInput, type GuideReply,
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
 import { useGate, type MediaItem } from '../state/store';
-import { createEngine, type Heard, type VoiceEngine } from '../voice/engine';
+import { createEngine, silentEngine, type Heard, type VoiceEngine } from '../voice/engine';
 import { validatePlan } from '../../../../packages/shared/src/scene';
 import { fileUrl } from '../backend/client';
 import { memory } from './memory';
 import { moments, useMoments } from './moments';
 import type { SharedMemory } from './sync';
+import { PALACE_ENTER_MS } from '../scene/palace/plan';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -45,8 +46,12 @@ class Flow {
     if (this.begun) return;
     this.begun = true;
     const g = useGate.getState();
+    // Joining a visit in the same room: this device stays quiet (no music, no voice of its own); the main device
+    // listens and speaks for everyone, and this one shows the words and the place.
+    const quiet = !!g.invite;
+    if (quiet) g.set({ musicOn: false });
     music.start();
-    music.setEnabled(g.musicOn);
+    music.setEnabled(quiet ? false : g.musicOn);
     music.cue('wake');
     void requestTiltPermission();
     g.set({ stage: 'greeting', expression: 'happy', voice: 'starting', status: '' });
@@ -55,7 +60,7 @@ class Flow {
     const session = await startSession({ name: invite ? 'Family' : 'You', invite: invite ? { code: invite.code, key: invite.key } : null });
     useGate.getState().set({ session });
     if (session) memory.attach(session);
-    this.engine = await createEngine(session ? { client: convex, code: session.code, token: session.token } : null, {
+    this.engine = quiet ? silentEngine() : await createEngine(session ? { client: convex, code: session.code, token: session.token } : null, {
       onPartial: (text) => { if (!useGate.getState().resting) useGate.getState().hearLine(text, true); },
       onUtterance: (h) => void this.heard(h),
       onSpeechStart: () => { this.clearNudge(); music.duck(true); },
@@ -70,7 +75,7 @@ class Flow {
     // Don't wait for the listening socket before saying hello: speech only needs the voice token (about a second).
     for (let i = 0; i < 30 && !this.engine.canSpeak(); i++) await sleep(100);
     const v = useGate.getState().voice;
-    if (v === 'starting') useGate.getState().set({ voice: this.engine.kind === 'cartesia' ? 'cartesia' : this.engine.kind === 'browser' ? 'browser' : 'unsupported' });
+    if (v === 'starting') useGate.getState().set({ voice: quiet ? 'shared' : this.engine.kind === 'cartesia' ? 'cartesia' : this.engine.kind === 'browser' ? 'browser' : 'unsupported' });
     await sleep(500);
     if (invite) {
       await this.say(`Welcome. You’re joining ${invite.host}. Whatever you share, they’ll see it too.`);
@@ -223,13 +228,14 @@ class Flow {
     music.cue('enter');
     music.setMode('white');
     const t0 = performance.now();
+    const walkMs = useGate.getState().world === 'palace' ? PALACE_ENTER_MS : ENTER_MS; // the palace is a place you cross
     await new Promise<void>((resolve) => {
       const step = () => {
-        const p = Math.min(1, (performance.now() - t0) / ENTER_MS);
+        const p = Math.min(1, (performance.now() - t0) / walkMs);
         useGate.getState().set({ enterProgress: p });
-        if (p < 1) requestAnimationFrame(step); else resolve();
+        if (p < 1) nextTick(step); else resolve();
       };
-      requestAnimationFrame(step);
+      nextTick(step);
     });
     useGate.getState().set({ stage: 'forming', enterProgress: 1, expression: 'gentle' });
     this.turnsInPhase = 0;
@@ -340,9 +346,9 @@ class Flow {
       const step = () => {
         const p = Math.min(1, 0.55 + (performance.now() - t0) / 3600 * 0.45);
         useGate.getState().set({ enterProgress: p });
-        if (p < 1) requestAnimationFrame(step); else resolve();
+        if (p < 1) nextTick(step); else resolve();
       };
-      requestAnimationFrame(step);
+      nextTick(step);
     });
     useGate.getState().set({ stage: 'forming', enterProgress: 1, expression: 'gentle' });
     await memory.whenDrawn(16_000);
@@ -408,16 +414,20 @@ class Flow {
       else mood = g.stage === 'gathering' || g.stage === 'memory' ? 'listening' : 'idle';
       const level = e ? (e.hearing() || e.speaking() ? e.level() : 0) : 0;
       if (mood !== g.mood || Math.abs(level - g.level) > 0.01) g.set({ mood, level });
-      this.raf = requestAnimationFrame(tick);
+      this.raf = nextTick(tick);
     };
-    cancelAnimationFrame(this.raf);
-    this.raf = requestAnimationFrame(tick);
+    clearTimeout(this.raf);
+    this.raf = nextTick(tick);
   }
 
   // ------------------------------------------------------------ test hooks (Playwright / dogfood loop)
   /** Simulate a finished utterance (tests can't speak into a microphone). */
   testHear(text: string) { return this.heard({ transcript: text, audioFileId: null, durationMs: 0 }); }
 }
+
+/** About 60 times a second, everywhere. Window animation frames can pause in a headset during an immersive session
+ *  (the page itself isn't drawn); timers keep running, so the walk and the companion's mood never stall in VR. */
+function nextTick(fn: () => void): number { return window.setTimeout(fn, 16); }
 
 function lowerFirst(s: string) { return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
 

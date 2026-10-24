@@ -3,6 +3,9 @@
 import { chromium } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 const out = process.argv[2] ?? 'apps/gate/.shots/xr';
+const arg = (n, d) => (process.argv.includes(`--${n}`) ? process.argv[process.argv.indexOf(`--${n}`) + 1] : d);
+const world = arg('world', 'palace');
+const q = arg('q', null); // e.g. --q 0.15 renders at the headset's own quality
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--ignore-gpu-blocklist', '--use-angle=metal', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, ignoreHTTPSErrors: true });
@@ -16,7 +19,7 @@ const t0 = Date.now();
 const note = (s) => console.log(`${((Date.now() - t0) / 1000).toFixed(1)}s  ${s}`);
 const st = () => page.evaluate(() => { const g = window.__gate.store.getState(); return { stage: g.stage, xr: g.xr, said: g.companionLine?.text ?? null }; });
 try {
-  await page.goto('https://localhost:5180/?emulate=1&mode=offline&voice=off', { waitUntil: 'load' });
+  await page.goto(`https://localhost:5180/?emulate=1&mode=offline&voice=off&world=${world}${q ? `&q=${q}` : ''}`, { waitUntil: 'load' });
   await page.waitForTimeout(4000);
   const enter = page.getByTestId('enter-vr');
   note(`enter button visible: ${await enter.isVisible().catch(() => false)}`);
@@ -46,6 +49,10 @@ try {
   await page.waitForTimeout(6000);
   note(`after album: ${JSON.stringify(await st())}`);
   await page.screenshot({ path: `${out}/04-after-album.png` });
-} catch (e) { note(`FAILED: ${String(e).slice(0, 300)}`); await page.screenshot({ path: `${out}/zz-failure.png` }).catch(() => undefined); }
+} catch (e) {
+  note(`FAILED: ${String(e).slice(0, 300)}`);
+  note(`state at failure: ${JSON.stringify(await page.evaluate(() => { const g = window.__gate.store.getState(); return { stage: g.stage, xr: g.xr, enterProgress: g.enterProgress, said: g.companionLine?.text ?? null, heard: g.heardLine?.text ?? null }; }).catch(() => null))}`);
+  await page.screenshot({ path: `${out}/zz-failure.png` }).catch(() => undefined);
+}
 note(`errors: ${errors.length}`); for (const e of errors.slice(0, 12)) note(`  ${e}`);
 await browser.close();

@@ -9,6 +9,7 @@ import { damp, dampVec3, easeInOutCubic } from '../scene/util';
 import { LightCompanion } from './light/LightCompanion';
 import { FigureCompanion } from './figure/FigureCompanion';
 import { ContactShadow } from '../scene/ContactShadow';
+import { SPOT, XR_MOVE_AT, walkCompanion } from '../scene/palace/plan';
 
 const _target = new THREE.Vector3();
 const _head = new THREE.Vector3();
@@ -32,7 +33,24 @@ export function CompanionRig() {
     const day = s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving';
     let rate = 1.8;
     let targetScale = 1.2;
-    if (gl.xr.isPresenting && day) {
+    const palace = s.world === 'palace';
+    if (palace && s.stage === 'entering') {
+      if (gl.xr.isPresenting && s.enterProgress >= XR_MOVE_AT) {
+        // Under the dome (the headset was carried here in the white): just ahead of you, rising into the light.
+        camera.getWorldPosition(_head);
+        camera.getWorldQuaternion(_q);
+        const y = _e.setFromQuaternion(_q, 'YXZ').y;
+        const rise = THREE.MathUtils.smoothstep(s.enterProgress, 0.5, 0.95) * 0.7;
+        _target.set(_head.x - Math.sin(y) * 1.4, _head.y - 0.1 + rise, _head.z - Math.cos(y) * 1.4);
+        if (pos.current.distanceTo(_target) > 8) pos.current.copy(_target);
+      } else if (gl.xr.isPresenting) {
+        _target.copy(SPOT.gathering).setZ(SPOT.gathering.z - s.enterProgress * 6);
+      } else {
+        walkCompanion(s.enterProgress, _target);
+      }
+      targetScale = 1.0;
+      rate = 4;
+    } else if (gl.xr.isPresenting && day) {
       // Beside and a little below the line of sight, about a metre ahead.
       camera.getWorldPosition(_head);
       camera.getWorldQuaternion(_q);
@@ -57,14 +75,17 @@ export function CompanionRig() {
       targetScale = (aspect < 0.8 ? 0.8 : 0.95) * (s.companion === 'light' ? 1.45 : 1);
       rate = s.stage === 'forming' ? 0.9 : 1.6;
     } else if (s.stage === 'gathering' || s.stage === 'greeting') {
-      _target.copy(s.media ? COMPANION_SPOT.gatheringWithMedia : COMPANION_SPOT.gathering);
+      // In the palace the conversation happens across the lagoon, the companion a little higher in view.
+      _target.copy(palace ? (s.media ? SPOT.gatheringWithMedia : SPOT.gathering) : s.media ? COMPANION_SPOT.gatheringWithMedia : COMPANION_SPOT.gathering);
       targetScale = 1.0;
     } else if (s.stage === 'album') {
       _target.copy(COMPANION_SPOT.album);
     } else {
-      _target.copy(COMPANION_SPOT.portal);
+      _target.copy(palace ? SPOT.portal : COMPANION_SPOT.portal);
       targetScale = 1.0;
     }
+    // A change of world (or the album) moves the conversation far away: arrive there, don't fly.
+    if (!gl.xr.isPresenting && s.stage !== 'entering' && pos.current.distanceTo(_target) > 12) pos.current.copy(_target);
     dampVec3(pos.current, _target, rate, dt);
     scale.current = damp(scale.current, targetScale, 2, dt);
     const t = state.clock.elapsedTime;

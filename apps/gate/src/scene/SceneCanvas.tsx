@@ -16,7 +16,10 @@ const DIAG = new URLSearchParams(location.search);
 function Effects({ quality }: { quality: number }) {
   const presenting = useXR((s) => s.session != null);
   const stage = useGate((s) => s.stage);
+  const world = useGate((s) => s.world);
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving' || !!(window as unknown as { __scenePreview?: boolean }).__scenePreview;
+  // The palace is daylight before the memory too: only its sun, oculus and stepping stones should glow.
+  const palace = world === 'palace' && !day && stage !== 'album';
   const gl = useThree((s) => s.gl);
   useEffect(() => {
     useGate.getState().set({ xr: presenting });
@@ -29,10 +32,10 @@ function Effects({ quality }: { quality: number }) {
       {/* On the white side, ambient occlusion gives porcelain its weight; bloom would wash it out. */}
       {day && quality >= 1 && DIAG.get('ao') === '1' ? <N8AO aoRadius={0.45} intensity={2.2} distanceFalloff={0.6} quality="performance" halfRes color="#4b4766" /> : <></>}
       {/* Only light itself blooms (the gate, eyes, lamps), never white porcelain: keeps the companion crisp. */}
-      <Bloom mipmapBlur intensity={day ? 0.18 : 0.72} luminanceThreshold={day ? 0.92 : 0.8} luminanceSmoothing={0.2} radius={0.7} />
+      <Bloom mipmapBlur intensity={day ? 0.18 : palace ? 0.26 : 0.72} luminanceThreshold={day ? 0.92 : palace ? 0.95 : 0.8} luminanceSmoothing={0.2} radius={0.7} />
       <ToneMapping mode={ToneMappingMode.NEUTRAL} />
-      <Vignette offset={0.28} darkness={day || stage === 'entering' ? 0.22 : 0.42} />
-      <Noise opacity={day ? 0.018 : 0.028} premultiply />
+      <Vignette offset={0.28} darkness={day || stage === 'entering' ? 0.22 : palace ? 0.26 : 0.42} />
+      <Noise opacity={day ? 0.018 : palace ? 0.02 : 0.028} premultiply />
     </EffectComposer>
   );
 }

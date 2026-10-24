@@ -10,14 +10,16 @@ import { Offers } from './Offers';
 import { Portal } from './Portal';
 import { TopBar } from './TopBar';
 import { XrButton } from './XrButton';
+import { PresenceSync } from '../presence/PresenceSync';
 
 const AlbumView = lazy(() => import('../album/AlbumView'));
 
 export function Overlay() {
   const stage = useGate((s) => s.stage);
+  const world = useGate((s) => s.world);
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving';
   return (
-    <div className={`overlay ${day ? 'on-paper' : ''}`} data-stage={stage}>
+    <div className={`overlay ${day ? 'on-paper' : ''}`} data-stage={stage} data-world={world}>
       {stage !== 'album' && stage !== 'entering' && <TopBar />}
       {stage === 'portal' && <Portal />}
       <Captions />
@@ -31,6 +33,7 @@ export function Overlay() {
       <XrButton />
       <InviteSheet />
       <DropZone />
+      <PresenceSync />
     </div>
   );
 }

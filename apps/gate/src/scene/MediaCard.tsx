@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useGate, type MediaItem } from '../state/store';
 import { COMPANION_SPOT, MEDIA_SPOT } from './layout';
+import { SPOT, walkCompanion } from './palace/plan';
 import { damp, dampVec3, easeInOutCubic } from './util';
 
 const FRAG = /* glsl */ `
@@ -61,6 +62,8 @@ function useMediaTexture(media: MediaItem | null): { texture: THREE.Texture | nu
   return state;
 }
 
+const _ahead = new THREE.Vector3(0.7, 0.05, 0);
+
 export function MediaCard() {
   const media = useGate((s) => s.media);
   const { texture, aspect } = useMediaTexture(media);
@@ -85,14 +88,20 @@ export function MediaCard() {
     const showing = !!media && (s.stage === 'greeting' || s.stage === 'gathering' || s.stage === 'entering');
     const u = material.uniforms;
     u.uTime!.value += dt;
-    if (s.stage === 'entering') {
+    const palace = s.world === 'palace';
+    if (palace && s.stage === 'entering') {
+      // In the palace the photo goes on ahead with the companion and fades as you cross the water.
+      walkCompanion(s.enterProgress, target.current).add(_ahead);
+      u.uFade!.value = media ? 1 - THREE.MathUtils.smoothstep(s.enterProgress, 0.12, 0.4) : 0;
+    } else if (s.stage === 'entering') {
       const p = easeInOutCubic(s.enterProgress);
       target.current.copy(MEDIA_SPOT).lerp(COMPANION_SPOT.entering, p).setY(MEDIA_SPOT.y + p * 0.3);
       u.uFade!.value = media ? 1 - THREE.MathUtils.smoothstep(s.enterProgress, 0.55, 0.85) : 0;
     } else {
-      target.current.copy(MEDIA_SPOT);
+      target.current.copy(palace ? SPOT.media : MEDIA_SPOT);
       u.uFade!.value = damp(u.uFade!.value, showing ? 1 : 0, 2.2, dt);
     }
+    if (pos.current.distanceTo(target.current) > 12) pos.current.copy(target.current);
     dampVec3(pos.current, target.current, s.stage === 'entering' ? 5 : 2.2, dt);
     const m = mesh.current;
     if (!m) return;

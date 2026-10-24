@@ -1,5 +1,6 @@
 // Everything in the 3D world, composed once and kept alive across the journey; each part fades itself by stage.
 import { Environment } from '@react-three/drei';
+import { XROrigin } from '@react-three/xr';
 import { Snapshotter } from './Snapshotter';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
@@ -14,7 +15,10 @@ import { GateDust } from './GateDust';
 import { MediaCard } from './MediaCard';
 import { PhotoWorld } from './PhotoWorld';
 import { MemoryScene } from './sketch/MemoryScene';
+import { PalaceWorld } from './palace/PalaceWorld';
+import { SHORE, XR_MOVE_AT } from './palace/plan';
 import { WhiteSpace } from './WhiteSpace';
+import { PresenceLights } from '../presence/PresenceLights';
 import { XrLayer } from './XrLayer';
 
 /** A soft studio environment for glossy surfaces (the figure's shell, sketch objects). Generated, no download. */
@@ -36,6 +40,7 @@ function MemoryLights() {
   const fill = useRef<THREE.DirectionalLight>(null);
   const scene = useThree((s) => s.scene);
   const day = useRef(0);
+  const palace = useRef(0);
   useFrame((_, dt) => {
     // Porcelain needs directional light to read: on the white side the environment and sky step back, a warm key
     // light leads from the upper left and a cool fill lifts the shadows from the back right.
@@ -43,6 +48,11 @@ function MemoryLights() {
     const isDay = st === 'forming' || st === 'memory' || st === 'leaving' || !!(window as unknown as { __scenePreview?: boolean }).__scenePreview;
     day.current += ((isDay ? 1 : 0) - day.current) * (1 - Math.exp(-Math.min(dt, 0.05) * 1.5));
     const k = day.current;
+    // Before the memory, the palace brings its own low sun and sky light; these step aside for it.
+    const g = useGate.getState();
+    const inPalace = g.world === 'palace' && !isDay && st !== 'album';
+    palace.current += ((inPalace ? 1 : 0) - palace.current) * (1 - Math.exp(-Math.min(dt, 0.05) * 3));
+    const pk = 1 - palace.current;
     scene.environmentIntensity = 0.9 - 0.4 * k;
     if (fill.current) fill.current.intensity = 0.35 * k;
     if (sun.current) {
@@ -51,8 +61,8 @@ function MemoryLights() {
       // The sun is placed relative to the memory's centre so its shadows fall across the room.
       sun.current.position.set(atmoLive.sunDir.x, atmoLive.sunDir.y, -2.6 + atmoLive.sunDir.z);
     }
-    if (sky.current) { sky.current.color.copy(atmoLive.sky); sky.current.groundColor.copy(atmoLive.groundLight); sky.current.intensity = atmoLive.hemi * (1 - 0.45 * k); }
-    if (sun.current) sun.current.intensity = atmoLive.sunIntensity * (1 + 0.18 * k);
+    if (sky.current) { sky.current.color.copy(atmoLive.sky); sky.current.groundColor.copy(atmoLive.groundLight); sky.current.intensity = atmoLive.hemi * (1 - 0.45 * k) * pk; }
+    if (sun.current) sun.current.intensity = atmoLive.sunIntensity * (1 + 0.18 * k) * pk;
   });
   return (
     <>
@@ -67,19 +77,37 @@ function MemoryLights() {
   );
 }
 
+/** The headset wearer's feet. In the palace they begin across the lagoon, and are carried under the dome while the
+ *  world is white (never a glide in the headset). Everywhere else they stay at the origin. */
+function PlayerOrigin() {
+  const origin = useRef<THREE.Group>(null);
+  useFrame(() => {
+    const s = useGate.getState();
+    const atShore = s.world === 'palace' && (s.stage === 'portal' || s.stage === 'greeting' || s.stage === 'gathering' || (s.stage === 'entering' && s.enterProgress < XR_MOVE_AT));
+    origin.current?.position.set(0, 0, atShore ? SHORE.z : 0);
+  });
+  return <XROrigin ref={origin} />;
+}
+
+const PREVIEW = !!(window as unknown as { __scenePreview?: boolean }).__scenePreview;
+
 export function World({ quality }: { quality: number }) {
+  const world = useGate((s) => s.world);
   return (
     <>
+      <PlayerOrigin />
       <StudioEnvironment />
       <MemoryLights />
       <CameraRig />
       <AuroraSky quality={quality} />
+      {world === 'palace' && !PREVIEW && <PalaceWorld quality={quality} />}
       <GateDust />
       <WhiteSpace />
       <PhotoWorld />
       <MemoryScene />
       <MediaCard />
       <CompanionRig />
+      <PresenceLights />
       <Snapshotter />
       <XrLayer />
     </>

@@ -36,6 +36,19 @@ export default defineSchema({
     revokedAt: v.union(v.number(), v.null()),
   }).index('by_token', ['token']).index('by_room', ['roomId']),
 
+  // Who is here right now (one row per member, refreshed every couple of seconds while their page is open). Each
+  // person is shown to the others as a light of their own colour; a "look here" mark travels with the same row.
+  presence: defineTable({
+    roomId: v.id('rooms'),
+    memberId: v.id('members'),
+    seat: v.number(), // order of arrival; sets the colour and where the light waits beside you
+    color: v.string(),
+    device: v.string(), // headset | phone | desktop
+    point: v.union(v.object({ at: v.array(v.number()), t: v.number() }), v.null()),
+    updatedAt: v.number(),
+    leftAt: v.union(v.number(), v.null()),
+  }).index('by_room', ['roomId']).index('by_member', ['memberId']).index('by_updated', ['updatedAt']),
+
   consents: defineTable({
     roomId: v.id('rooms'),
     memberId: v.id('members'),

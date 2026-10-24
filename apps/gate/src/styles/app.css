@@ -98,7 +98,7 @@ button { font: inherit; color: inherit; }
   pointer-events: none;
 }
 .captions .said {
-  margin: 0; max-width: 26ch;
+  margin: 0; max-width: 30ch;
   font: 360 clamp(27px, 3.1vw, 44px)/1.24 var(--sans); letter-spacing: -0.012em; color: var(--ink);
   text-shadow: 0 2px 26px rgba(4, 4, 24, 0.75); text-wrap: balance;
 }
@@ -185,7 +185,28 @@ button { font: inherit; color: inherit; }
   .status .dot { margin: 0; }
 }
 
+/* Short screens (a phone held sideways, a small laptop window): the welcome tightens so it stays below the companion. */
+@media (max-height: 560px) {
+  .portal { bottom: max(12px, env(safe-area-inset-bottom)); }
+  .portal h1 { font-size: clamp(26px, 6.4vh, 38px); margin-bottom: 12px !important; }
+  .portal .pill.big { min-height: 50px; padding: 0 30px; font-size: 18px; }
+  .portal .fine { margin-top: 10px; font-size: 12px; line-height: 1.4; max-width: 60ch; }
+}
+
+/* A quiet second choice under the main button (e.g. starting a new visit instead of joining the one nearby). */
+.quiet-link { margin-top: 16px; padding: 10px 14px; border: 0; background: none; color: var(--ink-soft); font: 500 15px/1.2 var(--sans); cursor: pointer; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(255, 255, 255, 0.35); }
+.quiet-link:hover { color: var(--ink); }
+.quiet-link:focus-visible { outline: 3px solid rgba(190, 172, 255, 0.95); outline-offset: 3px; border-radius: 8px; }
+
 /* Fewer words on screen: the status is a breathing dot; offers are short. */
 .status.dot-only { width: 40px; padding: 0; justify-content: center; }
 .offer { min-height: 58px; padding: 0 24px 0 20px; }
 .portal h1 { margin-bottom: 26px; }
+
+/* The palace is daylight: a soft dusk-lavender wash low on the screen keeps the words legible over the bright lagoon. */
+.overlay[data-world='palace']:is([data-stage='portal'], [data-stage='greeting'], [data-stage='gathering'])::before {
+  content: ''; position: absolute; inset: auto 0 0 0; height: 58%; pointer-events: none;
+  background: linear-gradient(to top, rgba(38, 30, 74, 0.5), rgba(38, 30, 74, 0.22) 45%, rgba(38, 30, 74, 0));
+}
+.overlay[data-world='palace'] .wordmark { text-shadow: 0 1px 14px rgba(40, 30, 80, 0.45); }
+.overlay[data-world='palace'] .portal .fine { color: rgba(250, 248, 255, 0.86); text-shadow: 0 1px 10px rgba(30, 24, 64, 0.5); }
