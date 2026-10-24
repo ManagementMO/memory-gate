@@ -1,0 +1,189 @@
+// The gate: a night sky with aurora curtains overhead and, ahead, flowing hairlines of light (violet, silver, green)
+// that wind into a luminous opening. One sky-sphere shader, always behind everything (z = w), centred on the viewer.
+// Stage drives four uniforms: wake (after Begin), open (walking through), white (the far side is white), fade.
+// It doubles as the album's backdrop: liquid glass needs something beautiful to bend.
+import { useFrame, useThree } from '@react-three/fiber';
+import { useMemo, useRef } from 'react';
+import * as THREE from 'three';
+import { useGate } from '../state/store';
+import { HASH, SIMPLEX3 } from './shaders/noise.glsl';
+import { damp } from './util';
+
+const VERT = /* glsl */ `
+varying vec3 vDir;
+void main() {
+  vDir = position;
+  vec4 clip = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  gl_Position = clip.xyww; // always on the far plane: everything else draws in front
+}`;
+
+const FRAG = /* glsl */ `
+varying vec3 vDir;
+uniform float uTime, uFade, uWake, uOpen, uWhite, uQuality, uGateStrength;
+uniform vec3 uGateDir, uGreen, uTeal, uViolet, uPurple, uSilver;
+${HASH}
+${SIMPLEX3}
+
+mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, s, -s, c); }
+float tri(float x) { return clamp(abs(fract(x) - 0.5), 0.01, 0.49); }
+vec2 tri2(vec2 p) { return vec2(tri(p.x) + tri(p.y), tri(p.y + tri(p.x))); }
+// Triangle-wave noise for aurora curtains (after nimitz's "Auroras", 2017).
+float triNoise2d(vec2 p, float spd) {
+  float z = 1.8, z2 = 2.5, rz = 0.0;
+  p *= rot(p.x * 0.06);
+  vec2 bp = p;
+  for (int i = 0; i < 5; i++) {
+    vec2 dg = tri2(bp * 1.85) * 0.75;
+    dg *= rot(uTime * spd);
+    p -= dg / z2;
+    bp *= 1.3; z2 *= 0.45; z *= 0.42;
+    p *= 1.21 + (rz - 1.0) * 0.02;
+    rz += tri(p.x + tri(p.y)) * z;
+    p *= -mat2(0.95534, 0.29552, -0.29552, 0.95534);
+  }
+  return clamp(1.0 / pow(rz * 29.0, 1.3), 0.0, 0.55);
+}
+
+vec3 aurora(vec3 d) {
+  vec3 acc = vec3(0.0), avg = vec3(0.0);
+  float n = mix(9.0, 30.0, uQuality);
+  float stride = 30.0 / n;
+  for (int i = 0; i < 30; i++) {
+    float fi = float(i) * stride;
+    if (float(i) >= n) break;
+    float jitter = 0.006 * hash12(gl_FragCoord.xy) * smoothstep(0.0, 15.0, fi);
+    float pt = (0.8 + pow(fi, 1.4) * 0.002) / (d.y * 2.0 + 0.4) - jitter;
+    vec2 bp = d.zx * pt + vec2(uTime * 0.01, 0.0);
+    float rzt = triNoise2d(bp, 0.045);
+    float k = fi / 30.0;
+    vec3 c = mix(uGreen, uTeal, smoothstep(0.0, 0.22, k));
+    c = mix(c, uViolet, smoothstep(0.18, 0.55, k));
+    c = mix(c, uPurple, smoothstep(0.5, 1.0, k));
+    avg = mix(avg, c * rzt, 0.5);
+    acc += avg * exp2(-fi * 0.065 - 2.5) * smoothstep(0.0, 5.0, fi) * stride;
+  }
+  return acc * clamp(d.y * 15.0 + 0.4, 0.0, 1.0) * 1.8;
+}
+
+float stars(vec3 d) {
+  vec3 p = d * 260.0;
+  vec3 id = floor(p);
+  vec3 fp = fract(p) - 0.5;
+  float h = hash13(id);
+  if (h < 0.9955) return 0.0;
+  float twinkle = 0.65 + 0.35 * sin(uTime * (0.35 + fract(h * 91.7) * 0.9) + h * 60.0);
+  float size = mix(0.07, 0.2, fract(h * 13.7));
+  return smoothstep(size, 0.0, length(fp)) * twinkle * (0.45 + fract(h * 37.1));
+}
+
+// The gate: a few fine lines of light that spiral into a luminous opening. Contour lines of a slowly warped field
+// laid out on a log-spiral around the gate direction; confined to a ring so the night sky stays quiet around it.
+vec3 gate(vec3 d, float strength, float lines) {
+  vec3 f = normalize(uGateDir);
+  vec3 r = normalize(cross(f, vec3(0.0, 1.0, 0.0)));
+  vec3 u = normalize(cross(r, f));
+  float rad = acos(clamp(dot(d, f), -1.0, 1.0));
+  vec2 p = vec2(dot(d, r), dot(d, u));
+  float th = atan(p.y, p.x);
+  float lr = log(rad + 0.02);
+  float t = uTime;
+  float swirl = th - lr * (1.25 + uOpen * 0.9) + t * (0.022 + uOpen * 0.2);
+  vec3 q = vec3(cos(swirl) * 1.1, sin(swirl) * 1.1, lr * 0.9 - t * (0.035 + uOpen * 0.25));
+  vec3 w = vec3(snoise(q * 0.7 + vec3(0.0, 0.0, t * 0.02)), snoise(q * 0.7 + vec3(4.1, 1.7, -t * 0.016)), 0.0);
+  // A slow galaxy: five arms of fine lines winding into the opening (an integer arm count keeps the spiral seamless),
+  // each line drifting a little on a warped field so it reads as silk, not geometry.
+  float g = lr * 2.3 + (th + t * (0.02 + uOpen * 0.3)) * (5.0 / 6.2831853) + snoise(q + w * 0.35) * 0.42;
+  float wd = max(fwidth(g), 1e-4);
+  float dist = 0.5 - abs(fract(g) - 0.5);                   // distance to the nearest line, in line spacings
+  float px = dist / wd;                                     // ... and in pixels
+  float line = (1.0 - smoothstep(0.3, 1.2, px)) * lines;   // a hairline at any distance
+  float glow = (exp(-px * 0.5) * 0.06 + exp(-dist * 9.0) * 0.07) * lines; // a soft silk sheen around each line
+  float h = hash12(vec2(floor(g + 0.5), 3.7));              // each line its own brightness and colour
+  float reach = 0.34 + uOpen * 1.6;
+  float env = smoothstep(0.012, 0.075, rad) * (1.0 - smoothstep(reach * 0.45, reach, rad));
+  float k = 0.5 + 0.5 * sin(th * 1.0 + t * 0.035 + h * 2.4);
+  vec3 col = mix(uViolet, uGreen, smoothstep(0.2, 0.8, k));
+  col = mix(col, uPurple, smoothstep(0.6, 1.0, h) * 0.5);
+  col = mix(col, uSilver, step(0.82, fract(h * 7.13)) * 0.9);
+  float bright = (line * (0.22 + 0.78 * h * h) + glow) * env;
+  float haze = (fbm3(vec3(p * 4.0, t * 0.015)) * 0.5 + 0.5) * exp(-pow((rad - 0.16) / 0.16, 2.0)) * 0.05;
+  vec3 hazeCol = mix(uViolet, uTeal, 0.5 + 0.5 * sin(th * 2.0 + t * 0.03));
+  float coreR = 0.05 + uOpen * 1.5;
+  float core = exp(-pow(rad / coreR, 2.0) * 2.0);
+  float rim = exp(-pow((rad - 0.07 - uOpen * 0.4) / 0.012, 2.0)) * 0.18 * (1.0 - uOpen);
+  vec3 coreCol = mix(vec3(0.76, 0.72, 1.0), vec3(1.0), smoothstep(0.0, 0.6, uOpen));
+  return (col * bright * 1.1 + hazeCol * haze + coreCol * core * (0.28 + 0.3 * uWake + uOpen * 3.2) + uSilver * rim * uWake) * strength;
+}
+
+void main() {
+  vec3 d = normalize(vDir);
+  float y = d.y;
+  vec3 col = mix(vec3(0.005, 0.006, 0.016), vec3(0.019, 0.021, 0.052), smoothstep(-0.15, 0.9, y));
+  col += vec3(0.04, 0.032, 0.08) * exp(-abs(y) * 9.0);
+  float sky = smoothstep(-0.03, 0.04, y);
+  float front = 0.42 + 0.58 * smoothstep(-0.35, 0.75, -d.z);
+  col += vec3(0.86, 0.88, 1.0) * stars(d) * sky * (1.0 - uOpen);
+  col += aurora(d) * sky * front * (0.5 + 0.5 * uWake) * (1.0 - uOpen * 0.85);
+  col += gate(d, uGateStrength, 1.0);
+  // A still lake below the horizon: the gate's glow mirrored and softened (no hairlines, so it never competes).
+  float below = smoothstep(0.004, -0.03, y);
+  if (below > 0.0) {
+    vec3 rd = vec3(d.x, -y, d.z);
+    rd.x += snoise(vec3(d.xz * 30.0, uTime * 0.16)) * 0.006 * (1.0 + uOpen);
+    float fres = 0.08 + 0.35 * pow(1.0 - min(1.0, -y * 3.0), 4.0);
+    col += gate(normalize(rd), uGateStrength * 0.55, 0.25) * fres * below;
+  }
+  col = mix(col, vec3(0.94, 0.945, 0.965), uWhite);
+  gl_FragColor = vec4(col * uFade, 1.0);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}`;
+
+const lin = (hex: string) => new THREE.Color(hex); // THREE.Color parses hex as sRGB and stores linear
+
+export function AuroraSky({ quality = 1 }: { quality?: number }) {
+  const group = useRef<THREE.Group>(null);
+  const mesh = useRef<THREE.Mesh>(null);
+  const camera = useThree((s) => s.camera);
+  const material = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: VERT,
+    fragmentShader: FRAG,
+    side: THREE.BackSide,
+    depthWrite: false,
+    depthTest: false,
+    uniforms: {
+      uTime: { value: 0 }, uFade: { value: 1 }, uWake: { value: 0 }, uOpen: { value: 0 }, uWhite: { value: 0 },
+      uQuality: { value: quality }, uGateStrength: { value: 1 },
+      uGateDir: { value: new THREE.Vector3(0, 0.12, -1).normalize() },
+      uGreen: { value: lin('#3ee8b0') }, uTeal: { value: lin('#2fc4d6') }, uViolet: { value: lin('#8a6cff') },
+      uPurple: { value: lin('#c38cff') }, uSilver: { value: lin('#eef0fb') },
+    },
+  }), [quality]);
+
+  useFrame((_, dtRaw) => {
+    const dt = Math.min(dtRaw, 0.05);
+    const s = useGate.getState();
+    const u = material.uniforms;
+    u.uTime!.value += dt;
+    const awake = s.stage !== 'portal' ? 1 : 0;
+    const p = s.enterProgress;
+    const entering = s.stage === 'entering';
+    const day = s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving';
+    const album = s.stage === 'album';
+    u.uWake!.value = damp(u.uWake!.value, album ? 0.55 : awake, 1.6, dt);
+    u.uOpen!.value = entering ? p : damp(u.uOpen!.value, 0, 2.5, dt);
+    u.uWhite!.value = entering ? THREE.MathUtils.smoothstep(p, 0.62, 0.98) : damp(u.uWhite!.value, day ? 1 : 0, 2, dt);
+    u.uFade!.value = damp(u.uFade!.value, day ? 0 : 1, 1.4, dt);
+    u.uGateStrength!.value = damp(u.uGateStrength!.value, album ? 0.55 : 1, 1.2, dt);
+    if (group.current) group.current.position.copy(camera.position);
+    if (mesh.current) mesh.current.visible = u.uFade!.value > 0.004;
+  });
+
+  return (
+    <group ref={group}>
+      <mesh ref={mesh} frustumCulled={false} renderOrder={-1000} material={material}>
+        <sphereGeometry args={[60, 64, 40]} />
+      </mesh>
+    </group>
+  );
+}

@@ -1,0 +1,148 @@
+// The memory being drawn: the words (and any photo) gathered so far → a plan → a sketch that forms in the white
+// space. Planning runs early, in the background, while the person is still talking, so the place is usually ready
+// by the time they step through. Claude plans through the backend (cached, budget-guarded); without a backend or
+// over budget, the offline keyword planner still draws a faithful, simpler place.
+import { create } from 'zustand';
+import { api } from '../../../../convex/_generated/api';
+import type { Id } from '../../../../convex/_generated/dataModel';
+import { planOffline, validatePlan, type ScenePlan } from '../../../../packages/shared/src/scene';
+import { convex, uploadFile } from '../backend/client';
+import type { MediaItem, Session } from '../state/store';
+
+type MemoryState = {
+  plan: ScenePlan | null;
+  /** Bumps whenever the plan changes (the renderer diffs objects by id). */
+  version: number;
+  planning: boolean;
+  /** 0..1 how much of the current plan has formed (set by the renderer). */
+  formed: number;
+  source: 'claude' | 'offline' | null;
+  photoUrl: string | null;
+};
+
+export const useMemory = create<MemoryState>(() => ({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null }));
+
+const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
+  Promise.race([p.catch((e) => { console.warn('[memory]', e); return fallback; }), new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
+
+class Memory {
+  private session: Session | null = null;
+  private words: string[] = [];
+  private title: string | null = null;
+  private memoryId: Id<'memories'> | null = null;
+  private planned = '';
+  private inflight: Promise<void> | null = null;
+  private mediaFileId: string | null = null;
+  private mediaKind: 'photo' | 'video' | null = null;
+
+  attach(session: Session) { this.session = session; }
+  setTitle(t: string) { this.title = t; }
+  addWords(text: string, _audio: string | null) { this.words.push(text); }
+
+  /** Plan (or re-plan when new words arrived). Safe to call often; only one request runs at a time. */
+  plan(): void {
+    const text = this.words.join(' ').trim();
+    if (!text && !this.mediaFileId) return;
+    if (text === this.planned && useMemory.getState().plan) return;
+    if (this.inflight) { void this.inflight.then(() => this.plan()); return; }
+    this.planned = text;
+    useMemory.setState({ planning: true });
+    this.inflight = (async () => {
+      let plan: ScenePlan | null = null;
+      let source: 'claude' | 'offline' = 'offline';
+      const s = this.session;
+      if (s) {
+        const r = await withTimeout(
+          convex.action(api.sketch.plan, { code: s.code, token: s.token, words: this.words.slice(-12), title: this.title ?? undefined, ...(this.memoryId ? { memoryId: this.memoryId } : {}), ...(this.mediaFileId ? { mediaFileId: this.mediaFileId as Id<'_storage'> } : {}) }),
+          22_000, null,
+        );
+        if (r?.plan) { plan = validatePlan(r.plan, this.title ?? undefined); source = r.source === 'claude' ? 'claude' : 'offline'; this.memoryId = r.memoryId; }
+      }
+      if (!plan) plan = planOffline(text || 'a quiet room with a window', this.title);
+      if (this.title && plan.title !== this.title) plan = { ...plan, title: this.title };
+      useMemory.setState((st) => ({ plan, version: st.version + 1, planning: false, source }));
+    })().finally(() => { this.inflight = null; });
+  }
+
+  /** A shared photo or video: upload it, let Claude look at it (a caption and a plan), keep it for the album. */
+  async fromMedia(media: MediaItem): Promise<{ caption: string | null; title: string | null } | null> {
+    useMemory.setState({ photoUrl: media.poster ?? media.url });
+    this.mediaKind = media.kind;
+    const s = this.session;
+    if (!s || !media.file) return null;
+    try {
+      const still = media.kind === 'video' ? await dataUrlToBlob(media.poster!) : await downscale(media.file, 1600);
+      const url = await convex.mutation(api.memories.uploadUrl, { code: s.code, token: s.token });
+      const fileId = await uploadFile(url, still);
+      this.mediaFileId = fileId;
+      const r = await convex.action(api.sketch.see, { code: s.code, token: s.token, fileId: fileId as Id<'_storage'>, kind: media.kind, words: this.words.slice(-6) });
+      if (r?.plan) {
+        const plan = validatePlan(r.plan, r.title ?? undefined);
+        this.memoryId = r.memoryId;
+        this.planned = this.words.join(' ').trim();
+        useMemory.setState((st) => ({ plan, version: st.version + 1, planning: false, source: r.source === 'claude' ? 'claude' : 'offline' }));
+      }
+      if (r?.title) this.title = r.title;
+      return { caption: r?.caption ?? null, title: r?.title ?? null };
+    } catch (e) {
+      console.warn('[memory] photo', e);
+      return null;
+    }
+  }
+
+  /** "There was a cat on the chair": add to the place that's already there. */
+  addDetail(text: string, _audio: string | null): void {
+    this.words.push(text);
+    const current = useMemory.getState().plan;
+    const s = this.session;
+    void (async () => {
+      let next: ScenePlan | null = null;
+      if (s && current) {
+        const r = await withTimeout(convex.action(api.sketch.detail, { code: s.code, token: s.token, plan: current, words: text, ...(this.memoryId ? { memoryId: this.memoryId } : {}) }), 18_000, null);
+        if (r?.plan) next = validatePlan(r.plan, current.title);
+      }
+      if (!next && current) {
+        // Offline: plan the new words on their own and add whatever new things they mention.
+        const extra = planOffline(text, current.title).objects.filter((o) => !current.objects.some((c) => c.kind === o.kind && c.label === o.label)).slice(0, 2);
+        next = { ...current, objects: [...current.objects, ...extra.map((o, i) => ({ ...o, id: `${o.id}-x${current.objects.length + i}` }))].slice(0, 16) };
+      }
+      if (next) useMemory.setState((st) => ({ plan: next, version: st.version + 1 }));
+    })();
+  }
+
+  /** Resolves true once the current plan has (mostly) formed, false on timeout. */
+  whenDrawn(ms: number): Promise<boolean> {
+    return new Promise((resolve) => {
+      const t0 = performance.now();
+      const check = () => {
+        const st = useMemory.getState();
+        if (st.plan && st.formed >= 0.85) return resolve(true);
+        if (performance.now() - t0 > ms) return resolve(false);
+        setTimeout(check, 150);
+      };
+      check();
+    });
+  }
+
+  introLine(): string | null { return useMemory.getState().plan?.intro ?? null; }
+  titleNow(): string | null { return useMemory.getState().plan?.title ?? this.title; }
+  wordsSoFar(): string[] { return [...this.words]; }
+  get kind() { return this.mediaKind; }
+
+  reset() {
+    this.words = []; this.title = null; this.memoryId = null; this.planned = ''; this.mediaFileId = null; this.mediaKind = null;
+    useMemory.setState({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null });
+  }
+}
+
+async function downscale(file: Blob, max: number): Promise<Blob> {
+  const bmp = await createImageBitmap(file);
+  const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext('2d')!.drawImage(bmp, 0, 0, c.width, c.height);
+  return new Promise((r) => c.toBlob((b) => r(b!), 'image/jpeg', 0.86));
+}
+async function dataUrlToBlob(u: string): Promise<Blob> { return (await fetch(u)).blob(); }
+
+export const memory = new Memory();

@@ -1,0 +1,102 @@
+// The flat-screen camera (phone, laptop, projector). In XR the headset owns the camera and this rig steps aside.
+// Night: a still view up toward the gate with a breath of pointer/tilt parallax. Entering: a slow dolly through.
+// Memory: an elevated view of the place that you can turn by dragging; it drifts back to centre when let go.
+import { useFrame, useThree } from '@react-three/fiber';
+import { useEffect, useRef } from 'react';
+import * as THREE from 'three';
+import { useGate } from '../state/store';
+import { MEMORY_CENTER } from './layout';
+import { damp, dampVec3, easeInOutCubic } from './util';
+
+const _pos = new THREE.Vector3();
+const _look = new THREE.Vector3();
+
+export function CameraRig() {
+  const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
+  const gl = useThree((s) => s.gl);
+  const pos = useRef(new THREE.Vector3(0, 1.55, 0));
+  const look = useRef(new THREE.Vector3(0, 1.72, -4));
+  const orbit = useRef({ az: 0, el: 0.3, targetAz: 0, targetEl: 0.3, dragging: false, x: 0, y: 0, idle: 0 });
+  const tilt = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const el = gl.domElement;
+    const day = () => ['forming', 'memory', 'leaving'].includes(useGate.getState().stage);
+    const down = (e: PointerEvent) => {
+      if (!day()) return;
+      orbit.current.dragging = true; orbit.current.x = e.clientX; orbit.current.y = e.clientY;
+    };
+    const move = (e: PointerEvent) => {
+      const o = orbit.current;
+      if (!o.dragging) return;
+      const w = el.clientWidth || 1;
+      o.targetAz = THREE.MathUtils.clamp(o.targetAz - ((e.clientX - o.x) / w) * 2.4, -0.95, 0.95);
+      o.targetEl = THREE.MathUtils.clamp(o.targetEl + ((e.clientY - o.y) / w) * 1.2, 0.08, 0.62);
+      o.x = e.clientX; o.y = e.clientY; o.idle = 0;
+    };
+    const up = () => { orbit.current.dragging = false; };
+    // Phones: a little parallax from tilting the device (no permission prompt needed on Android; iOS asks on Begin).
+    const orient = (e: DeviceOrientationEvent) => {
+      if (e.beta == null || e.gamma == null) return;
+      tilt.current.x = THREE.MathUtils.clamp(e.gamma / 35, -1, 1);
+      tilt.current.y = THREE.MathUtils.clamp((e.beta - 45) / 35, -1, 1);
+    };
+    el.addEventListener('pointerdown', down);
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+    window.addEventListener('deviceorientation', orient);
+    return () => {
+      el.removeEventListener('pointerdown', down);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      window.removeEventListener('deviceorientation', orient);
+    };
+  }, [gl]);
+
+  useFrame((state, dtRaw) => {
+    if (gl.xr.isPresenting) return;
+    const dt = Math.min(dtRaw, 0.05);
+    const s = useGate.getState();
+    const px = state.pointer.x * 0.6 + tilt.current.x * 0.4;
+    const py = state.pointer.y * 0.6 - tilt.current.y * 0.4;
+    let fov = 50;
+    let rate = 1.6;
+    if (s.stage === 'entering') {
+      const p = easeInOutCubic(s.enterProgress);
+      _pos.set(0, 1.55 + p * 0.12, -p * 3.2);
+      _look.set(0, 1.7 + p * 0.1, -6);
+      fov = 50 - p * 9;
+      rate = 6;
+    } else if (s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving') {
+      const o = orbit.current;
+      if (!o.dragging) {
+        o.idle += dt;
+        // After a few untouched seconds, ease back toward the front view with a very slow sway.
+        if (o.idle > 4) { o.targetAz = damp(o.targetAz, Math.sin(state.clock.elapsedTime * 0.05) * 0.18, 0.4, dt); o.targetEl = damp(o.targetEl, 0.3, 0.4, dt); }
+      }
+      o.az = damp(o.az, o.targetAz, 4, dt);
+      o.el = damp(o.el, o.targetEl, 4, dt);
+      const r = 4.1;
+      _pos.set(MEMORY_CENTER.x + Math.sin(o.az) * Math.cos(o.el) * r, 0.25 + MEMORY_CENTER.y + Math.sin(o.el) * r, MEMORY_CENTER.z + Math.cos(o.az) * Math.cos(o.el) * r);
+      _look.set(MEMORY_CENTER.x, MEMORY_CENTER.y + 0.55, MEMORY_CENTER.z);
+      fov = 52;
+      rate = s.stage === 'forming' ? 1.1 : 2.2;
+    } else if (s.stage === 'album') {
+      _pos.set(0, 1.55, 0);
+      _look.set(px * 0.6, 2.4 + py * 0.3, -4);
+    } else {
+      _pos.set(px * 0.06, 1.55 + py * 0.03, 0);
+      _look.set(px * 0.32, 1.72 + py * 0.16, -4);
+    }
+    dampVec3(pos.current, _pos, rate, dt);
+    dampVec3(look.current, _look, rate, dt);
+    camera.position.copy(pos.current);
+    camera.lookAt(look.current);
+    const nextFov = damp(camera.fov, fov, 3, dt);
+    if (Math.abs(nextFov - camera.fov) > 0.001) { camera.fov = nextFov; camera.updateProjectionMatrix(); }
+  });
+
+  return null;
+}

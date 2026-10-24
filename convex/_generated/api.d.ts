@@ -10,16 +10,22 @@
 
 import type * as admin from "../admin.js";
 import type * as ai from "../ai.js";
+import type * as budget from "../budget.js";
 import type * as consents from "../consents.js";
 import type * as corrections from "../corrections.js";
 import type * as doctor from "../doctor.js";
 import type * as generate from "../generate.js";
+import type * as guide from "../guide.js";
 import type * as jobsdb from "../jobsdb.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_claude from "../lib/claude.js";
 import type * as lib_storage from "../lib/storage.js";
 import type * as library from "../library.js";
+import type * as memories from "../memories.js";
+import type * as moments from "../moments.js";
 import type * as objects from "../objects.js";
 import type * as rooms from "../rooms.js";
+import type * as sketch from "../sketch.js";
 import type * as splats from "../splats.js";
 import type * as utterances from "../utterances.js";
 import type * as voice from "../voice.js";
@@ -35,16 +41,22 @@ import type {
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   ai: typeof ai;
+  budget: typeof budget;
   consents: typeof consents;
   corrections: typeof corrections;
   doctor: typeof doctor;
   generate: typeof generate;
+  guide: typeof guide;
   jobsdb: typeof jobsdb;
   "lib/auth": typeof lib_auth;
+  "lib/claude": typeof lib_claude;
   "lib/storage": typeof lib_storage;
   library: typeof library;
+  memories: typeof memories;
+  moments: typeof moments;
   objects: typeof objects;
   rooms: typeof rooms;
+  sketch: typeof sketch;
   splats: typeof splats;
   utterances: typeof utterances;
   voice: typeof voice;
