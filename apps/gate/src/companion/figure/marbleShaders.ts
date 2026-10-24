@@ -37,7 +37,7 @@ export type MarbleFaceUniforms = {
 
 /** Where the face sits on the head (metres, head space): a recessed oval plate following the head's shape, the brow
  *  star inside its top, the arched eyes below. Shared with the glow sprites in createMarble.ts. */
-export const FACE = { ovalY: 0.0, ovalA: 0.094, ovalB: 0.066, starY: 0.034, star: [0.011, 0.018] as const, eyeX: 0.047, eyeY: -0.009, chestY: -0.05, chest: [0.0085, 0.0135] as const };
+export const FACE = { ovalY: 0.0, ovalA: 0.094, ovalB: 0.066, starY: 0.034, star: [0.011, 0.018] as const, eyeX: 0.047, eyeY: -0.0135, chestY: -0.05, chest: [0.0085, 0.0135] as const };
 /** The wings' length and sweep (metres), shared with the geometry in createMarble.ts. */
 export const WING = { len: 0.215, bend: -0.012, windowY: -0.15 };
 
