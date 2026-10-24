@@ -130,11 +130,11 @@ const tablesSchema = __schema({
       { accessor: 'id', name: 'companion_turn_id_idx_btree', algorithm: 'btree', columns: [
         'id',
       ] },
-      { accessor: 'byRoom', name: 'companion_turn_room_id_idx_btree', algorithm: 'btree', columns: [
-        'roomId',
-      ] },
       { accessor: 'byPerspective', name: 'companion_turn_perspective_id_idx_btree', algorithm: 'btree', columns: [
         'perspectiveId',
+      ] },
+      { accessor: 'byRoom', name: 'companion_turn_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
       ] },
     ],
     constraints: [

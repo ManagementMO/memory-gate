@@ -48,9 +48,9 @@ try {
   await background('convex', 3210, node, ['node_modules/convex/bin/main.js', 'dev', '--tail-logs', 'disable']);
   if (!existsSync('.env.worker')) await run(node, ['scripts/env-push.mjs']);
   await run(node, ['--experimental-transform-types', 'scripts/ensure-seeded.mjs']);
-  await background('spacetime', 3000, spacetime, ['--root-dir', '.spacetime', 'start', '--listen-addr', '127.0.0.1:3000', '--data-dir', '.spacetime/data', '--non-interactive']);
+  await background('spacetime', 3000, spacetime, ['--root-dir=.spacetime', 'start', '--listen-addr', '127.0.0.1:3000', '--data-dir', '.spacetime/data', '--non-interactive']);
   // Publishes only to loopback and preserves existing data; no destructive migration flag.
-  await run(spacetime, ['--root-dir', '.spacetime', 'publish', '--server', 'http://127.0.0.1:3000', '--module-path', 'spacetimedb', '--yes=skip-login', process.env.SPACETIME_DATABASE ?? 'heirloom-exchange']);
+  await run(spacetime, ['--root-dir=.spacetime', 'publish', '--server', 'http://127.0.0.1:3000', '--module-path', 'spacetimedb', '--yes=skip-login', process.env.SPACETIME_DATABASE ?? 'heirloom-exchange']);
   await background('exchange', 3212, node, ['--import', 'tsx', 'scripts/exchange.mjs']);
   await waitUntil(async () => { try { return (await fetch('http://127.0.0.1:3212/health')).ok; } catch { return false; } }, 'exchange subscriptions');
   await background('phone', 5173, node, ['node_modules/vite/bin/vite.js'], path.join(root, 'apps/phone'));
