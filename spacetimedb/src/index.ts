@@ -11,6 +11,12 @@ const db = schema({
   reference: table({ indexes: [{ accessor: 'byRoom', algorithm: 'btree', columns: ['roomId'] }] }, {
     id: t.string().primaryKey(), roomId: t.string(), addedBy: t.string(), data: t.string(), createdAt: t.f64(),
   }),
+  // Who is in a visit right now (one row per member): each person's light, its colour and seat, and their latest
+  // "look here" mark. Heartbeats refresh updatedAt; leftAt is set when they close the page (0 while present).
+  presence: table({ indexes: [{ accessor: 'byRoom', algorithm: 'btree', columns: ['roomId'] }] }, {
+    memberId: t.string().primaryKey(), roomId: t.string(), host: t.bool(), seat: t.u32(), color: t.string(), device: t.string(),
+    pointX: t.f64(), pointY: t.f64(), pointZ: t.f64(), pointAt: t.f64(), updatedAt: t.f64(), leftAt: t.f64(),
+  }),
 });
 export default db;
 export const init = db.init(ctx => { ctx.db.operator.insert({ id: 0, identity: ctx.sender }); });
@@ -67,4 +73,37 @@ export const purgeRoom = db.reducer({ roomId: t.string() }, (ctx, { roomId }) =>
   requireOperator(ctx);
   for (const row of [...ctx.db.capsule.byRoom.filter(roomId)]) ctx.db.capsule.id.delete(row.id);
   for (const row of [...ctx.db.reference.byRoom.filter(roomId)]) ctx.db.reference.id.delete(row.id);
+  for (const row of [...ctx.db.presence.byRoom.filter(roomId)]) ctx.db.presence.memberId.delete(row.memberId);
+});
+
+// Being together: the gateway calls these for a member it has just checked in Convex.
+const LIGHT_COLORS = ['#ffd27a', '#ff9fb2', '#8fd3ff', '#a8eec0', '#cdb4ff', '#ffbf94'];
+const nowMs = (ctx: Ctx) => Number(ctx.timestamp.microsSinceUnixEpoch / 1000n);
+export const beHere = db.reducer({ roomId: t.string(), memberId: t.string(), host: t.bool(), device: t.string() }, (ctx, a) => {
+  requireOperator(ctx); bounded(a.roomId, 180, 'roomId'); bounded(a.memberId, 180, 'memberId');
+  if (!['headset', 'phone', 'desktop'].includes(a.device)) throw new SenderError('Invalid device.');
+  const now = nowMs(ctx);
+  const mine = ctx.db.presence.memberId.find(a.memberId);
+  if (mine) {
+    if (mine.roomId !== a.roomId) throw new SenderError('Presence belongs to another room.');
+    ctx.db.presence.memberId.update({ ...mine, host: a.host, device: a.device, updatedAt: now, leftAt: 0 });
+    return;
+  }
+  const seat = [...ctx.db.presence.byRoom.filter(a.roomId)].length;
+  if (seat >= 64) throw new SenderError('This visit is full.');
+  ctx.db.presence.insert({ memberId: a.memberId, roomId: a.roomId, host: a.host, seat, color: LIGHT_COLORS[seat % LIGHT_COLORS.length]!, device: a.device,
+    pointX: 0, pointY: 0, pointZ: 0, pointAt: 0, updatedAt: now, leftAt: 0 });
+});
+export const markPoint = db.reducer({ roomId: t.string(), memberId: t.string(), x: t.f64(), y: t.f64(), z: t.f64() }, (ctx, a) => {
+  requireOperator(ctx);
+  const mine = ctx.db.presence.memberId.find(a.memberId);
+  if (!mine || mine.roomId !== a.roomId) throw new SenderError('Join the visit first.');
+  if (![a.x, a.y, a.z].every(v => Number.isFinite(v) && Math.abs(v) < 1000)) throw new SenderError('Invalid point.');
+  const now = nowMs(ctx);
+  ctx.db.presence.memberId.update({ ...mine, pointX: a.x, pointY: a.y, pointZ: a.z, pointAt: now, updatedAt: now, leftAt: 0 });
+});
+export const leaveVisit = db.reducer({ roomId: t.string(), memberId: t.string() }, (ctx, a) => {
+  requireOperator(ctx);
+  const mine = ctx.db.presence.memberId.find(a.memberId);
+  if (mine && mine.roomId === a.roomId) ctx.db.presence.memberId.update({ ...mine, leftAt: nowMs(ctx) });
 });

@@ -22,7 +22,7 @@ const db = DbConnection.builder().withUri(process.env.SPACETIME_URL ?? 'ws://127
   .withAutomaticReconnect()
   .onConnect(conn => {
     conn.subscriptionBuilder().onApplied(() => { ready = true; refreshAll(); void reconcileDeletedRooms(); }).onError(() => { ready = false; invalidateAll(); })
-      .subscribe(['SELECT * FROM capsule', 'SELECT * FROM reference']);
+      .subscribe(['SELECT * FROM capsule', 'SELECT * FROM reference', 'SELECT * FROM presence']);
   }).onDisconnect(() => { ready = false; invalidateAll(); })
   .onConnectError(() => { ready = false; invalidateAll(); }).build();
 
@@ -49,7 +49,7 @@ async function refresh(c) {
     const board = [...db.db.reference.iter()].filter(r => r.roomId === context.roomId).map(r => ({ ...JSON.parse(r.data), id: r.id, addedBy: r.addedBy, contributor: context.members.find(m => m.id === r.addedBy)?.name ?? 'Former participant' }));
     const online = [...clients].filter(other => other.context?.roomId === context.roomId && Date.now() - other.authorizedAt < 10_000).map(other => other.context.memberId);
     c.context = context; c.authorizedAt = Date.now();
-    send(c, { type: 'snapshot', context, capsules: visibleCapsules(context), references: board,
+    send(c, { type: 'snapshot', context, capsules: visibleCapsules(context), references: board, presence: presenceOf(context.roomId), now: Date.now(),
       online: [...new Set([...online, context.memberId])], archiveMode: context.offline ? 'disabled-offline' : process.env.ATLAS_MODE ?? 'disabled' });
   } catch {
     c.context = null; c.authorizedAt = 0;
@@ -72,12 +72,53 @@ async function reconcileDeletedRooms() {
 for (const table of [db.db.capsule, db.db.reference]) {
   table.onInsert(refreshAll); table.onDelete(refreshAll); table.onUpdate(refreshAll);
 }
+// Presence (who is in a visit, their lights and look-here marks) changes every few seconds: it goes straight to the
+// already-authorized devices in that room, without re-checking every client.
+function presenceOf(roomId) { return [...db.db.presence.iter()].filter(p => p.roomId === roomId); }
+function pushPresence(roomId) {
+  const rows = presenceOf(roomId);
+  for (const c of clients) if (c.context?.roomId === roomId && Date.now() - c.authorizedAt < 15_000) send(c, { type: 'presence', presence: rows, now: Date.now() });
+}
+db.db.presence.onInsert((_ctx, row) => pushPresence(row.roomId));
+db.db.presence.onUpdate((_ctx, _old, row) => pushPresence(row.roomId));
+db.db.presence.onDelete((_ctx, row) => pushPresence(row.roomId));
+// A visit happening nearby (same-room devices, one local backend): the freshest present host, offered by code and
+// family key so another device can join in one tap. Never offline (test) rooms.
+let nearbyCache = { at: 0, value: null };
+async function nearby() {
+  if (!ready) return null;
+  if (Date.now() - nearbyCache.at < 2000) return nearbyCache.value;
+  const hosts = [...db.db.presence.iter()].filter(p => p.host && p.leftAt === 0 && Date.now() - p.updatedAt < 20_000).sort((a, b) => b.updatedAt - a.updatedAt);
+  let value = null;
+  for (const h of hosts.slice(0, 6)) {
+    const invite = await convex.query(makeFunctionReference('presence:inviteFor'), { secret: process.env.WORKER_SECRET, roomId: h.roomId }).catch(() => null);
+    if (invite) { value = invite; break; }
+  }
+  nearbyCache = { at: Date.now(), value };
+  return value;
+}
 function requireReady(context) { if (!ready) throw new Error('The exchange is not connected.'); if (context.paused) throw new Error('This room is paused. Resume it before changing memories.'); }
 async function action(c, message) {
   if (message.type === 'join') {
     if (c.auth) throw new Error('This connection has already joined a room.');
     if (typeof message.code !== 'string' || typeof message.token !== 'string' || message.token.length > 100) throw new Error('Invalid room session.');
     c.auth = { code: message.code, token: message.token }; await authorize(c); await refresh(c); return;
+  }
+  // Presence: heartbeats reuse this connection's recent authorization (refreshed every 5 s) instead of a check each.
+  if (message.type === 'here' || message.type === 'point' || message.type === 'leave') {
+    const context = c.context && Date.now() - c.authorizedAt < 10_000 ? c.context : await authorize(c);
+    if (!ready) throw new Error('The exchange is not connected.');
+    c.context = context;
+    const { memberId, roomId } = context;
+    if (message.type === 'here') {
+      if (!['headset', 'phone', 'desktop'].includes(message.device)) throw new Error('Invalid device.');
+      await db.reducers.beHere({ roomId, memberId, host: !!context.isOwner, device: message.device });
+    } else if (message.type === 'point') {
+      const at = message.at;
+      if (!Array.isArray(at) || at.length !== 3 || !at.every(Number.isFinite)) throw new Error('Invalid point.');
+      await db.reducers.markPoint({ roomId, memberId, x: at[0], y: at[1], z: at[2] });
+    } else await db.reducers.leaveVisit({ roomId, memberId });
+    return;
   }
   const context = await authorize(c); requireReady(context);
   const { memberId, roomId } = context;
@@ -117,7 +158,14 @@ async function action(c, message) {
   } else throw new Error('Unknown exchange action.');
   await refresh(c);
 }
-const server = http.createServer((req, res) => { res.writeHead(req.url === '/health' ? (ready ? 200 : 503) : 404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ready, backend: 'SpacetimeDB' })); });
+const server = http.createServer((req, res) => {
+  if (req.url === '/nearby' || req.url === '/exchange/nearby') {
+    void nearby().then(value => { res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify({ nearby: value })); },
+      () => { res.writeHead(503, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ nearby: null })); });
+    return;
+  }
+  res.writeHead(req.url === '/health' ? (ready ? 200 : 503) : 404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ready, backend: 'SpacetimeDB' }));
+});
 const wss = new WebSocketServer({ noServer: true, maxPayload: 16_384 });
 server.on('upgrade', (req, socket, head) => {
   if (req.url !== '/exchange' || !origins.has(req.headers.origin) || clients.size >= 64) { socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }

@@ -28,7 +28,7 @@ export const context = query({
     const sources = await ctx.db.query('utterances').withIndex('by_room', q => q.eq('roomId', room._id)).order('desc').take(50);
     const recordingAllowed = (await activeScopes(ctx, room._id)).has('voice_recording');
     return {
-      roomId: room._id, memberId: member._id, displayName: member.displayName, paused: room.paused, offline: room.offline ?? false, recordingAllowed,
+      roomId: room._id, memberId: member._id, displayName: member.displayName, isOwner: member.isOwner, paused: room.paused, offline: room.offline ?? false, recordingAllowed,
       members: members.filter(m => m.revokedAt === null && m.role !== 'viewer').map(m => ({ id: m._id, name: m.displayName, role: m.role })),
       sources: sources.filter(s => s.memberId === member._id && s.status === 'done').map(s => ({ id: s._id, transcript: s.transcript, source: s.source, language: s.language })),
     };

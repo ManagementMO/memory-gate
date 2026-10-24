@@ -20,6 +20,8 @@ type PresenceState = {
   nearby: { code: string; key: string } | null;
   /** This device's own latest mark, shown at once (before the round trip). */
   myPoint: { at: number[]; t: number } | null;
+  /** Where presence lives this visit: SpacetimeDB (the team's exchange) when it's running, else Convex. */
+  backend: 'spacetime' | 'convex' | null;
   set: (p: Partial<PresenceState>) => void;
 };
 
@@ -29,6 +31,7 @@ export const usePresence = create<PresenceState>((set) => ({
   offset: 0,
   nearby: null,
   myPoint: null,
+  backend: null,
   set: (p) => set(p),
 }));
 

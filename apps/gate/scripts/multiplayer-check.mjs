@@ -20,7 +20,7 @@ const guest = await (await browser.newContext({ viewport: { width: 390, height: 
 watch(host, 'host'); watch(guest, 'guest');
 const state = (page) => page.evaluate(() => {
   const g = window.__gate.store.getState(); const p = window.__presence?.getState();
-  return { stage: g.stage, role: g.session?.role ?? null, voice: g.voice, music: g.musicOn, others: p?.others.length ?? 0, nearby: !!p?.nearby, mark: !!p?.others.find((o) => o.point && Date.now() + p.offset - o.point.t < 7000) };
+  return { stage: g.stage, role: g.session?.role ?? null, voice: g.voice, music: g.musicOn, others: p?.others.length ?? 0, nearby: !!p?.nearby, backend: p?.backend ?? null, mark: !!p?.others.find((o) => o.point && Date.now() + p.offset - o.point.t < 7000) };
 });
 let ok = true;
 // Screenshots are for review only: a busy GPU can stall one, which must not fail the checks.
@@ -47,6 +47,8 @@ await host.waitForFunction(() => (window.__presence?.getState().others.length ??
 const hs = await state(host);
 check(hs.others >= 1, `host sees the phone's light (${hs.others})`);
 check(gs.others >= 1, `phone sees the host's light (${gs.others})`);
+note(`presence runs on: host ${hs.backend}, phone ${gs.backend}`);
+if (process.env.EXPECT_PRESENCE) check(hs.backend === process.env.EXPECT_PRESENCE && gs.backend === process.env.EXPECT_PRESENCE, `presence on ${process.env.EXPECT_PRESENCE} for both devices`);
 await shot(host, `${out}/02-host-gathering.png`);
 await shot(guest, `${out}/03-phone-gathering.png`);
 

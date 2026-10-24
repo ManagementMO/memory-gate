@@ -30,6 +30,22 @@ export const Operator = __t.object("Operator", {
 });
 export type Operator = __Infer<typeof Operator>;
 
+export const Presence = __t.object("Presence", {
+  memberId: __t.string(),
+  roomId: __t.string(),
+  host: __t.bool(),
+  seat: __t.u32(),
+  color: __t.string(),
+  device: __t.string(),
+  pointX: __t.f64(),
+  pointY: __t.f64(),
+  pointZ: __t.f64(),
+  pointAt: __t.f64(),
+  updatedAt: __t.f64(),
+  leftAt: __t.f64(),
+});
+export type Presence = __Infer<typeof Presence>;
+
 export const Reference = __t.object("Reference", {
   id: __t.string(),
   roomId: __t.string(),

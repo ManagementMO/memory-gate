@@ -73,3 +73,18 @@ export const nearby = query({
     return null;
   },
 });
+
+/**
+ * For the exchange gateway (SpacetimeDB presence): the join code and family key of a room whose host is present, so
+ * a nearby device can be offered the visit. Server secret only; offline (test) rooms are never offered.
+ */
+export const inviteFor = query({
+  args: { secret: v.string(), roomId: v.string() },
+  handler: async (ctx, { secret, roomId }) => {
+    if (!process.env.WORKER_SECRET || secret !== process.env.WORKER_SECRET) return null;
+    const id = ctx.db.normalizeId('rooms', roomId);
+    const room = id ? await ctx.db.get(id) : null;
+    if (!room || room.offline || !room.joinKey) return null;
+    return { code: room.code, key: room.joinKey };
+  },
+});
