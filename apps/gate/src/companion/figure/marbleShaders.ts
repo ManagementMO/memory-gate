@@ -51,8 +51,8 @@ export function marbleUniforms(): MarbleUniforms {
     uGold: { value: new THREE.Color('#b08a4c') },
     uChrome: { value: new THREE.Color('#d9d4cb') },
     uVein: { value: 1 },
-    uGlowCore: { value: new THREE.Color('#fff7e8') },
-    uGlowEdge: { value: new THREE.Color('#ffc580') },
+    uGlowCore: { value: new THREE.Color('#fff1cc') },
+    uGlowEdge: { value: new THREE.Color('#ffaa45') },
     uDiaBright: { value: 0.6 },
   };
 }
@@ -208,7 +208,7 @@ function featureBlock(feature: MarbleFeature): string {
   // Carving: the plate sits a little lower than the head; the seam is a fine V-cut; the eyes and star are set in.
   mgH = (-0.0008 * mgPlate - 0.00035 * mgSeamLine * mgSeamFade
         - 0.0004 * (1.0 - smoothstep(-0.0006, 0.0007, mgD)) + 0.00035 * mgEyeRim - 0.0011 * (1.0 - smoothstep(-0.05, 0.08, mgSf))) * mgFront;
-  mgEmit = mix(uGlowEdge, uGlowCore, 0.3 + 0.7 * mgArc) * mgEye * uBright * (3.8 + 1.2 * mgArc) + uGlowEdge * mgHalo * uBright * 1.35
+  mgEmit = mix(uGlowEdge, uGlowCore, 0.3 + 0.7 * mgArc) * mgEye * uBright * (3.8 + 1.2 * mgArc) + mix(uGlowEdge, uGlowCore, 0.7) * mgHalo * uBright * 1.1
          + (mix(uGlowEdge, uGlowCore, mgDiaCore) * mgDia * 4.4 + uGlowEdge * mgDiaHalo * 1.15) * uDiaBright
          + mix(uGlowEdge, uGlowCore, 0.5) * mgRing * (0.12 + uDiaBright * 0.12);`;
   }

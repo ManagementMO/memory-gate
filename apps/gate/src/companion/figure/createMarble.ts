@@ -356,10 +356,10 @@ export function createMarbleFigure(): FigureRig {
       U.uExposure.value = THREE.MathUtils.lerp(0.78, 1.0, o.onLight); // a little shade on the stone so its lights read
       // (glowBlending is additive: brightness rides on the colour, not opacity)
       const gk = fade * THREE.MathUtils.lerp(0.5, 0.07, o.onLight); // on the white page additive glow only tints the stone
-      for (const g of eyeGlows) g.mat.color.set('#ffd39c').multiplyScalar(cur.bright * gk * (1 - Math.max(cur.lineL, cur.lineR) * 0.8));
-      browGlow.mat.color.set('#ffd39c').multiplyScalar(cur.dia * gk * 0.9);
-      chestGlow.mat.color.set('#ffd39c').multiplyScalar(cur.dia * gk * 0.8);
-      jewelGlow.mat.color.set('#ffd39c').multiplyScalar(cur.dia * gk * 0.7);
+      for (const g of eyeGlows) g.mat.color.set('#ffe6c4').multiplyScalar(cur.bright * gk * (1 - Math.max(cur.lineL, cur.lineR) * 0.8));
+      browGlow.mat.color.set('#ffbd66').multiplyScalar(cur.dia * gk * 0.9);
+      chestGlow.mat.color.set('#ffbd66').multiplyScalar(cur.dia * gk * 0.8);
+      jewelGlow.mat.color.set('#ffbd66').multiplyScalar(cur.dia * gk * 0.7);
       lightMat.color.set('#fff2dc').multiplyScalar(0.6 + cur.dia * 0.9);
 
       // ---------- the head looks at you (softly limited), with mood in its posture ----------
