@@ -1,7 +1,8 @@
 // Prepared memories: the team's demonstration scenes, kept in the album beside the person's own visits and opened
 // from it like any memory. They are fictional samples and say so wherever they're shown. Their pictures are taken from
 // the real scenes (apps/gate/scripts/album-pictures.mjs), so polishing a scene and re-running it updates the album.
-import { bringIn, placePlan, PLACES } from '../../../../packages/shared/src/places';
+import { bringIn, placePlan, PLACES, type PlaceKey } from '../../../../packages/shared/src/places';
+import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import type { AlbumMemory, AlbumMoment } from './types';
 
 const AT = Date.parse('2026-10-24T21:35:00Z');
@@ -18,6 +19,14 @@ const COURTYARD_WORDS = [
   'And a bench by the wall, with pots of plants.',
 ];
 const courtyardPlan = COURTYARD_WORDS.reduce((plan, words) => bringIn(PLACES.courtyard, plan, words) ?? plan, placePlan(PLACES.courtyard, 'The courtyard'));
+
+/** The Red Kite in a headset: its page is a page of its own (opening it would end the immersive session), so from the
+ *  headset's album it's the meadow itself, with the kite in your hands and the things the friends remember. */
+const RED_KITE_WORDS = [
+  'Rosa’s red kite, with a cream ribbon on its tail.',
+  'Two benches where we sat, and a picnic blanket.',
+];
+const redKitePlan = RED_KITE_WORDS.reduce((plan, words) => bringIn(PLACES['red-kite'], plan, words) ?? plan, placePlan(PLACES['red-kite'], 'The Red Kite'));
 
 const RED_KITE = 'prepared:red-kite';
 const COURTYARD = 'prepared:courtyard';
@@ -52,6 +61,12 @@ export function openPrepared(m: AlbumMemory, visitScene?: (scene: string) => voi
     try { sessionStorage.setItem(RETURN_KEY, 'album'); } catch { /* the way back is a convenience */ }
     location.assign(m.open.href);
   } else visitScene?.(m.open.scene);
+}
+/** In a headset, where a prepared memory steps you: its place and the things in it (never another page). */
+export function preparedVisit(m: AlbumMemory): { key: PlaceKey; plan: ScenePlan } | null {
+  if (m.id === RED_KITE) return { key: 'red-kite', plan: redKitePlan };
+  if (m.id === COURTYARD) return { key: 'courtyard', plan: courtyardPlan };
+  return null;
 }
 /** True once, when this page was reached by coming back from a prepared memory opened in the album. */
 export function cameBackToAlbum(): boolean {
