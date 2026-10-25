@@ -1,14 +1,16 @@
 // World memories in San Francisco: the albums people chose to share here, one person after another, in the same
-// glass as your own album. Yours come first when you've made any public. Other people's memories can't be visited.
+// glass as your own album. The showcase comes first (a memory you can step into), then yours when you've made any
+// public. Other people's memories can't be visited, except a walk-in one like the showcase.
 import { motion, useReducedMotion } from 'motion/react';
 import { useMemo } from 'react';
 import { usePaneOpen } from '../album/AlbumView';
+import { openPrepared } from '../album/prepared';
 import { MemoryChapter } from '../album/MemoryChapter';
 import { useAlbum } from '../album/useAlbum';
 import { useGate } from '../state/store';
 import { BackIcon, CloseIcon } from '../ui/Icons';
 import { PLACES, useVisibility, visibilityKey } from './state';
-import { paintedSamples, publicMine, sampleAlbums } from './world';
+import { paintedSamples, publicMine, sampleAlbums, showcaseAlbum } from './world';
 
 /** Back to the map, and × back to the start page. */
 export function PlaceTop({ onBack, onClose }: { onBack: () => void; onClose?: () => void }) {
@@ -28,9 +30,9 @@ export function WorldAlbum({ onBack, onClose }: { onBack: () => void; onClose?: 
   const memories = useAlbum();
   const code = useGate((s) => s.session?.code ?? null);
   const publicKeys = useVisibility((s) => s.publicKeys);
-  const samples = useMemo(() => sampleAlbums(paintedSamples()), []);
+  const samples = useMemo(() => [showcaseAlbum(), ...sampleAlbums(paintedSamples())], []);
   const mine = publicMine(memories, (m) => !!publicKeys[visibilityKey(m, code)]);
-  const albums = mine ? [mine, ...samples] : samples;
+  const albums = mine ? [samples[0]!, mine, ...samples.slice(1)] : samples;
   const { openId, onEnter, onLeaveStrip, onToggle, onFocusOpen, closeAll } = usePaneOpen();
   const reduce = useReducedMotion();
   const starts = albums.reduce<number[]>((acc, a, i) => [...acc, i === 0 ? 0 : acc[i - 1]! + albums[i - 1]!.memories.length], []);
@@ -51,7 +53,7 @@ export function WorldAlbum({ onBack, onClose }: { onBack: () => void; onClose?: 
               <h2 id={`${a.id}-h`} className="album-section world-owner">{a.owner === 'You' ? 'Your public memories' : `${a.owner}’s album`}</h2>
               {a.memories.map((m, i) => (
                 <MemoryChapter key={m.id} memory={m} index={starts[ai]! + i} openId={openId} onEnter={onEnter} onLeaveStrip={onLeaveStrip}
-                  onToggle={onToggle} onFocusOpen={onFocusOpen} />
+                  onToggle={onToggle} onFocusOpen={onFocusOpen} onRevisit={m.open ? () => openPrepared(m, undefined, 'world') : undefined} />
               ))}
             </section>
           ))}
