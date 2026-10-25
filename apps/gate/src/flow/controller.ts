@@ -626,4 +626,4 @@ async function describeMedia(file: File): Promise<MediaItem | null> {
 export const flow = new Flow();
 export { uploadFile };
 // Exposed for the dogfood loop and Playwright: drive the conversation without a microphone.
-(window as unknown as { __gate: unknown }).__gate = { flow, store: useGate, memory, moments };
+(window as unknown as { __gate: unknown }).__gate = { flow, store: useGate, memory, moments, memoryStore: useMemory };
