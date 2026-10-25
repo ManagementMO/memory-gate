@@ -93,6 +93,11 @@ export function guideOffline(input: GuideInput): GuideReply {
   const seed = hash(t);
   const place = guessPlace(input.transcript) ?? input.place;
 
+  // Before leaving: "let's go" to "Shall we go there together?" means step in, not goodbye.
+  if (input.phase === 'gathering' && ((input.invitedToEnter && saysYes(input.transcript)) || (asksToGoIn(input.transcript) && (!!place || input.turnsInPhase >= 2 || !!input.media)))) {
+    return { reply: 'Come with me.', intent: 'enter', place };
+  }
+  if (input.phase === 'gathering' && asksToGoIn(input.transcript)) return { reply: 'Gladly. Tell me about a place you’d like to visit.', intent: 'chat', place };
   if (asksToLeave(input.transcript)) {
     return { reply: input.phase === 'memory' ? 'Thank you for bringing me here. I’ll keep this moment safe for you.' : 'Of course. Thank you for spending this time with me.', intent: 'leave', place };
   }
@@ -108,9 +113,6 @@ export function guideOffline(input: GuideInput): GuideReply {
   if (/\b(i don'?t know|not sure|can'?t think|no idea|i forget|nothing comes|hmm+|um+)\b/.test(t) || words === 0) {
     return { reply: 'That’s alright. We could look at a photo together, or someone with you can send one from their phone.', intent: 'offer_invite', place };
   }
-  if (input.invitedToEnter && /^(yes|yeah|yep|ok|okay|sure|please|let'?s|let'?s go|i'?d like that|go|alright|all right|mhm|uh huh)\b/.test(t)) {
-    return { reply: 'Come with me.', intent: 'enter', place };
-  }
   if (input.invitedToEnter && /^(no|not yet|wait|hold on)\b/.test(t)) {
     return { reply: 'Of course. Tell me more whenever you like.', intent: 'chat', place };
   }
@@ -122,7 +124,28 @@ export function guideOffline(input: GuideInput): GuideReply {
 }
 
 /** True when a companion line invites stepping through the gate (so the next "yes" means go). */
-export const asksToEnter = (reply: string) => /\b(shall we|should we|would you like to|want to) (go|step|walk|visit)\b/i.test(reply);
+export const asksToEnter = (reply: string) =>
+  /\b(shall we|should we|would you like to|do you want to|want to|ready to|are you ready to) (go|step|walk|visit|head|see|wander)\b/i.test(reply)
+  || /\b(shall|can|may) i take you\b/i.test(reply)
+  || /\bshall we\s*\?/i.test(reply);
+
+/**
+ * A plain yes to an invitation ("yes", "sure", "okay, let's go", "I'd love that"), told apart from "yes, but not yet"
+ * and from "let's go home". After the companion invites them in, the app steps through at once on it.
+ */
+export function saysYes(transcript: string): boolean {
+  const t = norm(transcript);
+  if (!t || /\b(home|back|out|leave|stop|not yet|wait|hold on)\b/.test(t) || /^no\b/.test(t)) return false;
+  return /^(yes|yeah|yea|yep|yup|ok|okay|sure|please|let'?s|go|alright|all right|mhm|uh huh|of course|absolutely|definitely|i'?d (like|love) (that|to)|i would (like|love) (that|to)|sounds (good|lovely|nice|great|wonderful)|take me there|i'?m ready|ready)\b/.test(t);
+}
+
+/** "Let's go", "take me there", "step inside": asking to go into the place they've been describing (not home). */
+export function asksToGoIn(transcript: string): boolean {
+  const t = norm(transcript);
+  if (!t || /\b(home|back|out|leave|stop|done|goodbye|bye)\b/.test(t)) return false;
+  return /^((yes|yeah|ok|okay|alright|so|well|now)\s+)*(let'?s go|let us go|let'?s do it|take me there|take me (in|inside)|go in|step in|i'?m ready|show me)\b/.test(t)
+    || /\b(take me there|take me to (it|the|that|this)|let'?s go (there|in|inside|see)|go (there|inside) now|step (in|inside|through))\b/.test(t);
+}
 
 export const GUIDE_SYSTEM = `You are the companion in Memory Gate. You walk beside an adult who may be living with early dementia (often younger-onset Alzheimer's) as they visit a remembered place, sometimes with family nearby. Age or diagnosis says nothing about their abilities; follow their lead.
 

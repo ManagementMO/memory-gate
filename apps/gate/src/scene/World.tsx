@@ -1,9 +1,9 @@
 // Everything in the 3D world, composed once and kept alive across the journey; each part fades itself by stage.
 import { Environment } from '@react-three/drei';
-import { XROrigin } from '@react-three/xr';
+import { XROrigin, useXR } from '@react-three/xr';
 import { Snapshotter } from './Snapshotter';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { atmoLive } from './sketch/atmosphere';
 import { useGate } from '../state/store';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
@@ -22,7 +22,7 @@ import { WhiteSpace } from './WhiteSpace';
 import { PresenceLights } from '../presence/PresenceLights';
 import { SocialLayer } from '../social/scene/SocialLayer';
 import { OriginRig } from '../social/xr/OriginRig';
-import { applyPerspectiveToOrigin, perspectiveAnchored } from '../social/xr/perspectiveScale';
+import { applyPerspectiveToOrigin, faceFrom, perspectiveAnchored, reanchor } from '../social/xr/perspectiveScale';
 import { pointBus } from '../presence/presence';
 import type { ThreeEvent } from '@react-three/fiber';
 
@@ -94,19 +94,59 @@ function MemoryLights() {
   );
 }
 
+const _hq = new THREE.Quaternion();
+const _he = new THREE.Euler(0, 0, 0, 'YXZ');
+const _hp = new THREE.Vector3();
+const EMULATED = new URLSearchParams(location.search).get('emulate') === '1';
+/** Where the head is inside the origin (tracked metres) and which way it faces there, from this XR frame. */
+function headInOrigin(gl: THREE.WebGLRenderer): { x: number; y: number; z: number; yaw: number } | null {
+  const ref = gl.xr.getReferenceSpace();
+  const pose = ref ? gl.xr.getFrame()?.getViewerPose(ref) : null;
+  if (!pose) return null;
+  const { position: p, orientation: o } = pose.transform;
+  return { x: p.x, y: p.y, z: p.z, yaw: _he.setFromQuaternion(_hq.set(o.x, o.y, o.z, o.w), 'YXZ').y };
+}
+
 /** The headset wearer's feet. In the palace they begin across the lagoon, and are carried under the dome while the
  *  world is white (never a glide in the headset). Everywhere else they stay at the origin. Seeing through a
  *  grandchild's eyes, the world grows around those feet (social/xr: the origin is scaled, the head stays put). */
 function PlayerOrigin() {
   const origin = useRef<THREE.Group>(null);
+  const gl = useThree((s) => s.gl);
+  const camera = useThree((s) => s.camera);
+  const space = useXR((s) => s.originReferenceSpace);
+  // The headset's own "forward" is wherever it was last recentred, not where the person looks as they step in. So the
+  // world turns to face them: the palace and the companion ahead when the visit begins (and again back from a memory),
+  // a prepared place's best side as each memory forms (the world is white then, so nothing is seen to move), and once
+  // more after the headset is recentred.
+  const faced = useRef<'gate' | 'memory' | null>(null);
+  const recentred = useRef(false);
+  useEffect(() => {
+    if (!space) { faced.current = null; return; }
+    const onReset = () => { recentred.current = true; };
+    space.addEventListener('reset', onReset);
+    return () => space.removeEventListener('reset', onReset);
+  }, [space]);
   useFrame(() => {
     const s = useGate.getState();
     const atShore = s.world === 'palace' && (s.stage === 'portal' || s.stage === 'greeting' || s.stage === 'gathering' || (s.stage === 'entering' && s.enterProgress < XR_MOVE_AT));
-    applyPerspectiveToOrigin(origin.current, 0, atShore ? SHORE.z : 0);
-    // In a prepared place the wearer faces its best side (turned while the world is white, never in view), unless
-    // they stand in someone's perspective, which places and turns them itself.
     const inMemory = s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving';
-    if (origin.current && inMemory && !perspectiveAnchored()) origin.current.rotation.y = viewOf(useMemory.getState().place);
+    const want = inMemory ? 'memory' : 'gate';
+    if (gl.xr.isPresenting && (faced.current !== want || recentred.current)) {
+      const head = headInOrigin(gl);
+      if (head && head.y > 0.3) {
+        // Someone's perspective places and turns the wearer itself; after a recentre it is stood in again.
+        if (inMemory && perspectiveAnchored()) { if (recentred.current) reanchor(head); }
+        else faceFrom(head, inMemory ? viewOf(useMemory.getState().place) : 0);
+        faced.current = want;
+        recentred.current = false;
+      }
+    } else if (!gl.xr.isPresenting) faced.current = null;
+    applyPerspectiveToOrigin(origin.current, 0, atShore ? SHORE.z : 0);
+    if (EMULATED && gl.xr.isPresenting) { // diagnostics for scripts/xr-check.mjs: where the wearer stands and looks
+      camera.getWorldPosition(_hp);
+      (window as unknown as { __xrHead?: number[] }).__xrHead = [_hp.x, _hp.y, _hp.z, _he.setFromQuaternion(camera.getWorldQuaternion(_hq), 'YXZ').y];
+    }
   });
   return <XROrigin ref={origin}><OriginRig /></XROrigin>;
 }

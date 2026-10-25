@@ -2,7 +2,7 @@
 // companion says or does; the person only ever talks, shares a photo or video, or says they'd like to stop.
 //   portal → greeting → gathering (talk / photo / video / someone helps) → entering → forming → memory → leaving → album
 import { api } from '../../../../convex/_generated/api';
-import { asksToEnter, asksToLeave, guideOffline, safeReply, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
+import { asksToEnter, asksToGoIn, asksToLeave, guideOffline, safeReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
 import { useGate, type MediaItem } from '../state/store';
@@ -34,6 +34,8 @@ class Flow {
   private nudgeTimer: ReturnType<typeof setTimeout> | null = null;
   private nudges = 0;
   private thinking = false;
+  /** Counts questions to the companion's brain while gathering, so only the newest answer is said. */
+  private askSeq = 0;
   private raf = 0;
   private begun = false;
   private speakingLine: Promise<void> = Promise.resolve();
@@ -139,9 +141,18 @@ class Flow {
     turn('person', text);
     this.clearNudge();
     music.duck(false);
+    const beforeMemory = g.stage === 'gathering' || g.stage === 'greeting';
+    // "Yes" to "Shall we go and see it?", or "let's go" once there's somewhere to go: step through at once, without
+    // waiting on a model (and before the gate, "let's go" is never taken for goodbye).
+    if (beforeMemory && ((this.invitedToEnter && saysYes(text)) || (asksToGoIn(text) && this.somewhereToGo()))) {
+      this.askSeq++; // a reply still on its way is not said over the walk
+      this.thinking = false;
+      await this.say('Come with me.');
+      return void this.enter();
+    }
     // "I'd like to leave", "take me back", "I'm done": acted on at once, without waiting on a model, so leaving always
     // works (even offline, even on a slow connection).
-    if (asksToLeave(text) && ['memory', 'forming', 'gathering', 'greeting'].includes(g.stage)) {
+    if (asksToLeave(text) && !(beforeMemory && asksToGoIn(text)) && ['memory', 'forming', 'gathering', 'greeting'].includes(g.stage)) {
       if (g.stage === 'memory' || g.stage === 'forming') return void this.leave();
       await this.say('Of course. Thank you for spending this time with me.');
       return void this.finish();
@@ -151,11 +162,14 @@ class Flow {
     this.turnsInPhase++;
     this.placeWords(text);
     this.thinking = true;
+    const mine = ++this.askSeq;
     const reply = await this.ask({ phase: 'gathering', transcript: text });
-    this.thinking = false;
+    if (mine === this.askSeq) this.thinking = false;
     // Only words that describe the place feed the drawing ("yes, let's go" doesn't).
     if (reply.intent === 'describe' || (reply.intent === 'chat' && text.split(/\s+/).length >= 5)) memory.addWords(text, h.audioFileId);
     if (reply.place) { this.place = reply.place; useGate.getState().set({ memoryTitle: reply.place }); memory.setTitle(reply.place); }
+    // They spoke again while this was on its way, or are already stepping through: it's no longer the line to say.
+    if (mine !== this.askSeq || !['gathering', 'greeting'].includes(useGate.getState().stage)) return;
     switch (reply.intent) {
       case 'enter':
         await this.say(reply.reply);
@@ -203,6 +217,11 @@ class Flow {
   }
 
   // ------------------------------------------------------------ prepared places from the library
+  /** There is a place to step into: a prepared place, a named one, a shared photo, or something already described. */
+  private somewhereToGo(): boolean {
+    return !!(useMemory.getState().place || this.place || useGate.getState().media || this.turnsInPhase >= 1);
+  }
+
   /** Words that describe a prepared place (the courtyard, the meadow) make the visit step into it; things named
    *  come in from the library. Recognised from everything said so far, so details can arrive across turns. */
   private placeWords(text: string) {

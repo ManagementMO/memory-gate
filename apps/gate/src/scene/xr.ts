@@ -2,10 +2,14 @@
 // ?emulate=1 turns on IWER's emulated Quest 3 for desktop testing; it is never on by default.
 import { createXRStore } from '@react-three/xr';
 
-const emulate = new URLSearchParams(location.search).get('emulate') === '1';
+const params = new URLSearchParams(location.search);
+const emulate = params.get('emulate') === '1';
+// ?emulateYaw=1.2 (radians): the emulated headset starts turned and off-centre, as a real one may be when someone steps
+// in (its forward is wherever it was last recentred), to check that the world turns to face them.
+const startYaw = Number(params.get('emulateYaw') ?? 0) || 0;
 
 export const xrStore = createXRStore({
-  emulate: emulate ? { type: 'metaQuest3', ipd: .064, stereoEnabled: true, syntheticEnvironment: false } : false,
+  emulate: emulate ? { type: 'metaQuest3', ipd: .064, stereoEnabled: true, syntheticEnvironment: false, ...(startYaw ? { headset: { position: [0.45, 1.6, 0.35], rotation: [0, startYaw, 0] } } : {}) } : false,
   // Controllers point and select; hands pinch. No teleport: a memory is a place to stand in, not to run through.
   controller: { teleportPointer: false },
   hand: { teleportPointer: false },

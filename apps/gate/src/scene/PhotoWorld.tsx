@@ -26,7 +26,11 @@ export function PhotoWorld() {
   // Real generations from this photo always; the bundled sample splat only when the sample photo was shared.
   const isSample = !!media && /sample-photo-1938/.test(media.name);
   const usable = !!splat && splat.status === 'ready' && !!splat.url && (splat.source === 'sharp' || splat.source === 'worldlabs' || (splat.source === 'prebaked' && isSample));
-  const url = usable ? fileUrl(splat!.liteUrl && /OculusBrowser|Quest/i.test(navigator.userAgent) ? splat!.liteUrl : splat!.url) : null;
+  // The headset sees the same world as the browser. The 100k export of a World Labs world lost too much in stereo (the
+  // Red Kite page found the same), so the lighter file is for photo splats on a headset, or when asked for (?lite=1).
+  const liteAsked = new URLSearchParams(location.search).get('lite');
+  const lite = !!splat?.liteUrl && (liteAsked === '1' || (liteAsked !== '0' && splat.source !== 'worldlabs' && /OculusBrowser|Quest/i.test(navigator.userAgent)));
+  const url = usable ? fileUrl(lite ? splat!.liteUrl : splat!.url) : null;
 
   // The cached meadow has forward centers beyond 267m. Keep its horizon within the projection volume,
   // restoring the prior range when this source leaves so the portal/photo presentation stays independent.

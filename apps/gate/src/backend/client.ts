@@ -45,11 +45,12 @@ const CONSENT_SCOPES = ['voice_processing', 'voice_recording', 'photo_processing
 const withTimeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>
   Promise.race([p, new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
 
-/** A busy local backend can drop a write (its per-function time limit); setup steps retry a few times, gently. */
-async function retry<T>(fn: () => Promise<T>, tries = 3): Promise<T> {
+/** A busy local backend can drop a write (its per-function time limit); setup steps retry, gently, for several seconds
+ *  (a busy spell on the demo computer lasts that long, and losing consent here would leave the visit without a voice). */
+async function retry<T>(fn: () => Promise<T>, tries = 5): Promise<T> {
   let last: unknown;
   for (let i = 0; i < tries; i++) {
-    try { return await withTimeout(fn(), 6000); } catch (e) { last = e; await new Promise((r) => setTimeout(r, 400 * (i + 1))); }
+    try { return await withTimeout(fn(), 6000); } catch (e) { last = e; if (i < tries - 1) await new Promise((r) => setTimeout(r, 600 * (i + 1))); }
   }
   throw last;
 }
