@@ -1,7 +1,7 @@
 # The companion speaks your language: design
 
-Date: 2026-10-24 · Branch: `cartesia` (from `origin/main` at `8b1948c`) · Status: approved by the team for build
-(language selection, automatic replies, Ariana voice)
+Date: 2026-10-24 · Branch: `cartesia` (from `origin/main` at `8b1948c`) · Status: built; verification and merge
+handed off. See [docs/COMPANION_LANGUAGES.md](../../COMPANION_LANGUAGES.md) for what is verified and what is open.
 
 ## Why
 
