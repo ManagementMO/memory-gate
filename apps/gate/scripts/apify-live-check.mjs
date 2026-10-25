@@ -24,7 +24,7 @@ try {
   }
   if (!previous || retry) {
     await page.getByTestId('place-query').fill('Golden Gate Park, San Francisco');
-    await page.getByLabel('Send only this public place query to Apify. I will review the result.').check();
+    await page.getByLabel('Send only this public place query to an outside search service. I will review the result.').check();
     await expect(page.getByTestId('find-place')).toBeEnabled();
     writeFileSync(attempt, JSON.stringify({ query: 'Golden Gate Park, San Francisco', attemptedAt: new Date().toISOString(), note: 'Do not submit a second run after an ambiguous start.' }, null, 2));
     await page.getByTestId('find-place').click();

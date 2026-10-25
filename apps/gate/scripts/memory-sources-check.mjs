@@ -30,7 +30,7 @@ try {
     await expect(page.getByTestId('import-posts')).toBeDisabled();
     await page.getByTestId('sample-source').click();
     await expect(page.getByTestId('draft-source')).toHaveCount(1);
-    await expect(page.getByTestId('draft-source')).toContainText('Fictional example · no Apify run');
+    await expect(page.getByTestId('draft-source')).toContainText('Fictional example');
     const img = page.getByTestId('draft-source').locator('img'); await expect(img).toBeVisible();
     assert(await img.evaluate(i => i.complete && i.naturalWidth > 0));
     // Use the ordinary viewer link and independently joined browser, never a copied author token.

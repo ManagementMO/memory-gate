@@ -21,7 +21,7 @@ export function MemoryAddOnsWelcome({ onExplore, disabled, opening }: {
         disabled={disabled} aria-describedby="home-discovery-note" data-testid="explore-meadow">
         <span aria-hidden="true">◇</span>{opening ? 'Opening the meadow…' : 'Explore the meadow'}
       </button>
-      <p id="home-discovery-note">Kite, flowers &amp; tree · <span>via Apify</span>
+      <p id="home-discovery-note">Kite, flowers &amp; tree
         <small>Fictional sample · select a marker for a short public reference.</small>
       </p>
     </div>

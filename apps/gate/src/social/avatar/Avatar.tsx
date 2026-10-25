@@ -213,6 +213,9 @@ class Fallback extends Component<{ fallback: ReactNode; children: ReactNode }, {
   render() { return this.state.failed ? this.props.fallback : this.props.children; }
 }
 
+/** Names over the figures are off for the demo (the people are their likenesses, not labels); ?names=1 shows them. */
+const NAMES = new URLSearchParams(location.search).get('names') === '1';
+
 function Nameplate({ body, name, perspective, color }: { body: React.RefObject<Body>; name: string; perspective: string; color: string }) {
   const g = useRef<THREE.Group>(null);
   useFrame(() => { const b = body.current; if (!g.current) return; g.current.visible = b.ready; if (b.ready) g.current.position.set(b.head.x, b.head.y + 0.24, b.head.z); });
@@ -237,7 +240,7 @@ function Figure({ body, url, person, color, name, sub, tag }: { body: React.RefO
           <Suspense fallback={placeholder}><Rigged url={model} label={url ? 'likeness' : person!.label} body={body} trueSize={!url} tag={tag} /></Suspense>
         </Fallback>
       ) : placeholder}
-      <Nameplate body={body} name={name} perspective={sub} color={color} />
+      {NAMES && <Nameplate body={body} name={name} perspective={sub} color={color} />}
     </group>
   );
 }
