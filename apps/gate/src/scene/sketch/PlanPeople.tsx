@@ -80,6 +80,8 @@ function Person({ p, at, delay, onStep }: { p: PlanPerson; at: [number, number];
   const click = onStep && p.memory ? (e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onStep(p.memory!); } : undefined;
   return (
     <group position={[MEMORY_CENTER.x + at[0], 0, MEMORY_CENTER.z + at[1]]} rotation-y={(p.facing * Math.PI) / 180} onClick={click}
+      // Someone with no memory to step into lets a ray through (a pinch held on the ground behind them still walks).
+      ref={(g) => { if (g) (g as unknown as { pointerEvents?: string }).pointerEvents = click ? undefined : 'none'; }}
       onPointerOver={click ? () => { document.body.style.cursor = 'pointer'; } : undefined} onPointerOut={click ? () => { document.body.style.cursor = ''; } : undefined}>
       <primitive object={body.obj} />
       {/* an easy target for a pinch or a click: an animated body is hard to hit with a ray */}

@@ -124,8 +124,10 @@ export function Showcase({ name, camera: view = 0 }: { name: string; camera?: nu
   const [dx, dz] = eye ? [eye.target[0] - eye.pos[0], eye.target[2] - eye.pos[2]] : [0, -1];
   const turn = useMemo(() => Math.PI - Math.atan2(dx, dz), [dx, dz]);
   if (!built || !eye) return null;
+  // Rays pass through it (its grass and things sit under the memory's pinch handler): a held pinch reaches the ground
+  // to walk, and the headset's buttons are never behind a blade of grass.
   return (
-    <group rotation-y={turn} name="showcase">
+    <group rotation-y={turn} name="showcase" ref={(g) => { if (g) (g as unknown as { pointerEvents?: string }).pointerEvents = 'none'; }}>
       <group position={[-eye.pos[0], -(eye.pos[1] - 1.6), -eye.pos[2]]}>
         <primitive object={built.group} />
       </group>

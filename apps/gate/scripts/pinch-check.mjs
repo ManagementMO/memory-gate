@@ -79,8 +79,9 @@ try {
   await page.waitForFunction(() => window.__gate.store.getState().stage === 'memory', null, { timeout: 120000 });
   note(`   "yes" to inside the memory: ${((Date.now() - yesAt) / 1000).toFixed(1)} s`);
   await page.waitForFunction(() => window.__walk?.active === true, null, { timeout: 30000 }).catch(() => undefined);
-  const place = await page.evaluate(() => window.__gate.memoryStore.getState().place);
-  check(await page.evaluate(() => window.__walk?.active === true), `walking is on in the memory (${place ?? 'a sketch'})`);
+  const where = await page.evaluate(() => { const m = window.__gate.memoryStore.getState(); return { place: m.place, showcase: m.showcase ?? null, photoWorld: !!window.__gate.store.getState().photoWorld, standIns: window.__socialDrawn?.standIns ?? [] }; });
+  note(`   in the memory: ${JSON.stringify(where)}`);
+  check(await page.evaluate(() => window.__walk?.active === true), `walking is on in the memory (${where.place ?? where.showcase ?? 'a sketch'})`);
   await page.waitForTimeout(2500);
   await page.screenshot({ path: `${out}/1-memory.png` });
 
