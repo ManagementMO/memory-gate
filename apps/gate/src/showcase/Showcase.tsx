@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { buildShowcase, type BuiltShowcase } from './build';
+import { useMemory } from '../flow/memory';
 
 const specs = import.meta.glob('./scenes/*.json', { eager: true, import: 'default' }) as Record<string, ShowcaseSpec>;
 const scripts = import.meta.glob('./scenes/*.js') as Record<string, () => Promise<{ default?: (api: unknown) => Promise<void> }>>;
@@ -59,8 +60,9 @@ export function Showcase({ name, camera: view = 0 }: { name: string; camera?: nu
       if (!live) { dispose(b); return; }
       made = b;
       setBuilt(b);
+      useMemory.setState({ showcaseReady: true });
     })();
-    return () => { live = false; if (made) dispose(made); setBuilt(null); };
+    return () => { live = false; if (made) dispose(made); setBuilt(null); useMemory.setState({ showcaseReady: false }); };
   }, [name]);
   // Its sky, light and fog while it's here; the white space's own come back after.
   useEffect(() => {

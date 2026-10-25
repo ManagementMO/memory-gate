@@ -86,6 +86,7 @@ export function MemoryScene() {
   const photoWorld = useGate((s) => s.photoWorld);
   const placeKey = useMemory((s) => s.place);
   const shared = useMemory((s) => !!s.shared);
+  const showcaseReady = useMemory((s) => !!s.showcaseReady);
   // A garden, a football field, a classroom we already have finished: it forms whole, nothing to plan or draw.
   const showcase = useMemo(() => (plan?.showcase?.name ?? (!shared && !photoWorld && !placeKey ? showcaseFor(plan) : null)), [plan, shared, photoWorld, placeKey]);
   useEffect(() => { useMemory.setState({ showcase }); return () => { useMemory.setState({ showcase: null }); }; }, [showcase]);
@@ -134,7 +135,7 @@ export function MemoryScene() {
     const dt = Math.min(dtRaw, 0.05);
     stepAtmosphere(dt, active && !!plan);
     if (scene.fog instanceof THREE.Fog && !showcase) scene.fog.color.copy(atmoLive.horizon).lerp(new THREE.Color('#f2f2f6'), 1 - atmoLive.amount);
-    if (plan && showcase) { if (lastFormed.current !== 1) { lastFormed.current = 1; useMemory.setState({ formed: 1 }); } return; }
+    if (plan && showcase) { const ready = useMemory.getState().showcaseReady ? 1 : 0; if (lastFormed.current !== ready) { lastFormed.current = ready; useMemory.setState({ formed: ready }); } return; }
     if (!plan) { if (lastFormed.current !== 0) { lastFormed.current = 0; useMemory.setState({ formed: 0 }); } return; }
     const counted = (useGate.getState().photoWorld ? plan.objects.filter((o) => !coveredByPhoto.current.has(o.id)) : plan.objects).filter((o) => !held(plan, o.kind));
     let sum = 0;
@@ -166,7 +167,7 @@ export function MemoryScene() {
       {showcase && <Showcase name={showcase} camera={plan.showcase?.camera ?? 0} />}
       {!photoWorld && !place && !showcase && <Setting plan={plan} />}
       {!photoWorld && !showcase && plan.landmark && <Landmark landmark={plan.landmark} />}
-      {!!plan.people?.length && <PlanPeople plan={plan} />}
+      {!!plan.people?.length && (!showcase || showcaseReady) && <PlanPeople plan={plan} />}
       {ground}
       <Ambience kind={plan.ambience} />
       {!showcase && sorted.map((o, i) => {

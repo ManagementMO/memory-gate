@@ -28,6 +28,8 @@ type MemoryState = {
   shared?: boolean;
   /** A place we already have finished (a garden, a football field...): it forms whole instead of being planned. */
   showcase?: string | null;
+  /** The showcase has arrived and is drawn (until then the white space stays, never a black wait). */
+  showcaseReady?: boolean;
 };
 
 export const useMemory = create<MemoryState>(() => ({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null, place: null }));
