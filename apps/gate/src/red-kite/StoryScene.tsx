@@ -8,12 +8,13 @@ import type { Perspective } from '../../../../packages/shared/src/redKite';
 import { stepTransition, type MotionState, type Transition } from './motion';
 import { VIEWPOINTS, viewpointYaw } from './viewpoints';
 import { xrStore } from '../scene/xr';
-import { MEMORY_OBJECTS, type MemoryObject, type MemorySource } from './memory-lens';
+import { MEMORY_OBJECTS, type MemoryObject } from './memory-lens';
+import { sourceMediaUrl, type XRSource } from '../memory-objects/types';
 
 export type SceneControls = {
   title: string; quote: string; paused: boolean; locked: boolean; canAdvance: boolean; proposal: boolean;
   onNext: () => void; onSwitch: () => void; onRest: () => void; onUse: () => void; onLeave: () => void; onPlay: () => void; onBreeze: () => void; onCompare: () => void;
-  sourcesOpen: boolean; photo: MemorySource | null; sourceCount: number; sourceIndex: number;
+  sourcesOpen: boolean; photo: XRSource | null; sourceCount: number; sourceIndex: number; sourceActionLabel?: string;
   onSources: () => void; onSourcesClose: () => void; onSourceNext: () => void;
 };
 function Button3D({ label, x, y, onClick, disabled = false }: { label: string; x: number; y: number; onClick: () => void; disabled?: boolean }) {
@@ -49,18 +50,20 @@ function NativeControls({ controls: c }: { controls: SceneControls }) {
 }
 
 /** Draws inside the actual XR scene; DOM dialogs are disabled in immersive VR. */
-function NativeSources({ controls: c }: { controls: SceneControls }) {
+export type NativeSourceControls = Pick<SceneControls, 'photo' | 'sourceIndex' | 'sourceCount' | 'paused' | 'locked' | 'onSourcesClose' | 'onSourceNext' | 'onRest' | 'sourceActionLabel'>;
+export function NativeSources({ controls: c, anchor = [0, 1.16, -1.65] }: { controls: NativeSourceControls; anchor?: [number, number, number] }) {
   const p = c.photo;
   const object = p ? MEMORY_OBJECTS[p.objectKey as MemoryObject] : null;
-  return <group position={[0, 1.16, -1.65]} name="MemorySourcePanel" userData={{ sourceId: p?._id ?? null }}>
+  return <group position={anchor} name="MemorySourcePanel" userData={{ sourceId: p?._id ?? null }}>
     <mesh position-z={-.008}><planeGeometry args={[1.16, 1.32]} /><meshBasicMaterial color="#23392f" /></mesh>
-    <Text font={fontUrl} fontSize={.032} color="#ecd4a0" position={[0, .58, .003]} maxWidth={1.04}>{p ? `${object?.label ?? 'Memory'} · photo ${c.sourceIndex + 1} / ${c.sourceCount}` : 'Memory · photo sources'}</Text>
+    <Text font={fontUrl} fontSize={.032} color="#ecd4a0" position={[0, .58, .003]} maxWidth={1.04}>{p ? `${p.title ?? object?.label ?? 'Memory'} · source ${c.sourceIndex + 1} / ${c.sourceCount}` : 'Memory · photo sources'}</Text>
     {p?.imageUrl && <SourcePhoto key={p.imageUrl} url={p.imageUrl} />}
-    <Text font={fontUrl} fontSize={.026} color="#ecd4a0" maxWidth={1.04} textAlign="center" position={[0, .035, .004]}>{p ? (p.execution === 'fixture' ? 'Fictional example · no Apify run' : `Public post · @${p.owner}`) : 'A photo can be a conversation starter.'}</Text>
+    {p && !p.imageUrl && <Text font={fontUrl} fontSize={.044} maxWidth={.96} textAlign="center" position={[0, .30, .004]} color="#f5f0df">{p.owner}</Text>}
+    <Text font={fontUrl} fontSize={.026} color="#ecd4a0" maxWidth={1.04} textAlign="center" position={[0, .035, .004]}>{p ? (p.execution === 'fixture' ? 'Fictional example · no Apify run' : p.sourceKind === 'place' ? 'Google Maps · place reference' : p.execution === 'family-upload' ? `Family photo · ${p.owner}` : `Public post · @${p.owner}`) : 'A photo can be a conversation starter.'}</Text>
     <Text font={fontUrl} fontSize={.029} color="#f5f0df" maxWidth={1.03} textAlign="center" anchorY="top" position={[0, -.025, .004]}>{c.paused ? 'Take your time. The meadow can wait.' : p ? (p.note ? 'Family note: ' + p.note.slice(0, 200) : 'Post caption: ' + p.caption.slice(0, 200)) : 'Ask family to review a photo on the phone or laptop, then attach it to this kite and this perspective.'}</Text>
     <Text font={fontUrl} fontSize={.023} color="#d1d7c2" maxWidth={1.04} textAlign="center" position={[0, -.39, .004]}>{object?.invitation ?? 'What comes to mind? You can leave it open.'}</Text>
     <Button3D label="Back to the story" x={-.38} y={-.49} onClick={c.onSourcesClose} />
-    <Button3D label="Next photo · A" x={0} y={-.49} onClick={c.onSourceNext} disabled={c.locked || c.sourceCount < 2} />
+    <Button3D label={c.sourceActionLabel ?? 'Next photo · A'} x={0} y={-.49} onClick={c.onSourceNext} disabled={c.locked || (!c.sourceActionLabel && c.sourceCount < 2)} />
     <Button3D label={c.paused ? 'Continue · B' : 'Rest · B'} x={.38} y={-.49} onClick={c.onRest} />
     <Text font={fontUrl} fontSize={.021} color="#d1d7c2" position={[0, -.59, .004]}>A source supports a conversation; it does not prove a recollection.</Text>
   </group>;
@@ -82,7 +85,7 @@ function SourcePhoto({ url }: { url: string }) {
       } catch { if (live) setFailed(true); }
     };
     img.onerror = () => { if (live) setFailed(true); };
-    img.src = url;
+    img.src = sourceMediaUrl(url) ?? '';
     return () => { live = false; img.onload = null; img.onerror = null; img.src = ''; texture?.dispose(); };
   }, [url]);
   const width = photo ? Math.min(.86, .39 * photo.aspect) : .6, height = photo ? width / photo.aspect : .35;

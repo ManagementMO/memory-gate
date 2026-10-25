@@ -23,6 +23,7 @@ export function Portal() {
         </button>
         <button type="button" className="quiet-link" onClick={() => void flow.begin()} data-testid="begin">Start a new visit</button>
         <a className="quiet-link" href="/?story=red-kite" data-testid="open-red-kite">Explore The Red Kite · two tellings</a>
+        <a className="quiet-link" href="/?story=red-kite&objects=1" data-testid="open-object-workshop">Try a place-to-object example</a>
       </section>
     );
   }
@@ -35,6 +36,7 @@ export function Portal() {
       </button>
       <p className="fine">It listens while you talk and keeps your words, voice and photos with your memories. Rest or stop any time.</p>
       {!guestOf && <a className="quiet-link" href="/?story=red-kite" data-testid="open-red-kite">Explore The Red Kite · two tellings</a>}
+      {!guestOf && <a className="quiet-link" href="/?story=red-kite&objects=1" data-testid="open-object-workshop">Try a place-to-object example</a>}
     </section>
   );
 }

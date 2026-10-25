@@ -14,7 +14,7 @@ async function tripo(path: string, body?: unknown) {
   return result.data;
 }
 export const create = action({ args: { ...auth, sourceId: v.union(v.id('memorySources'), v.null()), placeId: v.union(v.id('memoryPlaces'), v.null()),
-  perspective: v.union(v.literal('elena'), v.literal('rosa')), choice: v.string(), label: v.string(), note: v.string(), vendorConsent: v.boolean(), commandId: v.string() },
+  perspective: v.string(), choice: v.string(), label: v.string(), note: v.string(), vendorConsent: v.boolean(), commandId: v.string(), memoryKey: v.optional(v.string()) },
   handler: async (ctx, a): Promise<Id<'memoryObjects'>> => {
     const prepared = await ctx.runMutation(internal.memoryObjects.prepare, a);
     if (!prepared.created || !prepared.needsGeneration) return prepared.id;

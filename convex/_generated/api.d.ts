@@ -30,6 +30,7 @@ import type * as memoryImport from "../memoryImport.js";
 import type * as memoryModels from "../memoryModels.js";
 import type * as memoryObjects from "../memoryObjects.js";
 import type * as memorySources from "../memorySources.js";
+import type * as memoryUpload from "../memoryUpload.js";
 import type * as moments from "../moments.js";
 import type * as objects from "../objects.js";
 import type * as presence from "../presence.js";
@@ -71,6 +72,7 @@ declare const fullApi: ApiFromModules<{
   memoryModels: typeof memoryModels;
   memoryObjects: typeof memoryObjects;
   memorySources: typeof memorySources;
+  memoryUpload: typeof memoryUpload;
   moments: typeof moments;
   objects: typeof objects;
   presence: typeof presence;

@@ -62,12 +62,12 @@ export const findPlace = action({ args: { ...auth, query: v.string(), mode: v.un
   }
 } });
 
-export const attach = action({ args: { ...auth, id: v.id('memorySources'), objectKey: v.union(v.literal('kite'), v.literal('flower'), v.literal('landmark')), perspective: v.union(v.literal('elena'), v.literal('rosa')), note: v.string() }, handler: async (ctx, a): Promise<void> => {
+export const attach = action({ args: { ...auth, id: v.id('memorySources'), objectKey: v.union(v.literal('kite'), v.literal('flower'), v.literal('landmark')), perspective: v.string(), note: v.string() }, handler: async (ctx, a): Promise<void> => {
   const source = await ctx.runQuery(internal.memorySources.source, { code: a.code, token: a.token, id: a.id });
   if (source.approved) return;
-  let fileId = null;
+  let fileId = source.fileId, createdFile = false;
   try {
-    if (source.execution !== 'fixture') {
+    if (source.execution !== 'fixture' && !source.fileId) {
       const url = mediaUrl(source.imageUrl);
       if (!url) throw new Error('This photo URL is unavailable. Import the public post again.');
       const response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(20_000) });
@@ -78,11 +78,12 @@ export const attach = action({ args: { ...auth, id: v.id('memorySources'), objec
       while (true) { const { done, value } = await reader.read(); if (done) break; size += value.byteLength; if (size > 5_000_000) { await reader.cancel(); throw new Error('Choose a photo smaller than 5 MB.'); } chunks.push(value); }
       const bytes = new Uint8Array(size); let offset = 0; for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
       fileId = await ctx.storage.store(new Blob([bytes], { type }));
+      createdFile = true;
     }
     const result = await ctx.runMutation(internal.memorySources.publish, { ...a, fileId });
-    if (fileId && !result.usedFile) await ctx.storage.delete(fileId);
+    if (fileId && createdFile && !result.usedFile) await ctx.storage.delete(fileId);
   } catch {
-    if (fileId) await ctx.storage.delete(fileId);
+    if (fileId && createdFile) await ctx.storage.delete(fileId);
     throw new ConvexError('The photo could not be attached. Check that sharing is enabled and the room is active. Expired photos may need a fresh import.');
   }
 } });

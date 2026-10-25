@@ -8,7 +8,7 @@ import { deleteMemoryObject } from './lib/memoryObjectFiles';
 
 const auth = { code: v.string(), token: v.string() };
 const objectKey = v.union(v.literal('kite'), v.literal('flower'), v.literal('landmark'));
-const perspective = v.union(v.literal('elena'), v.literal('rosa'));
+const perspective = v.string();
 const card = v.object({ sourceUrl: v.string(), imageUrl: v.string(), caption: v.string(), owner: v.string(), timestamp: v.union(v.string(), v.null()), suggestedObjects: v.array(v.string()), attribution: v.string() });
 
 export const list = query({ args: auth, handler: async (ctx, a) => {
@@ -16,7 +16,7 @@ export const list = query({ args: auth, handler: async (ctx, a) => {
   const canAuthor = member.role === 'family';
   const rows = await ctx.db.query('memorySources').withIndex('by_room', q => q.eq('roomId', room._id)).collect();
   const jobs = canAuthor ? await ctx.db.query('memoryImports').withIndex('by_room', q => q.eq('roomId', room._id)).collect() : [];
-  return { canAuthor, offline: !!room.offline,
+  return { canAuthor, demo: room.demo, offline: !!room.offline,
     configured: !!process.env.APIFY_TOKEN && process.env.ALLOW_APIFY_CLOUD === '1',
     jobs: jobs.slice(-10).map(j => ({ _id: j._id, status: j.status, runId: j.runId, mode: j.mode, error: j.error, kind: j.kind ?? 'social' })),
     sources: await Promise.all(rows.filter(r => r.approved || canAuthor).map(async r => ({ ...r, imageUrl: r.fileId ? await ctx.storage.getUrl(r.fileId) : r.imageUrl }))) };
@@ -109,12 +109,32 @@ export const source = internalQuery({ args: { ...auth, id: v.id('memorySources')
 export const publish = internalMutation({ args: { ...auth, id: v.id('memorySources'), fileId: v.union(v.id('_storage'), v.null()), objectKey, perspective, note: v.string() }, handler: async (ctx, a) => {
   // Recheck after the network download: a revoked member cannot publish a late image.
   const { room } = await requireMember(ctx, a.code, a.token, ['family']);
+  if (!/^[A-Za-z0-9:_-]{1,80}$/.test(a.perspective)) throw new ConvexError('Invalid perspective.');
   if (room.paused || !(await activeScopes(ctx, room._id)).has('share_with_family')) throw new ConvexError('Continue with sharing enabled before attaching.');
   const row = await ctx.db.get(a.id);
   if (!row || row.roomId !== room._id) throw new ConvexError('This source has been removed.');
   if (row.approved) return { usedFile: false };
   if (row.execution !== 'fixture' && !a.fileId) throw new ConvexError('The photo must be cached before attaching it.');
   await ctx.db.patch(a.id, { approved: true, fileId: a.fileId, imageUrl: row.execution === 'fixture' ? row.imageUrl : null, objectKey: a.objectKey, perspective: a.perspective, note: a.note.trim().slice(0, 400) });
+  return { usedFile: true };
+} });
+
+export const uploadGate = internalQuery({ args: auth, handler: async (ctx, a) => {
+  const { room } = await requireMember(ctx, a.code, a.token, ['family']);
+  if (room.paused) throw new ConvexError('Continue before adding a photo.');
+  if ((await ctx.db.query('memorySources').withIndex('by_room', q => q.eq('roomId', room._id)).collect()).length >= 32) throw new ConvexError('Remove an unused source before uploading more.');
+  return true;
+} });
+export const saveUpload = internalMutation({ args: { ...auth, fileId: v.id('_storage'), caption: v.string(), commandId: v.string() }, handler: async (ctx, a) => {
+  const { room, member } = await requireMember(ctx, a.code, a.token, ['family']);
+  if (room.paused) throw new ConvexError('Continue before adding a photo.');
+  const jobs = await ctx.db.query('memoryImports').withIndex('by_room', q => q.eq('roomId', room._id)).collect();
+  if (jobs.some(j => j.mode === 'upload' && j.commandId === a.commandId)) return { usedFile: false };
+  const sources = await ctx.db.query('memorySources').withIndex('by_room', q => q.eq('roomId', room._id)).collect();
+  if (sources.length >= 32 || jobs.length >= 40) throw new ConvexError('Remove unused sources or start another source workspace.');
+  const id = await ctx.db.insert('memoryImports', { roomId: room._id, memberId: member._id, mode: 'upload', urls: [], actorId: 'family-upload', status: 'ready', runId: null, error: null, commandId: a.commandId, createdAt: Date.now() });
+  await ctx.db.insert('memorySources', { roomId: room._id, importId: id, approved: false, sourceUrl: null, imageUrl: null, fileId: a.fileId,
+    caption: a.caption.trim().slice(0, 2200), owner: member.displayName, timestamp: null, suggestedObjects: [], objectKey: 'landmark', perspective: 'shared', note: '', execution: 'family-upload', runId: null, createdAt: Date.now() });
   return { usedFile: true };
 } });
 export const remove = mutation({ args: { ...auth, id: v.id('memorySources') }, handler: async (ctx, a) => {

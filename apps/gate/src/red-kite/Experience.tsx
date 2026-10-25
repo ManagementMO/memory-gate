@@ -11,6 +11,10 @@ import { openKiteSession, type KiteSession } from './session';
 import { StoryView, type SceneControls } from './StoryScene';
 import './story.css';
 import { SourceLibrary, useImportProgress } from './SourceLibrary';
+import type { Id } from '../../../../convex/_generated/dataModel';
+import { PlaceLibrary, useModelProgress } from '../memory-objects/PlaceLibrary';
+import { OptionalObjects } from '../memory-objects/OptionalObjects';
+import { modelSource, type ModelId } from '../memory-objects/types';
 
 class StoryBoundary extends Component<{ children: ReactNode }, { error: string }> {
   state = { error: '' };
@@ -30,6 +34,9 @@ function Experience() {
   const [compare, setCompare] = useState(false), [busy, setBusy] = useState(false), [speaking, setSpeaking] = useState(false), [switching, setSwitching] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
   const [sourcesOpen, setSourcesOpen] = useState(false), [sourceIndex, setSourceIndex] = useState(0), [sourceObject, setSourceObject] = useState<'kite' | 'all'>('all');
+  const [objectsOpen, setObjectsOpen] = useState(() => new URLSearchParams(location.search).get('objects') === '1');
+  const [previewId, setPreviewId] = useState<ModelId | null>(null), [selectedModelId, setSelectedModelId] = useState<ModelId | null>(null);
+  const [initialSourceId, setInitialSourceId] = useState<Id<'memorySources'> | null>(null);
   const [reducedMotion, setReducedMotion] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   const connected = useConvexConnectionState().isWebSocketConnected && online;
   const [lite, setLite] = useState(() => {
@@ -68,9 +75,13 @@ function Experience() {
   const auth = session ? { code: session.code, token: session.token } : null;
   const room = useQuery(api.rooms.get, auth ?? 'skip'), data = useQuery(api.redKite.current, auth ?? 'skip');
   const library = useQuery(api.memorySources.list, auth ?? 'skip');
+  const objectLibrary = useQuery(api.memoryObjects.list, auth ?? 'skip');
   useImportProgress(session, library);
+  useModelProgress(session, objectLibrary);
+  const selectedModel = objectLibrary?.objects.find(o => o._id === selectedModelId && (o.perspective === perspective || o.perspective === 'shared'));
   const photos = library?.sources.filter(s => s.approved && s.perspective === perspective && (sourceObject === 'all' || s.objectKey === sourceObject)) ?? [];
-  const photo = photos[sourceIndex % Math.max(1, photos.length)];
+  const photo = selectedModel && objectLibrary ? modelSource(selectedModel, objectLibrary, library) : photos[sourceIndex % Math.max(1, photos.length)];
+  const placeObject = useMutation(api.memoryObjects.place), hideObject = useMutation(api.memoryObjects.hide);
   const advance = useMutation(api.redKite.advance), choose = useMutation(api.redKite.choose), reset = useMutation(api.redKite.reset), setPaused = useMutation(api.rooms.setPaused);
   const telling = data?.tellings.find(t => t.key === perspective), line = telling?.lines[telling.beat];
   const paused = localPause || !!data?.paused, ready = worldReady && propsReady;
@@ -144,23 +155,32 @@ function Experience() {
     u.onend = u.onerror = () => { if (epoch === speechEpoch.current) setSpeaking(false); };
     setSpeaking(true); speechSynthesis.speak(u);
   }
+  function previewObject(id: ModelId, target: string) { setPreviewId(id); setSelectedModelId(id); setObjectsOpen(false); stopSpeech(); setSourcesOpen(true); if (['elena', 'rosa'].includes(target)) switchTo(target as Perspective); }
+  function closeSources() { setSourcesOpen(false); setSelectedModelId(null); setPreviewId(null); }
+  function publishObject() { if (auth && selectedModel && canWrite) void run(async () => { await placeObject({ ...auth, id: selectedModel._id }); setPreviewId(null); }); }
+  useEffect(() => {
+    const object = selectedModelId ? objectLibrary?.objects.find(o => o._id === selectedModelId) : null;
+    if (!switching && object && object.perspective !== perspective && object.perspective !== 'shared') closeSources();
+  }, [perspective, switching]);
   const onKeepsake = useCallback(() => setCompare(true), []);
   const both = data?.tellings.map(t => `${t.name}: ${t.look.visible ? (t.look.color ?? 'color open') + (t.look.ribbon ? ', cream ribbon' : '') : 'details open'}.`).join(' ') ?? '';
   const controls: SceneControls = { title: compare ? 'Both tellings · fictional sample' : `${telling?.name ?? 'The Red Kite'} · fictional sample`, quote: paused ? 'Take your time. The meadow can wait.' : compare ? `${both} Neither replaces the other.` : line?.quote ?? 'Opening the meadow…', paused,
     locked: quiet || busy || !ready, canAdvance: !!data?.canAuthor && !!telling && telling.beat < telling.lines.length - 1,
     proposal: !!line?.proposal && !!data?.canAuthor, onNext: next, onSwitch: () => switchTo(perspective === 'elena' ? 'rosa' : 'elena'), onRest: rest, onUse: () => pick('use'), onLeave: () => pick('leave'), onPlay: play, onBreeze: breeze, onCompare: () => setCompare(v => !v),
-    sourcesOpen, photo: photo ?? null, sourceCount: photos.length, sourceIndex: sourceIndex % Math.max(1, photos.length),
-    onSources: () => { stopSpeech(); setSourceObject('all'); setSourceIndex(0); setSourcesOpen(true); }, onSourcesClose: () => setSourcesOpen(false), onSourceNext: () => setSourceIndex(i => i + 1) };
+    sourcesOpen, photo: photo ?? null, sourceCount: selectedModel ? 1 : photos.length, sourceIndex: selectedModel ? 0 : sourceIndex % Math.max(1, photos.length),
+    sourceActionLabel: selectedModel?.status === 'ready' && data?.canAuthor ? 'Add object · A' : undefined,
+    onSources: () => { stopSpeech(); setSelectedModelId(null); setSourceObject('all'); setSourceIndex(0); setSourcesOpen(true); }, onSourcesClose: closeSources, onSourceNext: selectedModel?.status === 'ready' ? publishObject : () => setSourceIndex(i => i + 1) };
   const share = () => {
     if (!session) return;
     const url = new URL(location.href); url.search = ''; url.searchParams.set('story', 'red-kite'); url.searchParams.set('room', session.code);
     void navigator.clipboard?.writeText(url.toString()).then(() => setError('Viewer link copied. They can explore without changing the story.')).catch(() => setError('Copy the room code to open a viewer: ' + session.code));
   };
-  return <main className={`red-kite app${xr ? ' rk-in-xr' : ''}`} data-testid="red-kite-experience" data-perspective={perspective} data-paused={String(paused)} data-speaking={String(speaking)} data-world-ready={String(ready)}>
+  return <main className={`red-kite app${xr ? ' rk-in-xr' : ''}${selectedModel && sourcesOpen ? ' rk-object-selected' : ''}`} data-testid="red-kite-experience" data-perspective={perspective} data-paused={String(paused)} data-speaking={String(speaking)} data-world-ready={String(ready)}>
     {source?.url && <SceneCanvas effects={false}>
       <StoryView transition={transition} motion={motion} eye={source.floorY === null ? 1.5246 : -source.floorY * source.scale} paused={viewPaused} controls={controls} onPerspective={selected} onXR={onXR} />
       <Meadow source={source} lite={lite} onReady={onReady} onError={onError} />
-      <Suspense fallback={null}><MemoryProps look={look} proposed={proposal} paused={simulationPaused} reduced={reduced} motion={motion} onKeepsake={onKeepsake} onReady={onPropsReady} onKite={() => { stopSpeech(); setSourceObject('kite'); setSourceIndex(0); setSourcesOpen(true); }} /></Suspense>
+      <Suspense fallback={null}><MemoryProps look={look} proposed={proposal} paused={simulationPaused} reduced={reduced} motion={motion} onKeepsake={onKeepsake} onReady={onPropsReady} onKite={() => { stopSpeech(); setSelectedModelId(null); setSourceObject('kite'); setSourceIndex(0); setSourcesOpen(true); }} /></Suspense>
+      <OptionalObjects objects={objectLibrary?.objects ?? []} perspective={perspective} previewId={previewId} paused={quiet} onSelect={id => { stopSpeech(); setSelectedModelId(id); setSourcesOpen(true); }} />
     </SceneCanvas>}
     <div className="rk-vignette" aria-hidden="true" />
     <header className="rk-header">
@@ -175,8 +195,11 @@ function Experience() {
       </button>)}
     </nav>
     <p className="rk-place-note">{perspective === 'elena' ? 'The whole sky ahead.' : 'Her friend in the sunlight.'}<span>AI interpretation · each telling keeps its own details</span></p>
-    <button className="rk-photo-button" data-testid="photo-sources" onClick={() => { stopSpeech(); setSourcesOpen(true); }} disabled={!session}>Photo sources{photos.length ? ` · ${photos.length}` : ''} ↗</button>
-    {sourcesOpen && session && !xr && <SourceLibrary session={session} library={library} perspective={perspective} paused={paused || !connected} onClose={() => setSourcesOpen(false)} />}
+    <button className="rk-photo-button" data-testid="photo-sources" onClick={() => { stopSpeech(); setSelectedModelId(null); setSourcesOpen(true); }} disabled={!session}>Photo sources{photos.length ? ` · ${photos.length}` : ''} ↗</button>
+    <button className="rk-object-button" data-testid="places-objects" disabled={!session} onClick={() => { stopSpeech(); setObjectsOpen(true); }}>Places & objects ↗</button>
+    {sourcesOpen && session && !xr && !selectedModelId && <SourceLibrary session={session} library={library} perspective={perspective} paused={paused || !connected} onClose={closeSources} onMakeObject={id => { setInitialSourceId(id); setSourcesOpen(false); setObjectsOpen(true); }} />}
+    {objectsOpen && session && !xr && <PlaceLibrary auth={session} objects={objectLibrary} sources={library} perspectives={[{ key: 'elena', label: 'Elena' }, { key: 'rosa', label: 'Rosa' }]} perspective={perspective} paused={quiet || !ready} initialSourceId={initialSourceId} onClose={() => setObjectsOpen(false)} onPhotos={() => { setObjectsOpen(false); setSelectedModelId(null); setSourcesOpen(true); }} onPreview={previewObject} />}
+    {selectedModel && sourcesOpen && !xr && <aside className="rk-object-preview" data-testid="model-preview"><strong>{selectedModel.label}</strong><p>{selectedModel.status === 'placed' ? 'Reviewed illustration in this perspective.' : 'Private preview · only family can see it.'}</p><p>{photo?.note || photo?.caption}</p>{photo?.sourceUrl && <a href={photo.sourceUrl} target="_blank" rel="noreferrer">Original source ↗</a>}{data?.canAuthor && selectedModel.status === 'ready' && <button data-testid="approve-preview" disabled={!canWrite} onClick={publishObject}>Place this object</button>}{data?.canAuthor && selectedModel.status === 'placed' && <button disabled={!canWrite} onClick={() => { if (auth) void run(() => hideObject({ ...auth, id: selectedModel._id })); }}>Hide object</button>}<button onClick={closeSources}>Close preview</button></aside>}
     <div className="rk-visual-status" aria-live="polite" data-testid="visual-status">{look.visible ? `${telling?.name}’s illustration · ${look.color ?? 'color left open'}${look.ribbon ? ' · cream ribbon' : ''}` : proposal ? 'A possibility, waiting for a choice' : 'The place is here. The details can take their time.'}</div>
     <section className="rk-story" aria-label={`${telling?.name ?? 'Story'}’s source line`}>
       <div className="rk-source-heading"><p className="rk-eyebrow">{telling?.name ?? 'Opening the story'}<span>{telling ? `${telling.beat + 1} / ${telling.lines.length}` : '…'}</span></p><button className="rk-listen" data-testid="sample-play" onClick={play} disabled={!ready || quiet || !line} aria-label={speaking ? 'Stop sample voice' : 'Play synthetic sample voice'}>{speaking ? '■ Stop voice' : '▷ Sample voice'}</button></div>
