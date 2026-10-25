@@ -18,6 +18,7 @@ import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { useMemory } from './memory';
 import { guideContext, story, turn } from '../social/attribution';
 import { overlayActive } from '../social/overlay';
+import { visitFromUrl } from '../album/prepared';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -54,6 +55,9 @@ class Flow {
   async begin(): Promise<void> {
     // Back at the start page after a visit (the album's ×): Begin starts the next visit in the same session.
     if (this.begun) { if (useGate.getState().stage === 'portal') this.again(); return; }
+    // ?visit=red-kite: straight into that sample, with the things it holds (for checking a place quickly).
+    const shortcut = visitFromUrl();
+    if (shortcut) return this.visitPlace(shortcut.key, shortcut.plan);
     const { invite, session } = await this.setup(true);
     await sleep(500);
     if (invite) {

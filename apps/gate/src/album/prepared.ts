@@ -68,6 +68,12 @@ export function preparedVisit(m: AlbumMemory): { key: PlaceKey; plan: ScenePlan 
   if (m.id === COURTYARD) return { key: 'courtyard', plan: courtyardPlan };
   return null;
 }
+/** ?visit=red-kite or ?visit=courtyard: the sample a visit steps straight into when it begins (to check a place fast). */
+export function visitFromUrl(): { key: PlaceKey; plan: ScenePlan } | null {
+  const id = new URLSearchParams(location.search).get('visit');
+  const m = id ? PREPARED.find((p) => p.id === `prepared:${id}`) : undefined;
+  return m ? preparedVisit(m) : null;
+}
 /** True once, when this page was reached by coming back from a prepared memory opened in the album. */
 export function cameBackToAlbum(): boolean {
   try {
