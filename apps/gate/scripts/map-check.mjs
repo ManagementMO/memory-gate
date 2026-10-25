@@ -81,7 +81,87 @@ for (const [label, viewport] of [['desktop', { width: 1440, height: 900 }], ['ph
   await p.context().close();
 }
 
-// 2. The real start page: the map button replaces the album button, opens the map, and × comes back.
+// 2. Zoom mode: + and −, scroll, drag, the whole world again, Escape; tapping the map zooms toward the tap; a pin
+//    opens its place from there; and on a phone, a real two-finger pinch.
+const zoomOf = async (p) => Number(await p.getAttribute('[data-testid=map-zoom-stage]', 'data-zoom'));
+const viewBoxOf = (p) => p.getAttribute('[data-testid=map-zoom-stage] svg', 'viewBox');
+{
+  const p = await page({ width: 1440, height: 900 });
+  await p.goto(`${base}/?preview=album&map=1`, { waitUntil: 'load' });
+  await p.waitForSelector('[data-testid=map]', { timeout: 30000 });
+  await p.click('[data-testid=map-zoom]');
+  await p.waitForSelector('[data-testid=map-zoomed]');
+  await settle(p, 700);
+  check('zoom: opens on the whole world', (await zoomOf(p)) === 1);
+  check('zoom: the map has keyboard focus', await p.evaluate(() => document.activeElement?.dataset.testid === 'map-zoom-stage'));
+  await p.click('[data-testid=map-zoom-in]');
+  await settle(p, 700);
+  check('zoom: + doubles', Math.abs((await zoomOf(p)) - 2) < 0.01);
+  const box = await p.locator('[data-testid=map-zoom-stage]').boundingBox();
+  await p.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.4);
+  await p.mouse.wheel(0, -400);
+  await p.waitForTimeout(300);
+  check('zoom: scrolling zooms in further', (await zoomOf(p)) > 2.5);
+  const before = await viewBoxOf(p);
+  await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await p.mouse.down();
+  await p.mouse.move(box.x + box.width / 2 + 220, box.y + box.height / 2 + 90, { steps: 8 });
+  await p.mouse.up();
+  check('zoom: dragging moves the map', (await viewBoxOf(p)) !== before);
+  await p.keyboard.press('-');
+  await settle(p, 700);
+  await p.screenshot({ path: `${prefix}-desktop-zoomed.png` });
+  await p.click('[data-testid=map-zoom-world]');
+  await settle(p, 700);
+  check('zoom: the globe shows the whole world again', (await zoomOf(p)) === 1);
+  await p.keyboard.press('Escape');
+  await p.waitForSelector('[data-testid=map-zoomed]', { state: 'detached' });
+  check('zoom: Escape goes back, focus on Zoom', await p.evaluate(() => document.activeElement?.dataset.testid === 'map-zoom'));
+
+  // Tap the small map just beside San Francisco: zoom mode glides in toward it, and the pin opens the album.
+  const mapBox = await p.locator('[data-testid=map-box]').boundingBox();
+  const sf = await p.locator('[data-testid=map-pin-sf]').boundingBox();
+  await p.mouse.click(sf.x + sf.width / 2 + 30, Math.min(mapBox.y + mapBox.height - 4, sf.y + sf.height + 30));
+  await p.waitForSelector('[data-testid=map-zoomed]');
+  await settle(p, 900);
+  check('zoom: tapping the map zooms toward the tap', Math.abs((await zoomOf(p)) - 3) < 0.01);
+  const pin = await p.locator('[data-testid=zoom-pin-sf]').boundingBox();
+  const stage = await p.locator('[data-testid=map-zoom-stage]').boundingBox();
+  check('zoom: San Francisco is in view, near where it was tapped', !!pin && pin.x > stage.x && pin.x < stage.x + stage.width * 0.6);
+  check('zoom: names show beside the pins', await p.locator('[data-testid=zoom-pin-sf] .worldmap-pin-label').isVisible());
+  await p.screenshot({ path: `${prefix}-desktop-zoom-tap.png` });
+  await p.click('[data-testid=zoom-pin-sf]');
+  await p.waitForSelector('[data-testid=album]');
+  check('zoom: a pin opens its place', (await p.locator('[data-testid=map-zoomed]').count()) === 0);
+  await p.context().close();
+}
+{
+  const p = await (await browser.newContext({ viewport: { width: 375, height: 812 }, ignoreHTTPSErrors: true, hasTouch: true, isMobile: true })).newPage();
+  p.on('pageerror', (e) => errors.push(String(e)));
+  await p.goto(`${base}/?preview=album&map=1`, { waitUntil: 'load' });
+  await p.waitForSelector('[data-testid=map]', { timeout: 30000 });
+  await p.click('[data-testid=map-tab-world]');
+  await p.tap('[data-testid=map-zoom]');
+  await p.waitForSelector('[data-testid=map-zoomed]');
+  await p.waitForTimeout(700);
+  const s = await p.locator('[data-testid=map-zoom-stage]').boundingBox();
+  const cx = s.x + s.width * 0.3, cy = s.y + s.height / 2;
+  const cdp = await p.context().newCDPSession(p);
+  const touch = (type, spread) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x: cx - spread, y: cy, id: 1 }, { x: cx + spread, y: cy, id: 2 }] });
+  await touch('touchStart', 20);
+  for (let i = 1; i <= 12; i++) await touch('touchMove', 20 + i * 8);
+  await touch('touchEnd', 0);
+  await p.waitForTimeout(300);
+  const pinched = await zoomOf(p);
+  check(`phone zoom: a two-finger pinch zooms in (to ${pinched.toFixed(1)}×)`, pinched > 3);
+  check('phone zoom: no horizontal scroll', await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await p.screenshot({ path: `${prefix}-phone-zoomed.png` });
+  await p.tap('[data-testid=map-zoom-done]');
+  await p.waitForSelector('[data-testid=map-zoomed]', { state: 'detached' });
+  await p.context().close();
+}
+
+// 3. The real start page: the map button replaces the album button, opens the map, and × comes back.
 {
   const p = await page({ width: 1440, height: 900 });
   await p.goto(`${base}/?mode=offline`, { waitUntil: 'load' });

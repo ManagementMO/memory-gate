@@ -12,6 +12,11 @@ export const PLACES: Record<PlaceId, Place> = {
 export const HERE: PlaceId = 'sf';
 export const isOpen = (id: PlaceId) => id === HERE;
 
+/** A pin on the map: how many memories a place holds, and whether it opens from here. */
+export type Pin = { place: PlaceId; count: number; locked: boolean };
+/** Which side of its pin a place's name sits on, toward open ocean (San Francisco's would cover New York's). */
+export const LABEL_SIDE: Record<PlaceId, 'left' | 'right'> = { sf: 'left', ny: 'right' };
+
 export type Tab = 'mine' | 'world';
 type AtlasState = { tab: Tab; place: PlaceId | null; show: (place: PlaceId | null, tab?: Tab) => void };
 /** What the album stage shows: the map (place null), or one place's memories under a tab. */

@@ -50,3 +50,12 @@ export const GlobeIcon = ({ size }: P) => (
 export const BackIcon = ({ size }: P) => (
   <svg {...base(size)}><path d="M14.5 6l-6 6 6 6" /></svg>
 );
+export const ZoomIcon = ({ size }: P) => (
+  <svg {...base(size)}><circle cx="10.5" cy="10.5" r="6.2" /><path d="M15.2 15.2l4.8 4.8M10.5 8v5M8 10.5h5" /></svg>
+);
+export const PlusIcon = ({ size }: P) => (
+  <svg {...base(size)}><path d="M12 5.5v13M5.5 12h13" /></svg>
+);
+export const MinusIcon = ({ size }: P) => (
+  <svg {...base(size)}><path d="M5.5 12h13" /></svg>
+);

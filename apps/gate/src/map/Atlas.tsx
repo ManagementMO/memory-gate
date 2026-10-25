@@ -7,11 +7,11 @@ import { PREPARED } from '../album/prepared';
 import { useAlbum } from '../album/useAlbum';
 import { useGate } from '../state/store';
 import { CloseIcon } from '../ui/Icons';
-import { PLACES, useAtlas, useVisibility, visibilityKey, type Tab } from './state';
+import { PLACES, useAtlas, useVisibility, visibilityKey, type Pin, type Tab } from './state';
 import { LockedPlace } from './LockedPlace';
 import { NY_CLOUDED_COUNT, SF_SAMPLE_COUNT } from './world';
 import { WorldAlbum } from './WorldAlbum';
-import { WorldMap, type Pin } from './WorldMap';
+import { WorldMap } from './WorldMap';
 import './map.css';
 
 const TABS: { id: Tab; label: string }[] = [{ id: 'mine', label: 'My memories' }, { id: 'world', label: 'World memories' }];
@@ -60,7 +60,7 @@ function MapScreen({ tab, onTab, onOpen, onClose }: { tab: Tab; onTab: (t: Tab) 
               <h1 id="atlas-h">{tab === 'mine' ? 'Where your memories live' : 'Memories people share'}</h1>
               <p className="album-date">{tab === 'mine' ? 'Each pin is a place where you kept memories. Open one to see them.' : 'Open a place to see the albums people chose to share there.'}</p>
             </motion.header>
-            <WorldMap pins={pins} onOpen={onOpen} />
+            <WorldMap title={TABS.find((t) => t.id === tab)!.label} pins={pins} onOpen={onOpen} />
           </div>
         </div>
       </div>
