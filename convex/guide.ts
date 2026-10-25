@@ -1,6 +1,7 @@
-'use node';
 // The companion's turn: Claude proposes a short reply and an intent; the client applies the shared safety filter
 // and falls back to the offline rules whenever this returns null (no key, ai.live off, budget reached, refusal).
+// It runs in Convex's own runtime, not Node: a Node action took about five seconds a turn to start on the demo
+// computer, against under one for Claude itself.
 // The same answer says which language it heard and carries English readings (of the words, for the scene; of the
 // reply, for the safety filter), so a Spanish or French turn costs no extra call.
 import { v } from 'convex/values';
