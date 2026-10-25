@@ -5,7 +5,7 @@ import { createXRStore } from '@react-three/xr';
 const emulate = new URLSearchParams(location.search).get('emulate') === '1';
 
 export const xrStore = createXRStore({
-  emulate: emulate ? 'metaQuest3' : false,
+  emulate: emulate ? { type: 'metaQuest3', ipd: .064, stereoEnabled: true, syntheticEnvironment: false } : false,
   // Controllers point and select; hands pinch. No teleport: a memory is a place to stand in, not to run through.
   controller: { teleportPointer: false },
   hand: { teleportPointer: false },

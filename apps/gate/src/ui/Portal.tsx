@@ -22,6 +22,7 @@ export function Portal() {
           Join
         </button>
         <button type="button" className="quiet-link" onClick={() => void flow.begin()} data-testid="begin">Start a new visit</button>
+        <a className="quiet-link" href="/?story=red-kite" data-testid="open-red-kite">Explore The Red Kite · two tellings</a>
       </section>
     );
   }
@@ -33,6 +34,7 @@ export function Portal() {
         {guestOf ? 'Join' : 'Begin'}
       </button>
       <p className="fine">It listens while you talk and keeps your words, voice and photos with your memories. Rest or stop any time.</p>
+      {!guestOf && <a className="quiet-link" href="/?story=red-kite" data-testid="open-red-kite">Explore The Red Kite · two tellings</a>}
     </section>
   );
 }

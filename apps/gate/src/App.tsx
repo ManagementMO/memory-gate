@@ -5,10 +5,14 @@ import { GlassFilters } from './ui/GlassFilters';
 import { Overlay } from './ui/Overlay';
 import './flow/controller';
 import { useSessionSync } from './flow/sync';
+import { lazy, Suspense } from 'react';
+
+const RedKiteExperience = lazy(() => import('./red-kite/Experience'));
 
 function Sync() { useSessionSync(); return null; }
 
 export default function App() {
+  if (new URLSearchParams(location.search).get('story') === 'red-kite') return <ConvexProvider client={convex}><Suspense fallback={null}><RedKiteExperience /></Suspense></ConvexProvider>;
   return (
     <ConvexProvider client={convex}>
       <div className="app">

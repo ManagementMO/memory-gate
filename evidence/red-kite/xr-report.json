@@ -1,0 +1,182 @@
+{
+  "date": "2026-10-24T23:49:32.245Z",
+  "emulatedDevice": "Meta Quest 3 via IWER",
+  "stereo": true,
+  "ipdMeters": 0.064,
+  "splats": 500000,
+  "physicalQuestTested": false,
+  "checks": [
+    "Enter Quest VR starts a real emulated immersive session with advancing frames",
+    "X controller input switches only after the XR mask covers both eyes",
+    "A controller input advances Rosa and native ray selection accepts her color-open kite",
+    "tracked head turns reveal the meadow periphery without moving its landmarks or selected origin",
+    "native controller pointer captures, lifts and safely releases the same spool",
+    "B controller input rests the actual simulation and locks perspective changes",
+    "a read-only XR viewer cannot resume a host-paused scene with B; the host can continue",
+    "Y controller input leaves immersive mode"
+  ],
+  "samples": [
+    {
+      "selected": "elena",
+      "phase": "idle",
+      "fade": 0,
+      "camera": [
+        0,
+        1.600000023841858,
+        0.040000001899898024
+      ],
+      "origin": [
+        0,
+        0,
+        0.25
+      ],
+      "yaw": -0.08145204430587098,
+      "spoolScreen": [
+        -0.8298874810668581,
+        -0.8226621074795406,
+        0.7030304696381068
+      ],
+      "kite": [
+        0.2901533318236091,
+        2.4197372170841156,
+        -1.9907527955959692
+      ],
+      "propsResting": false,
+      "xr": true,
+      "frames": 93,
+      "held": false,
+      "spool": [
+        -0.55,
+        0.825,
+        -0.7
+      ],
+      "simulationTime": 1.3491999999880786,
+      "breeze": 0,
+      "grabs": 0,
+      "lifts": 0,
+      "moves": [],
+      "inputSources": []
+    },
+    {
+      "selected": "rosa",
+      "phase": "idle",
+      "fade": 0,
+      "camera": [
+        4.440892098500626e-16,
+        1.600000023841858,
+        0.040000001899897164
+      ],
+      "origin": [
+        -2,
+        0,
+        -4
+      ],
+      "yaw": -2.356194490192345,
+      "spoolScreen": [
+        0.4811124564775226,
+        -0.22803365389840669,
+        0.917885456382959
+      ],
+      "kite": [
+        0.21662784327145895,
+        2.28961097382904,
+        -1.971569648229599
+      ],
+      "propsResting": true,
+      "xr": true,
+      "frames": 353,
+      "held": false,
+      "spool": [
+        -0.55,
+        0.825,
+        -0.7
+      ],
+      "simulationTime": 4.7659999999701945,
+      "breeze": 0,
+      "grabs": 0,
+      "lifts": 0,
+      "moves": [
+        {
+          "from": "elena",
+          "to": "rosa",
+          "opacity": 1,
+          "frame": 319
+        }
+      ],
+      "inputSources": [
+        {
+          "type": "controller",
+          "hand": "left"
+        },
+        {
+          "type": "controller",
+          "hand": "right"
+        }
+      ]
+    },
+    {
+      "selected": "elena",
+      "phase": "idle",
+      "fade": 0,
+      "camera": [
+        0,
+        1.600000023841858,
+        0.040000001899898024
+      ],
+      "origin": [
+        0,
+        0,
+        0.25
+      ],
+      "yaw": -0.08145204430587098,
+      "spoolScreen": [
+        -0.8298874811653755,
+        -0.8214850647135039,
+        0.7030304696381066
+      ],
+      "kite": [
+        0.16346881851462375,
+        2.2908804578886763,
+        -2.1467484468382443
+      ],
+      "propsResting": false,
+      "xr": true,
+      "frames": 696,
+      "held": false,
+      "spool": [
+        -0.5500000000740048,
+        0.8261088491416433,
+        -0.7000000000060412
+      ],
+      "simulationTime": 9.48229999995231,
+      "breeze": 0,
+      "grabs": 1,
+      "lifts": 0,
+      "moves": [
+        {
+          "from": "elena",
+          "to": "rosa",
+          "opacity": 1,
+          "frame": 319
+        },
+        {
+          "from": "rosa",
+          "to": "elena",
+          "opacity": 1,
+          "frame": 592
+        }
+      ],
+      "inputSources": [
+        {
+          "type": "controller",
+          "hand": "left"
+        },
+        {
+          "type": "controller",
+          "hand": "right"
+        }
+      ]
+    }
+  ],
+  "pageErrors": []
+}
