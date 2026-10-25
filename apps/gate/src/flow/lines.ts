@@ -1,7 +1,8 @@
 // Everything the companion says on its own (the greeting, the nudges, "Here we are"), in English, Spanish and French.
 // The conversation picks the line for its current language (flow/controller.ts); Claude's replies arrive already in
-// that language. Spanish and French speak to the storyteller as usted / vous. The English lines are word for word
-// what the companion always said; {name} marks a value filled in when the line is spoken.
+// that language. Spanish and French speak to the storyteller as usted / vous. The Spanish is neutral Latin American (the
+// families this is for are in California): "escuché", not "he oído"; "video", not "vídeo". The English lines are word
+// for word what the companion always said; {name} marks a value filled in when the line is spoken.
 import type { Lang } from '../../../../packages/shared/src/language';
 import type { PlaceKey } from '../../../../packages/shared/src/places';
 
@@ -17,36 +18,36 @@ export const LINES = {
     es: '¿Hay algún momento que le gustaría visitar hoy? Puede contármelo o mostrarme una foto.',
     fr: 'Y a-t-il un moment que vous aimeriez revisiter aujourd’hui ? Vous pouvez me le raconter, ou me montrer une photo.',
   },
-  missed: { en: 'I’m sorry, I missed that. Could you say it again?', es: 'Perdone, no lo he oído bien. ¿Podría repetirlo?', fr: 'Pardon, je n’ai pas bien entendu. Pourriez-vous répéter ?' },
+  missed: { en: 'I’m sorry, I missed that. Could you say it again?', es: 'Perdone, no lo escuché bien. ¿Podría repetirlo?', fr: 'Pardon, je n’ai pas bien entendu. Pourriez-vous répéter ?' },
   goodbyeGate: { en: 'Of course. Thank you for spending this time with me.', es: 'Por supuesto. Gracias por pasar este rato conmigo.', fr: 'Bien sûr. Merci d’avoir passé ce moment avec moi.' },
   tooLarge: {
     en: 'That one is a little too large for me. A smaller copy would be perfect.',
-    es: 'Esa es un poco grande para mí. Una copia más pequeña sería perfecta.',
+    es: 'Es un poco grande para mí. Una copia más pequeña sería perfecta.',
     fr: 'Celle-ci est un peu trop grande pour moi. Une copie plus petite serait parfaite.',
   },
-  cantOpen: { en: 'I couldn’t open that one. Could you try another?', es: 'No he podido abrir esa. ¿Podría probar con otra?', fr: 'Je n’ai pas pu ouvrir celle-ci. Pourriez-vous en essayer une autre ?' },
+  cantOpen: { en: 'I couldn’t open that one. Could you try another?', es: 'No pude abrir ese archivo. ¿Podría probar con otro?', fr: 'Je n’ai pas pu ouvrir celle-ci. Pourriez-vous en essayer une autre ?' },
   loveVideo: { en: 'Oh, I love this.', es: 'Ay, me encanta.', fr: 'Oh, j’adore.' },
   lookPhoto: { en: 'Oh, look at this.', es: 'Ay, mire esto.', fr: 'Oh, regardez ça.' },
-  seeCaption: { en: 'I can see {caption}. Where is this place?', es: 'Veo {caption}. ¿Dónde es este lugar?', fr: 'Je vois {caption}. Où est cet endroit ?' },
-  wherePlace: { en: 'Where is this place?', es: '¿Dónde es este lugar?', fr: 'Où est cet endroit ?' },
+  seeCaption: { en: 'I can see {caption}. Where is this place?', es: 'Veo {caption}. ¿Dónde queda este lugar?', fr: 'Je vois {caption}. Où se trouve cet endroit ?' },
+  wherePlace: { en: 'Where is this place?', es: '¿Dónde queda este lugar?', fr: 'Où se trouve cet endroit ?' },
   comingBack: { en: 'It’s coming back to me, little by little.', es: 'Poco a poco, va apareciendo.', fr: 'Ça revient, petit à petit.' },
   hereWeAre: { en: 'Here we are.', es: 'Aquí estamos.', fr: 'Nous y voilà.' },
   tellMeMore: {
     en: 'Tell me what else was here, or anything you notice. Say when you’d like to leave.',
-    es: 'Cuénteme qué más había aquí, o lo que vea. Dígame cuando quiera irse.',
+    es: 'Cuénteme qué más había aquí, o lo que vaya notando. Avíseme cuando quiera irse.',
     fr: 'Racontez-moi ce qu’il y avait d’autre ici, ou ce que vous remarquez. Dites-moi quand vous voudrez partir.',
   },
   restDefault: { en: 'Of course. Let’s rest here for a moment.', es: 'Por supuesto. Descansemos aquí un momento.', fr: 'Bien sûr. Reposons-nous ici un instant.' },
   resume: { en: 'I’m here whenever you’re ready.', es: 'Aquí estoy, cuando usted quiera.', fr: 'Je suis là, quand vous voulez.' },
   thanksLeaving: {
     en: 'Thank you for taking me there. I’ve kept this moment for you.',
-    es: 'Gracias por llevarme allí. He guardado este momento para usted.',
+    es: 'Gracias por llevarme allí. Guardé este momento para usted.',
     fr: 'Merci pour ce voyage. J’ai gardé ce moment pour vous.',
   },
-  familyVisiting: { en: '{name} is visiting {place}. Let’s go with them.', es: '{name} está visitando {place}. Vamos con ellos.', fr: '{name} visite {place}. Allons-y avec eux.' },
+  familyVisiting: { en: '{name} is visiting {place}. Let’s go with them.', es: '{name} está visitando {place}. Vamos también.', fr: '{name} visite {place}. Allons-y aussi.' },
   yourFamily: { en: 'Your family', es: 'Su familia', fr: 'Votre famille' },
   someone: { en: 'Someone', es: 'Alguien', fr: 'Quelqu’un' },
-  sentPhoto: { en: '{name} sent a photo. Oh, look at this.', es: '{name} ha enviado una foto. Ay, mire esto.', fr: '{name} a envoyé une photo. Oh, regardez ça.' },
+  sentPhoto: { en: '{name} sent a photo. Oh, look at this.', es: '{name} envió una foto. Ay, mire esto.', fr: '{name} a envoyé une photo. Oh, regardez ça.' },
   hereAgain: { en: 'Here we are again.', es: 'Aquí estamos otra vez.', fr: 'Nous revoilà.' },
   whereNext: { en: 'Where would you like to go next?', es: '¿Adónde le gustaría ir ahora?', fr: 'Où aimeriez-vous aller maintenant ?' },
   nudgeMedia: {
@@ -59,7 +60,7 @@ export const LINES = {
     es: 'Tómese su tiempo. Si le resulta más fácil, una foto puede ayudarnos a encontrar el camino.',
     fr: 'Prenez votre temps. Si c’est plus facile, une photo peut nous aider à trouver le chemin.',
   },
-  shallWeSee: { en: 'Shall we go and see it?', es: '¿Vamos a verlo?', fr: 'On va le voir ?' },
+  shallWeSee: { en: 'Shall we go and see it?', es: '¿Vamos a verlo?', fr: 'Voulez-vous qu’on aille le voir ?' },
   noHurry: { en: 'There’s no hurry. I’m right here.', es: 'No hay prisa. Aquí estoy.', fr: 'Rien ne presse. Je suis là.' },
   ourVisit: { en: 'Our visit.', es: 'Nuestra visita.', fr: 'Notre visite.' },
 } satisfies Record<string, Record<Lang, string>>;
@@ -74,5 +75,5 @@ export function line(key: LineKey, lang: Lang, vars: Record<string, string> = {}
 /** The prepared places' first words in Spanish and French (their English ones live with the places themselves). */
 export const PLACE_INTROS: Partial<Record<PlaceKey, { es: string; fr: string }>> = {
   courtyard: { es: 'Aquí estamos. Las parras sobre la pérgola, y la piedra tibia.', fr: 'Nous y voilà. La vigne sur la pergola, et la pierre tiède.' },
-  'red-kite': { es: 'Aquí estamos. El caminito, y el viejo roble en la curva.', fr: 'Nous y voilà. Le petit chemin, et le vieux chêne dans le virage.' },
+  'red-kite': { es: 'Aquí estamos. El caminito, y el viejo roble en la curva.', fr: 'Nous y voilà. Le petit chemin, et le vieux chêne au tournant.' },
 };

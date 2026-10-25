@@ -73,7 +73,7 @@ describe('the guide in three languages', () => {
     expect(guideOffline({ ...base, language: 'fr', invitedToEnter: true, transcript: 'Pas encore' })).toMatchObject({ intent: 'chat', reply: 'Bien sûr. Racontez-m’en plus quand vous voulez.' });
     const long = 'La casa de mi abuela tenía una cocina grande con cortinas amarillas y una mesa de madera';
     expect(guideOffline({ ...base, language: 'es', transcript: long })).toMatchObject({ intent: 'describe', reply: 'Ya casi puedo verlo. ¿Vamos allí juntos?' });
-    expect(guideOffline({ ...base, language: 'es', phase: 'memory', transcript: 'Mm' }).reply).toMatch(/^(Mm\. Aquí estoy\.|Tómese su tiempo\.|Le escucho\.)$/);
+    expect(guideOffline({ ...base, language: 'es', phase: 'memory', transcript: 'Mm' }).reply).toMatch(/^(Mm\. Aquí estoy\.|Tómese su tiempo\.|Estoy escuchando\.)$/);
   });
   test('English offline replies are unchanged', () => {
     const r = guideOffline({ ...base, transcript: 'My grandmother’s kitchen in the morning, with yellow curtains, a round wooden table and her radio on the counter' });
@@ -142,7 +142,7 @@ describe('the companion’s fixed lines', () => {
     expect(LINES.tellMeMore.en).toBe('Tell me what else was here, or anything you notice. Say when you’d like to leave.');
   });
   test('placeholders are filled', () => {
-    expect(line('seeCaption', 'es', { caption: 'una cocina soleada' })).toBe('Veo una cocina soleada. ¿Dónde es este lugar?');
+    expect(line('seeCaption', 'es', { caption: 'una cocina soleada' })).toBe('Veo una cocina soleada. ¿Dónde queda este lugar?');
   });
   test('both prepared places have Spanish and French introductions', () => {
     for (const k of ['courtyard', 'red-kite'] as const) { expect(PLACE_INTROS[k]?.es).toBeTruthy(); expect(PLACE_INTROS[k]?.fr).toBeTruthy(); }
