@@ -1,7 +1,7 @@
 import { Text } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { XROrigin, useXR, useXRInputSourceState } from '@react-three/xr';
-import { Suspense, useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import * as THREE from 'three';
 import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff?url';
 import type { Perspective } from '../../../../packages/shared/src/redKite';
@@ -10,10 +10,14 @@ import { VIEWPOINTS, viewpointYaw } from './viewpoints';
 import { initialNavigation, lookAround, stepNavigation, type WalkInput } from './navigation';
 import type { MeadowTraversal } from './traversal';
 import { xrStore } from '../scene/xr';
+import { MEMORY_OBJECTS, type MemoryObject } from './memory-lens';
+import { sourceMediaUrl, type XRSource } from '../memory-objects/types';
 
 export type SceneControls = {
   title: string; quote: string; paused: boolean; locked: boolean; canAdvance: boolean; canBreeze: boolean; proposal: boolean;
   onNext: () => void; onSwitch: () => void; onRest: () => void; onUse: () => void; onLeave: () => void; onPlay: () => void; onBreeze: () => void; onCompare: () => void; onHome: () => void;
+  sourcesOpen: boolean; photo: XRSource | null; sourceCount: number; sourceIndex: number; sourceActionLabel?: string;
+  onSources: () => void; onSourcesClose: () => void; onSourceNext: () => void;
 };
 function Button3D({ label, action, x, y, onClick, disabled = false, width = .34, height = .095 }: { label: string; action: string; x: number; y: number; onClick: () => void; disabled?: boolean; width?: number; height?: number }) {
   return <group position={[x, y, .012]} userData={{ redKiteAction: action }} onClick={e => { e.stopPropagation(); if (!disabled) onClick(); }}>
@@ -27,12 +31,13 @@ function NativeControls({ controls: c }: { controls: SceneControls }) {
   useFrame(() => {
     const edge = (key: string, pressed: boolean) => { const fire = pressed && !previous.current[key]; previous.current[key] = pressed; return fire; };
     const pressed = (src: typeof right, key: string) => src?.gamepad?.[key]?.state === 'pressed';
-    if (edge('a', pressed(right, 'a-button')) && !c.locked && c.canAdvance) c.onNext();
+    if (edge('a', pressed(right, 'a-button')) && !c.locked) { if (c.sourcesOpen) c.onSourceNext(); else if (c.canAdvance) c.onNext(); }
     if (edge('b', pressed(right, 'b-button'))) c.onRest();
     if (edge('x', pressed(left, 'x-button')) && !c.locked) c.onSwitch();
     if (edge('home', pressed(left, 'xr-standard-thumbstick')) && !c.locked) c.onHome();
     if (edge('y', pressed(left, 'y-button'))) void xrStore.getState().session?.end();
   });
+  if (c.sourcesOpen) return <NativeSources controls={c} />;
   return <group name="RedKiteControls" position={[.43, .91, -1.65]} scale={.84}>
     {/* Composite the readable panel after the transparent splats; the transition mask remains last. */}
     <mesh renderOrder={1000} position-z={-.008}><planeGeometry args={[1.16, .72]} /><meshBasicMaterial color="#172c24" transparent opacity={.83} depthWrite={false} depthTest={false} /></mesh>
@@ -42,11 +47,56 @@ function NativeControls({ controls: c }: { controls: SceneControls }) {
     <Button3D action="rest" label={c.paused ? 'Continue · B' : 'Rest · B'} x={0} y={-.11} onClick={c.onRest} />
     <Button3D action="next" label="Next line · A" x={.38} y={-.11} onClick={c.onNext} disabled={c.locked || !c.canAdvance} />
     <Button3D action="use" label={c.proposal ? 'Use this look' : 'Both tellings'} x={-.38} y={-.24} onClick={c.proposal ? c.onUse : c.onCompare} disabled={c.locked} />
-    <Button3D action="leave" label={c.proposal ? 'Leave it open' : 'Sample voice'} x={0} y={-.24} onClick={c.proposal ? c.onLeave : c.onPlay} disabled={c.locked} />
+    <Button3D action="leave" label={c.proposal ? 'Leave it open' : 'Photo sources'} x={0} y={-.24} onClick={c.proposal ? c.onLeave : c.onSources} disabled={c.locked} />
     <Button3D action="breeze" label="Catch the breeze" x={.38} y={-.24} onClick={c.onBreeze} disabled={c.locked || !c.canBreeze} />
     <Button3D action="home" label="Return · left stick" x={-.28} y={-.325} width={.51} height={.052} onClick={c.onHome} disabled={c.locked} />
     <Button3D action="exit" label="Leave headset · Y" x={.28} y={-.325} width={.51} height={.052} onClick={() => { void xrStore.getState().session?.end(); }} />
   </group>;
+}
+
+/** Draws inside the actual XR scene; DOM dialogs are disabled in immersive VR. */
+export type NativeSourceControls = Pick<SceneControls, 'photo' | 'sourceIndex' | 'sourceCount' | 'paused' | 'locked' | 'onSourcesClose' | 'onSourceNext' | 'onRest' | 'sourceActionLabel'>;
+export function NativeSources({ controls: c, anchor = [0, 1.16, -1.65] }: { controls: NativeSourceControls; anchor?: [number, number, number] }) {
+  const p = c.photo;
+  const object = p ? MEMORY_OBJECTS[p.objectKey as MemoryObject] : null;
+  return <group position={anchor} name="MemorySourcePanel" userData={{ sourceId: p?._id ?? null }}>
+    <mesh position-z={-.008}><planeGeometry args={[1.16, 1.32]} /><meshBasicMaterial color="#23392f" /></mesh>
+    <Text font={fontUrl} fontSize={.032} color="#ecd4a0" position={[0, .58, .003]} maxWidth={1.04}>{p ? `${p.title ?? object?.label ?? 'Memory'} · source ${c.sourceIndex + 1} / ${c.sourceCount}` : 'Memory · photo sources'}</Text>
+    {p?.imageUrl && <SourcePhoto key={p.imageUrl} url={p.imageUrl} />}
+    {p && !p.imageUrl && <Text font={fontUrl} fontSize={.044} maxWidth={.96} textAlign="center" position={[0, .30, .004]} color="#f5f0df">{p.owner}</Text>}
+    <Text font={fontUrl} fontSize={.026} color="#ecd4a0" maxWidth={1.04} textAlign="center" position={[0, .035, .004]}>{p ? (p.execution === 'fixture' ? 'Fictional example · no Apify run' : p.sourceKind === 'place' ? 'Google Maps · place reference' : p.execution === 'family-upload' ? `Family photo · ${p.owner}` : `Public post · @${p.owner}`) : 'A photo can be a conversation starter.'}</Text>
+    <Text font={fontUrl} fontSize={.029} color="#f5f0df" maxWidth={1.03} textAlign="center" anchorY="top" position={[0, -.025, .004]}>{c.paused ? 'Take your time. The meadow can wait.' : p ? (p.note ? 'Family note: ' + p.note.slice(0, 200) : 'Post caption: ' + p.caption.slice(0, 200)) : 'Ask family to review a photo on the phone or laptop, then attach it to this kite and this perspective.'}</Text>
+    <Text font={fontUrl} fontSize={.023} color="#d1d7c2" maxWidth={1.04} textAlign="center" position={[0, -.39, .004]}>{object?.invitation ?? 'What comes to mind? You can leave it open.'}</Text>
+    <Button3D action="source-close" label="Back to the story" x={-.38} y={-.49} onClick={c.onSourcesClose} />
+    <Button3D action="source-next" label={c.sourceActionLabel ?? 'Next photo · A'} x={0} y={-.49} onClick={c.onSourceNext} disabled={c.locked || (!c.sourceActionLabel && c.sourceCount < 2)} />
+    <Button3D action="source-rest" label={c.paused ? 'Continue · B' : 'Rest · B'} x={.38} y={-.49} onClick={c.onRest} />
+    <Text font={fontUrl} fontSize={.021} color="#d1d7c2" position={[0, -.59, .004]}>A source supports a conversation; it does not prove a recollection.</Text>
+  </group>;
+}
+function SourcePhoto({ url }: { url: string }) {
+  const [photo, setPhoto] = useState<{ texture: THREE.CanvasTexture; aspect: number } | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let live = true, texture: THREE.CanvasTexture | undefined;
+    setPhoto(null); setFailed(false); const img = new Image(); img.crossOrigin = 'anonymous'; img.referrerPolicy = 'no-referrer';
+    img.onload = () => {
+      if (!live || !img.naturalWidth || !img.naturalHeight) return;
+      try {
+      const scale = Math.min(1, 768 / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(img.naturalWidth * scale)); canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+      const context = canvas.getContext('2d'); if (!context) { setFailed(true); return; }
+      context.drawImage(img, 0, 0, canvas.width, canvas.height); texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
+      setPhoto({ texture, aspect: img.naturalWidth / img.naturalHeight });
+      } catch { if (live) setFailed(true); }
+    };
+    img.onerror = () => { if (live) setFailed(true); };
+    img.src = sourceMediaUrl(url) ?? '';
+    return () => { live = false; img.onload = null; img.onerror = null; img.src = ''; texture?.dispose(); };
+  }, [url]);
+  const width = photo ? Math.min(.86, .39 * photo.aspect) : .6, height = photo ? width / photo.aspect : .35;
+  // Loading changes the shader from an untextured placeholder to USE_MAP. Recreate just
+  // the material so Three compiles that variant; assigning map alone can leave a white quad.
+  return <group position={[0, .30, .004]}><mesh name="MemorySourcePhoto"><planeGeometry args={[width, height]} /><meshBasicMaterial key={photo?.texture.uuid ?? 'loading'} map={photo?.texture ?? null} color={photo ? '#ffffff' : '#51664d'} toneMapped={false} /></mesh>{!photo && <Text font={fontUrl} fontSize={.025} maxWidth={.55} textAlign="center" position-z={.004}>{failed ? 'Photo unavailable. The source note is kept.' : 'Opening photo…'}</Text>}</group>;
 }
 
 export function StoryView({ transition, motion, eye, paused, navigationBlocked, recenter, reduced, traversal, touch, controls, onPerspective, onXR }: {
@@ -143,6 +193,8 @@ export function StoryView({ transition, motion, eye, paused, navigationBlocked, 
       kiteRotation: scene.getObjectByName('RedKiteKite')?.rotation.toArray().slice(0, 3),
       tailRotation: scene.getObjectByName('Tail_08')?.rotation.toArray().slice(0, 3),
       xr: gl.xr.isPresenting, frames: frames.current, held: motion.current.held !== null, spool: [...motion.current.spool],
+      sourcePanel: scene.getObjectByName('MemorySourcePanel')?.userData ?? null,
+      sourcePhotoReady: !!((scene.getObjectByName('MemorySourcePhoto') as THREE.Mesh | undefined)?.material as THREE.MeshBasicMaterial | undefined)?.map,
       simulationTime: motion.current.time, breeze: motion.current.breeze, grabs: motion.current.grabs, lifts: motion.current.lifts,
       spoolVelocity: [...motion.current.spoolVelocity], kiteLift: motion.current.kiteLift, kiteLiftVelocity: motion.current.kiteLiftVelocity,
       boxLidAngle: scene.getObjectByName('LidPivot')?.rotation.x,

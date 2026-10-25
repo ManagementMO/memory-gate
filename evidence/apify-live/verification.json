@@ -1,0 +1,42 @@
+{
+  "verifiedAt": "2026-10-25T03:28:17.612Z",
+  "runId": "XtVcyw5RXyN3i5SXh",
+  "placeTitle": "Golden Gate Park",
+  "sourceUrl": "https://www.google.com/maps/search/?api=1&query=Golden%20Gate%20Park&query_place_id=ChIJY_dFYHKHhYARMKc772iLvnE",
+  "checks": [
+    "the app starts and resumes a real Apify cloud search and receives attributed Maps place references",
+    "real place metadata remains private until family review and retains its original Maps link",
+    "a reviewed live place becomes the source for a separately approved original GLB",
+    "the real place provenance and model render inside an actual stereo immersive session"
+  ],
+  "errors": [],
+  "modelGenerationCalls": 0,
+  "physicalQuestTested": false,
+  "provider": {
+    "actorId": "H1IFRnjek4gyxPM2l",
+    "buildId": "Y8dhnxZKadP1P2ba7",
+    "parentRunId": "XtVcyw5RXyN3i5SXh",
+    "parentStatus": "SUCCEEDED",
+    "parentUsageUsd": 0.0002904329095903371,
+    "childRunId": "iWvNV8L32tKIks4JI",
+    "childStatus": "SUCCEEDED",
+    "childUsageUsd": 0.0042,
+    "referenceCount": 1,
+    "permissionLevel": "LIMITED_PERMISSIONS"
+  },
+  "notVerified": [
+    "Live Instagram import needs a family-approved public post URL",
+    "Physical Quest comfort, reach and sustained frame rate",
+    "Live Tripo model generation; original GLB used here"
+  ],
+  "configuredSecretsCommitted": false,
+  "deployment": {
+    "actorId": "H1IFRnjek4gyxPM2l",
+    "version": "1.2",
+    "latestBuildId": "GYZVmOfeN0Meexkke",
+    "status": "SUCCEEDED",
+    "privateDeployment": true,
+    "sourceHash": "7035c0eef498d1e44be85033d26eca1bde554cbd7234eb2f6878055032698653",
+    "note": "The final rebuild updates documentation; the successful run records its exact build ID above."
+  }
+}

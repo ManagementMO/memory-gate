@@ -1,0 +1,36 @@
+{
+  "mainBase": "e78e720",
+  "branch": "codex/apify-memory-lens",
+  "contractTests": 139,
+  "gateTypecheck": "passed",
+  "gateProductionBuild": "passed",
+  "discovery": {
+    "checks": [
+      "the same main meadow and existing controls remain visible",
+      "selecting the kite retrieves an actual Apify citation inside the unchanged view",
+      "POV switching and resting close the addon without changing their controls",
+      "real native flowers hotspot retrieves attributed Apify context",
+      "real native trees hotspot retrieves attributed Apify context",
+      "native markers and a source card render in a stereo Quest session"
+    ],
+    "pageErrors": [],
+    "savedApifyRunIds": [
+      "JnqmvAdeUDeqmJfSv",
+      "35wQf4PYqW48IZpIw",
+      "mHdomC8YXjoXxUhRs"
+    ]
+  },
+  "existingAddOnsWithDiscoveryDisabled": {
+    "checks": [
+      "the main memory experience exposes the optional place/object workflow over live Spacetime perspectives",
+      "the main POV picker hides the grandparent model from the grandchild view",
+      "the main experience renders the selected object source inside an actual immersive session"
+    ],
+    "errors": [],
+    "perspectiveBackend": "SpacetimeDB",
+    "room": "immutable offline sample",
+    "paidCalls": 0
+  },
+  "physicalHeadset": false,
+  "scope": "Optional screen/native composition and read-only scene annotations; no changes to flow, planner, voice, camera, walking or XR configuration in this update."
+}

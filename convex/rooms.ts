@@ -159,6 +159,14 @@ export const resetDemo = mutation({
   handler: async (ctx, { code, token }) => {
     const { room, member } = await requireOwner(ctx, code, token);
     const files = new Set<Id<'_storage'>>();
+    for (const source of await ctx.db.query('memorySources').withIndex('by_room', q => q.eq('roomId', room._id)).collect()) {
+      if (source.fileId) files.add(source.fileId);
+      await ctx.db.delete(source._id);
+    }
+    for (const job of await ctx.db.query('memoryImports').withIndex('by_room', q => q.eq('roomId', room._id)).collect()) await ctx.db.delete(job._id);
+    for (const job of await ctx.db.query('objectKnowledge').withIndex('by_room', q => q.eq('roomId', room._id)).collect()) await ctx.db.delete(job._id);
+    for (const place of await ctx.db.query('memoryPlaces').withIndex('by_room', q => q.eq('roomId', room._id)).collect()) await ctx.db.delete(place._id);
+    for (const object of await ctx.db.query('memoryObjects').withIndex('by_room', q => q.eq('roomId', room._id)).collect()) { if (object.fileId) files.add(object.fileId); await ctx.db.delete(object._id); }
     for (const p of await ctx.db.query('redKiteTellings').withIndex('by_room', q => q.eq('roomId', room._id)).collect()) await ctx.db.delete(p._id);
     for (const o of await ctx.db.query('objects').withIndex('by_room', (q) => q.eq('roomId', room._id)).collect()) {
       if (o.glbFileId) files.add(o.glbFileId);

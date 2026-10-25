@@ -1,0 +1,117 @@
+{
+  "recordedAt": "2026-10-25T03:10:40.974247+00:00",
+  "branch": "codex/apify-memory-lens",
+  "runtime": "Node 24; Gate React Three Fiber / @react-three/xr; IWER Quest 3; actual local Convex and SpacetimeDB 2.13",
+  "checks": {
+    "backendContracts": 117,
+    "actorContracts": 12,
+    "actualSpacetimeGateway": 7,
+    "photoSourceBrowserXR": 4,
+    "kiteObjectBrowserXR": 5,
+    "mainObjectBrowserXR": 3,
+    "existingKiteDesktop": 11,
+    "existingKiteXR": 8
+  },
+  "typechecks": [
+    "root",
+    "Gate"
+  ],
+  "productionBuild": "Gate",
+  "paidProviderCallsInTheseChecks": 0,
+  "verified": {
+    "kiteObjects": {
+      "checks": [
+        "place references require review and optional models start as private previews",
+        "explicit placement shares the real model and switching POV preserves the other viewer",
+        "a real controller ray selects the placed model and opens its source inside VR",
+        "hide and source removal update another device and preserve the kite story",
+        "a direct family photo is stored privately and can be approved without Apify"
+      ],
+      "errors": [],
+      "paidCalls": 0,
+      "note": "Actual Convex, original GLBs and IWER. Live Apify/Tripo and physical Quest are not verified."
+    },
+    "mainObjects": {
+      "checks": [
+        "the main memory experience exposes the optional place/object workflow over live Spacetime perspectives",
+        "the main POV picker hides the grandparent model from the grandchild view",
+        "the main experience renders the selected object source inside an actual immersive session"
+      ],
+      "errors": [],
+      "perspectiveBackend": "SpacetimeDB",
+      "room": "immutable offline sample",
+      "paidCalls": 0
+    },
+    "photos": {
+      "checks": [
+        "offline example opens, requires permission, and persists a private photo preview",
+        "family approval shares the photo with a note, source label and chosen perspective",
+        "actual immersive rendering contains the photo and source card without a DOM overlay",
+        "removing the source updates the joined viewer immediately"
+      ],
+      "errors": [],
+      "note": "Offline fixture, actual Convex and IWER. Live Apify and physical Quest unverified."
+    },
+    "existingKiteDesktop": {
+      "date": "2026-10-25T03:00:31.869Z",
+      "checks": [
+        "actual cached meadow and all five GLBs load in Gate",
+        "viewer may choose Rosa locally but cannot author details",
+        "Elena can leave color unknown then choose red with her source attached",
+        "breeze and real pointer capture lift the world-space spool, then release it",
+        "Rosa keeps her unknown color and may decline or choose her orange illustration",
+        "switching preserves both source-linked illustrations and never moves the other viewer",
+        "switching while a real pointer holds the spool releases capture and docks it",
+        "the real browser speech API is invoked and a late sample event cannot revive voice after rest",
+        "rest freezes simulation and commands, and a paused reload reopens without unpausing",
+        "disconnect disables new story commands and reconnect preserves both tellings",
+        "local viewpoint survives reload, and the 100k meadow works on a narrow screen"
+      ]
+    },
+    "existingKiteXR": {
+      "date": "2026-10-25T03:00:57.788Z",
+      "checks": [
+        "Enter Quest VR starts a real emulated immersive session with advancing frames",
+        "X controller input switches only after the XR mask covers both eyes",
+        "A controller input advances Rosa and native ray selection accepts her color-open kite",
+        "tracked head turns reveal the meadow periphery without moving its landmarks or selected origin",
+        "native controller pointer captures, lifts and safely releases the same spool",
+        "B controller input rests the actual simulation and locks perspective changes",
+        "a read-only XR viewer cannot resume a host-paused scene with B; the host can continue",
+        "Y controller input leaves immersive mode"
+      ]
+    }
+  },
+  "notVerified": [
+    "Live Apify Maps or Instagram run (no token available)",
+    "Custom Actor cloud publication",
+    "Live Tripo generation (controlled API responses used instead)",
+    "Physical Quest comfort, reach and sustained frame rate"
+  ],
+  "assets": {
+    "units": "meters",
+    "origin": "ground-centre",
+    "attribution": "Original Memory Gate procedural illustrations; no claim of landmark accuracy.",
+    "source": "tools/memory-objects/build-assets.mjs",
+    "assets": {
+      "bridge": {
+        "bytes": 132416,
+        "triangles": 1348,
+        "drawCalls": 3,
+        "sha256": "cc69d32e75c3097fe90d0312bde0d35b5137b7ccfcb6f409eaef3b320f735641"
+      },
+      "bench": {
+        "bytes": 21628,
+        "triangles": 204,
+        "drawCalls": 2,
+        "sha256": "b5bcacc7e1dedda90ea2ad0ac7da75c8b7d5fe5abe1eb85feb42b4ef06858084"
+      },
+      "flower": {
+        "bytes": 228216,
+        "triangles": 2316,
+        "drawCalls": 6,
+        "sha256": "75f4ec6a3c70d99f57b06c32da4c59f4e529d07e46db0b7608ed723c83f6e78a"
+      }
+    }
+  }
+}

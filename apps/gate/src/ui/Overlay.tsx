@@ -15,6 +15,7 @@ import { XrButton } from './XrButton';
 import { PresenceSync } from '../presence/PresenceSync';
 import { SocialUI } from '../social/ui/SocialUI';
 import { lazyRetry } from './lazyRetry';
+import { MemoryAddOnsOverlay } from '../memory-addons/MemoryAddOns';
 
 // The album stage: the memory map, and each place's memories (your album in San Francisco).
 const Atlas = lazyRetry(() => import('../map/Atlas'));
@@ -61,6 +62,7 @@ export function Overlay() {
       <DropZone />
       <PresenceSync />
       <SocialUI />
+      <MemoryAddOnsOverlay />
     </div>
   );
 }
