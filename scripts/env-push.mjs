@@ -9,7 +9,7 @@ const env = existsSync(AUTH) ? Object.fromEntries(readFileSync(AUTH, 'utf8').spl
 // Existing .env.exchange installations keep working; the private provider file takes precedence.
 const exchange = existsSync('.env.exchange') ? Object.fromEntries(readFileSync('.env.exchange', 'utf8').split('\n').filter(l => /^[A-Z_]+=/.test(l)).map(l => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).trim().replace(/^["']|["']$/g, '')]; })) : {};
 for (const key of ['APIFY_TOKEN', 'ALLOW_APIFY_CLOUD', 'APIFY_MEMORY_ACTOR_ID']) if (!env[key]) env[key] = process.env[key] || exchange[key];
-if (!existsSync(AUTH)) console.log('No private provider file supplied. Preparing local fixture mode; no paid API calls.');
+if (!existsSync(AUTH)) console.log('No private provider file supplied. Checking only the existing Apify environment; other providers keep their current configuration.');
 if (env.WORLDLABS_API_KEY && !env.WORLD_LABS_API_KEY) env.WORLD_LABS_API_KEY = env.WORLDLABS_API_KEY;
 let worker = existsSync('.env.worker') ? Object.fromEntries(readFileSync('.env.worker', 'utf8').split('\n').filter(Boolean).map((l) => l.split(/=(.*)/s).slice(0, 2))) : {};
 if (!worker.WORKER_SECRET) worker.WORKER_SECRET = randomBytes(24).toString('hex');

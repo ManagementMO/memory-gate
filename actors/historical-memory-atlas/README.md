@@ -1,8 +1,28 @@
-# Heirloom Historical Memory Atlas
+# Memory Gate Source Atlas
 
 An Apify Actor for finding public historical context around a place and period. It searches the Library of Congress photo catalog, visits a bounded number of item records, and returns source-linked references with dates, rights and uncertainty. It never takes family recordings or private transcripts as input.
 
+Version 1.1 also turns selected public Instagram photo posts into reviewable source cards for VR objects. The existing Actor name stays stable so archive deployments keep working. [Application setup and demonstration](../../docs/APIFY_MEMORY_SOURCES.md).
+
+## Social source mode
+
+```json
+{
+  "sourceMode": "social",
+  "postUrls": ["https://www.instagram.com/p/YOUR_POST_CODE/"],
+  "permissionConfirmed": true
+}
+```
+
+Supply one to three explicit public photo-post URLs you have permission to use. Profiles, reels, private login/cookies and discovery of someone's account are outside this contract. The custom Actor starts the official `apify/instagram-scraper`, saves its ID in `CHILD_RUN` before waiting, reads at most 12 post rows, and emits up to eight photo cards. Carousel images keep the parent caption, author, post URL and date. Videos are excluded. Caption words suggest `kite`, `flower` or `landmark`; these suggestions are **not image recognition**. Unknown dates stay null. Run status and the child's ID stay in the output manifest.
+
+Social mode requires an Apify token even when running the Actor locally because its Instagram extraction runs on Apify. The archive mode below can run locally without a token. The child request uses a 120-second timeout and `maxTotalChargeUsd: 0.05`. This is a per-request setting, not a combined guarantee for parent/child compute or account spend. Inspect an existing run before retrying a failure.
+
+Only public URLs and the permission flag enter this Actor. Family notes, member tokens, diagnoses and recordings remain in the application. An imported photo stays a private preview until the family explicitly attaches it. Apify's dataset retention is separate from removal of a source inside Memory Gate.
+
 ## Input
+
+Omit `sourceMode` or set it to `archive` for the original archive search:
 
 ```json
 {

@@ -1,13 +1,14 @@
 // IWER's actual controller input and tracked poses drive the same XR event path as the app.
 // This is emulated input evidence, never a physical Quest performance/comfort result.
-import { chromium, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { launchBrowser } from './browser.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 const auth = JSON.parse(readFileSync('.logs/red-kite-demo-room.json', 'utf8'));
 const origin = process.env.RED_KITE_ORIGIN ?? 'https://localhost:5180';
 const lite = process.env.RED_KITE_LITE === '1';
 const out = lite ? 'evidence/red-kite/lite' : 'evidence/red-kite'; mkdirSync(out, { recursive: true });
-const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--ignore-gpu-blocklist', '--use-angle=metal'] });
+const browser = await launchBrowser();
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, ignoreHTTPSErrors: true });
 await ctx.addInitScript(s => {
   Object.defineProperty(Navigator.prototype, 'xr', { get: () => undefined, configurable: true });

@@ -8,7 +8,7 @@ import type { Perspective } from '../../../../packages/shared/src/redKite';
 import { stepTransition, type MotionState, type Transition } from './motion';
 import { VIEWPOINTS, viewpointYaw } from './viewpoints';
 import { xrStore } from '../scene/xr';
-import type { MemorySource } from './memory-lens';
+import { MEMORY_OBJECTS, type MemoryObject, type MemorySource } from './memory-lens';
 
 export type SceneControls = {
   title: string; quote: string; paused: boolean; locked: boolean; canAdvance: boolean; proposal: boolean;
@@ -51,13 +51,14 @@ function NativeControls({ controls: c }: { controls: SceneControls }) {
 /** Draws inside the actual XR scene; DOM dialogs are disabled in immersive VR. */
 function NativeSources({ controls: c }: { controls: SceneControls }) {
   const p = c.photo;
+  const object = p ? MEMORY_OBJECTS[p.objectKey as MemoryObject] : null;
   return <group position={[0, 1.16, -1.65]} name="MemorySourcePanel" userData={{ sourceId: p?._id ?? null }}>
     <mesh position-z={-.008}><planeGeometry args={[1.16, 1.32]} /><meshBasicMaterial color="#23392f" /></mesh>
-    <Text font={fontUrl} fontSize={.032} color="#ecd4a0" position={[0, .58, .003]} maxWidth={1.04}>{p ? `The kite · photo ${c.sourceIndex + 1} / ${c.sourceCount}` : 'The kite · photo sources'}</Text>
-    {p?.imageUrl && <SourcePhoto url={p.imageUrl} />}
+    <Text font={fontUrl} fontSize={.032} color="#ecd4a0" position={[0, .58, .003]} maxWidth={1.04}>{p ? `${object?.label ?? 'Memory'} · photo ${c.sourceIndex + 1} / ${c.sourceCount}` : 'Memory · photo sources'}</Text>
+    {p?.imageUrl && <SourcePhoto key={p.imageUrl} url={p.imageUrl} />}
     <Text font={fontUrl} fontSize={.026} color="#ecd4a0" maxWidth={1.04} textAlign="center" position={[0, .035, .004]}>{p ? (p.execution === 'fixture' ? 'Fictional example · no Apify run' : `Public post · @${p.owner}`) : 'A photo can be a conversation starter.'}</Text>
     <Text font={fontUrl} fontSize={.029} color="#f5f0df" maxWidth={1.03} textAlign="center" anchorY="top" position={[0, -.025, .004]}>{c.paused ? 'Take your time. The meadow can wait.' : p ? (p.note ? 'Family note: ' + p.note.slice(0, 200) : 'Post caption: ' + p.caption.slice(0, 200)) : 'Ask family to review a photo on the phone or laptop, then attach it to this kite and this perspective.'}</Text>
-    <Text font={fontUrl} fontSize={.023} color="#d1d7c2" maxWidth={1.04} textAlign="center" position={[0, -.39, .004]}>What does this kite bring to mind? You can leave it open.</Text>
+    <Text font={fontUrl} fontSize={.023} color="#d1d7c2" maxWidth={1.04} textAlign="center" position={[0, -.39, .004]}>{object?.invitation ?? 'What comes to mind? You can leave it open.'}</Text>
     <Button3D label="Back to the story" x={-.38} y={-.49} onClick={c.onSourcesClose} />
     <Button3D label="Next photo · A" x={0} y={-.49} onClick={c.onSourceNext} disabled={c.locked || c.sourceCount < 2} />
     <Button3D label={c.paused ? 'Continue · B' : 'Rest · B'} x={.38} y={-.49} onClick={c.onRest} />
@@ -66,22 +67,28 @@ function NativeSources({ controls: c }: { controls: SceneControls }) {
 }
 function SourcePhoto({ url }: { url: string }) {
   const [photo, setPhoto] = useState<{ texture: THREE.CanvasTexture; aspect: number } | null>(null);
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
     let live = true, texture: THREE.CanvasTexture | undefined;
-    setPhoto(null); const img = new Image(); img.crossOrigin = 'anonymous'; img.referrerPolicy = 'no-referrer';
+    setPhoto(null); setFailed(false); const img = new Image(); img.crossOrigin = 'anonymous'; img.referrerPolicy = 'no-referrer';
     img.onload = () => {
       if (!live || !img.naturalWidth || !img.naturalHeight) return;
+      try {
       const scale = Math.min(1, 768 / Math.max(img.naturalWidth, img.naturalHeight));
       const canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(img.naturalWidth * scale)); canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
-      const context = canvas.getContext('2d'); if (!context) return;
+      const context = canvas.getContext('2d'); if (!context) { setFailed(true); return; }
       context.drawImage(img, 0, 0, canvas.width, canvas.height); texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
       setPhoto({ texture, aspect: img.naturalWidth / img.naturalHeight });
+      } catch { if (live) setFailed(true); }
     };
+    img.onerror = () => { if (live) setFailed(true); };
     img.src = url;
-    return () => { live = false; img.onload = null; img.src = ''; texture?.dispose(); };
+    return () => { live = false; img.onload = null; img.onerror = null; img.src = ''; texture?.dispose(); };
   }, [url]);
   const width = photo ? Math.min(.86, .39 * photo.aspect) : .6, height = photo ? width / photo.aspect : .35;
-  return <mesh position={[0, .30, .004]} name="MemorySourcePhoto"><planeGeometry args={[width, height]} /><meshBasicMaterial map={photo?.texture ?? null} color={photo ? '#ffffff' : '#51664d'} toneMapped={false} /></mesh>;
+  // Loading changes the shader from an untextured placeholder to USE_MAP. Recreate just
+  // the material so Three compiles that variant; assigning map alone can leave a white quad.
+  return <group position={[0, .30, .004]}><mesh name="MemorySourcePhoto"><planeGeometry args={[width, height]} /><meshBasicMaterial key={photo?.texture.uuid ?? 'loading'} map={photo?.texture ?? null} color={photo ? '#ffffff' : '#51664d'} toneMapped={false} /></mesh>{!photo && <Text font={fontUrl} fontSize={.025} maxWidth={.55} textAlign="center" position-z={.004}>{failed ? 'Photo unavailable. The source note is kept.' : 'Opening photo…'}</Text>}</group>;
 }
 
 export function StoryView({ transition, motion, eye, paused, controls, onPerspective, onXR }: {
@@ -108,6 +115,8 @@ export function StoryView({ transition, motion, eye, paused, controls, onPerspec
       kiteRotation: scene.getObjectByName('RedKiteKite')?.rotation.toArray().slice(0, 3),
       tailRotation: scene.getObjectByName('Tail_08')?.rotation.toArray().slice(0, 3),
       xr: gl.xr.isPresenting, frames: frames.current, held: motion.current.held !== null, spool: [...motion.current.spool],
+      sourcePanel: scene.getObjectByName('MemorySourcePanel')?.userData ?? null,
+      sourcePhotoReady: !!((scene.getObjectByName('MemorySourcePhoto') as THREE.Mesh | undefined)?.material as THREE.MeshBasicMaterial | undefined)?.map,
       simulationTime: motion.current.time, breeze: motion.current.breeze, grabs: motion.current.grabs, lifts: motion.current.lifts,
       moves: [...moves.current], inputSources: xrStore.getState().inputSourceStates.map(s => ({ type: s.type, hand: s.inputSource.handedness })) }) };
     const w = window as unknown as { __redKite3D?: typeof diagnostic }; w.__redKite3D = diagnostic;

@@ -1,5 +1,7 @@
 # Memory Gate / Heirloom
 
+**Apify photo sources:** [Setup, usage and verification](docs/APIFY_MEMORY_SOURCES.md). Import selected public family posts, review a photo, and attach it to a kite, flower or landmark in a chosen perspective. The Red Kite includes a native VR source card and a clearly labeled offline example. Live Instagram import requires a server-side Apify token.
+
 **Integrated main:** the [World Labs story demonstration](DEMO_SCRIPT.md) and [Cal Hacks exchange runbook](docs/CALHACKS_RUNBOOK.md) are both available. The **Memories** tab lets two participants pass, accept and reopen original stories. SpacetimeDB owns that exchange and its shared reference board; a custom Apify Actor supplies public historical references for people to choose. Scene editing, media and capture remain in Convex. Start locally with `npm run local:up` after the dependencies and SpacetimeDB CLI are installed.
 
 An adult living with younger-onset Alzheimer’s shares a story with someone close to them. Their words can suggest objects in a shared place, on a screen or an optional Quest 3. Family members review visual suggestions together. Original recordings, translations and contributor attribution stay with the story. This is a reminiscence and conversation prototype; clinical benefit has not been established.

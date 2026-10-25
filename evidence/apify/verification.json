@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-25T01:06:37.766395+00:00",
+  "branch": "codex/apify-memory-lens",
+  "backendTests": 105,
+  "actorTests": 9,
+  "newSourceFlow": {
+    "checks": [
+      "offline example opens, requires permission, and persists a private photo preview",
+      "family approval shares the photo with a note, source label and chosen perspective",
+      "actual immersive rendering contains the photo and source card without a DOM overlay",
+      "removing the source updates the joined viewer immediately"
+    ],
+    "errors": [],
+    "note": "Offline fixture, actual Convex and IWER. Live Apify and physical Quest unverified."
+  },
+  "redKiteBrowserChecks": 11,
+  "redKiteXRChecks": 8,
+  "rootTypecheck": true,
+  "gateTypecheck": true,
+  "productionBuild": true,
+  "localActor": {
+    "sdk": "apify 3.7.0",
+    "source": "Library of Congress",
+    "count": 2,
+    "sources": [
+      "https://www.loc.gov/item/2003681311/",
+      "https://www.loc.gov/item/2018645520/"
+    ]
+  },
+  "liveInstagramTested": false,
+  "customActorCloudPublished": false,
+  "physicalQuestTested": false
+}

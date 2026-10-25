@@ -29,7 +29,7 @@ function Experience() {
   const [xr, setXR] = useState(false), [supported, setSupported] = useState(false), [localPause, setLocalPause] = useState(false);
   const [compare, setCompare] = useState(false), [busy, setBusy] = useState(false), [speaking, setSpeaking] = useState(false), [switching, setSwitching] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
-  const [sourcesOpen, setSourcesOpen] = useState(false), [sourceIndex, setSourceIndex] = useState(0);
+  const [sourcesOpen, setSourcesOpen] = useState(false), [sourceIndex, setSourceIndex] = useState(0), [sourceObject, setSourceObject] = useState<'kite' | 'all'>('all');
   const [reducedMotion, setReducedMotion] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   const connected = useConvexConnectionState().isWebSocketConnected && online;
   const [lite, setLite] = useState(() => {
@@ -69,7 +69,7 @@ function Experience() {
   const room = useQuery(api.rooms.get, auth ?? 'skip'), data = useQuery(api.redKite.current, auth ?? 'skip');
   const library = useQuery(api.memorySources.list, auth ?? 'skip');
   useImportProgress(session, library);
-  const photos = library?.sources.filter(s => s.approved && s.perspective === perspective && s.objectKey === 'kite') ?? [];
+  const photos = library?.sources.filter(s => s.approved && s.perspective === perspective && (sourceObject === 'all' || s.objectKey === sourceObject)) ?? [];
   const photo = photos[sourceIndex % Math.max(1, photos.length)];
   const advance = useMutation(api.redKite.advance), choose = useMutation(api.redKite.choose), reset = useMutation(api.redKite.reset), setPaused = useMutation(api.rooms.setPaused);
   const telling = data?.tellings.find(t => t.key === perspective), line = telling?.lines[telling.beat];
@@ -150,7 +150,7 @@ function Experience() {
     locked: quiet || busy || !ready, canAdvance: !!data?.canAuthor && !!telling && telling.beat < telling.lines.length - 1,
     proposal: !!line?.proposal && !!data?.canAuthor, onNext: next, onSwitch: () => switchTo(perspective === 'elena' ? 'rosa' : 'elena'), onRest: rest, onUse: () => pick('use'), onLeave: () => pick('leave'), onPlay: play, onBreeze: breeze, onCompare: () => setCompare(v => !v),
     sourcesOpen, photo: photo ?? null, sourceCount: photos.length, sourceIndex: sourceIndex % Math.max(1, photos.length),
-    onSources: () => { stopSpeech(); setSourcesOpen(true); }, onSourcesClose: () => setSourcesOpen(false), onSourceNext: () => setSourceIndex(i => i + 1) };
+    onSources: () => { stopSpeech(); setSourceObject('all'); setSourceIndex(0); setSourcesOpen(true); }, onSourcesClose: () => setSourcesOpen(false), onSourceNext: () => setSourceIndex(i => i + 1) };
   const share = () => {
     if (!session) return;
     const url = new URL(location.href); url.search = ''; url.searchParams.set('story', 'red-kite'); url.searchParams.set('room', session.code);
@@ -160,7 +160,7 @@ function Experience() {
     {source?.url && <SceneCanvas effects={false}>
       <StoryView transition={transition} motion={motion} eye={source.floorY === null ? 1.5246 : -source.floorY * source.scale} paused={viewPaused} controls={controls} onPerspective={selected} onXR={onXR} />
       <Meadow source={source} lite={lite} onReady={onReady} onError={onError} />
-      <Suspense fallback={null}><MemoryProps look={look} proposed={proposal} paused={simulationPaused} reduced={reduced} motion={motion} onKeepsake={onKeepsake} onReady={onPropsReady} onKite={() => { stopSpeech(); setSourcesOpen(true); }} /></Suspense>
+      <Suspense fallback={null}><MemoryProps look={look} proposed={proposal} paused={simulationPaused} reduced={reduced} motion={motion} onKeepsake={onKeepsake} onReady={onPropsReady} onKite={() => { stopSpeech(); setSourceObject('kite'); setSourceIndex(0); setSourcesOpen(true); }} /></Suspense>
     </SceneCanvas>}
     <div className="rk-vignette" aria-hidden="true" />
     <header className="rk-header">

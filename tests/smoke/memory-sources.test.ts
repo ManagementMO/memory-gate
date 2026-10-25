@@ -62,3 +62,31 @@ test('membership revocation during import blocks late publication; source files 
   expect(await fileExists(another.t, file)).toBe(false);
   expect(await another.t.run(ctx => ctx.db.query('memoryImports').collect())).toEqual([]);
 });
+
+test('approving a cloud photo caches only the selected image and removal deletes that stored file', async () => {
+  const { t, owner, viewer } = await setup(false);
+  const id = await t.mutation(internal.memorySources.begin, { ...owner, mode: 'cloud', urls: [url], permission: true, actorId: 'test' });
+  await t.mutation(internal.memorySources.complete, { id, cards: [{ sourceUrl: url, imageUrl: 'https://scontent.cdninstagram.com/photo.jpg', caption: 'A flower in our garden', owner: 'family', timestamp: null, suggestedObjects: ['flower'], attribution: '' }] });
+  const source = (await t.query(api.memorySources.list, owner)).sources[0]!;
+  const request = vi.fn(async () => new Response(new Uint8Array([255, 216, 255, 217]), { headers: { 'Content-Type': 'image/jpeg' } })); vi.stubGlobal('fetch', request);
+  await t.action(api.memoryImport.attach, { ...owner, id: source._id, objectKey: 'flower', perspective: 'rosa', note: 'The garden at home.' });
+  const approved = (await t.query(api.memorySources.list, viewer)).sources[0]!;
+  expect(approved).toMatchObject({ approved: true, objectKey: 'flower', perspective: 'rosa' });
+  expect(approved.fileId).toBeTruthy(); expect(approved.imageUrl).not.toContain('cdninstagram.com'); expect(request).toHaveBeenCalledTimes(1);
+  await t.mutation(api.memorySources.remove, { ...owner, id: source._id });
+  expect(await fileExists(t, approved.fileId!)).toBe(false);
+});
+
+test('a pause during a photo download prevents late approval and cleans up its uploaded bytes', async () => {
+  const { t, owner } = await setup(false);
+  const id = await t.mutation(internal.memorySources.begin, { ...owner, mode: 'cloud', urls: [url], permission: true, actorId: 'test' });
+  await t.mutation(internal.memorySources.complete, { id, cards: [{ sourceUrl: url, imageUrl: 'https://scontent.cdninstagram.com/photo.jpg', caption: '', owner: 'family', timestamp: null, suggestedObjects: [], attribution: '' }] });
+  const source = (await t.query(api.memorySources.list, owner)).sources[0]!;
+  vi.stubGlobal('fetch', vi.fn(async () => {
+    await t.mutation(api.rooms.setPaused, { ...owner, paused: true, commandId: crypto.randomUUID() });
+    return new Response(new Uint8Array([255, 216, 255, 217]), { headers: { 'Content-Type': 'image/jpeg' } });
+  }));
+  await expect(t.action(api.memoryImport.attach, { ...owner, id: source._id, objectKey: 'kite', perspective: 'elena', note: '' })).rejects.toThrow('could not be attached');
+  expect((await t.query(api.memorySources.list, owner)).sources[0]!.approved).toBe(false);
+  expect(await t.run(ctx => ctx.db.system.query('_storage').collect())).toHaveLength(0);
+});

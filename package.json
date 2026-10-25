@@ -8,6 +8,7 @@
     "dev:exchange": "node --import tsx scripts/exchange.mjs",
     "test:exchange:browser": "playwright test --config tests/exchange/playwright.config.mjs",
     "test:atlas": "npm --prefix actors/historical-memory-atlas test",
+    "test:memory-sources": "node apps/gate/scripts/memory-sources-check.mjs",
     "test:exchange": "node --import tsx --test tests/exchange/*.test.mjs",
     "dev:convex": "CONVEX_AGENT_MODE=anonymous convex dev --tail-logs disable",
     "typecheck": "tsc -p tsconfig.json --noEmit",

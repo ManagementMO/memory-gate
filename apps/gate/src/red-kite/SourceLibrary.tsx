@@ -41,7 +41,7 @@ export function SourceLibrary({ session, library, perspective, paused, onClose }
     {library?.jobs.slice(-1).map(job => <p key={job._id} className="memory-job" role="status" data-testid="import-status">{job.status === 'running' ? 'Apify is retrieving the selected posts. You can close this panel and keep exploring.' : job.error || (job.mode === 'fixture' ? 'Fictional example ready for review.' : 'Apify photos ready for review.')}{job.runId && <> <a href={`https://console.apify.com/actors/runs/${job.runId}`} target="_blank" rel="noreferrer">View Apify run ↗</a>{job.status === 'running' && <button disabled={busy} onClick={() => void run(() => refresh({ ...auth, id: job._id }))}>Check run</button>}</>}</p>)}
     <div className="memory-cards">{library?.sources.map(source => <SourceCard key={source._id} source={source} session={session} canAuthor={library.canAuthor} perspective={perspective} paused={paused} />)}</div>
     {library && !library.sources.length && <p className="memory-empty">No photos attached yet. A kite, a flower, or a familiar place can become a doorway into someone’s story.</p>}
-    <footer>Public captions and family notes are attributed sources. They cannot establish what someone remembers.</footer>
+    <footer>Public captions and family notes are attributed sources. They cannot establish what someone remembers. Removing a source deletes this room’s copy; Apify run data follows the account’s retention settings.</footer>
   </dialog>;
 }
 

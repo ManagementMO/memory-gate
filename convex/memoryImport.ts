@@ -20,7 +20,7 @@ export const start = action({ args: { ...auth, mode: v.union(v.literal('fixture'
   try {
     const body = actorId === 'apify~instagram-scraper' || actorId === 'apify/instagram-scraper'
       ? scraperInput(a.urls) : { sourceMode: 'social', postUrls: scraperInput(a.urls).directUrls, permissionConfirmed: true };
-    const { data } = await apify(`acts/${encodeURIComponent(actorId.replace('/', '~'))}/runs?timeout=180&maxTotalChargeUsd=0.10`, { method: 'POST', body: JSON.stringify(body) });
+    const { data } = await apify(`actors/${encodeURIComponent(actorId.replace('/', '~'))}/runs?timeout=180&maxTotalChargeUsd=0.10`, { method: 'POST', body: JSON.stringify(body) });
     if (!data?.id || !/^[A-Za-z0-9]+$/.test(data.id)) throw new Error('Apify did not return a run ID.');
     await ctx.runMutation(internal.memorySources.recordRun, { id, runId: data.id });
     return id;

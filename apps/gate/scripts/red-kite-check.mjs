@@ -1,11 +1,12 @@
 // Actual Gate UI + WebGL integration. No provider calls, no credential output, no client-state setters.
-import { chromium, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { launchBrowser } from './browser.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 const origin = process.env.RED_KITE_ORIGIN ?? 'https://localhost:5180';
 const auth = JSON.parse(readFileSync('.logs/red-kite-demo-room.json', 'utf8'));
 const out = 'evidence/red-kite'; mkdirSync(out, { recursive: true });
-const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--ignore-gpu-blocklist', '--use-angle=metal'] });
+const browser = await launchBrowser();
 const owner = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 1440, height: 900 } });
 await owner.addInitScript(s => localStorage.setItem('mg.red-kite.session.' + s.code, JSON.stringify({ code: s.code, token: s.token, role: 'family' })), auth);
 await owner.addInitScript(() => {
