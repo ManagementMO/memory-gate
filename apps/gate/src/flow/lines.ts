@@ -67,6 +67,8 @@ export const LINES = {
   whoWasThere: { en: 'Who was there with you, back then?', es: '¿Quién estaba ahí con usted en ese entonces?', fr: 'Qui était là avec vous, à l’époque ?' },
   goAsChild: { en: 'As a child, then. Shall we go and see it together?', es: 'Con sus ojos de infancia, entonces. ¿Vamos a verlo juntos?', fr: 'Avec vos yeux d’enfant, alors. Voulez-vous qu’on aille le voir ensemble ?' },
   goWithGrandchild: { en: 'With your grandchild, then. Shall we go and see it together?', es: 'Con su nieto o nieta, entonces. ¿Vamos a verlo juntos?', fr: 'Avec votre petit-enfant, alors. Voulez-vous qu’on aille le voir ensemble ?' },
+  seeAsGrandparent: { en: 'Through the grandparent’s eyes now.', es: 'Ahora lo vemos con ojos de abuelo.', fr: 'Maintenant, avec des yeux de grand-parent.' },
+  seeAsChild: { en: 'Through the grandchild’s eyes now.', es: 'Ahora lo vemos con ojos de niño.', fr: 'Maintenant, avec des yeux d’enfant.' },
   goTogether: { en: 'Shall we go and see it together?', es: '¿Vamos a verlo juntos?', fr: 'Voulez-vous qu’on aille le voir ensemble ?' },
   nearlyHere: { en: 'It’s nearly here. The place takes a moment on this connection.', es: 'Ya casi llega. El lugar tarda un poco con esta conexión.', fr: 'Il arrive presque. Le lieu met un moment à venir sur cette connexion.' },
   shallWeSee: { en: 'Shall we go and see it?', es: '¿Vamos a verlo?', fr: 'Voulez-vous qu’on aille le voir ?' },
