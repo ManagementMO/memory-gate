@@ -129,7 +129,13 @@ export const perspectiveById = (id: string): Perspective | undefined => useSocia
 export const viewingPerspective = (): Perspective => perspectiveOf(useSocial.getState().viewing);
 // An exchange still running older code doesn't know newer actions (whose eyes, who said it): nothing the person can act
 // on, and it surfaced mid-conversation as "Unknown exchange action."
-export const notify = (text: string) => { if (!/unknown exchange action/i.test(text)) useSocial.getState().set({ notice: { text, at: Date.now() } }); };
+/** Trouble keeping the visit in step (an older exchange that doesn't know an action, a reconnect, a slow answer) is
+ *  never the wearer's to read: the visit carries on without it, and it goes to the log instead. */
+const TECHNICAL = /exchange|reconnect|not connected|did not answer|timed out|unknown .*action|network|failed to fetch/i;
+export const notify = (text: string) => {
+  if (TECHNICAL.test(text)) { console.warn('[social]', text); return; }
+  useSocial.getState().set({ notice: { text, at: Date.now() } });
+};
 
 export function applySnapshot(s: SocialSnapshot): void {
   const raw = s.perspectives.length ? s.perspectives.map((p) => ({ ...p, key: (p.key === 'child' ? 'child' : 'grandparent') as PerspectiveKey })) : useSocial.getState().rawPerspectives;

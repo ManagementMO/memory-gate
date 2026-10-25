@@ -246,7 +246,10 @@ export function guideOffline(input: GuideInput): GuideReply {
   const say = OFFLINE[language];
   const keys = language === 'en' ? null : KEYS[language];
   const t = norm(input.transcript);
-  const words = t ? t.split(' ').length : 0;
+  // "Um" and "hmm" are hesitation only on their own: "Um, I was in my grandma's garden" is a description, and speech
+  // to text keeps every "um" (every such turn was answered "That's alright", as if nothing had been said).
+  const content = t.replace(/\b(u+m+|u+h+m*|e+r+m*|h+m+|a+h+)\b/g, ' ').replace(/\s+/g, ' ').trim();
+  const words = content ? content.split(' ').length : 0;
   const seed = hash(t);
   const place = guessPlace(input.transcript) ?? input.place;
   const reply = (text: string, intent: GuideIntent): GuideReply => ({ reply: text, intent, place, language, english: null, replyEnglish: null });
@@ -264,7 +267,7 @@ export function guideOffline(input: GuideInput): GuideReply {
   }
   if (/\b(video|clip|recording|film)\b/.test(t) || keys?.video.test(t)) return reply(say.video, 'offer_video');
   if (/\b(photo|photos|picture|pictures|photograph|image|album)\b/.test(t) || keys?.photo.test(t)) return reply(say.photo, 'offer_photo');
-  if (/\b(i don'?t know|not sure|can'?t think|no idea|i forget|nothing comes|hmm+|um+)\b/.test(t) || keys?.unsure.test(t) || words === 0) return reply(say.unsure, 'offer_invite');
+  if (words === 0 || ((/\b(i don'?t know|not sure|can'?t think|no idea|i forget|nothing comes)\b/.test(content) || keys?.unsure.test(content)) && words <= 6)) return reply(say.unsure, 'offer_invite');
   if (input.invitedToEnter && (/^(no|not yet|wait|hold on)\b/.test(t) || keys?.notYet.test(t))) return reply(say.notYet, 'chat');
   const enough = input.turnsInPhase >= 1 || words >= 14 || (input.media && words >= 4);
   if (enough) return reply(say.describe(place), 'describe');

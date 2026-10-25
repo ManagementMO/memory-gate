@@ -12,7 +12,7 @@ import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
 import { useFadedInCrossing } from '../ui/Captions';
 import { XrAlbum } from './XrAlbum';
-import { XrControls } from './XrControls';
+import { XrControls, aimed, dialogue } from './XrControls';
 import { useObjectWorkshop } from '../memory-objects/workshop';
 
 const _head = new THREE.Vector3();
@@ -31,17 +31,20 @@ function Captions3D() {
   const camera = useThree((s) => s.camera);
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving';
   const placed = useRef(false);
+  const heardHeight = useRef(0);
+  useEffect(() => { dialogue.group = group.current; return () => { dialogue.group = null; }; });
   useFrame((_, dt) => {
     const g = group.current;
     if (!g) return;
     camera.getWorldPosition(_head);
     camera.getWorldQuaternion(_q);
     const yaw = _e.setFromQuaternion(_q, 'YXZ').y;
-    // Below the line of sight, about a metre and a quarter ahead, following lazily (never head-locked).
+    // Below the line of sight, about a metre and a quarter ahead, following lazily (never head-locked). Its buttons
+    // (Rest, Photo, Leave) hang just under the words; while a ray is on one, the words hold still so it stays put.
     _target.set(_head.x - Math.sin(yaw) * 1.25, _head.y - 0.43, _head.z - Math.cos(yaw) * 1.25);
     if (!placed.current) { g.position.copy(_target); placed.current = true; }
-    g.position.lerp(_target, 1 - Math.exp(-dt * 1.4));
-    g.lookAt(_head.x, g.position.y, _head.z);
+    if (aimed.n === 0) { g.position.lerp(_target, 1 - Math.exp(-dt * 1.4)); g.lookAt(_head.x, g.position.y, _head.z); }
+    dialogue.below = heard ? 0.03 + heardHeight.current + 0.065 : 0.07;
   });
   if (stage === 'portal' || stage === 'album' || (objectSource && (stage === 'memory' || stage === 'forming'))) return null;
   // Just the words, with a soft halo of the opposite tone so they read on sky, marble or white. The companion's
@@ -58,6 +61,7 @@ function Captions3D() {
       )}
       {heard && (
         <Text font={fontUrl} fontSize={0.027} lineHeight={1.3} maxWidth={0.82} anchorX="center" anchorY="top" textAlign="center" position={[0, -0.03, 0]} color={day ? '#4a4864' : '#d9d6f2'}
+          onSync={(t: { textRenderInfo?: { blockBounds: number[] } }) => { const b = t.textRenderInfo?.blockBounds; if (b) heardHeight.current = b[3]! - b[1]!; }}
           outlineWidth={0.003} outlineBlur={0.008} outlineColor={halo} outlineOpacity={0.6} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>
           {`“${heard.text}”${!heard.interim && thinking ? '   …' : ''}`}
         </Text>
