@@ -92,7 +92,7 @@ export function MemoryScene() {
   useEffect(() => { useMemory.setState({ showcase }); return () => { useMemory.setState({ showcase: null }); }; }, [showcase]);
   // Named while they're still talking: it starts building now, and is there once they've walked through the gate.
   const view = plan?.showcase?.camera ?? 0;
-  useEffect(() => { if (showcase && (stage === 'greeting' || stage === 'gathering' || stage === 'entering')) prebuildShowcase(showcase, view, gl, camera, scene); }, [showcase, view, stage, gl, camera, scene]);
+  useEffect(() => { if (showcase && (stage === 'greeting' || stage === 'gathering' || stage === 'entering')) prebuildShowcase(showcase, view, gl, camera); }, [showcase, view, stage, gl, camera]);
   const place = placeKey ? PLACES[placeKey] : null;
   const coveredByPhoto = useRef(new Set<string>());
   // When the photo becomes the world, everything planned from it so far is already in the picture.

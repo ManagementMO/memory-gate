@@ -51,22 +51,15 @@ function dispose(b: BuiltShowcase) {
   b.hdr?.dispose();
 }
 
-/** Ahead of its first frame: its pictures go up to the GPU a few at a time and its shaders compile alongside (in its
- *  own sky and fog, as it will be drawn), so its first frame in a headset is not a long stall. */
-async function warm(b: BuiltShowcase, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene) {
+/** Ahead of its first frame its pictures go up to the GPU, so that frame isn't a long stall in a headset. (Not its
+ *  shaders: waiting on a headset's driver to say they've compiled can wait forever, and the place never came.) */
+function warm(b: BuiltShowcase, gl: THREE.WebGLRenderer) {
   const textures = new Set<THREE.Texture>();
   b.group.traverse((o) => { for (const mat of [(o as THREE.Mesh).material].flat()) if (mat) for (const t of texturesOf(mat)) textures.add(t); });
-  let n = 0;
-  for (const t of textures) { gl.initTexture(t); if (++n % 4 === 0) await new Promise((r) => setTimeout(r, 0)); }
-  const { environment, fog } = scene;
-  scene.environment = b.envMap; scene.fog = b.fog;
-  let compiled: Promise<unknown> = Promise.resolve();
-  try { compiled = gl.compileAsync(b.group, camera, scene); } catch { /* it compiles on its first frame instead */ }
-  scene.environment = environment; scene.fog = fog;
-  await compiled.catch(() => undefined);
+  for (const t of textures) { try { gl.initTexture(t); } catch { /* it goes up on its first frame instead */ } }
 }
 
-async function make(name: string, view: number, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene): Promise<BuiltShowcase | null> {
+async function make(name: string, view: number, gl: THREE.WebGLRenderer, camera: THREE.Camera): Promise<BuiltShowcase | null> {
   const base = specs[`./scenes/${name}.json`];
   if (!base) return null;
   // a view can wear its own light: the same bridge in the late sun, at dusk, at noon
@@ -76,7 +69,7 @@ async function make(name: string, view: number, gl: THREE.WebGLRenderer, camera:
     const load = scripts[`./scenes/${name}.js`];
     const script = load ? (await load().catch(() => null))?.default : undefined;
     const b = await buildShowcase({ spec, script, renderer: gl, camera, grass: QUEST ? 0.1 : 0.5 });
-    await warm(b, gl, camera, scene).catch(() => undefined);
+    warm(b, gl);
     return b;
   } catch (e) {
     console.warn('[showcase]', name, e);
@@ -90,11 +83,11 @@ const ahead = new Map<string, Promise<BuiltShowcase | null>>();
 /** The place being shown now (it needs no second build). */
 const showing = new Set<string>();
 
-export function prebuildShowcase(name: string, view: number, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene): void {
+export function prebuildShowcase(name: string, view: number, gl: THREE.WebGLRenderer, camera: THREE.Camera): void {
   const key = `${name}:${view}`;
   if (ahead.has(key) || showing.has(key) || !specs[`./scenes/${name}.json`]) return;
   for (const [other, p] of ahead) { ahead.delete(other); void p.then((b) => b && dispose(b)); } // they've moved on from that one
-  ahead.set(key, make(name, view, gl, camera, scene));
+  ahead.set(key, make(name, view, gl, camera));
 }
 
 /** The ground of the place being shown under a point (world x, z), near where you stand: for the people standing in
@@ -116,8 +109,10 @@ export function Showcase({ name, camera: view = 0 }: { name: string; camera?: nu
     drawnFrames.current = 0;
     const key = `${name}:${view}`;
     showing.add(key);
-    const p = ahead.get(key) ?? make(name, view, gl, camera, scene);
+    const begun = ahead.get(key);
     ahead.delete(key);
+    // one begun ahead that failed is tried again, here, rather than leaving only the white
+    const p = (begun ?? make(name, view, gl, camera)).then((b) => b ?? (begun && live ? make(name, view, gl, camera) : null));
     void p.then((b) => {
       if (!b) return;
       if (!live) { dispose(b); return; }
@@ -186,10 +181,18 @@ export function Showcase({ name, camera: view = 0 }: { name: string; camera?: nu
       const h = built.held.find((x) => x.index === i);
       if (!h) continue;
       placed.current.add(i);
-      void built.place(h.it).then((node) => { if (node) { rising.current.push({ node, base: node.scale.x, t: 0 }); node.scale.setScalar(node.scale.x * 0.01); } });
+      void built.place(h.it).then((node) => {
+        if (!node) return;
+        rising.current.push({ node, base: node.scale.x, t: 0 });
+        node.scale.setScalar(node.scale.x * 0.01);
+        // turn them toward it as it rises (OriginRig does the turning, behind a blink)
+        node.updateWorldMatrix(true, false);
+        const at = node.getWorldPosition(new THREE.Vector3());
+        useMemory.setState((st) => ({ face: { x: at.x, z: at.z, n: (st.face?.n ?? 0) + 1 } }));
+      });
     }
   }, [built, revealed]);
-  useEffect(() => { placed.current = new Set(); rising.current = []; useMemory.setState({ revealed: [] }); }, [name]);
+  useEffect(() => { placed.current = new Set(); rising.current = []; useMemory.setState({ revealed: [], face: null }); }, [name, view]);
   // For rehearsals and checks: say something to the place without a microphone (window.__showcaseSay('a birdbath')).
   useEffect(() => {
     const w = window as unknown as { __showcaseSay?: (text: string) => number[] };
