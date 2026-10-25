@@ -11,8 +11,10 @@ Every visit in `apps/gate` can now be seen through two perspectives:
 
 Anyone can claim one, with the name the others see. Unclaimed perspectives are still usable.
 
+- **Two people in the room.** Each perspective stands somewhere in each memory. By default they stand on opposite sides of the room, facing each other. When a story says where someone was ("a little red stool by the stove"), that perspective moves beside it: Claude reads the words (`guide.locate`), with a plain word match standing in without it. Through the grandparent's eyes you stand at the grandparent's spot and see the grandchild across the room, and the other way round. When nobody is seeing through the other perspective, a stand-in waits at its spot. Someone seeing through your own eyes shares your spot and isn't drawn inside you.
 - **Headset.** The one Quest wearer can step into either perspective: **X** cycles, **Y** opens a wrist menu, and with hands a light on the left wrist opens it. Through the grandchild's eyes the world grows around the wearer's feet until their eyes are at 1.1 m. The XR origin is scaled behind a soft blink; head tracking stays one-to-one and the floor stays under them.
-- **Phones and laptops** use the same website. They stand at their own spot at the front of the memory and see first-person at their perspective's eye height (drag to look), or switch to the overview.
+- **Phones and laptops** use the same website. They stand at their perspective's spot and see first-person at its eye height, facing the other perspective (drag to look), or switch to the overview.
+- **Switching in the headset** happens behind the blink. The XR origin is scaled to the perspective's eye height and moved and turned, so the wearer's head lands on the perspective's spot facing the other one. Head tracking stays one-to-one.
 - **Everyone in the memory appears where they really are**, at their perspective's height: as a porcelain figure in their colour, or as their own likeness (see [AVATARS.md](AVATARS.md)). Their head turns as they look; in the headset their arms reach for their hands. People still at the gate stay the soft lights beside you.
 
 ## What each perspective keeps (SpacetimeDB)
@@ -84,7 +86,12 @@ node apps/gate/scripts/xr-check.mjs            # emulated Quest: grandchild's ey
   - the phone's note is kept as the grandchild's (told by Lily), with its thing;
   - handed to the grandparent and kept;
   - the host's spoken words are kept as the grandparent's story.
-- `xr-check.mjs` (emulated Quest): eyes 1.60 m; the grandchild's eyes give world scale 0.69 and eyes at 1.10 m; switching back restores scale 1.00; 0 errors.
+- `xr-check.mjs` (emulated Quest):
+  - Eyes 1.60 m; the grandchild's eyes give world scale 0.69 and eyes at 1.10 m.
+  - The wearer stands exactly at the grandchild's spot, facing the grandparent, with the grandparent's stand-in across the room.
+  - Switching back puts them at the grandparent's spot with the grandchild across.
+  - 0 errors.
+- `multiplayer-check.mjs`, perspective spots: Lily's "by the stove" moves the grandchild's spot there. Through the grandparent's eyes the host sees her across the room; through the grandchild's eyes the host shares her spot and sees the grandparent across the room.
 
 **Not yet verified:**
 - A real MPFB/FaceBuilder likeness.

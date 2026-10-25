@@ -110,6 +110,25 @@ if (hs.backend === 'spacetime') {
   await shot(host, `${out}/06-host-sees-ghost.png`);
   await shot(guest, `${out}/07-phone-own-stool.png`);
 
+  // Two people in the room: Lily's note put the grandchild by the stove, so she stands there now, and through the
+  // grandparent's eyes the host sees her across the room. Stepping into the grandchild's eyes puts the host in her
+  // place (she isn't drawn inside you) with the grandparent waiting across the room.
+  await host.waitForFunction(() => window.__social.spot('child').source === 'story', null, { timeout: 15000 }).catch(() => undefined);
+  const childSpot = await host.evaluate(() => window.__social.spot('child'));
+  check(childSpot.source === 'story', `the grandchild now stands where the story put her (${childSpot.objectId || 'default spot'})`);
+  await host.waitForFunction((at) => [...window.__social.poses.values()].some((p) => p.inScene && Math.hypot(p.head[0] - at.x, p.head[2] - at.z) < 0.05), childSpot.world, { timeout: 8000 }).catch(() => undefined);
+  const lilyThere = (await social(host)).poses.some((p) => p.inScene && Math.abs(p.y - 1.1) < 0.02);
+  check(lilyThere && (await host.evaluate(() => window.__socialDrawn.figures.length)) >= 1, 'through the grandparent’s eyes, the host sees Lily across the room at her spot');
+  await host.evaluate(() => window.__social.store.getState().set({ view: 'first' }));
+  await host.waitForTimeout(2500);
+  await shot(host, `${out}/09-grandparent-sees-lily-across.png`);
+  await host.evaluate(() => window.__social.setViewing('child'));
+  await host.waitForTimeout(2500);
+  const across = await host.evaluate(() => ({ figures: window.__socialDrawn.figures.length, standIns: window.__socialDrawn.standIns }));
+  check(across.figures === 0 && across.standIns.includes('grandparent'), `in the grandchild’s eyes the host shares Lily’s spot and sees the grandparent across the room (${JSON.stringify(across)})`);
+  await shot(host, `${out}/10-grandchild-sees-grandparent-across.png`);
+  await host.evaluate(() => { window.__social.setViewing('grandparent'); window.__social.store.getState().set({ view: 'overview' }); });
+
   // The phone hands it to the grandparent; the host keeps it.
   if (note1) {
     await guest.evaluate((id) => window.__social.store.getState().set({ openStory: id }), note1.id);

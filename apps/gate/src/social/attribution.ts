@@ -11,6 +11,7 @@ import { socialLink } from './link';
 import { inMemory, memoryKey } from './perspectives';
 import { notify, perspectiveById, useSocial, viewingPerspective } from './store';
 import { placeFromStory } from './spots';
+import { addPerspectiveDetail } from './overlay';
 
 const uuid = () => crypto.randomUUID();
 
@@ -24,7 +25,7 @@ export function turn(who: 'person' | 'companion', text: string): void {
 }
 
 /** A memory told from the viewing perspective. Resolves to the story's id once kept (null without the exchange). */
-export async function story(text: string, opts: { kind?: 'story' | 'note'; audioFileId?: string | null; objectId?: string | null; at?: number[] | null } = {}): Promise<string | null> {
+export async function story(text: string, opts: { kind?: 'story' | 'note'; audioFileId?: string | null; objectId?: string | null; at?: number[] | null; addsThings?: boolean } = {}): Promise<string | null> {
   const roomId = socialLink.roomId;
   if (!socialLink.ready || !roomId || !text.trim()) return null;
   const commandId = uuid();
@@ -34,8 +35,11 @@ export async function story(text: string, opts: { kind?: 'story' | 'note'; audio
       type: 'story', commandId, perspectiveId: p.id, memoryId: memoryKey(), kind: opts.kind ?? 'story', text: text.slice(0, 2000),
       objectId: opts.objectId ?? '', at: opts.at && opts.at.length === 3 ? opts.at : [], audioFileId: opts.audioFileId ?? '',
     });
-    void placeFromStory(text, p); // "I sat by the stove": stand this perspective there
-    return `${roomId}:${commandId}`;
+    const id = `${roomId}:${commandId}`;
+    // "I sat by the stove": stand this perspective there (once what the words add is in the place, if anything).
+    if (opts.addsThings) void addPerspectiveDetail(text, id).then((added) => placeFromStory(text, p, added));
+    else void placeFromStory(text, p);
+    return id;
   } catch (e) {
     notify((e as Error).message);
     return null;

@@ -35,6 +35,9 @@ function visibleIds(): Set<string> {
 function occupiedPerspectives(): Set<string> {
   return new Set([...inSceneIds()].map((id) => poses.get(id)?.perspectiveId ?? '').filter(Boolean));
 }
+/** What this device draws right now (read by the automated checks, like window.__presence). */
+const drawn: { figures: string[]; standIns: string[] } = { figures: [], standIns: [] };
+(window as unknown as { __socialDrawn?: typeof drawn }).__socialDrawn = drawn;
 const same = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every((x) => b.has(x));
 function usePolledSet(read: () => Set<string>): Set<string> {
   const [ids, setIds] = useState<Set<string>>(() => new Set());
@@ -55,9 +58,11 @@ function StandIns() {
   const occupied = usePolledSet(occupiedPerspectives);
   const [, tick] = useState(0);
   useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 1000); return () => clearInterval(t); }, []); // follow things settling
+  const shown = perspectives.filter((p) => p.key !== viewing && !occupied.has(p.id));
+  useEffect(() => { drawn.standIns = shown.map((p) => p.key); return () => { drawn.standIns = []; }; });
   return (
     <>
-      {perspectives.filter((p) => p.key !== viewing && !occupied.has(p.id)).map((p) => {
+      {shown.map((p) => {
         const likeness = avatars.find((a) => a.memberId === p.claimedBy);
         return (
           <Suspense key={p.id} fallback={null}>
@@ -82,6 +87,14 @@ const handOf = (o: THREE.Object3D | null): number[] => {
 
 function PosePublisher() {
   const camera = useThree((s) => s.camera);
+  // Where this device's eyes are (world x/z and facing), for the automated checks.
+  useEffect(() => {
+    const e = new THREE.Euler(0, 0, 0, 'YXZ'), p = new THREE.Vector3(), q = new THREE.Quaternion();
+    (window as unknown as { __socialCamera?: () => { x: number; y: number; z: number; yaw: number } }).__socialCamera = () => {
+      camera.getWorldPosition(p); camera.getWorldQuaternion(q);
+      return { x: p.x, y: p.y, z: p.z, yaw: e.setFromQuaternion(q, 'YXZ').y };
+    };
+  }, [camera]);
   const last = useRef({ at: 0, sentAt: 0, p: new THREE.Vector3(), q: new THREE.Quaternion(), key: '' });
   useFrame(() => {
     if (!socialLink.live) return;
@@ -123,6 +136,7 @@ export function SocialLayer() {
   // Once the memory has formed, the host keeps where the two perspectives start, so every device agrees.
   useEffect(() => { if (stage !== 'memory' || !live) return; const t = setTimeout(keepDefaultSpots, 1200); return () => clearTimeout(t); }, [stage, live, plan]);
   const placed = (stage === 'memory' || stage === 'leaving') && !!plan;
+  useEffect(() => { drawn.figures = [...ids]; }, [ids]);
   return (
     <group name="social" userData={{ noPoint: true }}>
       <PosePublisher />

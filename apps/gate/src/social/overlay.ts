@@ -27,9 +27,10 @@ export function overlayObjects(perspectiveId = viewingPerspective().id) {
 /** True when details said now belong to a perspective (the exchange keeps them) rather than the shared plan. */
 export const overlayActive = () => socialLink.ready && !!useMemory.getState().plan;
 
-export async function addPerspectiveDetail(text: string, storyId: string | null): Promise<number> {
+/** Adds what these words name to this perspective's place; resolves to the things added (with their spots). */
+export async function addPerspectiveDetail(text: string, storyId: string | null): Promise<{ data: PlanObject; place: Placement }[]> {
   const shared = useMemory.getState().plan;
-  if (!shared || !socialLink.ready) return 0;
+  if (!shared || !socialLink.ready) return [];
   const p = viewingPerspective();
   const mine = overlayObjects(p.id);
   // A plan holds at most 16 things: leave room for what these words add.
@@ -44,14 +45,14 @@ export async function addPerspectiveDetail(text: string, storyId: string | null)
   // Offline (or no budget): only what these words name, and nothing of the same kind already there.
   if (!fresh.length) fresh = planOffline(text, shared.title, { seeds: false }).objects.filter((o) => !known.some((k) => k.kind === o.kind));
   fresh = fresh.slice(0, 3);
-  if (!fresh.length) return 0;
+  if (!fresh.length) return [];
   const rename = new Map<string, string>();
   fresh = fresh.map((o) => { const id = `${p.key}-${short()}`; rename.set(o.id, id); return { ...o, id, quote: o.quote ?? text.slice(0, 200) }; })
     .map((o) => (o.target && rename.has(o.target) ? { ...o, target: rename.get(o.target)! } : o));
   // Where layout puts them among everything already there, nudged off anything standing on the floor.
   const laid = layout({ ...shared, objects: [...merged.objects, ...fresh] });
   const taken: Placement[] = [...memoryPlacements.current.values(), ...mine.map((o) => o.placement)];
-  let added = 0;
+  const added: { data: PlanObject; place: Placement }[] = [];
   for (const o of fresh) {
     const q = { ...(laid.find((l) => l.id === o.id) ?? { id: o.id, x: 0, y: 0, z: 0.4, yaw: 0, scale: o.scale, on: null }) };
     if (q.on && !known.some((k) => k.id === q.on) && !fresh.some((f) => f.id === q.on)) q.on = null;
@@ -62,7 +63,7 @@ export async function addPerspectiveDetail(text: string, storyId: string | null)
     taken.push(q);
     try {
       await socialLink.request({ type: 'object', perspectiveId: p.id, memoryId: memoryKey(), storyId: storyId ?? '', object: o, placement: q });
-      added++;
+      added.push({ data: o, place: q });
     } catch (e) { notify((e as Error).message); break; }
   }
   return added;

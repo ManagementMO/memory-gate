@@ -68,6 +68,15 @@ test('perspectives: room-scoped poses, claims, attributed stories, things and a 
   await host.send({ type: 'turn', commandId: randomUUID(), perspectiveId: grandparent.id, who: 'companion', text: 'The stool, by the stove.' });
   await waitFor(() => social(host).turns.some(x => x.perspectiveId === grandparent.id && x.speakerName === 'Companion'));
 
+  // Where each perspective stands in a memory: a default, then the story's; a default never replaces the story's.
+  await host.send({ type: 'spot', perspectiveId: child.id, memoryId: 't:Kitchen', x: 1.4, z: -0.8, source: 'default' });
+  await sam.send({ type: 'spot', perspectiveId: child.id, memoryId: 't:Kitchen', x: 1.9, z: -1.2, objectId: 'child-stool01', source: 'story', quote: 'by the stove' });
+  await host.send({ type: 'spot', perspectiveId: child.id, memoryId: 't:Kitchen', x: 0, z: 0, source: 'default' });
+  const spot = await waitFor(() => social(host).spots.find(s => s.perspectiveId === child.id && s.memoryId === 't:Kitchen' && s.source === 'story'));
+  assert.ok(Math.abs(spot.x - 1.9) < 1e-3 && spot.objectId === 'child-stool01');
+  await assert.rejects(sam.send({ type: 'spot', perspectiveId: child.id, memoryId: 't:Kitchen', x: 40, z: 0, source: 'story' }));
+  assert.ok(!(social(stranger).spots ?? []).some(s => s.perspectiveId === child.id));
+
   // Leaving drops that person's pose for everyone.
   sam.close();
   await waitFor(() => !poses(host).some(p => p.memberId === room.recipientId), 8000);

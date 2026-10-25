@@ -77,9 +77,22 @@ try {
   note(`${seenAt && Math.abs(seenAt - 1.1) < 0.03 ? 'PASS' : 'FAIL'} grandchild's eyes: world scale ${after.k.toFixed(2)}, eyes at ${seenAt?.toFixed(2)} m in the memory`);
   await page.waitForTimeout(1200);
   await page.screenshot({ path: `${out}/03b-xr-grandchild-eyes.png` });
+  // Two people in the room: the wearer now stands where the grandchild stands, facing the grandparent across it.
+  const placedAt = await page.evaluate(() => {
+    const cam = window.__socialCamera?.() ?? null;
+    return { cam, spot: window.__social.spot('child'), other: window.__social.spot('grandparent'), standIns: window.__socialDrawn.standIns };
+  });
+  if (placedAt.cam) {
+    const off = Math.hypot(placedAt.cam.x - placedAt.spot.world.x, placedAt.cam.z - placedAt.spot.world.z);
+    const turn = Math.abs(Math.atan2(Math.sin(placedAt.cam.yaw - placedAt.spot.facing), Math.cos(placedAt.cam.yaw - placedAt.spot.facing)));
+    note(`${off < 0.05 && turn < 0.1 ? 'PASS' : 'FAIL'} the wearer stands at the grandchild's spot (${off.toFixed(3)} m off), facing the grandparent (${turn.toFixed(3)} rad off)`);
+  }
+  note(`${placedAt.standIns.includes('grandparent') ? 'PASS' : 'FAIL'} the grandparent waits across the room (stand-ins: ${placedAt.standIns.join(', ') || 'none'})`);
   await page.evaluate(() => window.__social.setViewing('grandparent'));
   await page.waitForTimeout(800);
-  note(`back to the grandparent's eyes: world scale ${(await eyes()).k.toFixed(2)}`);
+  const back = await page.evaluate(() => ({ cam: window.__socialCamera?.() ?? null, spot: window.__social.spot('grandparent'), standIns: window.__socialDrawn.standIns }));
+  const backOff = back.cam ? Math.hypot(back.cam.x - back.spot.world.x, back.cam.z - back.spot.world.z) : NaN;
+  note(`${backOff < 0.05 && back.standIns.includes('child') ? 'PASS' : 'FAIL'} back to the grandparent's eyes: world scale ${(await eyes()).k.toFixed(2)}, at the grandparent's spot (${backOff.toFixed(3)} m off), the grandchild across the room`);
   await page.evaluate(() => window.__gate.flow.leave());
   await page.waitForFunction(() => window.__gate.store.getState().stage === 'album', null, { timeout: 40000 });
   await page.waitForTimeout(6000);

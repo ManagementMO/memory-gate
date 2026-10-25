@@ -11,7 +11,7 @@ import { pinArchive, searchArchive, type ArchiveResult } from '../archive';
 import { story } from '../attribution';
 import { handOver, otherPerspective, respondHandoff } from '../handoffs';
 import { socialLink } from '../link';
-import { overlayActive, addPerspectiveDetail } from '../overlay';
+import { overlayActive } from '../overlay';
 import { claimPerspective, inMemory } from '../perspectives';
 import { notify, perspectiveById, useSocial, viewingPerspective, type PerspectiveKey } from '../store';
 import './social.css';
@@ -91,8 +91,7 @@ function Composer({ onClose }: { onClose: () => void }) {
     const words = text.trim();
     if (!words) return;
     setBusy(true);
-    const id = await story(words, { kind: 'note' });
-    if (id && overlayActive()) await addPerspectiveDetail(words, id);
+    const id = await story(words, { kind: 'note', addsThings: overlayActive() });
     setBusy(false);
     if (id) { notify(`Kept with the ${p.label.toLowerCase()}’s eyes`); onClose(); }
   };

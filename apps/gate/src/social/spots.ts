@@ -95,9 +95,10 @@ const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
   Promise.race([p.catch(() => fallback), new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
 
 /** A memory told through a perspective's eyes may say where they were: stand them there. */
-export async function placeFromStory(text: string, p: Perspective): Promise<void> {
+export async function placeFromStory(text: string, p: Perspective, justAdded: { data: { id: string; label: string; kind: string }; place: Placement }[] = []): Promise<void> {
   if (!socialLink.ready || !inMemory()) return;
-  const items = things();
+  const known = things();
+  const items = [...known, ...justAdded.filter((a) => !known.some((k) => k.id === a.data.id)).map((a) => ({ id: a.data.id, label: a.data.label, kind: a.data.kind, place: a.place }))];
   if (!items.length) return;
   const s = useGate.getState().session;
   const byClaude = s ? await withTimeout(convex.action(api.guide.locate, { code: s.code, token: s.token, label: p.label, words: text, objects: items.map((i) => ({ id: i.id, label: i.label })) }), 6000, null) : null;

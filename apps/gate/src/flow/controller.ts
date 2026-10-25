@@ -14,7 +14,7 @@ import { moments, useMoments } from './moments';
 import type { SharedMemory } from './sync';
 import { PALACE_ENTER_MS } from '../scene/palace/plan';
 import { guideContext, story, turn } from '../social/attribution';
-import { addPerspectiveDetail, overlayActive } from '../social/overlay';
+import { overlayActive } from '../social/overlay';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -169,7 +169,7 @@ class Flow {
     if (reply.intent === 'add_detail') {
       // Seeing through someone's eyes (and the exchange is keeping perspectives): it becomes that perspective's own
       // story and things in the place. Otherwise the shared memory grows, as always.
-      if (overlayActive()) void story(text, { audioFileId: h.audioFileId }).then((id) => addPerspectiveDetail(text, id));
+      if (overlayActive()) void story(text, { audioFileId: h.audioFileId, addsThings: true });
       else memory.addDetail(text, h.audioFileId);
       moments.mark(text, h.audioFileId);
     } else if (reply.intent === 'chat' && text.split(/\s+/).length >= 5) {
