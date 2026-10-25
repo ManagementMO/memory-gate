@@ -2,7 +2,7 @@
 // companion says or does; the person only ever talks, shares a photo or video, or says they'd like to stop.
 //   portal → greeting → gathering (talk / photo / video / someone helps) → entering → forming → memory → leaving → album
 import { api } from '../../../../convex/_generated/api';
-import { asksToEnter, asksToGoIn, asksToLeave, guideOffline, safeReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
+import { asksToEnter, asksToGoIn, asksToLeave, guideOffline, perspectiveFromWords, safeReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
 import { useGate, type MediaItem } from '../state/store';
@@ -18,6 +18,8 @@ import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { useMemory } from './memory';
 import { guideContext, story, turn } from '../social/attribution';
 import { overlayActive } from '../social/overlay';
+import { claimPerspective } from '../social/perspectives';
+import { worldStatus } from '../scene/worldStatus';
 import { visitFromUrl } from '../album/prepared';
 import { useAtlas, type PlaceId, type Tab } from '../map/state';
 import { sfMemory } from '../sf/memories';
@@ -41,6 +43,8 @@ class Flow {
   private thinking = false;
   /** Counts questions to the companion's brain while gathering, so only the newest answer is said. */
   private askSeq = 0;
+  /** Whose eyes they remember through: known once they say ("with my grandmother"), else asked once in words. */
+  private who = { asked: false, known: false };
   private raf = 0;
   private begun = false;
   private speakingLine: Promise<void> = Promise.resolve();
@@ -149,6 +153,9 @@ class Flow {
     turn('person', text);
     this.clearNudge();
     music.duck(false);
+    // Whose eyes they remember through, as soon as they say it ("with my grandmother": the child's), never a form.
+    const who = g.session?.role === 'guest' ? null : perspectiveFromWords(text);
+    if (who) { this.who.known = true; void claimPerspective(who, null); }
     const beforeMemory = g.stage === 'gathering' || g.stage === 'greeting';
     // "Yes" to "Shall we go and see it?", or "let's go" once there's somewhere to go: step through at once, without
     // waiting on a model (and before the gate, "let's go" is never taken for goodbye).
@@ -167,6 +174,17 @@ class Flow {
     }
     if (g.stage === 'memory' || g.stage === 'forming') return void this.heardInMemory(text, h);
     if (g.stage !== 'gathering' && g.stage !== 'greeting') return;
+    // The answer to "Who was there with you?": settled (or the default kept), and straight on to the invitation.
+    if (this.who.asked && !this.who.known) {
+      this.who.known = true;
+      this.turnsInPhase++;
+      this.placeWords(text);
+      this.askSeq++;
+      await this.say(who === 'child' ? 'As a child, then. Shall we go and see it together?' : who === 'grandparent' ? 'With your grandchild, then. Shall we go and see it together?' : 'Shall we go and see it together?');
+      this.invitedToEnter = true;
+      this.scheduleNudge();
+      return;
+    }
     this.turnsInPhase++;
     this.placeWords(text);
     this.thinking = true;
@@ -196,8 +214,17 @@ class Flow {
       default:
         // A description: start drawing the place in the background so it's ready (or nearly) when we arrive.
         memory.plan();
-        await this.say(reply.reply);
-        this.invitedToEnter = asksToEnter(reply.reply);
+        // Before stepping in, once: who was there with them (their perspective), asked in words in place of the
+        // invitation; the rest of the reply is still said.
+        if (asksToEnter(reply.reply) && !this.who.known && !this.who.asked && g.session?.role !== 'guest') {
+          this.who.asked = true;
+          const kept = reply.reply.split(/(?<=[.!?])\s+/).filter((x) => !asksToEnter(x)).join(' ');
+          await this.say(`${kept} Who was there with you, back then?`.trim());
+          this.invitedToEnter = false;
+        } else {
+          await this.say(reply.reply);
+          this.invitedToEnter = asksToEnter(reply.reply);
+        }
     }
     this.scheduleNudge();
   }
@@ -277,6 +304,7 @@ class Flow {
     this.leaving = false;
     this.history = [];
     this.said = [];
+    this.who = { asked: false, known: false };
     this.invitedToEnter = false;
     this.place = plan?.title ?? PLACES[key].title;
     memory.restore(plan ?? placePlan(PLACES[key]), key);
@@ -365,7 +393,13 @@ class Flow {
     const prepared = !!useMemory.getState().place;
     const ready = prepared ? await this.worldShown(14_000) : await memory.whenDrawn(14_000);
     if (!ready) await this.say('It’s coming back to me, little by little.');
-    if (prepared && !ready && !(await this.worldShown(16_000))) {
+    // A world still on its way (a slow connection): keep waiting for it, with a word, rather than draw another place.
+    let shown = prepared && !ready ? await this.worldShown(16_000) : true;
+    if (prepared && !shown && worldStatus.loading) {
+      void this.say('It’s nearly here. The meadow takes a moment on this connection.');
+      shown = await this.worldShown(90_000);
+    }
+    if (prepared && !shown) {
       // The world didn't come (no backend, or it was never loaded): draw the place from the words instead.
       memory.leavePlace();
       memory.plan();
@@ -545,6 +579,7 @@ class Flow {
     this.mediaCaption = null;
     this.place = null;
     this.said = [];
+    this.who = { asked: false, known: false };
     this.clearNudge();
     this.listen(false);
     memory.reset();
@@ -564,6 +599,7 @@ class Flow {
     this.mediaCaption = null;
     this.place = null;
     this.said = [];
+    this.who = { asked: false, known: false };
     memory.reset();
     moments.reset();
     music.setMode('gate');

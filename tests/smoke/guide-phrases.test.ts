@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { asksToEnter, asksToGoIn, asksToLeave, guideOffline, saysYes, type GuideInput } from '../../packages/shared/src/guide';
+import { asksToEnter, asksToGoIn, asksToLeave, guideOffline, perspectiveFromWords, saysYes, type GuideInput } from '../../packages/shared/src/guide';
 import { bringIn, placePlan, PLACES } from '../../packages/shared/src/places';
 import { COLORS } from '../../packages/shared/src/scene';
 
@@ -49,3 +49,15 @@ test('a colour said for the kite is its colour, whenever it is said', () => {
   expect(kite(plan)).toBe(COLORS.yellow);
   expect(plan.objects.filter((o) => o.kind === 'kite')).toHaveLength(1);
 });
+
+test.each([
+  ['I remember being here with my grandmother.', 'child'],
+  ['My grandma and I flew a red kite on this hill.', 'child'],
+  ['When I was a little girl we came here every summer.', 'child'],
+  ['as a kid I ran down that path', 'child'],
+  ['I brought my grandson here to fly his kite.', 'grandparent'],
+  ['My grandkids loved this hill.', 'grandparent'],
+  ['I was the grandmother, watching them run.', 'grandparent'],
+  ['I remember this hill where we flew a red kite.', null],
+  ['There were two benches by the path.', null],
+])('whose eyes: %s → %s', (t, who) => expect(perspectiveFromWords(t)).toBe(who));
