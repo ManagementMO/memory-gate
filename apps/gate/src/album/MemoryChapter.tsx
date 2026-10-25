@@ -17,9 +17,11 @@ export type ChapterProps = {
   onToggle: (id: string) => void;
   onFocusOpen: (id: string) => void;
   onRevisit?: (memoryId: string) => void;
+  /** Under the strips: who can see this memory, for the person's own visits. */
+  footer?: React.ReactNode;
 };
 
-export function MemoryChapter({ memory, index, openId, onEnter, onLeaveStrip, onToggle, onFocusOpen, onRevisit }: ChapterProps) {
+export function MemoryChapter({ memory, index, openId, onEnter, onLeaveStrip, onToggle, onFocusOpen, onRevisit, footer }: ChapterProps) {
   const reduce = useReducedMotion();
   const strips: AlbumMoment[][] = [];
   for (let i = 0; i < memory.moments.length; i += PER_STRIP) strips.push(memory.moments.slice(i, i + PER_STRIP));
@@ -49,6 +51,7 @@ export function MemoryChapter({ memory, index, openId, onEnter, onLeaveStrip, on
           ))}
         </motion.ul>
       ))}
+      {footer}
     </motion.section>
   );
 }

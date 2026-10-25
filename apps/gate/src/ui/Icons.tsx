@@ -38,3 +38,15 @@ export const CloseIcon = ({ size }: P) => (
 export const MicIcon = ({ size }: P) => (
   <svg {...base(size)}><rect x="9" y="3.8" width="6" height="10.4" rx="3" /><path d="M6 11.5a6 6 0 0012 0M12 17.5v3" /></svg>
 );
+export const MapIcon = ({ size }: P) => (
+  <svg {...base(size)}><path d="M3.5 6.6l5.2-2.1 6.6 2.6 5.2-2.1v12.9l-5.2 2.1-6.6-2.6-5.2 2.1z" /><path d="M8.7 4.5v12.9M15.3 7.1V20" /></svg>
+);
+export const LockIcon = ({ size }: P) => (
+  <svg {...base(size)}><rect x="5" y="10.5" width="14" height="9.5" rx="2.6" /><path d="M8.2 10.5V8a3.8 3.8 0 017.6 0v2.5" /></svg>
+);
+export const GlobeIcon = ({ size }: P) => (
+  <svg {...base(size)}><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.2 3.6 8.5s-1.2 6.1-3.6 8.5c-2.4-2.4-3.6-5.2-3.6-8.5s1.2-6.1 3.6-8.5z" /></svg>
+);
+export const BackIcon = ({ size }: P) => (
+  <svg {...base(size)}><path d="M14.5 6l-6 6 6 6" /></svg>
+);

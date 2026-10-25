@@ -9,20 +9,21 @@ import { MemoryChapter } from './MemoryChapter';
 import { useGate } from '../state/store';
 import { useAlbum } from './useAlbum';
 import './album.css';
-import { CloseIcon } from '../ui/Icons';
+import { BackIcon, CloseIcon } from '../ui/Icons';
+import { VisibilityChoice } from '../map/Visibility';
 import { openPrepared, PREPARED } from './prepared';
 
-export type AlbumViewProps = { onBeginAnother: () => void; onRevisit?: (memoryId: string) => void; onClose?: () => void; onVisitScene?: (scene: string) => void };
+export type AlbumViewProps = {
+  onBeginAnother: () => void; onRevisit?: (memoryId: string) => void; onClose?: () => void; onVisitScene?: (scene: string) => void;
+  /** Back to the memory map, and the place these memories were made (shown above the title). */
+  onBack?: () => void; placeName?: string;
+};
 
 const HOVER_OPEN_MS = 130;
 const HOVER_CLOSE_MS = 320;
 
-export default function AlbumView({ onBeginAnother, onRevisit, onClose, onVisitScene }: AlbumViewProps) {
-  const memories = useAlbum();
-  // The team's prepared scenes, opened from here like any memory (after the person's own visits).
-  const openSample = useCallback((id: string) => { const m = PREPARED.find((p) => p.id === id); if (m) openPrepared(m, onVisitScene); }, [onVisitScene]);
-  const session = useGate((s) => s.session);
-  const reduce = useReducedMotion();
+/** Which moment is open: hover opens one gently, a tap or keyboard focus pins it, Escape or a tap outside closes it. */
+export function usePaneOpen() {
   const [openId, setOpenId] = useState<string | null>(null);
   const pinned = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -47,21 +48,34 @@ export default function AlbumView({ onBeginAnother, onRevisit, onClose, onVisitS
     });
   }, []);
   const onFocusOpen = useCallback((id: string) => { clear(); pinned.current = true; setOpenId(id); }, []);
+  const closeAll = useCallback(() => { clear(); pinned.current = false; setOpenId(null); }, []);
 
   useEffect(() => {
-    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') { clear(); pinned.current = false; setOpenId(null); } };
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') closeAll(); };
     window.addEventListener('keydown', esc);
     return () => { window.removeEventListener('keydown', esc); clear(); };
-  }, []);
+  }, [closeAll]);
+  return { openId, onEnter, onLeaveStrip, onToggle, onFocusOpen, closeAll };
+}
+
+export default function AlbumView({ onBeginAnother, onRevisit, onClose, onVisitScene, onBack, placeName }: AlbumViewProps) {
+  const memories = useAlbum();
+  // The team's prepared scenes, opened from here like any memory (after the person's own visits).
+  const openSample = useCallback((id: string) => { const m = PREPARED.find((p) => p.id === id); if (m) openPrepared(m, onVisitScene); }, [onVisitScene]);
+  const session = useGate((s) => s.session);
+  const reduce = useReducedMotion();
+  const { openId, onEnter, onLeaveStrip, onToggle, onFocusOpen, closeAll } = usePaneOpen();
 
   const empty = memories.length === 0;
   return (
     <section className="album" aria-labelledby="album-h" data-testid="album">
       <div className="album-scrim" aria-hidden="true" />
-      <div className="album-scroll" onClick={(e) => { if (!(e.target as Element).closest('.pane')) { clear(); pinned.current = false; setOpenId(null); } }}>
+      <div className="album-scroll" onClick={(e) => { if (!(e.target as Element).closest('.pane')) closeAll(); }}>
       <div className="album-inner">
         <div className="album-top">
-          <div className="wordmark">Memory Gate</div>
+          {onBack ? (
+            <button type="button" className="pill glass album-back" onClick={onBack} data-testid="album-back"><BackIcon /> Map</button>
+          ) : <div className="wordmark">Memory Gate</div>}
           {onClose && (
             <button type="button" className="icon-btn glass album-close" aria-label="Back to the start" onClick={onClose} data-testid="album-close">
               <CloseIcon />
@@ -69,6 +83,7 @@ export default function AlbumView({ onBeginAnother, onRevisit, onClose, onVisitS
           )}
         </div>
         <motion.header className="album-head" initial={{ opacity: 0, y: reduce ? 0 : 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}>
+          {placeName && <p className="album-place" data-testid="album-place">{placeName}</p>}
           <h1 id="album-h">Your moments</h1>
           <p className="album-date">{todayLine()}</p>
           {!empty && <p className="album-summary">{summaryLine(memories)}</p>}
@@ -82,7 +97,7 @@ export default function AlbumView({ onBeginAnother, onRevisit, onClose, onVisitS
         ) : (
           memories.map((m, i) => (
             <MemoryChapter key={m.id} memory={m} index={i} openId={openId} onEnter={onEnter} onLeaveStrip={onLeaveStrip}
-              onToggle={onToggle} onFocusOpen={onFocusOpen} onRevisit={onRevisit} />
+              onToggle={onToggle} onFocusOpen={onFocusOpen} onRevisit={onRevisit} footer={<VisibilityChoice memory={m} />} />
           ))
         )}
         <section className="album-samples" aria-labelledby="album-samples-h" data-testid="album-samples">

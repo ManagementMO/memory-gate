@@ -16,7 +16,8 @@ import { PresenceSync } from '../presence/PresenceSync';
 import { SocialUI } from '../social/ui/SocialUI';
 import { lazyRetry } from './lazyRetry';
 
-const AlbumView = lazyRetry(() => import('../album/AlbumView'));
+// The album stage: the memory map, and each place's memories (your album in San Francisco).
+const Atlas = lazyRetry(() => import('../map/Atlas'));
 
 /** If the album can't be fetched (a dropped connection), say so where it would be and offer to try again. */
 class AlbumUnavailable extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -50,7 +51,7 @@ export function Overlay() {
       {stage === 'album' && (
         <AlbumUnavailable>
           <Suspense fallback={null}>
-            <AlbumView onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} onClose={() => flow.home()}
+            <Atlas onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} onClose={() => flow.home()}
               onVisitScene={(scene) => { const m = PREPARED.find((p) => p.open && 'scene' in p.open && p.open.scene === scene); void flow.visitPlace(scene as PlaceKey, m?.plan ?? null); }} />
           </Suspense>
         </AlbumUnavailable>

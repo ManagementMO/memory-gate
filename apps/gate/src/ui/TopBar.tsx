@@ -3,16 +3,13 @@
 import { useEffect, useRef } from 'react';
 import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
-import { LeaveIcon, MuteIcon, PhotosIcon, PlayIcon, RestIcon, SoundIcon } from './Icons';
-import { useAlbum } from '../album/useAlbum';
+import { LeaveIcon, MapIcon, MuteIcon, PlayIcon, RestIcon, SoundIcon } from './Icons';
 
-/** "Your moments": a round window onto the album, showing the latest picture kept (the album opens over the palace). */
-function MomentsButton() {
-  const memories = useAlbum();
-  const picture = memories.flatMap((m) => m.moments).filter((m) => m.imageUrl).sort((a, b) => b.at - a.at)[0]?.imageUrl ?? null;
+/** The memory map: where your memories live, and where others have shared theirs (it opens over the palace). */
+function MapButton() {
   return (
-    <button type="button" className="moments-btn glass" aria-label="Your moments" title="Your moments" onClick={() => flow.openAlbum()} data-testid="open-album">
-      {picture ? <img src={picture} alt="" draggable={false} /> : <PhotosIcon />}
+    <button type="button" className="moments-btn map-btn glass" aria-label="Memory map" title="Memory map" onClick={() => flow.openAlbum()} data-testid="open-map">
+      <MapIcon />
     </button>
   );
 }
@@ -58,7 +55,7 @@ export function TopBar() {
       {day && title ? <h1 className="memory-title" data-testid="memory-title">{title}</h1> : <div className="wordmark">Memory Gate</div>}
       {inConversation && <ListeningChip />}
       <div className="right">
-        {stage === 'portal' && !guest && <MomentsButton />}
+        {stage === 'portal' && !guest && <MapButton />}
         {stage !== 'portal' && (
           <button type="button" className="icon-btn glass" aria-label={musicOn ? 'Turn music off' : 'Turn music on'} aria-pressed={!musicOn} onClick={() => flow.setMusic(!musicOn)} data-testid="music">
             {musicOn ? <SoundIcon /> : <MuteIcon />}

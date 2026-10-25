@@ -1,11 +1,13 @@
 // ?preview=album: the moments album exactly as it appears after leaving a memory: the palace behind liquid glass
 // (the aurora with ?world=aurora), filled with clearly labelled fictional sample memories. ?empty=1 shows it empty.
+// &map=1 shows the memory map instead (the album stage as opened from the start page).
 import { Canvas, useThree } from '@react-three/fiber';
 import { Bloom, EffectComposer, Noise, ToneMapping, Vignette } from '@react-three/postprocessing';
 import { ToneMappingMode } from 'postprocessing';
 import { useEffect, useState } from 'react';
 import * as THREE from 'three';
 import AlbumView from '../album/AlbumView';
+import Atlas from '../map/Atlas';
 import { sampleMemories } from '../album/samples';
 import { useMoments } from '../flow/moments';
 import { AuroraSky } from '../scene/AuroraSky';
@@ -44,13 +46,14 @@ export default function AlbumPreview() {
     if (xcode && xtoken) useGate.getState().set({ session: { code: xcode, token: xtoken, joinKey: null, role: 'guest', name: 'Family' } });
     return true;
   });
+  const Album = new URLSearchParams(location.search).get('map') === '1' ? Atlas : AlbumView;
   return (
     <div className="app">
       <Canvas className="scene" dpr={[1, 2]} gl={{ antialias: false, powerPreference: 'high-performance', alpha: false }} camera={{ fov: 50, near: 0.05, far: 200, position: [0, 1.55, 0] }}>
         <Backdrop />
       </Canvas>
       <div className="overlay" data-world={useGate.getState().world}>
-        {ready && <AlbumView onBeginAnother={() => console.info('[album] visit another memory')} onRevisit={(id) => console.info('[album] visit again', id)} />}
+        {ready && <Album onBeginAnother={() => console.info('[album] visit another memory')} onRevisit={(id) => console.info('[album] visit again', id)} />}
       </div>
       <GlassFilters />
     </div>
