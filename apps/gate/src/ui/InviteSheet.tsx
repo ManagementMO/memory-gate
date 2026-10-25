@@ -31,7 +31,7 @@ export function InviteSheet() {
         {session ? (
           <div className="qr" aria-label="Invitation QR code" dangerouslySetInnerHTML={{ __html: svg }} />
         ) : (
-          <p className="muted">Inviting needs this computer’s Memory Gate server. It isn’t reachable right now.</p>
+          <p className="muted">Inviting needs this computer’s Memora server. It isn’t reachable right now.</p>
         )}
         {session && <p className="link" data-testid="invite-link">{link}</p>}
       </section>

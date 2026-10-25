@@ -6,6 +6,39 @@ export const anchorV = v.object({ position: vec3, normal: v.optional(vec3), sour
 export const pointerV = v.object({ origin: vec3, direction: vec3, hit: v.union(vec3, v.null()), surfaceHit: v.optional(v.union(vec3, v.null())), source: v.string() });
 
 export default defineSchema({
+  objectKnowledge: defineTable({
+    roomId: v.id('rooms'), memberId: v.id('members'), topicKey: v.string(), status: v.string(),
+    runId: v.union(v.string(), v.null()), error: v.union(v.string(), v.null()), createdAt: v.number(), formatVersion: v.optional(v.number()),
+    references: v.array(v.object({ topicKey: v.string(), sourceUrl: v.string(), title: v.string(), attribution: v.string(), excerpt: v.string(), fetchedAt: v.number() })),
+  }).index('by_room_topic', ['roomId', 'topicKey']).index('by_topic_status', ['topicKey', 'status']).index('by_room', ['roomId']),
+  memoryImports: defineTable({
+    roomId: v.id('rooms'), memberId: v.id('members'), mode: v.string(), status: v.string(),
+    urls: v.array(v.string()), runId: v.union(v.string(), v.null()), actorId: v.string(),
+    error: v.union(v.string(), v.null()), createdAt: v.number(),
+    kind: v.optional(v.literal('place')), queryText: v.optional(v.string()),
+    commandId: v.optional(v.string()),
+  }).index('by_room', ['roomId']),
+  memoryPlaces: defineTable({
+    roomId: v.id('rooms'), importId: v.id('memoryImports'), title: v.string(), address: v.string(),
+    sourceUrl: v.union(v.string(), v.null()), lat: v.union(v.number(), v.null()), lng: v.union(v.number(), v.null()),
+    approved: v.boolean(), execution: v.string(), runId: v.union(v.string(), v.null()), createdAt: v.number(),
+  }).index('by_room', ['roomId']),
+  memoryObjects: defineTable({
+    roomId: v.id('rooms'), memberId: v.id('members'), sourceId: v.union(v.id('memorySources'), v.null()), placeId: v.union(v.id('memoryPlaces'), v.null()),
+    perspective: v.string(), label: v.string(), note: v.string(), choice: v.string(), status: v.string(),
+    assetKey: v.union(v.string(), v.null()), fileId: v.union(v.id('_storage'), v.null()), modelSource: v.string(),
+    taskId: v.union(v.string(), v.null()), vendorConsent: v.boolean(), error: v.union(v.string(), v.null()),
+    slot: v.union(v.number(), v.null()), size: v.number(), yaw: v.number(), commandId: v.string(),
+    memoryKey: v.optional(v.string()),
+    downloadLease: v.union(v.number(), v.null()), createdAt: v.number(),
+  }).index('by_room', ['roomId']).index('by_room_command', ['roomId', 'commandId']),
+  memorySources: defineTable({
+    roomId: v.id('rooms'), importId: v.id('memoryImports'), approved: v.boolean(),
+    sourceUrl: v.union(v.string(), v.null()), imageUrl: v.union(v.string(), v.null()), fileId: v.union(v.id('_storage'), v.null()),
+    caption: v.string(), owner: v.string(), timestamp: v.union(v.string(), v.null()),
+    suggestedObjects: v.array(v.string()), objectKey: v.string(), perspective: v.string(), note: v.string(),
+    execution: v.string(), runId: v.union(v.string(), v.null()), createdAt: v.number(),
+  }).index('by_room', ['roomId']).index('by_import', ['importId']),
   rooms: defineTable({
     code: v.string(), // 6-char join code (not a secret by itself: every call also needs a member token)
     title: v.string(),
@@ -212,6 +245,7 @@ export default defineSchema({
     mediaKind: v.union(v.string(), v.null()), // photo | video
     caption: v.union(v.string(), v.null()), // what the companion saw in the photo
     memberId: v.optional(v.id('members')), // who began it (guests follow the host; the host welcomes a guest's photo)
+    place: v.optional(v.union(v.literal('courtyard'), v.literal('red-kite'))), // a prepared place (packages/shared/src/places.ts), not a sketch
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index('by_room', ['roomId']),

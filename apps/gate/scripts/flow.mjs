@@ -3,7 +3,7 @@
 // are delivered through the page's test hook because a headless browser can't speak.
 //   node apps/gate/scripts/flow.mjs <outDir> [--base https://localhost:5180] [--mobile] [--companion light|figure] [--world palace|aurora]
 //        [--words "..."] [--live] (live = real Claude through the backend; spends tokens)
-import { chromium } from '@playwright/test';
+import { launchBrowser } from './browser.mjs';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
 const args = process.argv.slice(2);
@@ -19,7 +19,7 @@ const words = opt('words', 'My grandmother’s kitchen, in the morning. Yellow c
 const world = opt('world', 'palace');
 const url = `${base}/?voice=off&companion=${companion}&world=${world}${flag('live') ? '' : '&mode=offline'}`;
 
-const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--ignore-gpu-blocklist', '--use-angle=metal', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
+const browser = await launchBrowser();
 const ctx = await browser.newContext({ viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 900 }, deviceScaleFactor: mobile ? 2 : 1, isMobile: mobile, hasTouch: mobile, ignoreHTTPSErrors: true });
 const page = await ctx.newPage();
 const errors = [];

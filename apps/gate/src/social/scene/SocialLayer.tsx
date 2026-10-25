@@ -2,7 +2,8 @@
 // about ten times a second, and everyone else appears where they really are, at their perspective's height. People
 // who aren't inside the memory yet (still at the gate, or without the exchange) stay the soft lights beside you.
 // There is always someone across the room: when nobody is seeing through the other perspective, a stand-in waits at
-// its spot. Someone seeing through the same eyes as you shares your spot, so you don't see them inside you.
+// its spot. Someone seeing through the same eyes as you shares your spot, so you don't see them inside you. Everyone
+// can walk about (Walking), and is seen walking.
 import { useFrame, useThree } from '@react-three/fiber';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
@@ -18,6 +19,7 @@ import { MeadowKite } from './MeadowKite';
 import { poses, useSocial, viewingPerspective } from '../store';
 import { handAnchors } from '../xr/OriginRig';
 import { Avatar, StandIn } from '../avatar/Avatar';
+import { Walking } from './Walking';
 
 const FRESH_MS = 5000;
 const round = (v: number) => Math.round(v * 1000) / 1000;
@@ -68,7 +70,7 @@ function StandIns() {
         const likeness = avatars.find((a) => a.memberId === p.claimedBy);
         return (
           <Suspense key={p.id} fallback={null}>
-            <StandIn at={worldSpot(p.key)} eye={p.eyeHeight} yaw={facingOther(p.key)} color={p.color} url={likeness ? fileUrl(likeness.url) : null}
+            <StandIn perspective={p.key} at={worldSpot(p.key)} eye={p.eyeHeight} yaw={facingOther(p.key)} color={p.color} url={likeness ? fileUrl(likeness.url) : null}
               name={p.claimedName || p.label} sub={p.claimedName ? p.label.toLowerCase() : ''} />
           </Suspense>
         );
@@ -149,6 +151,7 @@ export function SocialLayer() {
     <group name="social" userData={{ noPoint: true }}>
       <PosePublisher />
       <FirstPersonLook />
+      <Walking />
       {/* Each figure loads (its name's font, its likeness) behind its own boundary: a suspension inside the canvas
           would otherwise reach the page's boundary and briefly unmount everything, presence included. */}
       {stage !== 'album' && [...ids].map((id) => <Suspense key={id} fallback={null}><Avatar memberId={id} /></Suspense>)}

@@ -20,11 +20,14 @@ import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { useMemory } from './memory';
 import { guideContext, story, turn } from '../social/attribution';
 import { overlayActive } from '../social/overlay';
+import { useAtlas, type PlaceId, type Tab } from '../map/state';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
   Promise.race([p.catch(() => fallback), new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
 
+/** A visit opened as the Red Kite meadow (?memory=red-kite, backend/client.ts): its memory is that place. */
+const OPENED_AS_MEADOW = new URLSearchParams(location.search).get('memory') === 'red-kite';
 const NUDGE_MS = 16_000;
 const ENTER_MS = 6200;
 
@@ -233,11 +236,12 @@ class Flow {
 
   // ------------------------------------------------------------ prepared places from the library
   /** Words that describe a prepared place (the courtyard, the meadow) make the visit step into it; things named
-   *  come in from the library. Recognised from everything said so far, so details can arrive across turns. */
+   *  come in from the library. Recognised from everything said so far, so details can arrive across turns. A visit
+   *  opened as the meadow steps into it whatever is said first (a few misheard words never sketch a room inside it). */
   private placeWords(text: string) {
     this.said.push(text);
     if (!useMemory.getState().place) {
-      const p = placeFor(this.said.join(' '));
+      const p = placeFor(this.said.join(' ')) ?? (OPENED_AS_MEADOW ? PLACES['red-kite'] : null);
       if (!p) return;
       memory.usePlace(p, this.place);
       this.activatePlace(p.key);
@@ -432,6 +436,7 @@ class Flow {
     this.engine?.hush();
     music.setMode('album');
     music.cue('album');
+    useAtlas.getState().show('sf', 'mine'); // the album, where the moment just kept is
     useGate.getState().set({ stage: 'album', resting: false, heardLine: null, companionLine: null, mood: 'idle' });
   }
 
@@ -440,7 +445,7 @@ class Flow {
     if (!shared.plan) return;
     const plan = validatePlan(shared.plan);
     const g = useGate.getState();
-    memory.adopt(plan, shared.id, shared.mediaUrl ? fileUrl(shared.mediaUrl) : null);
+    memory.adopt(plan, shared.id, shared.mediaUrl ? fileUrl(shared.mediaUrl) : null, shared.place ?? null);
     g.set({ memoryTitle: plan.title });
     if (g.stage === 'gathering' || g.stage === 'greeting') {
       this.clearNudge();
@@ -504,13 +509,15 @@ class Flow {
     this.listen(true);
   }
 
-  /** From the start page: the album of earlier visits on this device, before any conversation begins. */
-  openAlbum(): void {
+  /** From the start page: the memory map (earlier visits on this device are its San Francisco pin), before any
+   *  conversation begins; or straight onto one place's memories. */
+  openAlbum(place: PlaceId | null = null, tab: Tab = 'mine'): void {
     const g = useGate.getState();
     if (g.stage !== 'portal') return;
     music.start();
     music.setEnabled(g.musicOn);
     music.setMode('album');
+    useAtlas.getState().show(place, tab); // the memory map, or that place
     g.set({ stage: 'album' });
   }
 

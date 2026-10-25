@@ -41,3 +41,24 @@ export const MicIcon = ({ size }: P) => (
 export const GearIcon = ({ size }: P) => (
   <svg {...base(size)}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 11-4 0v-.09a1.7 1.7 0 00-1.1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.7 1.7 0 004.6 15a1.7 1.7 0 00-1.55-1H3a2 2 0 110-4h.09A1.7 1.7 0 004.6 8.9a1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06A1.7 1.7 0 009 4.6h.09A1.7 1.7 0 0010 3.05V3a2 2 0 114 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06A1.7 1.7 0 0019.4 9v.09A1.7 1.7 0 0020.95 10H21a2 2 0 110 4h-.09a1.7 1.7 0 00-1.55 1z" /></svg>
 );
+export const MapIcon = ({ size }: P) => (
+  <svg {...base(size)}><path d="M3.5 6.6l5.2-2.1 6.6 2.6 5.2-2.1v12.9l-5.2 2.1-6.6-2.6-5.2 2.1z" /><path d="M8.7 4.5v12.9M15.3 7.1V20" /></svg>
+);
+export const LockIcon = ({ size }: P) => (
+  <svg {...base(size)}><rect x="5" y="10.5" width="14" height="9.5" rx="2.6" /><path d="M8.2 10.5V8a3.8 3.8 0 017.6 0v2.5" /></svg>
+);
+export const GlobeIcon = ({ size }: P) => (
+  <svg {...base(size)}><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.2 3.6 8.5s-1.2 6.1-3.6 8.5c-2.4-2.4-3.6-5.2-3.6-8.5s1.2-6.1 3.6-8.5z" /></svg>
+);
+export const BackIcon = ({ size }: P) => (
+  <svg {...base(size)}><path d="M14.5 6l-6 6 6 6" /></svg>
+);
+export const ZoomIcon = ({ size }: P) => (
+  <svg {...base(size)}><circle cx="10.5" cy="10.5" r="6.2" /><path d="M15.2 15.2l4.8 4.8M10.5 8v5M8 10.5h5" /></svg>
+);
+export const PlusIcon = ({ size }: P) => (
+  <svg {...base(size)}><path d="M12 5.5v13M5.5 12h13" /></svg>
+);
+export const MinusIcon = ({ size }: P) => (
+  <svg {...base(size)}><path d="M5.5 12h13" /></svg>
+);

@@ -44,20 +44,23 @@ export const PREPARED: AlbumMemory[] = [
   },
 ];
 
-/** Coming back from a prepared memory's own page lands in the album again (set when it's opened from there). */
+/** Coming back from a prepared memory's own page lands in the album again (set when it's opened from there): your
+ *  album, or World memories when it was opened from someone else's (the proposal showcase). */
 const RETURN_KEY = 'mg.return-to';
-export function openPrepared(m: AlbumMemory, visitScene?: (scene: string) => void): void {
+export function openPrepared(m: AlbumMemory, visitScene?: (scene: string) => void, from: 'album' | 'world' = 'album'): void {
   if (!m.open) return;
   if ('href' in m.open) {
-    try { sessionStorage.setItem(RETURN_KEY, 'album'); } catch { /* the way back is a convenience */ }
+    try { sessionStorage.setItem(RETURN_KEY, from); } catch { /* the way back is a convenience */ }
     location.assign(m.open.href);
   } else visitScene?.(m.open.scene);
 }
-/** True once, when this page was reached by coming back from a prepared memory opened in the album. */
-export function cameBackToAlbum(): boolean {
+/** Once, when this page was reached by coming back from a prepared memory opened in the album: which tab it came
+ *  from (your album or World memories), else null. */
+export function cameBackToAlbum(): 'mine' | 'world' | null {
   try {
-    if (new URLSearchParams(location.search).has('story') || sessionStorage.getItem(RETURN_KEY) !== 'album') return false;
+    const from = sessionStorage.getItem(RETURN_KEY);
+    if (new URLSearchParams(location.search).has('story') || (from !== 'album' && from !== 'world')) return null;
     sessionStorage.removeItem(RETURN_KEY);
-    return true;
-  } catch { return false; }
+    return from === 'world' ? 'world' : 'mine';
+  } catch { return null; }
 }

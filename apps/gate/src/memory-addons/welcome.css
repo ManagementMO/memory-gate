@@ -1,0 +1,23 @@
+/* A quiet invitation, using the welcome's own glass, type and ink. Begin remains the main choice. */
+.memory-discovery-welcome { margin-top: 20px; }
+.memory-discovery-link { min-height: 46px; padding: 0 22px; gap: 9px; font-size: 15px; }
+.memory-discovery-link > span { color: var(--aurora-green); font-size: 21px; }
+.memory-discovery-welcome p { margin: 8px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 1.5; }
+.memory-discovery-welcome p > span { font-size: 12px; }
+.memory-discovery-welcome small { display: block; font: inherit; font-size: 12px; }
+.portal-links { display: flex; justify-content: center; flex-wrap: wrap; column-gap: 12px; }
+.portal-links .quiet-link { margin-top: 6px; padding: 8px 4px; font-size: 13px; }
+.portal [disabled] { opacity: 0.6; cursor: wait; transform: none; }
+.portal .portal-problem { margin: 10px 0 0; color: var(--ink); font-size: 14px; }
+/* Keep the existing headset entry clear of the welcome's extra option on narrow screens. */
+@media (max-width: 960px) {
+  .overlay[data-stage='portal'] .xr-enter {
+    top: max(90px, calc(env(safe-area-inset-top) + 76px)); bottom: auto;
+    min-height: 44px; padding-inline: 18px; font-size: 14px;
+  }
+}
+@media (max-height: 680px) {
+  .memory-discovery-welcome { margin-top: 12px; }
+  .memory-discovery-welcome p { margin-top: 5px; }
+  .portal-links .quiet-link { margin-top: 2px; padding-block: 6px; }
+}

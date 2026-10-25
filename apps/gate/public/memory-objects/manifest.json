@@ -1,0 +1,26 @@
+{
+  "units": "meters",
+  "origin": "ground-centre",
+  "attribution": "Original Memory Gate procedural illustrations; no claim of landmark accuracy.",
+  "source": "tools/memory-objects/build-assets.mjs",
+  "assets": {
+    "bridge": {
+      "bytes": 132416,
+      "triangles": 1348,
+      "drawCalls": 3,
+      "sha256": "cc69d32e75c3097fe90d0312bde0d35b5137b7ccfcb6f409eaef3b320f735641"
+    },
+    "bench": {
+      "bytes": 21628,
+      "triangles": 204,
+      "drawCalls": 2,
+      "sha256": "b5bcacc7e1dedda90ea2ad0ac7da75c8b7d5fe5abe1eb85feb42b4ef06858084"
+    },
+    "flower": {
+      "bytes": 228216,
+      "triangles": 2316,
+      "drawCalls": 6,
+      "sha256": "75f4ec6a3c70d99f57b06c32da4c59f4e529d07e46db0b7608ed723c83f6e78a"
+    }
+  }
+}
