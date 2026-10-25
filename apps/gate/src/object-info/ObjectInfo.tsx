@@ -17,6 +17,7 @@ import { xrStore } from '../scene/xr';
 import { convex } from '../backend/client';
 import { closeObjectInfo, infoButtons, useObjectInfo, type InfoTarget } from './state';
 import { buildInfoTargets } from './targets';
+import { serverNow, usePresence } from '../presence/presence';
 import './object-info.css';
 const enabled = new URLSearchParams(location.search).get('objectInfo') !== 'off';
 
@@ -141,6 +142,10 @@ function InfoLayer() {
         projected.copy(point).project(viewCamera);
         x = (projected.x + 1) * size.width / 2; y = (1 - projected.y) * size.height / 2;
         visible = point.distanceTo(eye) < (c.xr ? 9 : 18) && (c.xr || projected.z > -1 && projected.z < 1 && Math.abs(projected.x) < .92 && Math.abs(projected.y) < .86);
+        // A tag comes only once its thing is pointed at (a pinch or a tap near it, for a while): nothing is labelled as
+        // the place appears.
+        const mark = usePresence.getState().myPoint;
+        visible = visible && !!mark && serverNow() - mark.t < 15_000 && Math.hypot(mark.at[0]! - point.x, mark.at[2]! - point.z) < 1.5;
         if (!c.xr) visible = visible && x > 75 && x < size.width - 75 && y > 110 && y < size.height - 160 && !occupied.some(p => Math.abs(p.x - x) < 150 && Math.abs(p.y - y) < 60);
         if (visible && shown >= 3) visible = false;
         if (visible) { shown++; occupied.push({ x, y }); if (marker) marker.position.copy(point); }

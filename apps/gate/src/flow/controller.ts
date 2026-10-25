@@ -2,7 +2,7 @@
 // companion says or does; the person only ever talks, shares a photo or video, or says they'd like to stop.
 //   portal → greeting → gathering (talk / photo / video / someone helps) → entering → forming → memory → leaving → album
 import { api } from '../../../../convex/_generated/api';
-import { asksToEnter, asksToGoIn, asksToLeave, companyFromReply, mentionsCompany, perspectiveFromReply, perspectiveFromWords, resolveReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
+import { asksToEnter, asksToGoIn, asksToLeave, companyFromReply, mentionsCompany, perspectiveAsked, perspectiveFromReply, perspectiveFromWords, resolveReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
 import { initialConversationLanguage, nextConversationLanguage, sameLanguage, type Lang, type LanguageSetting } from '../../../../packages/shared/src/language';
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
@@ -20,7 +20,8 @@ import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { useMemory } from './memory';
 import { guideContext, story, turn } from '../social/attribution';
 import { overlayActive } from '../social/overlay';
-import { claimPerspective } from '../social/perspectives';
+import { claimPerspective, setViewing } from '../social/perspectives';
+import { useSocial } from '../social/store';
 import { worldStatus } from '../scene/worldStatus';
 import { companion, type CompanionLine, type RoomVoice } from './companion';
 import { visitFromUrl } from '../album/prepared';
@@ -198,6 +199,17 @@ class Flow {
     if (!companion.live()) turn('person', text);
     this.clearNudge();
     music.duck(false);
+    // "Show me through my grandmother's eyes", "switch to the grandchild", "switch perspective": through those eyes now
+    // (the headset puts them where those eyes stand, at their height, behind a blink).
+    const asked = perspectiveAsked(text);
+    if (asked) {
+      const to = asked === 'other' ? (useSocial.getState().viewing === 'child' ? 'grandparent' : 'child') : asked;
+      this.who.known = true;
+      useMemory.setState({ company: true });
+      setViewing(to);
+      await this.say(this.t(to === 'child' ? 'seeAsChild' : 'seeAsGrandparent'));
+      return;
+    }
     // Whose eyes they remember through, as soon as they say it ("with my grandmother": the child's), never a form; and
     // once they've said who was there at all ("with my parents", "just me"), it is never asked.
     const answering = this.who.asked && !this.who.known; // this is the answer to "Who was there with you?"
@@ -386,19 +398,17 @@ class Flow {
     return !!(useMemory.getState().place || this.place || useGate.getState().media || this.turnsInPhase >= 1);
   }
 
-  /** Words that describe a prepared place (the courtyard, the meadow) make the visit step into it; things named
-   *  come in from the library. Recognised from everything said so far, so details can arrive across turns. A visit
-   *  opened as the meadow steps into it whatever is said first (a few misheard words never sketch a room inside it). */
+  /** Words that describe a prepared place (the courtyard, the meadow) make the visit step into it, recognised from
+   *  everything said so far, so details can arrive across turns. The place arrives as itself: the things in it come
+   *  only once they're asked for inside (heardInMemory), never from what was said at the gate. A visit opened as the
+   *  meadow steps into it whatever is said first (a few misheard words never sketch a room inside it). */
   private placeWords(text: string) {
     this.said.push(text);
-    if (!useMemory.getState().place) {
-      const p = placeFor(this.said.join(' ')) ?? (OPENED_AS_MEADOW ? PLACES['red-kite'] : null);
-      if (!p) return;
-      memory.usePlace(p, this.place);
-      this.activatePlace(p.key);
-      for (const earlier of this.said.slice(0, -1)) memory.bringIn(earlier);
-    }
-    memory.bringIn(text);
+    if (useMemory.getState().place) return;
+    const p = placeFor(this.said.join(' ')) ?? (OPENED_AS_MEADOW ? PLACES['red-kite'] : null);
+    if (!p) return;
+    memory.usePlace(p, this.place);
+    this.activatePlace(p.key);
   }
 
   /** The room's place becomes the prepared world (the host's device asks; everyone in the visit sees it). */
