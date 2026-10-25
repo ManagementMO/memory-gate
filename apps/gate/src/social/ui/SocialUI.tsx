@@ -320,8 +320,8 @@ export function SocialUI() {
     const free = perspectives.find((x) => x.key !== viewing && !x.claimedBy);
     if (mine?.claimedBy && mine.claimedBy !== memberId && free) useSocial.getState().set({ viewing: free.key });
   }, [chosen, live, perspectives, viewing, memberId]);
-  // Ask once whose eyes this person sees through, when they're settled (not over the greeting).
-  useEffect(() => { if (session && !chosen && !xr && (stage === 'gathering' || stage === 'memory')) setSheet((s) => s ?? 'pick'); }, [session, chosen, xr, stage]);
+  // Whose eyes this person sees through isn't a form any more: the companion hears it ("with my grandmother") or asks
+  // once in words (flow/controller.ts). The perspective chip still opens the picker for anyone who wants to choose.
   // Wear a likeness this device shared before (or one handed over as ?avatar=KEY) once the visit is live.
   useEffect(() => {
     const fromLink = new URLSearchParams(location.search).get('avatar');

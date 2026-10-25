@@ -139,6 +139,20 @@ export function saysYes(transcript: string): boolean {
   return /^(yes|yeah|yea|yep|yup|ok|okay|sure|please|let'?s|go|alright|all right|mhm|uh huh|of course|absolutely|definitely|i'?d (like|love) (that|to)|i would (like|love) (that|to)|sounds (good|lovely|nice|great|wonderful)|take me there|i'?m ready|ready)\b/.test(t);
 }
 
+/**
+ * Whose eyes the person remembers through, from how they speak of it: "I remember being here with my grandmother" (or
+ * "as a little girl") is the child's; "I brought my grandson here" is the grandparent's. Null when they haven't said.
+ */
+export function perspectiveFromWords(transcript: string): 'child' | 'grandparent' | null {
+  const t = norm(transcript);
+  if (!t) return null;
+  if (/\bi (was|am) (the |a |his |her |their )?(grandmother|grandfather|grandma|grandpa|granny|nana|grandparent)\b/.test(t)) return 'grandparent';
+  if (/\b(my|our) (grand ?(son|daughter|child|children|kids?|baby|babies)|grandkids?)\b/.test(t)) return 'grandparent';
+  if (/\b(my|our) (grand ?(mother|father|ma|pa|mom|mum|dad|parents?)|granny|gran|nana|nan|nanna|abuela|abuelo|lola|lolo|oma|opa|bubbe|zayde)\b/.test(t)) return 'child';
+  if (/\b(when i was|as) (a |an )?(little |small |young )?(kid|child|boy|girl|little one|toddler)\b|\bwhen i was (little|small|young|a kid)\b/.test(t)) return 'child';
+  return null;
+}
+
 /** "Let's go", "take me there", "step inside": asking to go into the place they've been describing (not home). */
 export function asksToGoIn(transcript: string): boolean {
   const t = norm(transcript);
