@@ -1,9 +1,10 @@
-// Seeing through someone's eyes on a phone or laptop: you stand where that perspective stands in the memory, at its
-// eye height (a grandchild's 1.1 m, a grandparent's 1.6 m), facing the other one across the room, and drag to look
-// around. The same pose is what everyone else sees of you, even while you watch the overview instead.
+// Seeing through someone's eyes on a phone or laptop: you start where that perspective stands in the memory, at its
+// eye height (the grandchild's 1.21 m, the grandparent's 1.45 m), facing the other one across the room, drag to look
+// around and walk about (walk.ts). The same pose is what everyone else sees of you, even while you watch the overview.
 import * as THREE from 'three';
 import { useGate } from '../state/store';
 import { facingOther, worldSpot } from './spots';
+import { walk, walkKey } from './walk';
 import { worldViewpoints } from './world';
 import { useSocial, viewingPerspective } from './store';
 
@@ -21,13 +22,18 @@ export function firstPersonActive(): boolean {
   return day && !g.xr && (!g.photoWorld || !!worldViewpoints()) && useSocial.getState().view === 'first';
 }
 
-/** Where this person's eyes are (and which way they look): at their perspective's spot, facing the other one. */
+/** Where this person's eyes are (and which way they look): at their perspective's spot, facing the other one, or
+ *  wherever they have walked to from there. */
 export function firstPersonPose(pos: THREE.Vector3, quat: THREE.Quaternion): void {
   const p = viewingPerspective();
   const at = worldSpot(p.key);
-  pos.set(at.x, p.eyeHeight, at.z);
-  quat.setFromEuler(_e.set(look.pitch, facingOther(p.key) + look.yaw, 0, 'YXZ'));
+  const walked = walk.key === walkKey();
+  pos.set(at.x + (walked ? walk.offset.x : 0), (walked ? walk.y : 0) + p.eyeHeight, at.z + (walked ? walk.offset.z : 0));
+  quat.setFromEuler(_e.set(look.pitch, lookHeading(), 0, 'YXZ'));
 }
+
+/** Which way a flat screen looks (a camera-style yaw): forward, for walking. */
+export const lookHeading = () => facingOther(viewingPerspective().key) + look.yaw;
 
 /** CameraRig's first-person branch: fills the camera target and returns the field of view. */
 export function firstPersonView(pos: THREE.Vector3, target: THREE.Vector3, aspect: number): number {

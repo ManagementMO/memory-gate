@@ -4,7 +4,7 @@
 import { useQuery } from 'convex/react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { SparkRenderer, SplatMesh } from '@sparkjsdev/spark';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { api } from '../../../../convex/_generated/api';
 import { fileUrl } from '../backend/client';
@@ -42,14 +42,17 @@ export function PhotoWorld() {
   // A whole World Labs world is seen from several places (each perspective's viewpoint), not only where a photo was
   // taken: Spark's default kernel coverage, as the Red Kite meadow uses, since the photo-tuned one leaves gaps there.
   // (Chosen when the renderer is made: changing it on a running renderer stopped splats drawing in the headset.)
+  // Made inside the effect, so whatever disposes it (a kernel change, leaving, or React's development double mount)
+  // disposes only its own: a renderer kept in useMemo was disposed by that double mount and then shown, and drew
+  // nothing wherever the world was already known when this mounted (a guest's headset).
   const kernel = splat?.source === 'worldlabs' ? Math.sqrt(8) : Math.sqrt(5);
-  const spark = useMemo(() => {
+  useEffect(() => {
     const s = new SparkRenderer({ renderer: gl, maxStdDev: kernel, lodCleanupTimeoutMs: Infinity } as ConstructorParameters<typeof SparkRenderer>[0]);
     const mat = (s as unknown as { material?: THREE.Material }).material;
     if (mat) mat.forceSinglePass = true;
-    return s;
-  }, [gl, kernel]);
-  useEffect(() => { scene.add(spark); return () => { scene.remove(spark); spark.dispose(); }; }, [scene, spark]);
+    scene.add(s);
+    return () => { scene.remove(s); s.dispose(); };
+  }, [gl, scene, kernel]);
 
   const mesh = useRef<SplatMesh | null>(null);
   const ready = useRef(false);

@@ -21,17 +21,17 @@ test('perspectives: room-scoped poses, claims, attributed stories, things and a 
   const first = await waitFor(() => social(host)?.perspectives.length === 2 && social(host));
   const grandparent = first.perspectives.find(p => p.key === 'grandparent');
   const child = first.perspectives.find(p => p.key === 'child');
-  assert.equal(grandparent.eyeHeight.toFixed(1), '1.6'); assert.equal(child.eyeHeight.toFixed(1), '1.1');
+  assert.equal(grandparent.eyeHeight.toFixed(2), '1.45'); assert.equal(child.eyeHeight.toFixed(2), '1.21'); // the grandmother's and the boy's own
   const theirs = await waitFor(() => social(stranger)?.perspectives.length === 2 && social(stranger));
   assert.ok(!theirs.perspectives.some(p => p.id === child.id), 'another visit never sees these perspectives');
 
   // Heads and hands reach the room, never another visit; malformed poses are dropped.
-  pose(sam, child.id, 1.1);
+  pose(sam, child.id, 1.21);
   const samPose = await waitFor(() => poses(host).find(p => p.memberId === room.recipientId));
-  assert.equal(samPose.perspectiveId, child.id); assert.ok(Math.abs(samPose.head[1] - 1.1) < 1e-3);
+  assert.equal(samPose.perspectiveId, child.id); assert.ok(Math.abs(samPose.head[1] - 1.21) < 1e-3);
   sam.socket.send(JSON.stringify({ type: 'pose', perspectiveId: child.id, device: 'phone', inScene: true, head: [0, 'x', 0], left: [], right: [] }));
   await new Promise(r => setTimeout(r, 400));
-  assert.ok(Math.abs(poses(host).find(p => p.memberId === room.recipientId).head[1] - 1.1) < 1e-3);
+  assert.ok(Math.abs(poses(host).find(p => p.memberId === room.recipientId).head[1] - 1.21) < 1e-3);
   assert.ok(!poses(stranger).some(p => p.memberId === room.recipientId));
 
   // One claim per perspective (the host may reassign); a claim carries the claimant's current name.

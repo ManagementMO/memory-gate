@@ -85,3 +85,19 @@
 .on-paper .sheet-close, .on-paper .social-actions .quiet-link, .on-paper .handoff .quiet-link { color: var(--paper-ink-soft); }
 .on-paper .social-error { color: #b4232f; }
 .social-actions .quiet-link { margin-top: 0; }
+
+/* Walking about (social/walk.ts): Red Kite's walk pad on touch screens, a quiet key hint on laptops. */
+.social-walk .rk-touchpad {
+  position: absolute; right: 16px; bottom: max(96px, calc(env(safe-area-inset-bottom) + 84px)); z-index: 12; width: 76px; height: 76px;
+  padding: 0; border-radius: 50%; border: 1px solid var(--glass-rim); touch-action: none; color: var(--ink); background: rgba(20, 24, 44, 0.46);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.social-walk .rk-touchpad svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.social-walk .rk-touchpad > span { position: absolute; width: 24px; height: 24px; top: 25px; left: 25px; border-radius: 50%; background: rgba(255, 255, 255, 0.72); pointer-events: none; }
+.social-walk .rk-touchpad small { position: absolute; bottom: -22px; left: 0; width: 100%; font-size: 11px; text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5); pointer-events: none; }
+.social-walk-keys {
+  position: absolute; right: 20px; bottom: 30px; z-index: 11; margin: 0; font-size: 13px; letter-spacing: 0.02em;
+  color: var(--ink-faint); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35); pointer-events: none;
+}
+.on-paper .social-walk-keys { color: var(--paper-ink-soft); text-shadow: none; }
+@media (max-width: 760px) { .social-walk-keys { display: none; } }

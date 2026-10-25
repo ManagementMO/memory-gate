@@ -240,6 +240,7 @@ export default defineSchema({
     mediaKind: v.union(v.string(), v.null()), // photo | video
     caption: v.union(v.string(), v.null()), // what the companion saw in the photo
     memberId: v.optional(v.id('members')), // who began it (guests follow the host; the host welcomes a guest's photo)
+    place: v.optional(v.union(v.literal('courtyard'), v.literal('red-kite'))), // a prepared place (packages/shared/src/places.ts), not a sketch
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index('by_room', ['roomId']),

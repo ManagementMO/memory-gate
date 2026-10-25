@@ -1,6 +1,10 @@
 # Likenesses for shared visits
 
-In a shared visit, everyone appears where they really are in the memory: at their perspective's eye height, with their head and (in the headset) their hands. By default each person is a porcelain figure in their own colour. A family member can replace that with a **likeness**, a rigged 3D model built from their own photos.
+In a shared visit, everyone appears where they really are in the memory: at their perspective's eye height, with their head and (in the headset) their hands. By default each person is their perspective's **person**: the grandchild a boy of about eight, the grandparent his grandmother. A family member can replace that with a **likeness**, a rigged 3D model built from their own photos. While a figure loads, or if it can't, a porcelain figure in their colour stands in.
+
+## The two people
+
+`apps/gate/public/people/boy.glb` (1.31 m, eyes at 1.21 m) and `grandma.glb` (1.56 m, eyes at 1.45 m) are rigged MakeHuman characters made with MPFB 2 and the MakeHuman system assets (CC0, free for any use). Each has a 52-bone Mixamo skeleton and one `Walk_InPlace` loop. The source exports (17-19 MB, 2048 px PNG textures, plus FBX and the `.blend`) stay outside the repo; `node apps/gate/scripts/prepare-people.mjs [sourceDir]` makes the light copies (meshopt geometry, WebP textures at most 1024 px, about 1 MB each), as `fetch-models.mjs` does for the object library. They are shown at their true size, and each perspective's eye height is theirs (`PERSONAS` in `social/store.ts` and in the SpacetimeDB module).
 
 The likeness is built **offline, on your own computer**. Only the finished model (a `.glb` file) is uploaded to this computer's Memory Gate server. The photos never leave your machine, and no photo is sent to any 3D service.
 
@@ -46,7 +50,8 @@ The likeness is built **offline, on your own computer**. Only the finished model
 
 ## How it moves
 
-- The **body** stands on the floor below the person's eyes and slowly turns to face where their head faces.
+- The **body** stands on the ground below the person's eyes (in the meadow, its real ground). Standing, it slowly turns to face where their head faces; walking, it faces the way they go.
+- **Walking**: any loop in the file named like "walk" plays as much as they're moving (none while standing or swaying, all of it by a slow stroll), at the pace that keeps its feet from sliding (measured from the stance foot), backwards when they step back. Each frame starts again from the rest pose, so the head and arm turns never pile up (`avatar/walkCycle.ts`).
 - **Neck and head** share the head's turn (40% neck, 60% head).
-- **Arms** use an analytic two-bone solve to reach the controllers or hands in the headset. On phones and laptops the arms rest at the sides.
-- The model is **scaled to the person's eye height**, so someone seeing through a grandchild's eyes appears grandchild-sized, with a "seeing as grandchild" label.
+- **Arms** use an analytic two-bone solve to reach the controllers or hands in the headset. On phones and laptops they swing with the walk, or rest at the sides.
+- The two people are shown at their true size. A likeness is **scaled to the person's eye height**, so someone seeing through a grandchild's eyes appears grandchild-sized, with a "seeing as grandchild" label.
