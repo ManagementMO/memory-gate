@@ -1,28 +1,139 @@
 # Memora
 
-**Apify photo sources:** [Setup, usage and verification](docs/APIFY_MEMORY_SOURCES.md). Import selected public family posts, review a photo, and attach it to a kite, flower or landmark in a chosen perspective. The Red Kite includes a native VR source card and a clearly labeled offline example. Live Instagram import requires a server-side Apify token.
+## Inspiration
 
-**Optional places and 3D objects:** [Setup and demo](docs/PLACE_OBJECTS.md). In the main memory view, open **Places and objects**; the Red Kite is also available as a separate example. Review a map reference or family photo, privately preview a bridge, bench, flower planter, kite or library model, then approve its placement for a selected POV. A direct family-photo upload works without an Apify token. An explicitly consented photo can also use the existing Tripo v3 integration. Nothing is added automatically. [Verification and screenshots](evidence/place-objects/verification.json).
+Dementia slowly makes a family's stories harder to reach. The people living with it are often the grandparents, parents and partners who remember where everyone came from. As those stories fade, photo albums stay flat, and a conversation can slip into quizzing: "Do you remember...?"
 
-**Live Apify verified:** Source Atlas 1.2 is privately deployed in the operator's account. A real Maps search, family approval, optional GLB and native stereo source card passed end to end. [Live report and screenshot](evidence/apify-live/verification.json). The operator's credential is stored privately; clone setup still needs a token. Instagram needs an approved public post URL for its live check.
+We noticed that a memory never belongs to one person. A grandmother and her grandson remember the same afternoon from different heights, in different words, with different details. We wanted a place where a family could step into a memory together, each through their own eyes. The person telling it would set the pace, and nothing they said would be marked wrong.
 
-**In-world discovery:** [Object exploration](docs/OBJECT_EXPLORATION.md) adds small `Explore · Apify` prompts inside the existing main memory view. The kite and the meadow's authored flower/tree hotspots open attributed public context in a corner card, with native marker/card equivalents in VR. Sources are retrieved by the private Source Atlas Actor; seeing an object makes no paid call. The layout, conversation controls, camera, walking and XR configuration stay independent of the add-on.
+## What it does
 
-**Main assistant journey:** [Current pipeline and the proposed Apify connections](docs/MAIN_APIFY_PIPELINE.md), traced through the latest prepared-place/held-kite flow and walked from Begin to the album. Source import and in-world discovery are manual options inside a memory; the notes identify the assistant-driven retrieval, reviewed-cue and album connections still to build.
+Memora is a shared reminiscence space that runs in the browser on a laptop, a phone or a Meta Quest 3.
 
-**Integrated main:** the [World Labs story demonstration](DEMO_SCRIPT.md) and [Cal Hacks exchange runbook](docs/CALHACKS_RUNBOOK.md) are both available. The **Memories** tab lets two participants pass, accept and reopen original stories. SpacetimeDB owns that exchange and its shared reference board; a custom Apify Actor supplies public historical references for people to choose. Scene editing, media and capture remain in Convex. Start locally with `npm run local:up` after the dependencies and SpacetimeDB CLI are installed.
+### A companion at the gate
 
-An adult living with younger-onset Alzheimer’s shares a story with someone close to them. Their words can suggest objects in a shared place, on a screen or an optional Quest 3. Family members review visual suggestions together. Original recordings, translations and contributor attribution stay with the story. This is a reminiscence and conversation prototype; clinical benefit has not been established.
+A marble figure greets you, and you simply talk. The microphone is hands-free and waits patiently through long pauses. You can also share a photo or a video, or invite someone to join. The companion never quizzes, corrects or diagnoses. It says one short line at a time and lets the person lead.
 
-The main story demo now opens a realistic World Labs courtyard prepared from fictional sample words. A spoken detail forms a separate golden object; the family reviews it, confirmation gives it a solid form, and selecting it replays the original captured sentence. A family member can also explicitly request a private setting from selected story words. The original illustrative garden, shared correction/undo, simpler storyteller screen and immediate pause remain available. Uncertain recall stays as conversation, rather than becoming scene evidence. See [the current handoff](MORNING_REPORT.md) for verification and remaining gates.
+### Words become a place
 
-The prior review established the shared-correction foundation and recorded earlier speech, scenery and emulator evidence. The current branch separately verifies the new exchange and archive flows. Physical Quest 3 and real-family validation remain open.
+From your words or a photo, World Labs builds a 3D world you can walk through. When you mention a detail ("there was a wooden bench by the tree"), a golden suggestion of that object appears. The family reviews it together, and confirming it makes it solid. Selecting the object later plays back the original sentence in the voice of the person who said it.
 
-Start with [MORNING_REPORT.md](MORNING_REPORT.md), [the audit](docs/AUDIT_AND_IMPROVEMENTS.md), [plan alignment](docs/PLAN_ALIGNMENT.md) and [the two-minute demo](DEMO_SCRIPT.md).
+### Two perspectives, one memory
 
-The current creative direction is **[The Red Kite](docs/red-kite/README.md)**: a fictional California childhood meadow with two personal perspectives and a handmade kite. The actual Gate route supports [free desktop, touch and Quest traversal](docs/red-kite/TRAVERSAL.md) against the cached World Labs collider, adaptive scenery detail, five interactive Blender props and source-linked illustration choices. `npm run demo:kite` prepares its reusable sample without another generation. [Evaluation](docs/red-kite/EVALUATION.md) distinguishes browser/emulated Quest evidence from remaining physical-headset and live-family work; the [team handoff](docs/red-kite/TEAM_HANDOFF.md) gives concrete next assignments. The separate [2D concept rehearsal](docs/red-kite/rehearsal.html) and earlier [Palace research](docs/ORBIS_AND_PALACE.md) remain as references.
+In our sample memory, The Red Kite, a grandparent and grandchild walk the same California meadow at their own eye heights. Each appears as a full-size walking person, and each can see the other across the meadow. The visit stays in sync between a laptop and a headset.
 
-This is a pre-event practice project with subsequent review improvements. The initial public import does not establish when each feature was built. Confirm event eligibility with the organizers before submitting it.
+### Real-world context
+
+Our Apify Actor, Source Atlas, finds public historical photos from the Library of Congress, nearby places on Google Maps and family-approved Instagram posts. A family can attach one of these to a kite, a flower or a landmark, with its attribution kept. They can also preview a 3D object and place it in the memory. Nothing is added unless someone approves it.
+
+### An album on a world map
+
+Moments are saved to an album, and each memory sits at its place on a world map. The My memories tab holds your own, and World memories shows memories other people have chosen to share publicly. Each memory is private by default.
+
+### Built around care
+
+You can pause at any moment. There's a simpler storyteller view and highly legible type. Uncertain recall stays part of the conversation instead of becoming scene "evidence." Recordings need consent, and a child's likeness needs a guardian's agreement.
+
+## How we built it
+
+### Client
+
+A single web app built with React 19, Vite and TypeScript. The 3D scenes use Three.js, React Three Fiber and WebXR, so the same code runs on a laptop, a phone and a Quest 3. A separate headset client uses Meta's Immersive Web SDK.
+
+### Worlds
+
+World Labs Marble generates each environment as a Gaussian splat, rendered with Spark. Interactive objects are separate GLB models, built in Blender and placed on top of the world, because the splat itself can't be edited.
+
+### People
+
+The grandparent and grandchild are rigged MakeHuman characters (MPFB 2 in Blender) with walking animations. They move with laptop keys, the Quest thumbstick or real steps, and Rapier handles collision against the meadow.
+
+### Voice and language
+
+Cartesia Ink-2 transcribes speech and Cartesia Sonic speaks the companion's lines. Claude (Anthropic SDK) interprets narration into structured suggestions. Claude only proposes: deterministic code decides what a reply can do, checks every placement for valid bounds, clearance and direction, and filters every reply for safety.
+
+### State
+
+Convex holds rooms, permissions, object placements, revisions, undo, media and background jobs. SpacetimeDB, behind an authenticated Node WebSocket gateway, holds the real-time shared layer: presence, perspectives, the memory exchange between participants and the archive references a family chooses together.
+
+### Sources
+
+Source Atlas is a custom Apify Actor that wraps the Library of Congress catalog, the Google Maps crawler and Instagram post import. Each source mode has its own limits on results, time and cost. Tripo image-to-3D is available for photos a family has explicitly consented to.
+
+### Map
+
+D3-geo and TopoJSON draw the world map.
+
+### Testing
+
+Playwright browser tests (including two people in one session), Vitest, convex-test and the IWSDK headset emulator.
+
+## Challenges we ran into
+
+### A static world with live objects in it
+
+A Gaussian splat can't be edited, so every object a family adds is a separate model. Lining those up was tricky: the meadow's collision mesh sat about 1.15 m below the visible ground, so we had to lift it until people walked on the grass instead of under it.
+
+### Two incompatible versions of Three.js
+
+The headset SDK depends on its own fork of Three.js, while our main client uses standard React Three Fiber. We kept the two clients separate rather than forcing them to share code.
+
+### Two people in sync
+
+We had to keep a grandparent on a Quest and a grandchild on a laptop seeing the same memory at different eye heights, each with the other's avatar in the right place. That meant scaling the XR origin per perspective and keeping presence in sync in real time.
+
+### Hands-free voice for someone who pauses
+
+People with memory loss often stop mid-thought. We had to tune turn-taking so the companion waits for the person to finish rather than cutting in.
+
+### Paid world generation
+
+Each World Labs world costs about 1,580 credits and takes minutes to generate. We added per-room and deployment-wide caps, reused existing jobs, made interrupted downloads resumable, and cached prepared worlds so a demo never waits on a generation.
+
+### Privacy at every boundary
+
+Original audio is never sent to World Labs. Apify never receives family recordings or transcripts. Search results can't change a shared scene unless a person approves it.
+
+### Testing VR without always having a headset
+
+We relied heavily on the IWSDK emulator and kept careful track of what had been tested in the emulator and what still needed physical Quest testing.
+
+## Accomplishments that we're proud of
+
+- The full loop works: someone says a sentence, a golden suggestion appears, the family confirms it, and the object later replays that person's own voice. Every object traces back to the words that made it and to who said them.
+- Two people can share one memory through different eyes, live, across a laptop and a headset.
+- We verified the live Apify flow end to end: a real Google Maps search, family approval, an optional 3D model and a source card shown in stereo VR.
+- The same app runs on a phone, a laptop and a Quest 3.
+
+## What we learned
+
+- Designing for memory loss means designing for presence, not accuracy. An uncertain detail is part of the story, not an error to fix.
+- Letting the LLM propose and code decide made the AI both useful and safe. Bounded intents and deterministic validation removed a whole class of failures.
+- Splat worlds look photoreal, but interaction needs real geometry, so generated scenery and handmade objects work best side by side.
+- How to divide work between databases: Convex for transactional, permissioned state, and SpacetimeDB reducers and subscriptions for fast shared presence.
+- Consent works better as part of the flow than as a checkbox: per-recording permission, guardian approval for minors' likenesses, and "stop sharing" that takes effect within seconds.
+
+## What's next for Memora
+
+### Testing with real families and care partners
+
+We want to test comfort and performance on a physical Quest 3, then run sessions with consenting families, with input from caregivers and clinicians.
+
+### One shared conversation
+
+The companion will talk with the grandparent and grandchild together, using both microphones and addressing each person by name.
+
+### Multilingual memories
+
+Automatic language detection, building on the English/Spanish spatial commands we already support.
+
+### Real sharing on the world map
+
+Public memories that sync across devices instead of staying on one device, plus more world memories, starting with The proposal on the hill in San Francisco.
+
+### Richer in-world sources
+
+Bringing reviewed archive photos and places directly into the 3D memory, and making it easier to build a likeness from a family's own photos.
 
 ## Fresh clone setup
 
