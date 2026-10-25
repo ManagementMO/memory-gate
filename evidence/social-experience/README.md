@@ -12,5 +12,9 @@ Captured live over SpacetimeDB 2.13 and the exchange gateway: a laptop host ("Gr
 | `6-host-through-grandchild-eyes.png` | The host switches to the grandchild's eyes, at 1.1 m: the stove is solid, and the chair and table loom |
 | `7-phone-hands-it-to-grandparent.png` | On the phone, Lily's own stove is solid; she hands the memory to the grandparent |
 | `8-host-is-handed-lilys-memory.png` | The host is offered Lily's memory to keep |
+| `9-grandparent-sees-lily-across-the-room.png` | Through the grandparent's eyes: Lily stands across the room, beside the stove her note put her by |
+| `10-grandchild-sees-grandparent-across-the-room.png` | The host switches to the grandchild's eyes: standing in Lily's place, the grandparent waits across the room |
+| `11-headset-grandparent-eyes-grandchild-across.png` | Emulated Quest (both eyes), grandparent's eyes: the grandchild's stand-in across the room |
+| `12-headset-grandchild-eyes-grandparent-across.png` | Emulated Quest, grandchild's eyes: the world looms larger and the grandparent waits across the room |
 
-The automated checks behind these are in [docs/SOCIAL_EXPERIENCE.md](../../docs/SOCIAL_EXPERIENCE.md) (verification status). In the emulated Quest, the grandchild's eyes give a world scale of 0.69 and eyes at 1.10 m; the emulator renders the immersive view black in headless Chrome, so no headset screenshot is included.
+The automated checks behind these are in [docs/SOCIAL_EXPERIENCE.md](../../docs/SOCIAL_EXPERIENCE.md) (verification status). In the emulated Quest (images 11 and 12, with the emulator's control panels over them), the grandchild's eyes give a world scale of 0.69 and eyes at 1.10 m, standing exactly at the grandchild's spot and facing the grandparent.
