@@ -4,12 +4,17 @@
 //             this file only decides when a turn starts and ends.
 //   browser   the browser's own speech recognition and synthesis: a free fallback when no voice token is available.
 // Both report: interim words (live caption), a finished utterance, levels for the companion to breathe with.
+// Every line is spoken in its own language (English, Spanish or French), always in Ariana's voice: one Cartesia voice
+// that sounds native in all three, so the companion stays the same person when the language changes.
 import type { ConvexReactClient } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { createVoice, type Voice } from '../../../headset/src/voice';
 
 export type Heard = { transcript: string; audioFileId: string | null; durationMs: number };
 export type EngineKind = 'cartesia' | 'browser' | 'none';
+/** Ariana ("Kind Friend"): native in en-US, es-ES, es-MX, fr-CA and fr-FR. The headset and phone keep the room's voice. */
+export const GATE_VOICE_ID = 'ec1e269e-9ca0-402f-8a18-58e0e022355a';
+
 export type EngineEvents = {
   onPartial: (text: string) => void;
   onUtterance: (heard: Heard) => void;
@@ -20,8 +25,8 @@ export type EngineEvents = {
 export interface VoiceEngine {
   readonly kind: EngineKind;
   ready: Promise<void>;
-  /** Speak a line; resolves when it has finished (or was interrupted by the person speaking). */
-  say(text: string): Promise<void>;
+  /** Speak a line in its language (ISO 639-1); resolves when it has finished (or was interrupted by the person speaking). */
+  say(text: string, language?: string | null): Promise<void>;
   hush(): void;
   /** Open or close the hands-free microphone (closed while resting, while the companion is mid-sentence, etc.). */
   setListening(on: boolean): void;
@@ -98,7 +103,7 @@ function cartesiaEngine(session: Session, ev: EngineEvents): VoiceEngine {
   let disposed = false;
   const detector = new TurnDetector();
   const voice: Voice = createVoice({
-    client: session.client, api, code: session.code, token: session.token,
+    client: session.client, api, code: session.code, token: session.token, voiceId: GATE_VOICE_ID,
     onState: () => undefined,
     onError: (msg) => ev.onProblem(msg, /blocked|not allowed/i.test(msg) ? 'blocked' : 'soft'),
     onPartial: (text) => { if (text.trim()) ev.onPartial(text.trim()); },
@@ -133,9 +138,9 @@ function cartesiaEngine(session: Session, ev: EngineEvents): VoiceEngine {
   return {
     kind: 'cartesia',
     ready: voice.ready,
-    async say(text) {
+    async say(text, language) {
       speakingNow = true;
-      try { await voice.speak(text); } finally { speakingNow = false; }
+      try { await voice.speak(text, { language: language ?? null }); } finally { speakingNow = false; }
     },
     hush() { voice.cancelSpeech(); speakingNow = false; },
     setListening(on) { listening = on; if (!on && turnOpen) void endTurn(); },
@@ -160,14 +165,19 @@ type SR = {
   start(): void; stop(): void; abort(): void;
 };
 
-function pickVoice(): SpeechSynthesisVoice | null {
+/** A system voice for the line's language when there is one, else the calm English voices we prefer. */
+function pickVoice(language?: string | null): SpeechSynthesisVoice | null {
   const voices = window.speechSynthesis?.getVoices() ?? [];
+  if (language && language !== 'en') {
+    const own = voices.find((v) => v.lang.toLowerCase().startsWith(language.toLowerCase()));
+    if (own) return own;
+  }
   const prefer = ['Samantha', 'Google UK English Female', 'Microsoft Aria Online (Natural) - English (United States)', 'Karen', 'Moira', 'Serena', 'Google US English'];
   for (const name of prefer) { const v = voices.find((x) => x.name === name); if (v) return v; }
   return voices.find((v) => /^en/i.test(v.lang)) ?? voices[0] ?? null;
 }
 
-function browserEngine(ev: EngineEvents): VoiceEngine {
+function browserEngine(ev: EngineEvents, recognitionLang: () => string): VoiceEngine {
   const Ctor = (window as unknown as { SpeechRecognition?: new () => SR; webkitSpeechRecognition?: new () => SR }).SpeechRecognition
     ?? (window as unknown as { webkitSpeechRecognition?: new () => SR }).webkitSpeechRecognition;
   let rec: SR | null = null;
@@ -197,7 +207,7 @@ function browserEngine(ev: EngineEvents): VoiceEngine {
   const startRec = () => {
     if (!Ctor || disposed || !listening || speakingNow || rec) return;
     const r = new Ctor();
-    r.continuous = true; r.interimResults = true; r.lang = navigator.language || 'en-US'; r.maxAlternatives = 1;
+    r.continuous = true; r.interimResults = true; r.lang = recognitionLang(); r.maxAlternatives = 1;
     r.onspeechstart = () => { hearingNow = true; ev.onSpeechStart(); };
     r.onresult = (e) => {
       let interim = '';
@@ -220,14 +230,15 @@ function browserEngine(ev: EngineEvents): VoiceEngine {
   return {
     kind: Ctor ? 'browser' : 'none',
     ready: micReady,
-    say(text) {
+    say(text, language) {
       return new Promise<void>((resolve) => {
         const synth = window.speechSynthesis;
         if (!synth) { setTimeout(resolve, Math.min(9000, 380 * text.split(/\s+/).length)); return; }
         stopRec(); // never transcribe ourselves
         const u = new SpeechSynthesisUtterance(text);
-        const v = pickVoice();
+        const v = pickVoice(language);
         if (v) u.voice = v;
+        if (language) u.lang = v?.lang ?? language;
         u.rate = 0.92; u.pitch = 1.02; u.volume = 1;
         speakingNow = true; speakT0 = performance.now();
         const done = () => { speakingNow = false; resolve(); if (listening) startRec(); };
@@ -261,7 +272,7 @@ export function silentEngine(): VoiceEngine {
   return {
     kind: 'none',
     ready: Promise.resolve(),
-    async say(text) { speakingNow = true; await new Promise((r) => setTimeout(r, 700 + text.split(/\s+/).length * 260)); speakingNow = false; },
+    async say(text, _language) { speakingNow = true; await new Promise((r) => setTimeout(r, 700 + text.split(/\s+/).length * 260)); speakingNow = false; },
     hush() { speakingNow = false; },
     setListening() { /* nothing to listen with */ },
     level: () => (speakingNow ? 0.4 : 0),
@@ -272,8 +283,9 @@ export function silentEngine(): VoiceEngine {
   };
 }
 
-/** Prefer Cartesia when this device has a session that can mint a voice token; fall back to the browser. */
-export async function createEngine(session: Session | null, ev: EngineEvents): Promise<VoiceEngine> {
+/** Prefer Cartesia when this device has a session that can mint a voice token; fall back to the browser, which listens
+ *  for `recognitionLang()` (the pinned language's tag, or the device's own in Automatic). */
+export async function createEngine(session: Session | null, ev: EngineEvents, opts: { recognitionLang: () => string }): Promise<VoiceEngine> {
   if (new URLSearchParams(location.search).get('voice') === 'off') return silentEngine();
   if (session) {
     try {
@@ -281,5 +293,5 @@ export async function createEngine(session: Session | null, ev: EngineEvents): P
       if (mint.token && mint.sttLive && mint.ttsLive) return cartesiaEngine(session, ev);
     } catch { /* fall through to the browser */ }
   }
-  return browserEngine(ev);
+  return browserEngine(ev, opts.recognitionLang);
 }

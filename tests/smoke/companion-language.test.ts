@@ -2,6 +2,7 @@
 import { describe, expect, test } from 'vitest';
 import { asksToEnter, asksToLeave, guideOffline, languageLines, resolveReply, safeReply, type GuideInput } from '../../packages/shared/src/guide';
 import { planOffline } from '../../packages/shared/src/scene';
+import { generationConfig } from '../../apps/headset/src/voice/tts';
 import { asLang, detectLanguage, deviceLang, initialConversationLanguage, nextConversationLanguage, sameLanguage } from '../../packages/shared/src/language';
 
 const base: GuideInput = { phase: 'gathering', transcript: '', history: [], media: null, mediaCaption: null, place: null, invitedToEnter: false, turnsInPhase: 0 };
@@ -115,4 +116,11 @@ describe('offline introductions follow the language', () => {
     expect(planOffline('a beach by the sea', null, { language: 'fr' }).intro).toBe('Nous y voilà. Vous sentez l’air ?');
     expect(planOffline('a kitchen with a table', 'Grandma’s kitchen').intro).toBe('Here we are. Grandma’s kitchen, just as you described it.');
   });
+});
+
+test('emotion is sent only with English lines', () => {
+  expect(generationConfig('en')).toEqual({ speed: 0.95, emotion: 'calm' });
+  expect(generationConfig(null)).toEqual({ speed: 0.95, emotion: 'calm' });
+  expect(generationConfig('es')).toEqual({ speed: 0.95 });
+  expect(generationConfig('fr')).toEqual({ speed: 0.95 });
 });
