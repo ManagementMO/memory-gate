@@ -15,7 +15,7 @@ import { perspectiveById, poses, useSocial, type PerspectiveKey } from '../store
 import { groundAt } from '../walk';
 import { PEOPLE, type Person } from './people';
 import { findRig, followYaw, reach, turnBone, yawOf } from './rig';
-import { RestPose, WalkCycle, walkClipOf } from './walkCycle';
+import { Loop, RestPose, WalkCycle, idleClipOf, walkClipOf } from './walkCycle';
 
 /** The smoothed body of one person, updated each frame from the latest pose. `speed` is how fast they're really
  *  moving over the ground (m/s) and `heading` which way (a camera-style yaw). */
@@ -142,8 +142,8 @@ const UP = new THREE.Vector3(0, 1, 0);
 
 /**
  * A rigged person driven by a body. `trueSize`: a known character (people.ts), shown at its own height on the ground;
- * otherwise (a shared likeness of any size) scaled so its eyes are at the person's eyes. Any walk loop in the file
- * plays as they move.
+ * otherwise (a shared likeness of any size) scaled so its eyes are at the person's eyes. Any idle loop in the file
+ * plays while they stand, and any walk loop as they move.
  */
 function Rigged({ url, label, body, trueSize, tag }: { url: string; label: string; body: React.RefObject<Body>; trueSize: boolean; tag: string }) {
   const gltf = useGLTF(url);
@@ -152,16 +152,17 @@ function Rigged({ url, label, body, trueSize, tag }: { url: string; label: strin
     root.traverse((o) => { if ((o as THREE.Mesh).isMesh) { o.castShadow = false; o.frustumCulled = false; } });
     const box = new THREE.Box3().setFromObject(root);
     const rest = new RestPose(root);
-    const clip = walkClipOf(gltf.animations);
-    return { root, rig: findRig(root), rest, cycle: clip ? new WalkCycle(root, clip, rest) : null, eye: Math.max(0.5, box.max.y * 0.935) };
+    const clip = walkClipOf(gltf.animations), still = idleClipOf(gltf.animations);
+    return { root, rig: findRig(root), rest, idle: still ? new Loop(root, still) : null, cycle: clip ? new WalkCycle(root, clip, rest) : null, eye: Math.max(0.5, box.max.y * 0.935) };
   }, [gltf]);
   const phase = useRef(0);
+  const idleTime = useRef(0);
   useEffect(() => () => { built.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) m.geometry.dispose(); }); }, [built]);
   useEffect(() => () => { people.delete(tag); }, [tag]);
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05);
     const b = body.current;
-    const { root, rig, rest, cycle, eye } = built;
+    const { root, rig, rest, idle, cycle, eye } = built;
     root.visible = b.ready;
     if (!b.ready || !rig) return;
     const s = trueSize ? 1 : THREE.MathUtils.clamp((b.head.y - b.ground) / eye, 0.3, 1.6);
@@ -170,6 +171,8 @@ function Rigged({ url, label, body, trueSize, tag }: { url: string; label: strin
     root.rotation.set(0, b.yaw + Math.PI, 0); // glTF people face +Z; this yaw is camera-style (-Z forward)
     root.scale.setScalar(s);
     rest.reset();
+    // Standing, their idle loop (it keeps going under the walk, so stopping picks it up again where it is).
+    if (idle) { idleTime.current += dt; idle.apply(idleTime.current, 1); }
     // The walk, as much as they're walking, at the pace that keeps its feet on the ground (backwards when stepping back).
     const w = cycle ? walkWeight(b.speed) : 0;
     if (cycle && w > 0) {
@@ -183,9 +186,10 @@ function Rigged({ url, label, body, trueSize, tag }: { url: string; label: strin
     _rel.copy(b.headQ).multiply(_yawQ.setFromAxisAngle(UP, b.yaw).invert());
     turnBone(rig.neck, _part.copy(_id).slerp(_rel, 0.4));
     turnBone(rig.head, _part.copy(_id).slerp(_rel, 0.6));
-    // Arms: to the hands when the headset tracks them; otherwise swinging with the walk, or resting at the sides.
+    // Arms: to the hands when the headset tracks them; otherwise swinging with the walk, and standing, the idle's own
+    // (or, without one, resting at the sides).
     const arm = (upper: THREE.Bone, lower: THREE.Bone, hand: THREE.Bone, target: THREE.Vector3 | null, side: number) => {
-      if (!target && w > 0.999) return;
+      if (!target && (idle || w > 0.999)) return;
       _held[0]!.copy(upper.quaternion); _held[1]!.copy(lower.quaternion);
       upper.getWorldPosition(_sh);
       if (target) _t.copy(target);
@@ -261,7 +265,8 @@ export function Avatar({ memberId }: { memberId: string }) {
 
 /**
  * The other perspective when nobody is seeing through it right now: its person, standing at its spot, facing across
- * the room (the claimant's likeness when they shared one). It steps aside the moment a person is there.
+ * the room, as they wait (people.ts standIn: the boy playing with his daisy), or the claimant's likeness when they
+ * shared one. It steps aside the moment a person is there, who is seen as the walking figure.
  */
 export function StandIn({ perspective, at, eye, yaw, color, url, name, sub }: { perspective: PerspectiveKey; at: { x: number; z: number }; eye: number; yaw: number; color: string; url: string | null; name: string; sub: string }) {
   const body = useRef<Body>(newBody());
@@ -272,5 +277,6 @@ export function StandIn({ perspective, at, eye, yaw, color, url, name, sub }: { 
     b.headQ.setFromAxisAngle(UP, yaw);
     b.yaw = yaw; b.speed = 0; b.ready = true;
   });
-  return <Figure body={body} url={url} person={PEOPLE[perspective]} color={color} name={name} sub={sub} tag={`stand-in:${perspective}`} />;
+  const person = PEOPLE[perspective];
+  return <Figure body={body} url={url} person={person.standIn ? { ...person, url: person.standIn } : person} color={color} name={name} sub={sub} tag={`stand-in:${perspective}`} />;
 }
