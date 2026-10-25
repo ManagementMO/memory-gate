@@ -13,6 +13,7 @@ import { fileUrl } from '../../backend/client';
 import { attachFirstPersonLook, firstPersonPose } from '../firstPerson';
 import { socialLink } from '../link';
 import { facingOther, keepDefaultSpots, worldSpot } from '../spots';
+import { worldViewpoints } from '../world';
 import { poses, useSocial, viewingPerspective } from '../store';
 import { handAnchors } from '../xr/OriginRig';
 import { Avatar, StandIn } from '../avatar/Avatar';
@@ -104,7 +105,7 @@ function PosePublisher() {
     l.at = now;
     const g = useGate.getState();
     const day = g.stage === 'forming' || g.stage === 'memory' || g.stage === 'leaving';
-    const inScene = day && (g.xr || !g.photoWorld);
+    const inScene = day && (g.xr || !g.photoWorld || !!worldViewpoints());
     if (g.xr) { camera.getWorldPosition(_p); camera.getWorldQuaternion(_q); }
     else firstPersonPose(_p, _q); // phones and laptops stand at their spot, even while watching the overview
     const perspective = viewingPerspective();

@@ -24,6 +24,7 @@ const out = process.argv[2] ?? 'apps/gate/.shots/xr';
 const arg = (n, d) => (process.argv.includes(`--${n}`) ? process.argv[process.argv.indexOf(`--${n}`) + 1] : d);
 const world = arg('world', 'palace');
 const q = arg('q', null); // e.g. --q 0.15 renders at the headset's own quality
+const memory = arg('memory', null); // --memory red-kite: the memory is the team's cached meadow (node scripts/red-kite-room.mjs first)
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--ignore-gpu-blocklist', '--use-angle=metal', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, ignoreHTTPSErrors: true });
@@ -37,7 +38,7 @@ const t0 = Date.now();
 const note = (s) => console.log(`${((Date.now() - t0) / 1000).toFixed(1)}s  ${s}`);
 const st = () => page.evaluate(() => { const g = window.__gate.store.getState(); return { stage: g.stage, xr: g.xr, said: g.companionLine?.text ?? null }; });
 try {
-  await page.goto(`https://localhost:5180/?emulate=1&mode=offline&voice=off&world=${world}${q ? `&q=${q}` : ''}`, { waitUntil: 'load' });
+  await page.goto(`https://localhost:5180/?emulate=1&mode=offline&voice=off&world=${world}${q ? `&q=${q}` : ''}${memory ? `&memory=${memory}` : ''}`, { waitUntil: 'load' });
   await page.waitForTimeout(4000);
   const enter = page.getByTestId('enter-vr');
   note(`enter button visible: ${await enter.isVisible().catch(() => false)}`);

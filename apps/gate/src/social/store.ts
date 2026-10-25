@@ -42,7 +42,7 @@ export type Avatar = { memberId: string; url: string; bytes: number };
 export type Pose = { memberId: string; perspectiveId: string; device: 'headset' | 'phone' | 'desktop'; inScene: boolean; head: number[]; left: number[]; right: number[]; updatedAt: number };
 export type Member = { id: string; name: string; role: string };
 /** Where a perspective stands in one memory, relative to its centre (metres). */
-export type Spot = { perspectiveId: string; memoryId: string; x: number; z: number; objectId: string; source: 'default' | 'story'; quote: string; updatedAt: number };
+export type Spot = { perspectiveId: string; memoryId: string; x: number; z: number; objectId: string; source: 'default' | 'story' | 'world'; quote: string; updatedAt: number };
 
 export const PERSONAS: Record<PerspectiveKey, { label: string; eyeHeight: number; color: string }> = {
   grandparent: { label: 'Grandparent', eyeHeight: 1.6, color: '#8fb8ff' },
@@ -74,6 +74,8 @@ type SocialState = SocialSnapshot & {
   notice: { text: string; at: number } | null;
   /** The headset's measured eye height and the world scale that puts it at the perspective's eye line. */
   xr: { measured: number | null; k: number };
+  /** The prepared world this visit's memory is shown in (a World Labs world id), if any. */
+  worldId: string | null;
   set: (p: Partial<SocialState>) => void;
 };
 
@@ -90,6 +92,7 @@ export const useSocial = create<SocialState>((set) => ({
   openStory: null,
   notice: null,
   xr: { measured: null, k: 1 },
+  worldId: null,
   set: (p) => set(p),
 }));
 

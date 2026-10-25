@@ -13,6 +13,7 @@ import { socialLink } from './link';
 import { memoryPlacements } from './overlay';
 import { inMemory, memoryKey } from './perspectives';
 import { perspectiveOf, useSocial, type Perspective, type PerspectiveKey } from './store';
+import { worldViewpoints } from './world';
 
 export type Point = { x: number; z: number };
 type Thing = { id: string; label: string; kind: string; place: Placement };
@@ -57,7 +58,10 @@ export function besideThing(objectId: string, items = things()): Point | null {
 }
 
 /** Where a perspective stands in the memory being visited (relative to its centre). */
-export function spotOf(key: PerspectiveKey): Point & { source: 'default' | 'story'; objectId: string } {
+export function spotOf(key: PerspectiveKey): Point & { source: 'default' | 'story' | 'world'; objectId: string } {
+  // Inside a prepared world (the Red Kite meadow), each perspective stands at that world's checked viewpoint.
+  const world = worldViewpoints();
+  if (world) return { x: world[key].x - MEMORY_CENTER.x, z: world[key].z - MEMORY_CENTER.z, source: 'world', objectId: '' };
   const p = perspectiveOf(key);
   const row = useSocial.getState().spots.find((s) => s.perspectiveId === p.id && s.memoryId === memoryKey());
   if (row) return { x: row.x, z: row.z, source: row.source, objectId: row.objectId };
@@ -96,7 +100,7 @@ const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
 
 /** A memory told through a perspective's eyes may say where they were: stand them there. */
 export async function placeFromStory(text: string, p: Perspective, justAdded: { data: { id: string; label: string; kind: string }; place: Placement }[] = []): Promise<void> {
-  if (!socialLink.ready || !inMemory()) return;
+  if (!socialLink.ready || !inMemory() || worldViewpoints()) return; // a prepared world keeps its checked viewpoints
   const known = things();
   const items = [...known, ...justAdded.filter((a) => !known.some((k) => k.id === a.data.id)).map((a) => ({ id: a.data.id, label: a.data.label, kind: a.data.kind, place: a.place }))];
   if (!items.length) return;
@@ -114,7 +118,7 @@ export async function placeFromStory(text: string, p: Perspective, justAdded: { 
 
 /** The host keeps the opening places, so every device puts the two perspectives in the same spots. */
 export function keepDefaultSpots(): void {
-  if (!socialLink.ready || !inMemory() || useGate.getState().session?.role !== 'host') return;
+  if (!socialLink.ready || !inMemory() || useGate.getState().session?.role !== 'host' || worldViewpoints()) return;
   const mem = memoryKey();
   for (const key of ['grandparent', 'child'] as PerspectiveKey[]) {
     const p = perspectiveOf(key);

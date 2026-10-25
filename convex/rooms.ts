@@ -72,7 +72,7 @@ export const get = query({
         soundLevel: room.soundLevel, echoEnabled: room.echoEnabled, familyNames: room.familyNames, revision: room.revision, demo: room.demo, offline: room.offline ?? false, layout: room.layout ?? 'photo' },
       me: { displayName: member.displayName, role: member.role, isOwner: member.isOwner },
       joinKey: member.role === 'family' ? room.joinKey ?? null : null, // only family can share the privileged links
-      splat: splat ? { id: splat._id, status: splat.status, source: splat.source, url: splatUrl, liteUrl, numSplats: splat.numSplats, liteNumSplats: splat.liteNumSplats ?? null, floorY: splat.floorY, scale: splat.scale, sourceStory: await sourceOf(splat) } : null,
+      splat: splat ? { id: splat._id, status: splat.status, source: splat.source, url: splatUrl, liteUrl, numSplats: splat.numSplats, liteNumSplats: splat.liteNumSplats ?? null, floorY: splat.floorY, scale: splat.scale, worldId: splat.worldId ?? null, sourceStory: await sourceOf(splat) } : null,
       recentSplats: await Promise.all(splats.map(async (s) => ({ id: s._id, status: s.status, source: s.source, error: s.error, createdAt: s.createdAt, readyAt: s.readyAt, sourceStory: await sourceOf(s), previewUrl: s.previewFileId ? await ctx.storage.getUrl(s.previewFileId) : null }))),
       preparedCourtyardAvailable: !!(await ctx.db.query('assets').withIndex('by_key', q => q.eq('key', 'world.practice-courtyard')).unique()),
       flags: await readFlags(ctx, room),

@@ -43,7 +43,8 @@ let ok = true;
 const shot = (page, path) => page.screenshot({ path, timeout: 45000 }).catch((e) => note(`(screenshot skipped: ${String(e).split('\n')[0].slice(0, 80)})`));
 const check = (cond, msg) => { note(`${cond ? 'PASS' : 'FAIL'} ${msg}`); if (!cond) ok = false; };
 
-await host.goto(`${base}?voice=off`, { waitUntil: 'load' });
+// GATE_MEMORY=red-kite: the visit's memory is the team's cached meadow (node scripts/red-kite-room.mjs first).
+await host.goto(`${base}?voice=off${process.env.GATE_MEMORY ? `&memory=${process.env.GATE_MEMORY}` : ''}`, { waitUntil: 'load' });
 await host.waitForTimeout(4000);
 await host.click('[data-testid=begin]');
 await host.waitForFunction(() => window.__gate.store.getState().session?.role === 'host', null, { timeout: 30000 });
@@ -113,9 +114,10 @@ if (hs.backend === 'spacetime') {
   // Two people in the room: Lily's note put the grandchild by the stove, so she stands there now, and through the
   // grandparent's eyes the host sees her across the room. Stepping into the grandchild's eyes puts the host in her
   // place (she isn't drawn inside you) with the grandparent waiting across the room.
-  await host.waitForFunction(() => window.__social.spot('child').source === 'story', null, { timeout: 15000 }).catch(() => undefined);
+  await host.waitForFunction(() => window.__social.spot('child').source !== 'default', null, { timeout: 15000 }).catch(() => undefined);
   const childSpot = await host.evaluate(() => window.__social.spot('child'));
-  check(childSpot.source === 'story', `the grandchild now stands where the story put her (${childSpot.objectId || 'default spot'})`);
+  // In a prepared world (the Red Kite meadow) everyone stays at that world's checked viewpoints instead.
+  check(childSpot.source === 'story' || childSpot.source === 'world', childSpot.source === 'world' ? 'in the meadow the grandchild stays at its checked viewpoint beside the oak' : `the grandchild now stands where the story put her (${childSpot.objectId})`);
   await host.waitForFunction((at) => [...window.__social.poses.values()].some((p) => p.inScene && Math.hypot(p.head[0] - at.x, p.head[2] - at.z) < 0.05), childSpot.world, { timeout: 8000 }).catch(() => undefined);
   const lilyThere = (await social(host)).poses.some((p) => p.inScene && Math.abs(p.y - 1.1) < 0.02);
   check(lilyThere && (await host.evaluate(() => window.__socialDrawn.figures.length)) >= 1, 'through the grandparent’s eyes, the host sees Lily across the room at her spot');

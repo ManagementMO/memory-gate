@@ -65,3 +65,10 @@ test('the name others see can be changed by its owner and reaches the exchange c
   expect(ctx.displayName).toBe('Grandpa Joe');
   expect(ctx.isOwner).toBe(true);
 });
+
+test('perspectives recognise the team’s cached meadow (its id matches the cached world file)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const manifest = JSON.parse(readFileSync(new URL('../../fixtures/worlds/red-kite.json', import.meta.url), 'utf8')) as { worldId: string };
+  const source = readFileSync(new URL('../../apps/gate/src/social/world.ts', import.meta.url), 'utf8');
+  expect(source.match(/MEADOW_WORLD_ID = '([^']+)'/)?.[1]).toBe(manifest.worldId);
+});

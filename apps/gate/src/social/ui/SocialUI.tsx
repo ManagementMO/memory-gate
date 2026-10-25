@@ -1,6 +1,7 @@
 // Perspectives on a phone or laptop: whose eyes you see through (and your name), your view or the overview, adding a
 // memory by typing or speaking, memories handed to you, the story behind a ghost, old photographs of the place, and
 // the likeness others see. The headset has the same things on its wrist (xr/OriginRig.tsx).
+import { useQuery } from 'convex/react';
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../../../../../convex/_generated/api';
 import type { Id } from '../../../../../convex/_generated/dataModel';
@@ -302,6 +303,11 @@ export function SocialUI() {
     if (!session) return;
     useSocial.getState().set({ chosen: false, viewing: session.role === 'guest' ? 'child' : 'grandparent', view: session.role === 'guest' ? 'first' : 'overview' });
   }, [session]);
+  // Which prepared world this visit's memory is shown in (the team's cached meadow, say): perspectives stand at its
+  // checked viewpoints instead of the sketch room's spots.
+  const roomView = useQuery(api.rooms.get, session ? { code: session.code, token: session.token } : 'skip');
+  const worldId = roomView?.splat?.status === 'ready' && roomView.splat.source === 'worldlabs' ? roomView.splat.worldId ?? null : null;
+  useEffect(() => { useSocial.getState().set({ worldId }); }, [worldId]);
   // Ask once whose eyes this person sees through, when they're settled (not over the greeting).
   useEffect(() => { if (session && !chosen && !xr && (stage === 'gathering' || stage === 'memory')) setSheet((s) => s ?? 'pick'); }, [session, chosen, xr, stage]);
   // Wear a likeness this device shared before (or one handed over as ?avatar=KEY) once the visit is live.

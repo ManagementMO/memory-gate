@@ -89,6 +89,11 @@ export function CameraRig() {
       _look.set(0, 1.7 + p * 0.1, -6);
       fov = 50 - p * 9;
       rate = 6;
+    } else if (firstPersonActive()) {
+      // Through someone's eyes: at your spot, at the perspective's eye height (social/firstPerson.ts).
+      // Checked before the living photograph: first person declines single photos, but stands in prepared worlds.
+      fov = firstPersonView(_pos, _look, state.size.width / Math.max(1, state.size.height));
+      rate = 4;
     } else if (s.photoWorld && (s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving')) {
       // A living photograph only looks right from where it was taken: stand there, with a breath of parallax.
       const eye = s.photoWorld.eye;
@@ -96,10 +101,6 @@ export function CameraRig() {
       _look.set(px * 0.6, eye - 0.08 + py * 0.25, -3);
       fov = 58;
       rate = 1.6;
-    } else if (firstPersonActive()) {
-      // Through someone's eyes: at your spot, at the perspective's eye height (social/firstPerson.ts).
-      fov = firstPersonView(_pos, _look, state.size.width / Math.max(1, state.size.height));
-      rate = 4;
     } else if (s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving') {
       const o = orbit.current;
       if (!o.dragging) {

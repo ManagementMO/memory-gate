@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { useGate } from '../state/store';
 import { facingOther, worldSpot } from './spots';
+import { worldViewpoints } from './world';
 import { useSocial, viewingPerspective } from './store';
 
 const look = { yaw: 0, pitch: -0.06, dragging: false, x: 0, y: 0 };
@@ -12,11 +13,12 @@ useSocial.subscribe((s, prev) => { if (s.viewing !== prev.viewing) { look.yaw = 
 const _q = new THREE.Quaternion();
 const _e = new THREE.Euler(0, 0, 0, 'YXZ');
 
-/** Flat screens, inside the memory, with "My view" chosen (and not standing inside a living photograph). */
+/** Flat screens, inside the memory, with "My view" chosen. A living photograph only looks right from where it was
+ *  taken, so there the photo's own view stays; a prepared world has checked viewpoints, so you stand at yours. */
 export function firstPersonActive(): boolean {
   const g = useGate.getState();
   const day = g.stage === 'forming' || g.stage === 'memory' || g.stage === 'leaving';
-  return day && !g.xr && !g.photoWorld && useSocial.getState().view === 'first';
+  return day && !g.xr && (!g.photoWorld || !!worldViewpoints()) && useSocial.getState().view === 'first';
 }
 
 /** Where this person's eyes are (and which way they look): at their perspective's spot, facing the other one. */
