@@ -72,13 +72,28 @@ export function guessPlace(text: string): string | null {
 const pick = <T,>(arr: readonly T[], seed: number): T => arr[Math.abs(seed) % arr.length]!;
 const hash = (s: string) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; };
 
+/**
+ * A clear wish to leave or stop ("I'd like to leave", "can we go back", "take me home", "exit", "I'm done"), told
+ * apart from a memory that merely mentions leaving ("we used to leave the door open"). The app acts on it at once,
+ * without waiting on a model, so leaving always works, even offline.
+ */
+export function asksToLeave(transcript: string): boolean {
+  const t = norm(transcript);
+  if (!t) return false;
+  const wish = "(i'?d like to|i would like to|i want to|i wanna|i need to|can we|could we|can i|could i|may we|let'?s|let us|let me|please|time to|i'?m ready to|we should|i think i'?ll)";
+  const go = '(leave|go (back|home|now)|go$|stop|exit|head (back|home)|get out|be done|finish|end( this| it| here)?|wrap up|say goodbye)';
+  return new RegExp(`\\b${wish}\\s+(now\\s+)?${go}(\\b|$)`).test(t)
+    || /^(please\s+)?(leave|exit|stop|go back|take me (back|home|out)|end|end it|goodbye|bye( bye)?|i'?m done|we'?re done|that'?s enough|that'?s all|all done)\b/.test(t)
+    || /\b(take me (back|home|out)|get me out|i'?m (tired|finished|done)|too tired|that'?s enough for (today|now)|stop for (today|now))\b/.test(t);
+}
+
 export function guideOffline(input: GuideInput): GuideReply {
   const t = norm(input.transcript);
   const words = t ? t.split(' ').length : 0;
   const seed = hash(t);
   const place = guessPlace(input.transcript) ?? input.place;
 
-  if (/\b(i'?m tired|too tired|let'?s stop|stop for (today|now)|i want to (stop|go back|leave)|that'?s enough|i'?m done|goodbye|bye)\b/.test(t)) {
+  if (asksToLeave(input.transcript)) {
     return { reply: input.phase === 'memory' ? 'Thank you for bringing me here. I’ll keep this moment safe for you.' : 'Of course. Thank you for spending this time with me.', intent: 'leave', place };
   }
   if (/\b(rest|pause|a break|wait a (minute|moment|second)|hold on|one moment)\b/.test(t) && words <= 8) {

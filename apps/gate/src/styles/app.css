@@ -42,6 +42,16 @@ button { font: inherit; color: inherit; }
 }
 .icon-btn svg { width: 22px; height: 22px; }
 .icon-btn:hover { transform: scale(1.04); }
+/* "Your moments" on the start page: a round window with the latest picture kept, set in glass. */
+.moments-btn {
+  width: 58px; height: 58px; padding: 3px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center;
+  color: var(--ink); transition: transform var(--quick) var(--ease-out), box-shadow var(--calm);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.28) inset, 0 10px 30px rgba(8, 6, 30, 0.35);
+}
+.moments-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.moments-btn svg { width: 24px; height: 24px; }
+.moments-btn:hover { transform: scale(1.06); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.45) inset, 0 0 26px rgba(255, 214, 160, 0.35), 0 10px 30px rgba(8, 6, 30, 0.35); }
+.moments-btn:focus-visible { outline: 3px solid rgba(190, 172, 255, 0.95); outline-offset: 3px; }
 
 /* ---------- the top bar ---------- */
 .topbar {

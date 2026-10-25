@@ -9,13 +9,14 @@ import { MemoryChapter } from './MemoryChapter';
 import { useGate } from '../state/store';
 import { useAlbum } from './useAlbum';
 import './album.css';
+import { CloseIcon } from '../ui/Icons';
 
-export type AlbumViewProps = { onBeginAnother: () => void; onRevisit?: (memoryId: string) => void };
+export type AlbumViewProps = { onBeginAnother: () => void; onRevisit?: (memoryId: string) => void; onClose?: () => void };
 
 const HOVER_OPEN_MS = 130;
 const HOVER_CLOSE_MS = 320;
 
-export default function AlbumView({ onBeginAnother, onRevisit }: AlbumViewProps) {
+export default function AlbumView({ onBeginAnother, onRevisit, onClose }: AlbumViewProps) {
   const memories = useAlbum();
   const session = useGate((s) => s.session);
   const reduce = useReducedMotion();
@@ -56,7 +57,14 @@ export default function AlbumView({ onBeginAnother, onRevisit }: AlbumViewProps)
       <div className="album-scrim" aria-hidden="true" />
       <div className="album-scroll" onClick={(e) => { if (!(e.target as Element).closest('.pane')) { clear(); pinned.current = false; setOpenId(null); } }}>
       <div className="album-inner">
-        <div className="album-top"><div className="wordmark">Memory Gate</div></div>
+        <div className="album-top">
+          <div className="wordmark">Memory Gate</div>
+          {onClose && (
+            <button type="button" className="icon-btn glass album-close" aria-label="Back to the start" onClick={onClose} data-testid="album-close">
+              <CloseIcon />
+            </button>
+          )}
+        </div>
         <motion.header className="album-head" initial={{ opacity: 0, y: reduce ? 0 : 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}>
           <h1 id="album-h">Your moments</h1>
           <p className="album-date">{todayLine()}</p>
