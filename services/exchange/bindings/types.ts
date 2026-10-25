@@ -58,6 +58,27 @@ export const CompanionTurn = __t.object("CompanionTurn", {
 });
 export type CompanionTurn = __Infer<typeof CompanionTurn>;
 
+export const ConversationSummary = __t.object("ConversationSummary", {
+  roomId: __t.string(),
+  summary: __t.string(),
+  turnCount: __t.u32(),
+  updatedAt: __t.f64(),
+});
+export type ConversationSummary = __Infer<typeof ConversationSummary>;
+
+export const ConversationTurn = __t.object("ConversationTurn", {
+  id: __t.string(),
+  roomId: __t.string(),
+  who: __t.string(),
+  memberId: __t.string(),
+  speakerName: __t.string(),
+  perspectiveId: __t.string(),
+  text: __t.string(),
+  intent: __t.string(),
+  createdAt: __t.f64(),
+});
+export type ConversationTurn = __Infer<typeof ConversationTurn>;
+
 export const Handoff = __t.object("Handoff", {
   id: __t.string(),
   roomId: __t.string(),
@@ -191,4 +212,22 @@ export const Reference = __t.object("Reference", {
   createdAt: __t.f64(),
 });
 export type Reference = __Infer<typeof Reference>;
+
+export const Utterance = __t.object("Utterance", {
+  id: __t.string(),
+  roomId: __t.string(),
+  memberId: __t.string(),
+  speakerName: __t.string(),
+  perspectiveId: __t.string(),
+  device: __t.string(),
+  text: __t.string(),
+  snrDb: __t.f32(),
+  durationMs: __t.u32(),
+  heardAt: __t.f64(),
+  duplicateOf: __t.string(),
+  reason: __t.string(),
+  audioFileId: __t.string(),
+  createdAt: __t.f64(),
+});
+export type Utterance = __Infer<typeof Utterance>;
 

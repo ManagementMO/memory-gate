@@ -6,6 +6,7 @@ import { makeFunctionReference } from 'convex/server';
 import { DbConnection } from './bindings/index.ts';
 import { runArchive } from './archive-runner.mjs';
 import { createSocial, SOCIAL_SUBSCRIPTIONS } from './social.mjs';
+import { createConversation } from './conversation.mjs';
 
 const token = process.env.SPACETIME_TOKEN;
 if (!token) throw new Error('SPACETIME_TOKEN is required by the private exchange gateway.');
@@ -98,14 +99,20 @@ async function nearby() {
   nearbyCache = { at: Date.now(), value };
   return value;
 }
-// Perspectives (poses, stories, handoffs, archive photographs, likenesses): services/exchange/social.mjs.
-const social = createSocial({ db, clients, send, convex, authorize, isReady: () => ready });
+// Perspectives (poses, stories, handoffs, archive photographs, likenesses): services/exchange/social.mjs. The
+// companion's one conversation with everyone in a visit: services/exchange/conversation.mjs.
+const conversation = createConversation({ db, clients, send, convex });
+const social = createSocial({ db, clients, send, convex, authorize, isReady: () => ready, conversation });
 function requireReady(context) { if (!ready) throw new Error('The exchange is not connected.'); if (context.paused) throw new Error('This room is paused. Resume it before changing memories.'); }
 async function action(c, message) {
   if (message.type === 'join') {
     if (c.auth) throw new Error('This connection has already joined a room.');
     if (typeof message.code !== 'string' || typeof message.token !== 'string' || message.token.length > 100) throw new Error('Invalid room session.');
-    c.auth = { code: message.code, token: message.token }; await authorize(c); await refresh(c); await social.joined(c); return;
+    c.auth = { code: message.code, token: message.token };
+    // The context comes from this check itself: refresh() does nothing while the 5 s poll is already refreshing this
+    // connection, which used to leave a new device without its first perspectives (and without a welcome).
+    c.context = await authorize(c); c.authorizedAt = Date.now();
+    await refresh(c); await social.joined(c); return;
   }
   // Presence: heartbeats reuse this connection's recent authorization (refreshed every 5 s) instead of a check each.
   if (message.type === 'here' || message.type === 'point' || message.type === 'leave') {
@@ -123,7 +130,7 @@ async function action(c, message) {
     } else { await db.reducers.leaveVisit({ roomId, memberId }); await db.reducers.dropPose({ roomId, memberId }); }
     return;
   }
-  if (social.handles(message.type)) return void await social.act(c, message);
+  if (social.handles(message.type)) return await social.act(c, message);
   const context = await authorize(c); requireReady(context);
   const { memberId, roomId } = context;
   if (message.type === 'pass') {
@@ -183,17 +190,23 @@ wss.on('connection', socket => {
     let message;
     try {
       try { message = JSON.parse(raw.toString()); } catch { message = null; }
-      // Live heads and hands (~10 a second) have their own lane and limit, never queued behind an action.
+      // Live heads and hands (~10 a second) have their own lane and limit, never queued behind an action; so does
+      // "someone has started talking" (the companion never speaks over them).
       if (message?.type === 'pose') { social.pose(c, message); return; }
+      if (message?.type === 'hearing') { conversation.hearing(c, message); return; }
       if (Date.now() - c.window > 60_000) { c.count = 0; c.window = Date.now(); }
-      if (++c.count > 60) throw new Error('Please slow down.');
+      // Presence heartbeats (every 3 s) don't count against the limit; everything else does.
+      if (message?.type !== 'here' && ++c.count > 90) throw new Error('Please slow down.');
       if (!message || typeof message !== 'object' || typeof message.requestId !== 'string' || message.requestId.length > 80) throw new Error('Invalid request.');
       // Presence (heartbeats, marks) and perspectives share this socket: each is one quick write, so they never wait
       // behind (or block) the one-at-a-time exchange actions such as an archive search.
       const quick = ['here', 'point', 'leave'].includes(message.type) || social.handles(message.type);
       if (!quick && c.busy) throw new Error('Your previous action is still being saved.');
       if (!quick) c.busy = true;
-      try { await action(c, message); send(c, { type: 'ack', requestId: message.requestId }); } finally { if (!quick) c.busy = false; }
+      try {
+        const result = await action(c, message);
+        send(c, { type: 'ack', requestId: message.requestId, ...(result && typeof result === 'object' ? { result } : {}) });
+      } finally { if (!quick) c.busy = false; }
     } catch (error) {
       // Never forward provider errors, auth arguments, stack traces or token-bearing URLs.
       const safe = error instanceof Error && !/token|stack|http|convex|requestid|server error/i.test(error.message) ? error.message.slice(0, 200) : 'This action could not complete. Check your connection and sharing permission.';
@@ -204,6 +217,7 @@ wss.on('connection', socket => {
 });
 const poll = setInterval(refreshAll, 5000);
 const cleanup = setInterval(() => { void reconcileDeletedRooms(); void social.reconcileAvatars(); }, 10_000);
-server.listen(Number(process.env.EXCHANGE_PORT ?? 3212), '127.0.0.1', () => console.log('Memory exchange gateway listening on 127.0.0.1:3212; private SpacetimeDB subscriptions enabled.'));
+const port = Number(process.env.EXCHANGE_PORT ?? 3212);
+server.listen(port, '127.0.0.1', () => console.log(`Memory exchange gateway listening on 127.0.0.1:${port}; private SpacetimeDB subscriptions enabled.`));
 function stop() { clearInterval(poll); clearInterval(cleanup); for (const c of clients) c.socket.close(); wss.close(); server.close(); db.disconnect(); }
 process.on('SIGTERM', stop); process.on('SIGINT', stop);

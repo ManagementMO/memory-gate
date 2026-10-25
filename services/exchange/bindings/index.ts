@@ -34,12 +34,15 @@ import {
 } from "spacetimedb";
 
 // Import all reducer arg schemas
+import AddConversationTurnReducer from "./add_conversation_turn_reducer";
 import AddObjectReducer from "./add_object_reducer";
 import AddStoryReducer from "./add_story_reducer";
 import AddTurnReducer from "./add_turn_reducer";
+import AddUtteranceReducer from "./add_utterance_reducer";
 import BeHereReducer from "./be_here_reducer";
 import ClaimPerspectiveReducer from "./claim_perspective_reducer";
 import ClearAvatarReducer from "./clear_avatar_reducer";
+import ClearSpeakerAudioReducer from "./clear_speaker_audio_reducer";
 import DropPoseReducer from "./drop_pose_reducer";
 import EnsurePerspectivesReducer from "./ensure_perspectives_reducer";
 import LeaveVisitReducer from "./leave_visit_reducer";
@@ -55,6 +58,7 @@ import RemoveStoryReducer from "./remove_story_reducer";
 import RespondHandoffReducer from "./respond_handoff_reducer";
 import RespondMemoryReducer from "./respond_memory_reducer";
 import SetAvatarReducer from "./set_avatar_reducer";
+import SetConversationSummaryReducer from "./set_conversation_summary_reducer";
 import SetSpotReducer from "./set_spot_reducer";
 import SetSummaryReducer from "./set_summary_reducer";
 import UnpinFromPerspectiveReducer from "./unpin_from_perspective_reducer";
@@ -69,6 +73,8 @@ import AvatarRow from "./avatar_table";
 import CapsuleRow from "./capsule_table";
 import CompanionSummaryRow from "./companion_summary_table";
 import CompanionTurnRow from "./companion_turn_table";
+import ConversationSummaryRow from "./conversation_summary_table";
+import ConversationTurnRow from "./conversation_turn_table";
 import HandoffRow from "./handoff_table";
 import OperatorRow from "./operator_table";
 import PerspectiveRow from "./perspective_table";
@@ -79,6 +85,7 @@ import PerspectiveStoryRow from "./perspective_story_table";
 import PoseRow from "./pose_table";
 import PresenceRow from "./presence_table";
 import ReferenceRow from "./reference_table";
+import UtteranceRow from "./utterance_table";
 
 /** Type-only namespace exports for generated type groups. */
 
@@ -143,6 +150,31 @@ const tablesSchema = __schema({
       { name: 'companion_turn_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, CompanionTurnRow),
+  conversationSummary: __table({
+    name: 'conversation_summary',
+    indexes: [
+      { accessor: 'roomId', name: 'conversation_summary_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'conversation_summary_room_id_key', constraint: 'unique', columns: ['roomId'] },
+    ],
+  }, ConversationSummaryRow),
+  conversationTurn: __table({
+    name: 'conversation_turn',
+    indexes: [
+      { accessor: 'id', name: 'conversation_turn_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'byRoom', name: 'conversation_turn_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'conversation_turn_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, ConversationTurnRow),
   handoff: __table({
     name: 'handoff',
     indexes: [
@@ -280,16 +312,33 @@ const tablesSchema = __schema({
       { name: 'reference_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, ReferenceRow),
+  utterance: __table({
+    name: 'utterance',
+    indexes: [
+      { accessor: 'id', name: 'utterance_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'byRoom', name: 'utterance_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'utterance_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, UtteranceRow),
 });
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
+  __reducerSchema("add_conversation_turn", AddConversationTurnReducer),
   __reducerSchema("add_object", AddObjectReducer),
   __reducerSchema("add_story", AddStoryReducer),
   __reducerSchema("add_turn", AddTurnReducer),
+  __reducerSchema("add_utterance", AddUtteranceReducer),
   __reducerSchema("be_here", BeHereReducer),
   __reducerSchema("claim_perspective", ClaimPerspectiveReducer),
   __reducerSchema("clear_avatar", ClearAvatarReducer),
+  __reducerSchema("clear_speaker_audio", ClearSpeakerAudioReducer),
   __reducerSchema("drop_pose", DropPoseReducer),
   __reducerSchema("ensure_perspectives", EnsurePerspectivesReducer),
   __reducerSchema("leave_visit", LeaveVisitReducer),
@@ -305,6 +354,7 @@ const reducersSchema = __reducers(
   __reducerSchema("respond_handoff", RespondHandoffReducer),
   __reducerSchema("respond_memory", RespondMemoryReducer),
   __reducerSchema("set_avatar", SetAvatarReducer),
+  __reducerSchema("set_conversation_summary", SetConversationSummaryReducer),
   __reducerSchema("set_spot", SetSpotReducer),
   __reducerSchema("set_summary", SetSummaryReducer),
   __reducerSchema("unpin_from_perspective", UnpinFromPerspectiveReducer),

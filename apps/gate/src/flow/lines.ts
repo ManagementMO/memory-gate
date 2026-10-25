@@ -44,6 +44,9 @@ export const LINES = {
     es: 'Gracias por llevarme allí. Guardé este momento para usted.',
     fr: 'Merci pour ce voyage. J’ai gardé ce moment pour vous.',
   },
+  // The room's companion welcoming someone who joined (services/exchange/conversation.mjs): said in each device's language.
+  joinedToo: { en: '{name}’s here too. Welcome, {name}.', es: '{name} también está aquí. Le doy la bienvenida, {name}.', fr: '{name} est là aussi. Bienvenue, {name}.' },
+  allHere: { en: 'Welcome. Now we’re all here together.', es: 'Bienvenidos. Ahora estamos todos aquí, juntos.', fr: 'Bienvenue. Nous voici tous ensemble.' },
   familyVisiting: { en: '{name} is visiting {place}. Let’s go with them.', es: '{name} está visitando {place}. Vamos también.', fr: '{name} visite {place}. Allons-y aussi.' },
   yourFamily: { en: 'Your family', es: 'Su familia', fr: 'Votre famille' },
   someone: { en: 'Someone', es: 'Alguien', fr: 'Quelqu’un' },

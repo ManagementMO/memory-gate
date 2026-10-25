@@ -72,7 +72,9 @@ export type VoiceMetrics = {
 
 export type Voice = {
   ready: Promise<void>;
-  start(): Promise<void>;
+  /** `interrupt: false` starts listening without cutting the companion off (Memory Gate's shared conversation decides
+   *  a moment later whether this is really someone talking over it). Default: the companion stops at once. */
+  start(opts?: { interrupt?: boolean }): Promise<void>;
   stop(): Promise<VoiceResult>;
   /** `language` (ISO 639-1, optional) is passed to Sonic when it is one of its languages; otherwise inferred. */
   speak(text: string, opts?: { language?: string | null }): Promise<void>;
@@ -336,10 +338,10 @@ export function createVoice(opts: VoiceOptions): Voice {
   })();
 
   // ---------- push-to-talk ----------
-  function start(): Promise<void> {
+  function start(o?: { interrupt?: boolean }): Promise<void> {
     if (disposed) return Promise.resolve();
     if (turn) return turn.started; // a repeated press while already listening
-    speaker.cancel(); // the companion never talks over the storyteller
+    if (o?.interrupt !== false) speaker.cancel(); // the companion never talks over the storyteller
     const t: Turn = { id: ++turnSeq, pressedAt: performance.now(), started: Promise.resolve(), micId: null, session: null, warm: false, frames: [], samples: 0, capTimer: null };
     turn = t;
     refreshState();

@@ -87,7 +87,7 @@ test('perspectives are erased with the room', { timeout: 30000 }, async t => {
   const token = process.env.SPACETIME_TOKEN ?? readFileSync('.spacetime/config/cli.toml', 'utf8').match(/^spacetimedb_token\s*=\s*"([^"]+)"/m)?.[1];
   let db;
   await new Promise((resolve, reject) => {
-    db = DbConnection.builder().withUri('ws://127.0.0.1:3000').withDatabaseName('heirloom-exchange').withToken(token)
+    db = DbConnection.builder().withUri('ws://127.0.0.1:3000').withDatabaseName(process.env.SPACETIME_DATABASE ?? 'heirloom-exchange').withToken(token)
       .onConnect(c => c.subscriptionBuilder().onApplied(resolve).onError((_ctx, e) => reject(e)).subscribe(['SELECT * FROM perspective', 'SELECT * FROM perspective_story']))
       .onConnectError((_ctx, e) => reject(e)).build();
   });
