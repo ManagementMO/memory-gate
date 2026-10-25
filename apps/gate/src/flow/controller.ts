@@ -396,7 +396,7 @@ class Flow {
     if (!shared.plan) return;
     const plan = validatePlan(shared.plan);
     const g = useGate.getState();
-    memory.adopt(plan, shared.id, shared.mediaUrl ? fileUrl(shared.mediaUrl) : null);
+    memory.adopt(plan, shared.id, shared.mediaUrl ? fileUrl(shared.mediaUrl) : null, shared.place ?? null);
     g.set({ memoryTitle: plan.title });
     if (g.stage === 'gathering' || g.stage === 'greeting') {
       this.clearNudge();
