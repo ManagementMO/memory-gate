@@ -43,7 +43,7 @@ function photoCard(photo: string): THREE.Mesh {
 }
 
 function Person({ p, at, delay, onStep }: { p: PlanPerson; at: [number, number]; delay: number; onStep: ((id: string) => void) | null }) {
-  const [body, setBody] = useState<{ obj: THREE.Object3D; mixer: THREE.AnimationMixer | null; height: number } | null>(null);
+  const [body, setBody] = useState<{ obj: THREE.Object3D; chest: THREE.Object3D | null; height: number } | null>(null);
   const card = useMemo(() => { const m = p.memory ? sfMemory(p.memory) : null; return m ? photoCard(m.photo) : null; }, [p.memory]);
   const camera = useThree((s) => s.camera);
   const t = useRef(-delay);
@@ -58,16 +58,19 @@ function Person({ p, at, delay, onStep }: { p: PlanPerson; at: [number, number];
       const obj = await personCopy(entry);
       dressPerson(obj, p, entry.person.skin);
       if (p.memory || QUEST) obj.traverse((o) => { o.castShadow = false; }); // a crowd's shadows cost a headset more than they give
-      const mixer = await posePerson(obj, p.pose, p.gender, hash(p.id) * 20);
+      // Everyone stands still in a calm pose (a frame of the standing clip, never played on): only their breathing moves.
+      await posePerson(obj, 'stand', p.gender, 1.5 + hash(p.id) * 6);
+      let chest: THREE.Object3D | null = null;
+      obj.traverse((o) => { if (!chest && (o as THREE.Bone).isBone && /Spine2$/.test(o.name)) chest = o; });
       obj.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) for (const mat of [m.material].flat()) { mat.transparent = true; mat.opacity = 0; } });
-      if (live) setBody({ obj, mixer, height: entry.person.height });
+      if (live) setBody({ obj, chest, height: entry.person.height });
     })();
     return () => { live = false; };
   }, [p]);
   useFrame((_, dt) => {
     if (!body) return;
     t.current += dt;
-    body.mixer?.update(Math.min(dt, 0.05));
+    if (body.chest) { const b = 0.012 * Math.sin(t.current * 1.55 + hash(p.id) * 6.28); body.chest.scale.set(1 + b, 1 + b * 0.35, 1 + b); }
     // step in softly once the place has formed
     const o = THREE.MathUtils.clamp(t.current / 1.4, 0, 1);
     if (o < 1 || t.current < 1.6) body.obj.traverse((x) => { const m = x as THREE.Mesh; if (m.isMesh) for (const mat of [m.material].flat()) { mat.opacity = o; mat.transparent = o < 1; mat.depthWrite = o > 0.5; } });
@@ -77,6 +80,8 @@ function Person({ p, at, delay, onStep }: { p: PlanPerson; at: [number, number];
   const click = onStep && p.memory ? (e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onStep(p.memory!); } : undefined;
   return (
     <group position={[MEMORY_CENTER.x + at[0], 0, MEMORY_CENTER.z + at[1]]} rotation-y={(p.facing * Math.PI) / 180} onClick={click}
+      // Someone with no memory to step into lets a ray through (a pinch held on the ground behind them still walks).
+      ref={(g) => { if (g) (g as unknown as { pointerEvents?: string }).pointerEvents = click ? undefined : 'none'; }}
       onPointerOver={click ? () => { document.body.style.cursor = 'pointer'; } : undefined} onPointerOut={click ? () => { document.body.style.cursor = ''; } : undefined}>
       <primitive object={body.obj} />
       {/* an easy target for a pinch or a click: an animated body is hard to hit with a ray */}
@@ -88,7 +93,7 @@ function Person({ p, at, delay, onStep }: { p: PlanPerson; at: [number, number];
 const taken = new Set<string>();
 
 /** Pointing at someone in a shared place steps into their memory (the flow is loaded lazily: it imports the scene). */
-const stepInto = (memoryId: string) => { void import('../../flow/controller').then((c) => c.flow.visitShared(memoryId)); };
+const stepInto = (memoryId: string) => { void import('../../flow/controller').then((c) => c.flow.visitShared(memoryId, 'crowd')); };
 
 /** Everyone the plan says is there. `onStep` steps into a person's shared memory (the crowd at a landmark). */
 export function PlanPeople({ plan, onStep = stepInto }: { plan: ScenePlan; onStep?: ((memoryId: string) => void) | null }) {

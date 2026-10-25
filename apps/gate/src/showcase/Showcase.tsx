@@ -2,10 +2,12 @@
 // the whole place forms around you. It wears its own sky, sun and fog while it's here, and stands so that its
 // eye-level view is where you are (the origin, facing −z). In a headset it grows a fraction of its grass.
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { buildShowcase, type BuiltShowcase } from './build';
+import { useMemory } from '../flow/memory';
+import { heldHeard } from './held';
 
 const specs = import.meta.glob('./scenes/*.json', { eager: true, import: 'default' }) as Record<string, ShowcaseSpec>;
 const scripts = import.meta.glob('./scenes/*.js') as Record<string, () => Promise<{ default?: (api: unknown) => Promise<void> }>>;
@@ -42,7 +44,7 @@ function dispose(b: BuiltShowcase) {
   b.hdr?.dispose();
 }
 
-export function Showcase({ name }: { name: string }) {
+export function Showcase({ name, camera: view = 0 }: { name: string; camera?: number }) {
   const gl = useThree((s) => s.gl);
   const camera = useThree((s) => s.camera);
   const scene = useThree((s) => s.scene);
@@ -59,13 +61,18 @@ export function Showcase({ name }: { name: string }) {
       if (!live) { dispose(b); return; }
       made = b;
       setBuilt(b);
+      useMemory.setState({ showcaseReady: true });
     })();
-    return () => { live = false; if (made) dispose(made); setBuilt(null); };
+    return () => { live = false; if (made) dispose(made); setBuilt(null); useMemory.setState({ showcaseReady: false }); };
   }, [name]);
   // Its sky, light and fog while it's here; the white space's own come back after.
   useEffect(() => {
     if (!built) return;
-    const prev = { bg: scene.background, env: scene.environment, fog: scene.fog, exp: gl.toneMappingExposure, envI: scene.environmentIntensity, bgI: scene.backgroundIntensity, blur: scene.backgroundBlurriness, rot: scene.environmentRotation.y };
+    const prev = { bg: scene.background, env: scene.environment, fog: scene.fog, exp: gl.toneMappingExposure, envI: scene.environmentIntensity, bgI: scene.backgroundIntensity, blur: scene.backgroundBlurriness, rot: scene.environmentRotation.y, far: (camera as THREE.PerspectiveCamera).far };
+    // a showcase is a whole landscape (the Golden Gate is two kilometres off): the camera sees as far as it does (in a
+    // headset too: the XR session takes its depth range from this camera)
+    const cam = camera as THREE.PerspectiveCamera;
+    if (cam.isPerspectiveCamera) { cam.far = 4000; cam.updateProjectionMatrix(); }
     scene.background = built.background;
     scene.environment = built.envMap;
     scene.fog = built.fog;
@@ -79,17 +86,49 @@ export function Showcase({ name }: { name: string }) {
       scene.environmentIntensity = prev.envI; scene.backgroundIntensity = prev.bgI; scene.backgroundBlurriness = prev.blur;
       scene.environmentRotation.y = scene.backgroundRotation.y = prev.rot;
       gl.toneMappingExposure = prev.exp;
+      if (cam.isPerspectiveCamera) { cam.far = prev.far; cam.updateProjectionMatrix(); }
     };
   }, [built]);
-  useFrame((_, dt) => { if (built) for (const u of built.uniforms) u.value += Math.min(dt, 0.1); });
-  // Stand it so its eye-level camera is where you are, looking the way it looks.
-  const eye = spec?.cameras?.[0];
+  // Held things someone has named rise into their places.
+  const revealed = useMemory((s) => s.revealed);
+  const placed = useRef(new Set<number>());
+  const rising = useRef<{ node: THREE.Object3D; base: number; t: number }[]>([]);
+  useEffect(() => {
+    if (!built) return;
+    for (const i of revealed ?? []) {
+      if (placed.current.has(i)) continue;
+      const h = built.held.find((x) => x.index === i);
+      if (!h) continue;
+      placed.current.add(i);
+      void built.place(h.it).then((node) => { if (node) { rising.current.push({ node, base: node.scale.x, t: 0 }); node.scale.setScalar(node.scale.x * 0.01); } });
+    }
+  }, [built, revealed]);
+  useEffect(() => { placed.current = new Set(); rising.current = []; useMemory.setState({ revealed: [] }); }, [name]);
+  // For rehearsals and checks: say something to the place without a microphone (window.__showcaseSay('a birdbath')).
+  useEffect(() => {
+    const w = window as unknown as { __showcaseSay?: (text: string) => number[] };
+    w.__showcaseSay = (text) => { const st = useMemory.getState(); const ids = heldHeard(name, text, st.revealed ?? []); if (ids.length) useMemory.setState({ revealed: [...(st.revealed ?? []), ...ids] }); return ids; };
+    return () => { delete w.__showcaseSay; };
+  }, [name]);
+  useFrame((_, dt) => {
+    if (built) for (const u of built.uniforms) u.value += Math.min(dt, 0.1);
+    for (const r of rising.current) {
+      if (r.t >= 1.4) continue;
+      r.t += Math.min(dt, 0.05);
+      const k = Math.min(1, r.t / 1.4);
+      r.node.scale.setScalar(r.base * (0.01 + 0.99 * (1 - (1 - k) ** 3)));
+    }
+  });
+  // Stand it so its eye-level camera is where you are (on its ground, however high), looking the way it looks.
+  const eye = spec?.cameras?.[view] ?? spec?.cameras?.[0];
   const [dx, dz] = eye ? [eye.target[0] - eye.pos[0], eye.target[2] - eye.pos[2]] : [0, -1];
   const turn = useMemo(() => Math.PI - Math.atan2(dx, dz), [dx, dz]);
   if (!built || !eye) return null;
+  // Rays pass through it (its grass and things sit under the memory's pinch handler): a held pinch reaches the ground
+  // to walk, and the headset's buttons are never behind a blade of grass.
   return (
-    <group rotation-y={turn} name="showcase">
-      <group position={[-eye.pos[0], 0, -eye.pos[2]]}>
+    <group rotation-y={turn} name="showcase" ref={(g) => { if (g) (g as unknown as { pointerEvents?: string }).pointerEvents = 'none'; }}>
+      <group position={[-eye.pos[0], -(eye.pos[1] - 1.6), -eye.pos[2]]}>
         <primitive object={built.group} />
       </group>
     </group>

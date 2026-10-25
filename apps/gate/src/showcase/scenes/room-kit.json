@@ -281,7 +281,11 @@
     0,
     -2.85
    ],
-   "ry": 205
+   "ry": 205,
+   "say": [
+    "rocking chair",
+    "rocker"
+   ]
   },
   {
    "m": "furn_classic_nightstand",
@@ -319,7 +323,12 @@
     2.5
    ],
    "ry": 140,
-   "h": 1.08
+   "h": 1.08,
+   "say": [
+    "tv",
+    "television",
+    "telly"
+   ]
   },
   {
    "m": "furn_zenith_console",
@@ -450,7 +459,14 @@
     2.78
    ],
    "ry": 180,
-   "w": 0.42
+   "w": 0.42,
+   "say": [
+    "record player",
+    "turntable",
+    "gramophone",
+    "records",
+    "record"
+   ]
   },
   {
    "m": "furn_books_encyclopedia",

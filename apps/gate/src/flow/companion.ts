@@ -39,6 +39,8 @@ export const companion = {
   /** The host's device runs the visit: the place, stepping through, the album. */
   leads: () => !isGuest(),
   me: () => useSocial.getState().memberId,
+  /** Nobody else is in the visit right now (their words can't be mistaken for this person's). */
+  alone: () => usePresence.getState().others.length === 0,
 
   /** Were these this person's own words? While the companion isn't here, only the host's are. (The link drops for
    *  a moment when the page reconnects, entering VR say: a guest waits for it rather than losing the words.) */

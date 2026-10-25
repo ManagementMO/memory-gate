@@ -86,8 +86,9 @@ export function MemoryScene() {
   const photoWorld = useGate((s) => s.photoWorld);
   const placeKey = useMemory((s) => s.place);
   const shared = useMemory((s) => !!s.shared);
+  const showcaseReady = useMemory((s) => !!s.showcaseReady);
   // A garden, a football field, a classroom we already have finished: it forms whole, nothing to plan or draw.
-  const showcase = useMemo(() => (!shared && !photoWorld && !placeKey ? showcaseFor(plan) : null), [plan, shared, photoWorld, placeKey]);
+  const showcase = useMemo(() => (plan?.showcase?.name ?? (!shared && !photoWorld && !placeKey ? showcaseFor(plan) : null)), [plan, shared, photoWorld, placeKey]);
   useEffect(() => { useMemory.setState({ showcase }); return () => { useMemory.setState({ showcase: null }); }; }, [showcase]);
   const place = placeKey ? PLACES[placeKey] : null;
   const coveredByPhoto = useRef(new Set<string>());
@@ -134,7 +135,7 @@ export function MemoryScene() {
     const dt = Math.min(dtRaw, 0.05);
     stepAtmosphere(dt, active && !!plan);
     if (scene.fog instanceof THREE.Fog && !showcase) scene.fog.color.copy(atmoLive.horizon).lerp(new THREE.Color('#f2f2f6'), 1 - atmoLive.amount);
-    if (plan && showcase) { if (lastFormed.current !== 1) { lastFormed.current = 1; useMemory.setState({ formed: 1 }); } return; }
+    if (plan && showcase) { const ready = useMemory.getState().showcaseReady ? 1 : 0; if (lastFormed.current !== ready) { lastFormed.current = ready; useMemory.setState({ formed: ready }); } return; }
     if (!plan) { if (lastFormed.current !== 0) { lastFormed.current = 0; useMemory.setState({ formed: 0 }); } return; }
     const counted = (useGate.getState().photoWorld ? plan.objects.filter((o) => !coveredByPhoto.current.has(o.id)) : plan.objects).filter((o) => !held(plan, o.kind));
     let sum = 0;
@@ -147,26 +148,26 @@ export function MemoryScene() {
   });
 
   if (!active || !plan) return null;
-  // In a prepared place the floor is the world's own (a splat, which can't be pointed at): an unseen ground catches a
-  // tap, pinch or trigger, so "the bench was here" can put something where you pointed; in the headset a pinch held
-  // there for a moment is a step to it instead (Walk).
-  const ground = place ? (
+  // An unseen ground just over the floor catches a tap, pinch or trigger there, so "the bench was here" can put something
+  // where you pointed (in a prepared place the floor is the world's own, a splat, which can't be pointed at), and in
+  // the headset a pinch held there for a moment is a step to it instead (Walk), in every memory.
+  const ground = (
     <mesh name="ground-catcher" rotation-x={-Math.PI / 2} position={[0, 0.002, 0]} renderOrder={-10}
       onPointerDown={walkPointer.down} onPointerMove={walkPointer.move} onPointerUp={walkPointer.up} onPointerLeave={walkPointer.leave}>
       <circleGeometry args={[20, 64]} />
       <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
     </mesh>
-  ) : null;
+  );
   // Inside a living photograph the photo already shows the room and its furniture; only what's said after forms.
   // A kite (and the spool it flies from) is in the visitor's hands, drawn by HeldKite, not set in the place.
   const shown = (photoWorld ? plan.objects.filter((o) => !coveredByPhoto.current.has(o.id)) : plan.objects).filter((o) => !held(plan, o.kind));
   const sorted = [...shown].sort((a, b) => (ORDER[entryOf(a.kind).place] ?? 3) - (ORDER[entryOf(b.kind).place] ?? 3));
   return (
     <group name="memory">
-      {showcase && <Showcase name={showcase} />}
+      {showcase && <Showcase name={showcase} camera={plan.showcase?.camera ?? 0} />}
       {!photoWorld && !place && !showcase && <Setting plan={plan} />}
       {!photoWorld && !showcase && plan.landmark && <Landmark landmark={plan.landmark} />}
-      {!!plan.people?.length && <PlanPeople plan={plan} />}
+      {!!plan.people?.length && (!showcase || showcaseReady) && <PlanPeople plan={plan} />}
       {ground}
       <Ambience kind={plan.ambience} />
       {!showcase && sorted.map((o, i) => {

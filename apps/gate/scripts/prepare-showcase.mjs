@@ -11,7 +11,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const lab = path.resolve(here, '../.models-cache/scene-lab');
 const srcDir = path.resolve(here, '../src/showcase/scenes');
 const pub = path.resolve(here, '../public/showcase');
-export const SHOWCASES = ['garden', 'football-field', 'classroom', 'bedroom-1950s-china', 'room-kit', 'house', 'sf-street', 'sf-alamo-square'];
+export const SHOWCASES = ['garden', 'football-field', 'classroom', 'bedroom-1950s-china', 'room-kit', 'house', 'sf-street', 'sf-alamo-square', 'golden-gate', 'palace-lagoon'];
 for (const d of [srcDir, path.join(pub, 'models'), path.join(pub, 'hdri'), path.join(pub, 'textures')]) mkdirSync(d, { recursive: true });
 
 const models = new Set(readdirSync(path.join(lab, 'models')).filter((f) => f.endsWith('.glb')).map((f) => f.slice(0, -4)));
@@ -37,7 +37,8 @@ for (const name of SHOWCASES) {
     if (/\.(png|jpe?g|svg)$/.test(s) && existsSync(path.join(lab, s.replace(/^\//, '')))) need.images.add(s.replace(/^\//, ''));
   }
 }
-for (const m of need.models) copyFileSync(path.join(lab, 'models', `${m}.glb`), path.join(pub, 'models', `${m}.glb`));
+// the light copy of a model when there is one (the bridge's girders as boxes, scans simplified)
+for (const m of need.models) copyFileSync(path.join(lab, 'models', existsSync(path.join(lab, 'models', `${m}_lite.glb`)) ? `${m}_lite.glb` : `${m}.glb`), path.join(pub, 'models', `${m}.glb`));
 for (const h of need.hdri) copyFileSync(path.join(lab, 'hdri', `${h}.hdr`), path.join(pub, 'hdri', `${h}.hdr`));
 for (const t of need.textures) cpSync(path.join(lab, 'textures', t), path.join(pub, 'textures', t), { recursive: true });
 for (const i of need.images) { mkdirSync(path.dirname(path.join(pub, i)), { recursive: true }); copyFileSync(path.join(lab, i), path.join(pub, i)); }

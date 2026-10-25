@@ -1,6 +1,5 @@
 // From the scene lab (apps/gate/.models-cache/scene-lab/scenes/garden.js); run in the app by src/showcase/build.js.
 // Garden extras: a small reflective pond with a soil bank and a few lily pads.
-import { Reflector } from 'three/addons/objects/Reflector.js';
 
 export default async ({ THREE, scene, texSet, rng }) => {
   const C = [4.9, -5.6]; // pond centre (x, z)
@@ -16,20 +15,10 @@ export default async ({ THREE, scene, texSet, rng }) => {
   };
   const flat = (mesh, y) => { mesh.rotation.x = -Math.PI / 2; mesh.position.set(C[0], y, C[1]); return mesh; };
 
-  // water: a real mirror under a dark, murky tint
+  // water: dark and glossy, taking the sky's light (a live mirror draws the whole garden twice, too much for a headset)
   const waterGeo = new THREE.ShapeGeometry(new THREE.Shape(outline(1)), 6);
-  const mirror = new Reflector(waterGeo, { clipBias: 0.003, textureWidth: 1024, textureHeight: 1024, color: 0x8a9a92 });
+  const mirror = new THREE.Mesh(waterGeo, new THREE.MeshStandardMaterial({ color: '#1f3a33', roughness: 0.08, metalness: 0.1 }));
   scene.add(flat(mirror, 0.03));
-  // the reflection only needs trees, rocks and sky: skip it in the AO pass and hide the grass fields while it renders
-  const mirrorRender = mirror.onBeforeRender;
-  let grass = null;
-  mirror.onBeforeRender = function (r, s, cam) {
-    if (s.overrideMaterial) return;
-    grass ??= (() => { const g = []; scene.traverse((o) => { if (o.isInstancedMesh && o.count > 20000) g.push(o); }); return g; })();
-    for (const g of grass) g.visible = false;
-    mirrorRender.call(this, r, s, cam);
-    for (const g of grass) g.visible = true;
-  };
   const tint = new THREE.Mesh(waterGeo, new THREE.MeshBasicMaterial({ color: '#13261f', transparent: true, opacity: 0.5, depthWrite: false }));
   scene.add(flat(tint, 0.034));
 
