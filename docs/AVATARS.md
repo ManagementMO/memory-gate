@@ -6,6 +6,30 @@ In a shared visit, everyone appears where they really are in the memory: at thei
 
 `apps/gate/public/people/boy.glb` (1.31 m, eyes at 1.21 m) and `grandma.glb` (1.56 m, eyes at 1.45 m) are rigged MakeHuman characters made with MPFB 2 and the MakeHuman system assets (CC0, free for any use). Each has a 52-bone Mixamo skeleton and one `Walk_InPlace` loop. While nobody is seeing through the boy's eyes, the boy standing in at his spot is `boy-flower.glb`: the same boy and skeleton holding a daisy (a separate mesh on his right hand), with a 10 s `Idle_Flower` loop in which he twirls it, sniffs it, admires it and holds it out to you. Someone seeing through his eyes is always the walking `boy.glb`. The source exports (17-19 MB, 2048 px PNG textures, plus FBX and the `.blend`) stay outside the repo; `node apps/gate/scripts/prepare-people.mjs [sourceDir] [flowerDir]` makes the light copies (meshopt geometry, WebP textures at most 1024 px, about 1 MB each), as `fetch-models.mjs` does for the object library. They are shown at their true size, and each perspective's eye height is theirs (`PERSONAS` in `social/store.ts` and in the SpacetimeDB module).
 
+### In the Red Kite meadow: young grandma and her friend
+
+The meadow is the grandmother's childhood, so inside it the two perspectives become the children who were there:
+- **Young grandma:** the grandmother as a girl of about nine, from `girl.glb` (1.29 m, eyes at 1.19 m).
+- **Friend:** the friend she flew the kite with, from the boy.
+
+The room keeps the same two perspectives (`grandparent`, `child`) and who claimed them. Only their names, eye heights and figures change (`MEADOW_CAST` in `social/store.ts`, `MEADOW_PEOPLE` in `social/avatar/people.ts`). The switch happens once the visit is inside the meadow; at the gate they are still the grandparent and the grandchild. You can switch between them as always, with the perspective chip or X in the headset. The room's companion hears the names too, through the host's `flow` message (`cast`).
+
+The girl is built from the boy by `apps/gate/scripts/make-girl.py`:
+
+```
+Blender -b --factory-startup --python apps/gate/scripts/make-girl.py -- girl.glb
+node apps/gate/scripts/prepare-people.mjs --girl girl.glb
+```
+
+She keeps the boy's body, skeleton and walk (scaled to 0.98). She wears the MakeHuman system assets (CC0), fitted to that body the way MPFB fits them:
+- `ponytail01` hair;
+- the `female_elegantsuit01` blouse and skirt, recoloured red gingham;
+- `shoes04`, with white socks;
+- `eyebrow006` and `eyelashes02`;
+- the young female skin.
+
+The pack has no dress and no girl's face shape, so she reads as a girl mostly by her hair and clothes.
+
 The likeness is built **offline, on your own computer**. Only the finished model (a `.glb` file) is uploaded to this computer's Memory Gate server. The photos never leave your machine, and no photo is sent to any 3D service.
 
 ## Consent

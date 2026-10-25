@@ -13,7 +13,7 @@ import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyper
 import { fileUrl } from '../../backend/client';
 import { perspectiveById, poses, useSocial, type PerspectiveKey } from '../store';
 import { groundAt } from '../walk';
-import { PEOPLE, type Person } from './people';
+import { personFor, type Person } from './people';
 import { findRig, followYaw, reach, turnBone, yawOf } from './rig';
 import { Loop, RestPose, WalkCycle, idleClipOf, walkClipOf } from './walkCycle';
 
@@ -258,8 +258,9 @@ export function Avatar({ memberId }: { memberId: string }) {
   const [perspectiveId, setPerspectiveId] = useState('');
   useEffect(() => { const t = setInterval(() => setPerspectiveId(poses.get(memberId)?.perspectiveId ?? ''), 500); return () => clearInterval(t); }, [memberId]);
   useSocial((s) => s.perspectives); // re-render when perspectives (labels, colours) change
+  const cast = useSocial((s) => s.cast);
   const p = perspectiveById(perspectiveId);
-  return <Figure body={body} url={avatar ? fileUrl(avatar.url) : null} person={p ? PEOPLE[p.key] : null} color={p?.color ?? '#cdb4ff'} name={name}
+  return <Figure body={body} url={avatar ? fileUrl(avatar.url) : null} person={p ? personFor(p.key, cast) : null} color={p?.color ?? '#cdb4ff'} name={name}
     sub={p ? `seeing as ${p.label.toLowerCase()}` : ''} tag={memberId} />;
 }
 
@@ -270,6 +271,7 @@ export function Avatar({ memberId }: { memberId: string }) {
  */
 export function StandIn({ perspective, at, eye, yaw, color, url, name, sub }: { perspective: PerspectiveKey; at: { x: number; z: number }; eye: number; yaw: number; color: string; url: string | null; name: string; sub: string }) {
   const body = useRef<Body>(newBody());
+  const cast = useSocial((s) => s.cast);
   useFrame(() => {
     const b = body.current;
     b.ground = groundAt(at.x, at.z);
@@ -277,6 +279,6 @@ export function StandIn({ perspective, at, eye, yaw, color, url, name, sub }: { 
     b.headQ.setFromAxisAngle(UP, yaw);
     b.yaw = yaw; b.speed = 0; b.ready = true;
   });
-  const person = PEOPLE[perspective];
+  const person = personFor(perspective, cast);
   return <Figure body={body} url={url} person={person.standIn ? { ...person, url: person.standIn } : person} color={color} name={name} sub={sub} tag={`stand-in:${perspective}`} />;
 }

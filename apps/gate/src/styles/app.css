@@ -120,6 +120,7 @@ button { font: inherit; color: inherit; }
 }
 .captions .said .w { opacity: 0; transition: opacity 520ms var(--ease-soft); }
 .captions .said .w.on { opacity: 1; }
+.captions .said.faded { opacity: 0; transition: opacity 700ms var(--ease-soft); } /* the crossing: Captions.tsx */
 .captions .heard {
   margin: 0; max-width: 40ch; min-height: 1.5em;
   font: 400 clamp(17px, 1.45vw, 21px)/1.45 var(--sans); color: var(--ink-soft);

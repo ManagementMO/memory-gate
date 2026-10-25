@@ -5,14 +5,14 @@ import { convex } from '../backend/client';
 import { memory, useMemory } from '../flow/memory';
 import { useGate } from '../state/store';
 import { socialLink } from './link';
-import { notify, perspectiveOf, PERSONAS, useSocial, type PerspectiveKey } from './store';
+import { notify, perspectiveOf, useSocial, type PerspectiveKey } from './store';
 
 const ORDER: PerspectiveKey[] = ['grandparent', 'child'];
 
 export function setViewing(key: PerspectiveKey): void {
   if (useSocial.getState().viewing === key) return;
   useSocial.setState({ viewing: key });
-  notify(`Seeing through the ${PERSONAS[key].label.toLowerCase()}’s eyes`);
+  notify(`Seeing through the ${perspectiveOf(key).label.toLowerCase()}’s eyes`);
 }
 
 export function cyclePerspective(): PerspectiveKey {

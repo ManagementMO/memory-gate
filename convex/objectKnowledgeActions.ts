@@ -2,15 +2,17 @@
 import { v, ConvexError } from 'convex/values';
 import { action } from './_generated/server';
 import { internal } from './_generated/api';
-import { normalizeObjectReferences, type ObjectTopicKey } from '../actors/historical-memory-atlas/src/knowledge.mjs';
+import { OBJECT_TOPICS, normalizeObjectReferences, type ObjectTopicKey } from '../actors/historical-memory-atlas/src/knowledge.mjs';
 const auth = { code: v.string(), token: v.string() };
-const topicV = v.union(v.literal('kite'), v.literal('flowers'), v.literal('trees'));
+const topicV = v.string();
+const requireTopic = (key: string) => { if (!Object.hasOwn(OBJECT_TOPICS, key)) throw new ConvexError('Choose a supported object topic.'); };
 async function apify(path: string, init: RequestInit = {}) {
   const response = await fetch('https://api.apify.com/v2/' + path, { ...init, redirect: 'error', headers: { Authorization: `Bearer ${process.env.APIFY_TOKEN}`, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(20000) });
   if (!response.ok) throw new Error('Apify request unavailable.');
   return response.json();
 }
 export const lookup = action({ args: { ...auth, topicKey: topicV }, handler: async (ctx, a): Promise<string> => {
+  requireTopic(a.topicKey);
   const actor = process.env.APIFY_MEMORY_ACTOR_ID ?? '';
   if (actor && !/^[\w-]+(?:[~\/][\w-]+)?$/.test(actor)) throw new ConvexError('The source connection needs attention.');
   const reservation = await ctx.runMutation(internal.objectKnowledge.begin, a);
@@ -32,6 +34,6 @@ export const refresh = action({ args: { ...auth, id: v.id('objectKnowledge') }, 
   if (['FAILED', 'TIMED-OUT', 'ABORTED'].includes(data.status)) { await ctx.runMutation(internal.objectKnowledge.fail, { id: job._id, uncertain: false }); return; }
   if (data.status !== 'SUCCEEDED') return;
   if (!/^[A-Za-z0-9]+$/.test(data.defaultDatasetId ?? '')) throw new ConvexError('The source dataset is unavailable.');
-  const rows = await apify(`datasets/${data.defaultDatasetId}/items?clean=true&limit=4&format=json`);
+  const rows = await apify(`datasets/${data.defaultDatasetId}/items?clean=true&limit=16&format=json`);
   await ctx.runMutation(internal.objectKnowledge.finish, { id: job._id, references: normalizeObjectReferences(rows, job.topicKey as ObjectTopicKey) });
 } });

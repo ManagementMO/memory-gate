@@ -32,16 +32,21 @@ const lines = (p) => p.evaluate(() => [...(window.__roomLines ?? [])]);
 const answers = async (p) => (await lines(p)).filter((l) => !['welcome', 'line'].includes(l.intent));
 const conversation = (p) => p.evaluate(() => window.__social.store.getState().conversation ?? []);
 const hear = (p, text, snrDb) => p.evaluate(([t, s]) => window.__gate.flow.testHear(t, { snrDb: s }), [text, snrDb]);
+// Whose eyes: the picker no longer opens by itself (the companion asks in words); the perspective chip opens it.
+const openPicker = async (p, timeout = 30000) => {
+  if (await p.waitForSelector('[data-testid=perspective-picker]', { timeout: 6000 }).then(() => true, () => false)) return;
+  await p.click('[data-testid=perspective-chip]', { timeout }); await p.waitForSelector('[data-testid=perspective-picker]', { timeout });
+};
 const waitFor = async (fn, ms = 20000) => { for (const end = Date.now() + ms; Date.now() < end; await new Promise((r) => setTimeout(r, 250))) { const v = await fn(); if (v) return v; } return null; };
 
 try {
   // The laptop begins the visit and sees through the grandchild's eyes.
   await laptop.goto(`${base}?voice=off&memory=red-kite`); await laptop.waitForTimeout(3000); await laptop.click('[data-testid=begin]');
-  await laptop.waitForSelector('[data-testid=perspective-picker]'); await laptop.fill('[data-testid=social-name]', 'Lily'); await laptop.click('[data-testid=choose-child]');
+  await openPicker(laptop); await laptop.fill('[data-testid=social-name]', 'Lily'); await laptop.click('[data-testid=choose-child]');
   await laptop.click('[data-testid=child-voice-words]', { timeout: 5000 }).catch(() => undefined);
   // The Quest joins nearby, chooses the grandparent's eyes and a name on the page, then goes into VR.
   await quest.goto(`${base}?voice=off&emulate=1`); await quest.waitForSelector('[data-testid=join-nearby]', { timeout: 30000 }); await quest.click('[data-testid=join-nearby]');
-  await quest.waitForSelector('[data-testid=perspective-picker]', { timeout: 30000 });
+  await openPicker(quest);
   await quest.fill('[data-testid=social-name]', 'Rosa'); await quest.click('[data-testid=choose-grandparent]');
   await quest.getByTestId('enter-vr').click({ timeout: 10000 }).catch(() => undefined);
   check(!!(await quest.waitForFunction(() => window.__gate.store.getState().xr === true, null, { timeout: 15000 }).catch(() => null)), 'the Quest chose the grandparent’s eyes on the page, then went into VR');

@@ -1,4 +1,4 @@
-import { OBJECT_TOPICS, topicForKind } from '../../../../actors/historical-memory-atlas/src/knowledge.mjs';
+import { objectTopic, topicForKind } from '../../../../actors/historical-memory-atlas/src/knowledge.mjs';
 import { entryOf } from '../../../../packages/shared/src/scene';
 import { SCENE_DISCOVERY_HINTS } from './sceneHints';
 import type { InfoTarget } from './state';
@@ -22,7 +22,7 @@ export function buildInfoTargets(snapshot: DiscoverySnapshot): InfoTarget[] {
   const targets: InfoTarget[] = [], seen = new Set<string>();
   const add = (o: Thing) => {
     const topic = topicForKind(o.kind); if (!topic || o.kind === 'spool' || seen.has(o.id)) return; seen.add(o.id);
-    targets.push({ id: o.id, label: o.label.length > 32 ? OBJECT_TOPICS[topic].label : o.label, topic,
+    targets.push({ id: o.id, label: o.label.length > 32 ? objectTopic(topic).label : o.label, topic,
       node: o.kind === 'kite' ? 'memory-held-spool' : `memory-${o.id}`,
       lift: o.kind === 'kite' ? .16 : Math.min(1.7, entryOf(o.kind).h * (o.scale ?? 1)) + .16 });
   };
@@ -35,7 +35,7 @@ export function buildInfoTargets(snapshot: DiscoverySnapshot): InfoTarget[] {
   for (const o of snapshot.optionalObjects) {
     if (o.status !== 'placed' || (o.memoryKey ?? 'red-kite') !== snapshot.memoryKey || ![snapshot.viewing, 'shared'].includes(o.perspective)) continue;
     const kind = o.assetKey === 'flower' ? 'flower' : o.assetKey === 'kite' || o.choice.includes('kite') ? 'kite' : o.choice.replace('library:', ''), topic = topicForKind(kind);
-    if (topic) targets.push({ id: `optional:${o._id}`, label: OBJECT_TOPICS[topic].label, topic, node: `MemoryObject:${o._id}`, lift: o.size + .14 });
+    if (topic) targets.push({ id: `optional:${o._id}`, label: objectTopic(topic).label, topic, node: `MemoryObject:${o._id}`, lift: o.size + .14 });
   }
   return targets.slice(0, 12);
 }

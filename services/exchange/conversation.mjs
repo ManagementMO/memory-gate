@@ -71,7 +71,9 @@ export function createConversation({ db, clients, send, convex }) {
   const inRoom = (roomId) => [...clients].filter(c => fresh(c, roomId));
   const broadcast = (roomId, data, except = null) => { for (const c of inRoom(roomId)) if (c !== except) send(c, data); };
   const rows = (table, roomId) => [...db.db[table].iter()].filter(r => r.roomId === roomId);
-  const labelOf = (perspectiveId) => (perspectiveId ? db.db.perspective.id.find(perspectiveId)?.label ?? null : null);
+  /** A perspective's name in the memory being visited (the room's label, unless the memory casts it otherwise). */
+  const castLabel = (roomId, p) => (p ? roomOf(roomId).flow?.cast?.[p.key] ?? p.label : null);
+  const labelOf = (perspectiveId) => { const p = perspectiveId ? db.db.perspective.id.find(perspectiveId) : null; return p ? castLabel(p.roomId, p) : null; };
   /** The eyes someone speaks from: the perspective they claimed, else the one they're looking through now. */
   function perspectiveOf(roomId, memberId) {
     const all = rows('perspective', roomId);
@@ -85,7 +87,7 @@ export function createConversation({ db, clients, send, convex }) {
       if (seen.has(x.memberId)) continue;
       const p = perspectiveOf(roomId, x.memberId);
       const stories = rows('perspectiveStory', roomId).filter(s => s.speakerId === x.memberId).sort((a, b) => a.createdAt - b.createdAt).slice(-3).map(s => s.text);
-      seen.set(x.memberId, { memberId: x.memberId, name: x.displayName, perspective: p?.label ?? null, role: x.isOwner ? 'host' : 'guest', child: p?.key === 'child', stories });
+      seen.set(x.memberId, { memberId: x.memberId, name: x.displayName, perspective: castLabel(roomId, p), role: x.isOwner ? 'host' : 'guest', child: p?.key === 'child', stories });
     }
     return [...seen.values()];
   }
@@ -226,6 +228,8 @@ export function createConversation({ db, clients, send, convex }) {
         place: typeof m.place === 'string' ? m.place.slice(0, 60) : null,
         media: m.media === 'photo' || m.media === 'video' ? m.media : null,
         mediaCaption: typeof m.mediaCaption === 'string' ? m.mediaCaption.slice(0, 160) : null,
+        // Who the two perspectives are in this memory (the Red Kite meadow: young grandma and her friend).
+        cast: m.cast && typeof m.cast === 'object' ? Object.fromEntries(['grandparent', 'child'].map(k => [k, typeof m.cast[k] === 'string' ? m.cast[k].slice(0, 40) : null])) : null,
       };
       r.auth ??= c.auth;
       // Through the gate (or back out): words said on the other side were already acted on by the page ("yes, let's go"

@@ -77,7 +77,8 @@ export const PLACES: Record<PlaceKey, PreparedPlace> = {
     key: 'red-kite',
     title: 'The meadow with the kite',
     // "This hill", a meadow, the red kite: each calls it up on its own (it's the library's open-country place).
-    callWords: /\bred kite\b|\bmeadow\b|\bhill ?(side|top)?s?\b/,
+    // Any kite calls it up ("we flew a kite", "una cometa", "un papalote", "un cerf-volant"): the meadow is where the kite is.
+    callWords: /\bkites?\b|\bcometas?\b|\bpapalotes?\b|\bcerfs?-volants?\b|\bmeadow\b|\bhill ?(side|top)?s?\b/,
     detailWords: [/\bkites?\b/, /\bfield\b|\bclearing\b|\bgrass\b/, /\boak\b/, /\b(dirt )?path\b/, /\bflowers\b|\bpoppies\b/],
     intro: 'Here we are. The little path, and the old oak at the bend.',
     setting: { indoor: false, type: 'meadow', timeOfDay: 'golden', weather: 'clear', floor: 'grass', palette: [], walls: false, water: false },
@@ -94,6 +95,13 @@ export const PLACES: Record<PlaceKey, PreparedPlace> = {
       bench: [{ x: 1.5, z: -2.4, yaw: -Math.PI / 3 }, { x: -1.4, z: -2.7, yaw: Math.PI / 3 }, { x: 0.3, z: -4.6 }],
       picnic_blanket: [{ x: 0.9, z: -1.6 }],
       bowl_fruit: [{ x: 0.9, z: -1.6, y: 0.04 }],
+      // Things a telling may add ("a big daisy was there"), on the grass either side of the path and clear of it.
+      flowers: [{ x: 1.55, z: -1.6 }, { x: -1.0, z: -1.75 }, { x: 1.95, z: -2.7 }],
+      ball: [{ x: 0.45, z: -1.1 }],
+      basket: [{ x: 1.3, z: -1.95 }],
+      dog: [{ x: -0.55, z: -1.35, yaw: Math.PI / 4 }],
+      bush: [{ x: -2.3, z: -2.3 }],
+      rock: [{ x: 2.0, z: -3.2 }],
     },
     // The old oak at the bend (Rosa's telling stands beside it), the path running ahead, the open hill beyond.
     landmarks: [
@@ -179,8 +187,10 @@ export function whereIs(p: PreparedPlace, plan: ScenePlan, o: PlanObject, depth 
  * and things already there moved when the words put them somewhere ("the bench was by the oak", pointing at the
  * ground and saying "the table was here"). Chairs come in as many as were said. Returns null when nothing changed.
  */
-export function bringIn(p: PreparedPlace, plan: ScenePlan, words: string, pointed: [number, number] | null = null): ScenePlan | null {
-  const named = planOffline(words, plan.title, { seeds: false }).objects.filter((o) => p.spots[o.kind]);
+export function bringIn(p: PreparedPlace, plan: ScenePlan, words: string, pointed: [number, number] | null = null, extra: readonly PlanObject[] = []): ScenePlan | null {
+  // What the words name, and things recognised another way (from public references: "a daisy") the library missed.
+  const planned = planOffline(words, plan.title, { seeds: false }).objects;
+  const named = [...planned, ...extra.filter((e) => !planned.some((o) => o.kind === e.kind))].filter((o) => p.spots[o.kind]);
   const added: PlanObject[] = [];
   let objects = plan.objects;
   const plain = norm(words).replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();

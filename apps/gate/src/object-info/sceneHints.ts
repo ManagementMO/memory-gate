@@ -7,6 +7,9 @@ export const SCENE_DISCOVERY_HINTS: readonly { worldId: string; targets: readonl
   worldId: '0b84554c-b182-4b3e-a7bb-78f15822a49d',
   targets: [
     { id: 'meadow:flowers', label: 'Flowers by the path', topic: 'flowers', node: '', lift: 0, anchor: [1.65, .42, -1.8] },
-    { id: 'meadow:oak', label: 'The tree', topic: 'trees', node: '', lift: 0, anchor: [-1.7, 1.5, -3.4] },
+    { id: 'meadow:oak', label: 'The old oak', topic: 'oak', node: '', lift: 0, anchor: [-1.7, 1.5, -3.4] },
+    // The path and the hill beyond, where packages/shared/src/places.ts puts the meadow's landmarks.
+    { id: 'meadow:path', label: 'The path', topic: 'path', node: '', lift: 0, anchor: [0.75, .3, -2.8] },
+    { id: 'meadow:hills', label: 'The golden hills', topic: 'hills', node: '', lift: 0, anchor: [0.4, 1.1, -5.5] },
   ],
 }];

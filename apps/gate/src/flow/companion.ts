@@ -7,7 +7,7 @@
 // Without the exchange, the host talks with the companion directly, as always, and a joined device stays quiet.
 import { deviceKind, usePresence } from '../presence/presence';
 import { socialLink } from '../social/link';
-import { poses, useSocial } from '../social/store';
+import { MEADOW_CAST, poses, useSocial } from '../social/store';
 import { useGate } from '../state/store';
 import type { Heard, VoiceEngine } from '../voice/engine';
 
@@ -61,7 +61,9 @@ export const companion = {
   hearing(turnId: string, end = false) { socialLink.post({ type: 'hearing', turnId, ...(end ? { end: true } : {}) }); },
   /** The host's view of the visit, for the companion's next answer. */
   postFlow(state: { stage: string; turnsInPhase: number; invitedToEnter: boolean; place: string | null; media: 'photo' | 'video' | null; mediaCaption: string | null }) {
-    if (socialLink.ready && !isGuest()) void socialLink.call({ type: 'flow', ...state }).catch(() => undefined);
+    // Who the perspectives are in this memory (the meadow: young grandma and her friend), for the companion's words.
+    const cast = useSocial.getState().cast === 'meadow' ? { grandparent: MEADOW_CAST.grandparent.label, child: MEADOW_CAST.child.label } : null;
+    if (socialLink.ready && !isGuest()) void socialLink.call({ type: 'flow', ...state, cast }).catch(() => undefined);
   },
   /** One of the host's own lines (a welcome, "Here we are", a nudge): heard on the other devices too. */
   postLine(text: string, language: string | null = null) { if (socialLink.ready) void socialLink.call({ type: 'line', commandId: uuid(), text: text.slice(0, 300), ...(language ? { language } : {}) }).catch(() => undefined); },

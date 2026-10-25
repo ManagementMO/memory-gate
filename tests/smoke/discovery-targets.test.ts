@@ -12,18 +12,18 @@ test('annotations read a frozen scene snapshot without changing the plan or call
   for (const o of input.planObjects) Object.freeze(o); Object.freeze(input.planObjects); Object.freeze(input);
   const before = JSON.stringify(input), request = vi.spyOn(globalThis, 'fetch');
   try {
-    expect(buildInfoTargets(input).map(t => t.topic)).toEqual(['kite', 'flowers', 'trees']);
+    expect(buildInfoTargets(input).map(t => t.topic)).toEqual(['kite', 'flowers', 'trees', 'chair']); // every library thing has a card
     expect(JSON.stringify(input)).toBe(before); expect(request).not.toHaveBeenCalled();
   } finally { request.mockRestore(); }
 });
 
-test('the existing tree and flowers get hints only in the checked meadow, without adding geometry', () => {
+test('the meadow\'s flowers, oak, path and hills get hints only in the checked meadow, without adding geometry', () => {
   const world = JSON.parse(readFileSync(new URL('../../fixtures/worlds/red-kite.json', import.meta.url), 'utf8'));
   const config = SCENE_DISCOVERY_HINTS[0]!; expect(config.worldId).toBe(world.worldId);
   const input = { ...snapshot(), photoWorld: true, worldId: config.worldId };
-  const hints = buildInfoTargets(input); expect(hints.map(t => t.topic)).toEqual(['flowers', 'trees']);
+  const hints = buildInfoTargets(input); expect(hints.map(t => t.topic)).toEqual(['flowers', 'oak', 'path', 'hills']);
   expect(input.planObjects).toEqual([]);
-  const oak = PLACES['red-kite'].landmarks.find(l => l.words.test('oak'))!, tree = hints.find(t => t.topic === 'trees')!;
+  const oak = PLACES['red-kite'].landmarks.find(l => l.words.test('oak'))!, tree = hints.find(t => t.topic === 'oak')!;
   expect([tree.anchor![0], tree.anchor![2]]).toEqual([oak.x, oak.z]);
   expect(buildInfoTargets({ ...input, worldId: 'another-world' })).toEqual([]);
   expect(buildInfoTargets({ ...input, photoWorld: false })).toEqual([]);
