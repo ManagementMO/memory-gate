@@ -477,10 +477,25 @@ export function layout(plan: ScenePlan): Placement[] {
     if (o.kind === 'chair' && target) yaw = Math.atan2(target.x - b.x, target.z - b.z);
     out.set(o.id, { id: o.id, x: b.x, y: 0, z: b.z, yaw, scale: o.scale, on: null });
   }
-  // 7. Things that rest on something: on their target, else on the first table/counter/cabinet.
+  // 7. Things that rest on something: on their target, else on the first table/counter/cabinet. A small thing said
+  //    to be in front of, beside or behind something it can't rest on ("a TV in front of the bed") stands there
+  //    instead, turned toward it, rather than being tidied away onto the nearest shelf.
   const surfaces = plan.objects.filter((o) => (entryOf(o.kind).surface ?? 0) > 0 && out.has(o.id));
   const stacked = new Map<string, number>();
   for (const o of plan.objects.filter((o) => !out.has(o.id))) {
+    const tp = o.target ? out.get(o.target) : undefined;
+    const t = o.target ? byId.get(o.target) : undefined;
+    if (tp && t && !(entryOf(t.kind).surface ?? 0) && ['in_front_of', 'next_to', 'behind'].includes(o.relation)) {
+      const [tw, td] = footprint(t);
+      const [w, d] = footprint(o);
+      const fx = Math.sin(tp.yaw), fz = Math.cos(tp.yaw); // the target's front (yaw 0 faces the viewer)
+      const away = o.relation === 'next_to' ? 0 : (td / 2 + 0.85 + d / 2) * (o.relation === 'behind' ? -1 : 1);
+      const side = o.relation === 'next_to' ? (tw / 2 + 0.3 + w / 2) * (hashStr(o.id) % 2 ? 1 : -1) : 0;
+      const b = settle(o, tp.x + fx * away + fz * side, tp.z + fz * away - fx * side);
+      boxes.push(b);
+      out.set(o.id, { id: o.id, x: b.x, y: 0, z: b.z, yaw: Math.atan2(tp.x - b.x, tp.z - b.z), scale: o.scale, on: null });
+      continue;
+    }
     const host = (o.target && surfaces.find((s) => s.id === o.target)) || surfaces.find((s) => s.kind.includes('table')) || surfaces[0];
     if (host) {
       const hp = out.get(host.id)!;

@@ -239,6 +239,8 @@ class Flow {
     });
     useGate.getState().set({ stage: 'forming', enterProgress: 1, expression: 'gentle' });
     this.turnsInPhase = 0;
+    // Listening again as soon as the place starts forming: whatever they say while it appears is heard and answered.
+    this.listen(true);
     const ready = await memory.whenDrawn(14_000);
     if (!ready) await this.say('It’s coming back to me, little by little.');
     await memory.whenDrawn(20_000);

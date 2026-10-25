@@ -103,14 +103,21 @@ class Memory {
     void (async () => {
       let next: ScenePlan | null = null;
       if (s && current) {
-        const r = await withTimeout(convex.action(api.sketch.detail, { code: s.code, token: s.token, plan: current, words: text, ...(this.memoryId ? { memoryId: this.memoryId } : {}) }), 18_000, null);
+        const ask = () => convex.action(api.sketch.detail, { code: s.code, token: s.token, plan: current, words: text, ...(this.memoryId ? { memoryId: this.memoryId } : {}) });
+        // A dropped connection (Wi-Fi blip, the server restarting) gets one more try once it's back.
+        const r = await withTimeout(ask().catch(async (e) => { if (!/connection lost/i.test(String(e))) throw e; await new Promise((ok) => setTimeout(ok, 1500)); return ask(); }), 18_000, null);
         if (r?.plan) next = validatePlan(r.plan, current.title);
       }
       if (!next && current) {
         // Offline: plan the new words on their own and add whatever new things they mention.
         // Only what these words name (never the setting's default furniture), and nothing already there.
-        const extra = planOffline(text, current.title, { seeds: false }).objects.filter((o) => !current.objects.some((c) => c.kind === o.kind)).slice(0, 2);
-        next = { ...current, objects: [...current.objects, ...extra.map((o, i) => ({ ...o, id: `${o.id}-x${current.objects.length + i}` }))].slice(0, 16) };
+        const named = planOffline(text, current.title, { seeds: false }).objects;
+        const extra = named.filter((o) => !current.objects.some((c) => c.kind === o.kind)).slice(0, 2);
+        // "Make the bed bigger" / "the table was smaller": resize what's already there.
+        // Comparatives only: "a little table" describes, "a smaller table" asks for a change.
+        const grow = /\b(bigger|larger|wider|taller|longer)\b/i.test(text) ? 1.35 : /\b(smaller|narrower|shorter)\b/i.test(text) ? 0.75 : 1;
+        const resized = current.objects.map((c) => (grow !== 1 && named.some((o) => o.kind === c.kind) ? { ...c, scale: Math.min(1.8, Math.max(0.5, c.scale * grow)) } : c));
+        next = { ...current, objects: [...resized, ...extra.map((o, i) => ({ ...o, id: `${o.id}-x${current.objects.length + i}` }))].slice(0, 16) };
       }
       if (next) { next = keepIdentities(current, next); useMemory.setState((st) => ({ plan: next, version: st.version + 1 })); }
     })();

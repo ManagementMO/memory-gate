@@ -45,6 +45,32 @@ export function preloadRealModels(kinds: string[]): void {
   for (const k of new Set(kinds)) void loadRealModel(k);
 }
 
+const warmed = new Set<string>();
+/**
+ * Get each model ready to draw before it forms: its shaders compiled (off the main thread where the browser allows)
+ * and its textures uploaded. On a headset, doing this the moment a thing appears is what makes the place stutter.
+ */
+export async function warmRealModels(gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene, kinds: string[]): Promise<void> {
+  for (const kind of new Set(kinds)) {
+    if (warmed.has(kind)) continue;
+    const tpl = await loadRealModel(kind);
+    if (!tpl || warmed.has(kind)) continue;
+    warmed.add(kind);
+    try {
+      const probe = realObject(kind, { reveal: { value: 0.5 }, base: { value: 0 }, height: { value: 1 }, id: -1 });
+      if (!probe) continue;
+      probe.traverse((o) => {
+        const mesh = o as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+          for (const t of Object.values(m as unknown as Record<string, unknown>)) if (t instanceof THREE.Texture) gl.initTexture(t);
+        }
+      });
+      await gl.compileAsync(probe, camera, scene);
+    } catch { /* warming is only a head start */ }
+  }
+}
+
 /** Whether a remembered colour can be shown on the real model (plants keep their own: a red geranium is drawn). */
 export const realTakesColour = (kind: string) => entryOf(kind).material !== 'plant';
 

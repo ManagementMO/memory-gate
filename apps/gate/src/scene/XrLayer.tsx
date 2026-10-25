@@ -24,7 +24,6 @@ function Captions3D() {
   const stage = useGate((s) => s.stage);
   const thinking = useGate((s) => s.mood === 'thinking');
   const group = useRef<THREE.Group>(null);
-  const plate = useRef<THREE.MeshBasicMaterial>(null);
   const camera = useThree((s) => s.camera);
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving';
   const placed = useRef(false);
@@ -39,23 +38,23 @@ function Captions3D() {
     if (!placed.current) { g.position.copy(_target); placed.current = true; }
     g.position.lerp(_target, 1 - Math.exp(-dt * 1.4));
     g.lookAt(_head.x, g.position.y, _head.z);
-    if (plate.current) plate.current.opacity = THREE.MathUtils.damp(plate.current.opacity, said ? (day ? 0.72 : 0.55) : 0, 3, dt);
   });
   if (stage === 'portal' || stage === 'album') return null;
+  // Just the words, with a soft halo of the opposite tone so they read on sky, marble or white. The companion's
+  // line grows upward from the middle and yours downward, so however long either is, they never collide.
   const ink = day ? '#1d1c2e' : '#f5f4ff';
+  const halo = day ? '#ffffff' : '#0b0c1c';
   return (
     <group ref={group}>
-      <mesh position={[0, -0.06, -0.01]} renderOrder={1990}>
-        <planeGeometry args={[0.86, 0.3]} />
-        <meshBasicMaterial ref={plate} color={day ? '#ffffff' : '#0b0c1c'} transparent opacity={0} depthTest={false} depthWrite={false} toneMapped={false} />
-      </mesh>
       {said && (
-        <Text font={fontUrl} fontSize={0.04} lineHeight={1.25} maxWidth={0.78} anchorX="center" anchorY="top" textAlign="center" position={[0, 0.06, 0]} color={ink} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>
+        <Text font={fontUrl} fontSize={0.04} lineHeight={1.25} maxWidth={0.82} anchorX="center" anchorY="bottom" textAlign="center" position={[0, 0, 0]} color={ink}
+          outlineWidth={0.0035} outlineBlur={0.009} outlineColor={halo} outlineOpacity={0.7} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>
           {said.text}
         </Text>
       )}
       {heard && (
-        <Text font={fontUrl} fontSize={0.026} maxWidth={0.78} anchorX="center" anchorY="top" textAlign="center" position={[0, -0.13, 0]} color={day ? '#4a4864' : '#c9c6e6'} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>
+        <Text font={fontUrl} fontSize={0.027} lineHeight={1.3} maxWidth={0.82} anchorX="center" anchorY="top" textAlign="center" position={[0, -0.03, 0]} color={day ? '#4a4864' : '#d9d6f2'}
+          outlineWidth={0.003} outlineBlur={0.008} outlineColor={halo} outlineOpacity={0.6} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>
           {`“${heard.text}”${!heard.interim && thinking ? '   …' : ''}`}
         </Text>
       )}
