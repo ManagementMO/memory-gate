@@ -13,3 +13,9 @@ No new API key is needed. The existing private `APIFY_TOKEN`, `ALLOW_APIFY_CLOUD
 Object information is public context, separate from a person's recollection. This addition does not change or generate any memory details or rewrite the person's words. Leaving, switching perspective, resting or opening the existing source/story panel closes the info card.
 
 Validation: `npm run test:atlas`, `npm test -- tests/smoke/object-knowledge.test.ts`, Gate typecheck/build, and `node apps/gate/scripts/object-info-check.mjs --live` (explicitly enables bounded Apify retrieval). Browser evidence and live run IDs are recorded separately after verification. Physical Quest testing is still required before claiming headset hardware verification.
+
+## Verified local run
+
+Latest main `e78e720` is merged into `codex/apify-memory-lens`. Six main-journey browser/native XR checks pass with zero page errors: the existing view/dock, live citation, repeated-selection run reuse, POV/rest cleanup, real controller-ray selection/details/back, and native flower/tree retrieval. These use stereo Meta Quest 3 emulation. See [actual screenshots and sanitized run IDs](../evidence/object-exploration/verification.json). All 134 contract tests, 16 Actor tests, Gate typecheck and production build pass.
+
+The private Actor's corrected extraction prefers explanatory sentences and rejects synonym-only lists. Its public-reference cache format is versioned; an explicit selection can replace an older completed extraction. Running or uncertain jobs are never restarted automatically. The local SpacetimeDB module was brought to the pulled main code (which updates the two new avatars' eye heights) without changing configuration or deleting data.

@@ -7,6 +7,7 @@ export const OBJECT_TOPICS = Object.freeze({
   trees: { label: 'Tree', heading: 'How does a tree work?', context: 'About trees generally; species not identified.', match: /\b(tree|leaves|trunk|roots|water|crown)\b/gi,
     sources: [{ url: 'https://www.dnr.state.mn.us/forestry/education/foresttreasures/partsofatree.html', attribution: 'Minnesota Department of Natural Resources', title: 'Parts of a tree' }] },
 });
+export const OBJECT_CONTEXT_VERSION = 2;
 export function objectTopic(key) {
   if (typeof key !== 'string' || !Object.hasOwn(OBJECT_TOPICS, key)) throw new Error('Choose a supported object topic.');
   return OBJECT_TOPICS[key];
@@ -19,10 +20,13 @@ export function extractObjectReference(html, topicKey, source, now = Date.now())
   const topic = objectTopic(topicKey);
   if (!topic.sources.some(s => s.url === source.url)) throw new Error('Unapproved public reference.');
   const clean = html.replace(/<(script|style|nav|header|footer|noscript)\b[^>]*>[\s\S]*?<\/\1>/gi, '');
-  const candidates = [...clean.matchAll(/<(p|li)\b[^>]*>([\s\S]*?)<\/\1>/gi)].map(m => plain(m[2])).filter(t => t.length > 65 && t.length < 2000 && !/cookie|privacy policy|sign up|newsletter|copyright|all rights reserved|javascript/i.test(t));
+  const explains = /\b(is|are|has|have|grows?|forms?|forming|produces?|made|uses?|absorb|absorbs|carr(?:y|ies)|contains?|provides?|generated|causes?|creates?|anchors?|keeps?|supports?|helps?|takes?|transports?|moves?|converts?)\b/i;
+  const candidates = [...clean.matchAll(/<(p|li)\b[^>]*>([\s\S]*?)<\/\1>/gi)].map(m => plain(m[2])).filter(t => t.length > 65 && t.length < 2000 && explains.test(t) && !/cookie|privacy policy|sign up|newsletter|copyright|all rights reserved|javascript/i.test(t));
   const score = t => (t.match(topic.match) ?? []).length / Math.sqrt(t.length);
   candidates.sort((a, b) => score(b) - score(a));
-  const best = candidates.find(t => score(t) > .10);
+  const sentences = candidates.flatMap(t => t.match(/[^.!?]+[.!?](?=\s|$)/g) ?? []).map(t => t.trim()).filter(t => t.split(/\s+/).length >= 7 && t.split(/\s+/).length <= 24 && explains.test(t) && score(t) > .10);
+  sentences.sort((a, b) => score(b) - score(a));
+  const best = sentences[0] ?? candidates.find(t => score(t) > .10);
   if (!best) throw new Error('No relevant public explanation was found.');
   // A brief attributed quotation, at most 24 words per source. Full reading stays on the publisher's page.
   const words = best.split(/\s+/), excerpt = words.slice(0, 24).join(' ') + (words.length > 24 ? '…' : '');

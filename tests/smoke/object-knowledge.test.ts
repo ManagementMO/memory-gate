@@ -52,3 +52,14 @@ test('uncertain starts never silently retry, and pausing during retrieval preven
   await t.mutation(api.consents.deleteMemory,{...auth,confirmText:auth.code});
   expect(await t.run(ctx=>ctx.db.query('objectKnowledge').collect())).toHaveLength(0);
 });
+test('an older ready extraction is refreshed only by an explicit selection, never duplicated while running', async () => {
+  const {t,auth}=await setup();
+  await t.run(async ctx=>{
+    const room=await ctx.db.query('rooms').withIndex('by_code',q=>q.eq('code',auth.code)).unique(),member=await ctx.db.query('members').withIndex('by_token',q=>q.eq('token',auth.token)).unique();
+    await ctx.db.insert('objectKnowledge',{roomId:room!._id,memberId:member!._id,topicKey:'flowers',status:'ready',runId:'olderRun',error:null,createdAt:Date.now(),references:[]});
+  });
+  const fetcher=vi.fn(async()=>Response.json({data:{id:'updatedRun'}}));vi.stubGlobal('fetch',fetcher);
+  const first=await t.action(api.objectKnowledgeActions.lookup,{...auth,topicKey:'flowers'});
+  expect(await t.action(api.objectKnowledgeActions.lookup,{...auth,topicKey:'flowers'})).toBe(first);
+  expect(fetcher).toHaveBeenCalledTimes(1);expect((await t.query(api.objectKnowledge.list,auth)).jobs[0]!.runId).toBe('updatedRun');
+});

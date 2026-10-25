@@ -8,7 +8,7 @@ export const pointerV = v.object({ origin: vec3, direction: vec3, hit: v.union(v
 export default defineSchema({
   objectKnowledge: defineTable({
     roomId: v.id('rooms'), memberId: v.id('members'), topicKey: v.string(), status: v.string(),
-    runId: v.union(v.string(), v.null()), error: v.union(v.string(), v.null()), createdAt: v.number(),
+    runId: v.union(v.string(), v.null()), error: v.union(v.string(), v.null()), createdAt: v.number(), formatVersion: v.optional(v.number()),
     references: v.array(v.object({ topicKey: v.string(), sourceUrl: v.string(), title: v.string(), attribution: v.string(), excerpt: v.string(), fetchedAt: v.number() })),
   }).index('by_room_topic', ['roomId', 'topicKey']).index('by_topic_status', ['topicKey', 'status']).index('by_room', ['roomId']),
   memoryImports: defineTable({

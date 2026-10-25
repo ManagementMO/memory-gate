@@ -6,7 +6,9 @@
 
 **Live Apify verified:** Source Atlas 1.2 is privately deployed in the operator's account. A real Maps search, family approval, optional GLB and native stereo source card passed end to end. [Live report and screenshot](evidence/apify-live/verification.json). The operator's credential is stored privately; clone setup still needs a token. Instagram needs an approved public post URL for its live check.
 
-**Main assistant journey:** [Current pipeline and the proposed Apify connections](docs/MAIN_APIFY_PIPELINE.md), traced through the latest prepared-place/held-kite flow and walked from Begin to the album. Apify is currently a manual option inside a memory; the notes identify the conversation, reviewed-cue and album connections still to build.
+**In-world discovery:** [Object exploration](docs/OBJECT_EXPLORATION.md) adds small `Explore · Apify` prompts inside the existing main memory view. The kite and the meadow's authored flower/tree hotspots open attributed public context in a corner card, with native marker/card equivalents in VR. Sources are retrieved by the private Source Atlas Actor; seeing an object makes no paid call. The layout, conversation controls, camera, walking and XR configuration stay independent of the add-on.
+
+**Main assistant journey:** [Current pipeline and the proposed Apify connections](docs/MAIN_APIFY_PIPELINE.md), traced through the latest prepared-place/held-kite flow and walked from Begin to the album. Source import and in-world discovery are manual options inside a memory; the notes identify the assistant-driven retrieval, reviewed-cue and album connections still to build.
 
 **Integrated main:** the [World Labs story demonstration](DEMO_SCRIPT.md) and [Cal Hacks exchange runbook](docs/CALHACKS_RUNBOOK.md) are both available. The **Memories** tab lets two participants pass, accept and reopen original stories. SpacetimeDB owns that exchange and its shared reference board; a custom Apify Actor supplies public historical references for people to choose. Scene editing, media and capture remain in Convex. Start locally with `npm run local:up` after the dependencies and SpacetimeDB CLI are installed.
 

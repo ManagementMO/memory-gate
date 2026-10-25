@@ -1,7 +1,7 @@
 import { ConvexError, v } from 'convex/values';
 import { internalMutation, internalQuery, query } from './_generated/server';
 import { requireMember } from './lib/auth';
-import { normalizeObjectReferences, type ObjectTopicKey } from '../actors/historical-memory-atlas/src/knowledge.mjs';
+import { OBJECT_CONTEXT_VERSION, normalizeObjectReferences, type ObjectTopicKey } from '../actors/historical-memory-atlas/src/knowledge.mjs';
 
 export const topicV = v.union(v.literal('kite'), v.literal('flowers'), v.literal('trees'));
 const auth = { code: v.string(), token: v.string() };
@@ -18,15 +18,17 @@ export const begin = internalMutation({ args: { ...auth, topicKey: topicV }, han
   const { room, member } = await requireMember(ctx, a.code, a.token);
   if (room.paused) throw new ConvexError('Continue the memory before exploring.');
   const existing = await ctx.db.query('objectKnowledge').withIndex('by_room_topic', q => q.eq('roomId', room._id).eq('topicKey', a.topicKey)).unique();
-  if (existing) return { id: existing._id, start: false };
+  if (existing && (existing.formatVersion === OBJECT_CONTEXT_VERSION || existing.status !== 'ready')) return { id: existing._id, start: false };
   const cached = await ctx.db.query('objectKnowledge').withIndex('by_topic_status', q => q.eq('topicKey', a.topicKey).eq('status', 'ready')).order('desc').take(10);
-  const ready = cached.find(j => j.runId && j.references.length && j.references.every(r => Date.now() - r.fetchedAt < 7 * 86400_000));
+  const ready = cached.find(j => j.formatVersion === OBJECT_CONTEXT_VERSION && j.runId && j.references.length && j.references.every(r => Date.now() - r.fetchedAt < 7 * 86400_000));
   if (!ready && member.role === 'viewer') throw new ConvexError('Ask family to look up this topic first.');
   if (!ready && room.offline) throw new ConvexError('This topic is not cached for offline use yet.');
   if (!ready && (!process.env.APIFY_TOKEN || process.env.ALLOW_APIFY_CLOUD !== '1' || !process.env.APIFY_MEMORY_ACTOR_ID)) throw new ConvexError('Object information is not connected yet.');
   const jobs = await ctx.db.query('objectKnowledge').withIndex('by_room', q => q.eq('roomId', room._id)).collect();
   if (!ready && jobs.some(j => j.status === 'starting' || j.status === 'running')) throw new ConvexError('One topic is being retrieved. Please wait for it.');
-  const id = await ctx.db.insert('objectKnowledge', { roomId: room._id, memberId: member._id, topicKey: a.topicKey, status: ready ? 'ready' : 'starting', runId: ready?.runId ?? null, references: ready?.references ?? [], error: null, createdAt: Date.now() });
+  const values = { roomId: room._id, memberId: member._id, topicKey: a.topicKey, status: ready ? 'ready' : 'starting', runId: ready?.runId ?? null, references: ready?.references ?? [], error: null, createdAt: Date.now(), formatVersion: OBJECT_CONTEXT_VERSION };
+  const id = existing?._id ?? await ctx.db.insert('objectKnowledge', values);
+  if (existing) await ctx.db.patch(existing._id, values);
   return { id, start: !ready };
 } });
 export const record = internalMutation({ args: { id: v.id('objectKnowledge'), runId: v.string() }, handler: async (ctx, a) => {

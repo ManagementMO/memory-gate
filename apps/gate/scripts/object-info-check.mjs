@@ -74,13 +74,13 @@ try{
         const vx=at[0]+.3,vy=at[1]-1.15,vz=at[2]+.3,len=Math.hypot(vx,vy,vz),qx=vy/len,qy=-vx/len,qw=1-vz/len,n=Math.hypot(qx,qy,qw);
         c.quaternion.set(qx/n,qy/n,0,qw/n);
       },name);
-      await page.waitForTimeout(350);
+      await page.waitForTimeout(80);
       await page.evaluate(()=>window.__memoryObjectScene.emulator().controllers.left.updateButtonValue('trigger',1));await page.waitForTimeout(150);
       await page.evaluate(()=>window.__memoryObjectScene.emulator().controllers.left.updateButtonValue('trigger',0));await page.waitForTimeout(200);
     };
     await page.waitForTimeout(2500);
     const marker=await page.evaluate(()=>window.__objectInfo.snapshot().markers.find(m=>m.topic==='kite').id);
-    await aim('ObjectInfoMarker:'+marker);
+    for(let attempt=0;attempt<3;attempt++){await aim('ObjectInfoMarker:'+marker);if(await page.evaluate(()=>window.__objectInfo.snapshot().card))break;}
     await page.waitForFunction(()=>window.__objectInfo.snapshot().card,null,{timeout:15000});
     await page.screenshot({path:out+'/quest-apify-card.png',timeout:60000});
     await aim('ObjectInfoAction:Details');

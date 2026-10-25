@@ -150,7 +150,12 @@ function InfoLayer() {
       let visible = c.active && (!!t.anchor || !!node && isVisible(node) && (t.topic === 'kite' || t.id.startsWith('optional:') || (formation.get(t.id) ?? 0) > .95));
       let x = 0, y = 0;
       if (visible) {
-        if (t.anchor) point.fromArray(t.anchor); else { node!.getWorldPosition(point); point.y += c.xr && t.node === 'memory-held-spool' ? -.22 : t.lift; }
+        if (t.anchor) point.fromArray(t.anchor); else {
+          node!.getWorldPosition(point); point.y += c.xr && t.node === 'memory-held-spool' ? -.30 : t.lift;
+          // The kite is moving geometry: keep its native tag beside, and slightly in front of, the model so a
+          // visible label is also reachable by a controller ray. Only this new tag's point is offset.
+          if (c.xr && t.node === 'memory-held-spool') { projected.setFromMatrixColumn(viewCamera.matrixWorld, 0); point.addScaledVector(projected, .42); projected.subVectors(eye, point).normalize(); point.addScaledVector(projected, .12); }
+        }
         projected.copy(point).project(viewCamera);
         x = (projected.x + 1) * size.width / 2; y = (1 - projected.y) * size.height / 2;
         visible = point.distanceTo(eye) < (c.xr ? 9 : 18) && (c.xr || projected.z > -1 && projected.z < 1 && Math.abs(projected.x) < .92 && Math.abs(projected.y) < .86);
