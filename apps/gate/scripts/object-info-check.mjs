@@ -25,7 +25,7 @@ try{
   await page.goto(`${base}/?voice=off&memory=red-kite&emulate=1`);
   if(fromHome){
     await check('welcome keeps Begin and the existing examples alongside the Apify option at three screen sizes',async()=>{
-      await expect(page.getByTestId('home-discovery')).toContainText('via Apify',{timeout:90000});
+      await expect(page.getByTestId('home-discovery')).toContainText('Kite, flowers',{timeout:90000});
       await expect(page.getByTestId('begin')).toBeEnabled();
       await expect(page.getByTestId('enter-vr')).toBeVisible({timeout:15000});
       await expect(page.getByTestId('open-red-kite')).toHaveAttribute('href','/?story=red-kite');
@@ -89,7 +89,7 @@ try{
     await page.locator('.object-info-marker[data-topic="kite"]').click();
     await expect(page.getByTestId('object-info-card')).toBeVisible();
     await expect(page.getByTestId('object-info-card').getByRole('link',{name:'Read source'})).toBeVisible({timeout:120000});
-    await expect(page.getByTestId('object-info-card')).toContainText('via Apify');
+    await expect(page.getByTestId('object-info-card')).toContainText('Public');
     assert.deepEqual(await page.getByTestId('leave').boundingBox(),before);
     const jobs=(await backend.query(api.objectKnowledge.list,auth)).jobs;
     assert.equal(jobs.find(j=>j.topicKey==='kite')?.status,'ready');
