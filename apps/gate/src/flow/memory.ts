@@ -33,6 +33,8 @@ type MemoryState = {
   showcaseReady?: boolean;
   /** The held things of a showcase someone has named so far (item indexes): they come in when said. */
   revealed?: number[];
+  /** Where the thing just named came in (world x, z; n counts them): a headset turns you to face it. */
+  face?: { x: number; z: number; n: number } | null;
   /** They said who was there with them ("with my grandmother"): the other perspective's stand-in waits in the memory
    *  only then (or when someone else is in it), never by default. */
   company?: boolean;

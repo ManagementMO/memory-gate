@@ -12,6 +12,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff?url';
 import { useGate } from '../../state/store';
+import { useMemory } from '../../flow/memory';
 import { handOver, respondHandoff, lastStoryOfViewing, otherPerspective } from '../handoffs';
 import { cyclePerspective, setViewing } from '../perspectives';
 import { facingOther, spotOf, worldSpot } from '../spots';
@@ -29,6 +30,7 @@ const MEASURE_S = 1.5;
 const BLINK_OUT = 0.15;
 const BLINK_IN = 0.25;
 const _head = new THREE.Vector3();
+const _eyes = new THREE.Vector3();
 const _fwd = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 const _e = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -72,10 +74,13 @@ function Scaler({ anchor }: { anchor: React.RefObject<THREE.Group | null> }) {
     // Once the memory has formed, you stand where this perspective stands. Re-placed when you switch, or when the
     // story moves your perspective; not for small nudges while things settle.
     const placed = stage === 'memory' || stage === 'leaving';
-    const spot = placed ? spotOf(viewing) : null;
-    const place = spot ? `${viewing}|${spot.source}|${spot.objectId}` : '';
+    // A place we already have (the garden, the bridge) has no perspectives' spots: you stand where its picture was
+    // taken (the origin), at a grown-up's height, facing what it looks at.
+    const showcase = placed && !!useMemory.getState().showcase;
+    const spot = placed && !showcase ? spotOf(viewing) : null;
+    const place = showcase ? `showcase|${useMemory.getState().face?.n ?? 0}` : spot ? `${viewing}|${spot.source}|${spot.objectId}` : '';
     if (measured && s.phase === 'idle') {
-      const target = scaleFor(useSocial.getState().perspectives.find((p) => p.key === viewing)?.eyeHeight ?? 1.6, measured);
+      const target = scaleFor(showcase ? 1.6 : useSocial.getState().perspectives.find((p) => p.key === viewing)?.eyeHeight ?? 1.6, measured);
       if (Math.abs(target - originScale()) > 0.01 || place !== s.place) { s.phase = 'out'; s.t = 0; s.target = target; s.nextPlace = place; }
     }
     if (s.phase === 'out') {
@@ -84,7 +89,13 @@ function Scaler({ anchor }: { anchor: React.RefObject<THREE.Group | null> }) {
         if (s.nextPlace) {
           camera.getWorldQuaternion(_q);
           const localYaw = _e.setFromQuaternion(_q, 'YXZ').y - origin.rotation.y;
-          anchorAt(worldSpot(viewing), facingOther(viewing), s.target, { x: _head.x, z: _head.z, yaw: localYaw });
+          const face = useMemory.getState().face;
+          if (s.nextPlace.startsWith('showcase|') && face) {
+            // something they named has come in: stay where you are, turned to face it
+            camera.getWorldPosition(_eyes);
+            anchorAt({ x: _eyes.x, z: _eyes.z }, Math.atan2(-(face.x - _eyes.x), -(face.z - _eyes.z)), s.target, { x: _head.x, z: _head.z, yaw: localYaw });
+          } else if (s.nextPlace.startsWith('showcase|')) anchorAt({ x: 0, z: 0 }, 0, s.target, { x: _head.x, z: _head.z, yaw: localYaw });
+          else anchorAt(worldSpot(viewing), facingOther(viewing), s.target, { x: _head.x, z: _head.z, yaw: localYaw });
         } else {
           if (anchored()) clearAnchor();
           setOriginScale(s.target, _head);

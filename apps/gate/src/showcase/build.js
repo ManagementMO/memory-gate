@@ -328,14 +328,20 @@ export async function buildShowcase({ spec, script, renderer, camera, grass: gra
   for (const gr of [env.grass ?? spec.grass ?? []].flat()) placeGrass(gr);
   // Things someone can call in by name ("there was a birdbath") wait aside until they're said (src/showcase/held.ts).
   (spec.items ?? []).forEach((it, index) => { if (it.say) out.held.push({ index, it }); });
-  out.place = (it) => placeItem(it).catch((e) => { console.warn('[showcase] held', it.m, e); return null; });
-  waits.push(...(spec.items ?? []).filter((it) => !it.say).map((it) => placeItem(it).catch((e) => console.warn('[showcase] item', it.m, e))));
+  // the scene's script makes some things itself ("@pond"): held, they wait for it to hand over how they're made
+  const made = new Map();
+  const hold = (m, make) => { made.set(m, make); };
+  out.place = (it) => {
+    if (it.m?.startsWith('@')) { const node = made.get(it.m)?.() ?? null; if (node) scene.add(node); return Promise.resolve(node); }
+    return placeItem(it).catch((e) => { console.warn('[showcase] held', it.m, e); return null; });
+  };
+  waits.push(...(spec.items ?? []).filter((it) => !it.say && !it.m?.startsWith('@')).map((it) => placeItem(it).catch((e) => console.warn('[showcase] item', it.m, e))));
   waits.push(...(spec.scatter ?? []).map((sc) => placeScatter(sc).catch((e) => console.warn('[showcase] scatter', sc.m, e))));
   await Promise.all(waits);
   if (script) {
     try {
       spec.grassScale = grassScale;
-      await script({ THREE, scene, camera, renderer, spec, rng, loadModel, normalized, placeItem, placeScatter, placeGrass, texSet, surfaceMaterial });
+      await script({ THREE, scene, camera, renderer, spec, rng, loadModel, normalized, placeItem, placeScatter, placeGrass, texSet, surfaceMaterial, hold });
     } catch (e) { console.warn('[showcase] script', e); }
   }
   return out;

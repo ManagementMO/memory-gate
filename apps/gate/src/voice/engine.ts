@@ -386,10 +386,15 @@ export function silentEngine(): VoiceEngine {
 export async function createEngine(session: Session | null, ev: EngineEvents, opts: { recognitionLang: () => string }): Promise<VoiceEngine> {
   if (new URLSearchParams(location.search).get('voice') === 'off') return silentEngine();
   if (session) {
-    try {
-      const mint = await session.client.action(api.voice.mintToken, { code: session.code, token: session.token });
-      if (mint.token && mint.sttLive && mint.ttsLive) return cartesiaEngine(session, ev);
-    } catch { /* fall through to the browser */ }
+    // A busy computer running the demo can be slow to answer for a moment: ask again before settling for the browser's
+    // own voice, which a headset doesn't have (the Quest stayed silent for a whole visit after one slow answer).
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        const mint = await session.client.action(api.voice.mintToken, { code: session.code, token: session.token });
+        if (mint.token && mint.sttLive && mint.ttsLive) return cartesiaEngine(session, ev);
+        break; // voice is off for this room: the browser it is
+      } catch { await new Promise((ok) => setTimeout(ok, 1200 * (attempt + 1))); }
+    }
   }
   return browserEngine(ev, opts.recognitionLang);
 }
