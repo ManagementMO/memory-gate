@@ -62,3 +62,6 @@ export const PlusIcon = ({ size }: P) => (
 export const MinusIcon = ({ size }: P) => (
   <svg {...base(size)}><path d="M5.5 12h13" /></svg>
 );
+export const SocialIcon = ({ size }: P) => (
+  <svg {...base(size)}><circle cx="17.5" cy="6" r="2.6" /><circle cx="6.5" cy="12" r="2.6" /><circle cx="17.5" cy="18" r="2.6" /><path d="M8.8 10.8l6.4-3.6M8.8 13.2l6.4 3.6" /></svg>
+);

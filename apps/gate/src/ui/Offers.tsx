@@ -1,9 +1,10 @@
-// Gentle alternatives to talking, offered by the companion: a photo, a video, or someone to help.
-// Each is one tap; files can also be dropped anywhere on the page.
+// Gentle alternatives to talking, offered by the companion: a photo, a video, someone to help, or a family post on
+// social media. Each is one tap; files can also be dropped anywhere on the page.
 import { useRef } from 'react';
 import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
-import { PeopleIcon, PhotoIcon, VideoIcon } from './Icons';
+import { PeopleIcon, PhotoIcon, SocialIcon, VideoIcon } from './Icons';
+import { openSocialPost } from './SocialPostSheet';
 
 export function Offers() {
   const stage = useGate((s) => s.stage);
@@ -27,6 +28,11 @@ export function Offers() {
       {offers.invite && (
         <button type="button" className="pill glass offer" onClick={() => useGate.getState().set({ inviteOpen: true })} data-testid="offer-invite" aria-label="Invite someone to join">
           <PeopleIcon /><span className="label">Invite</span>
+        </button>
+      )}
+      {offers.photo && (
+        <button type="button" className="pill glass offer" onClick={openSocialPost} data-testid="offer-social" aria-label="Start from a social media post">
+          <SocialIcon /><span className="label">Social Media</span>
         </button>
       )}
       <input ref={photo} type="file" accept="image/*" hidden data-testid="photo-input"

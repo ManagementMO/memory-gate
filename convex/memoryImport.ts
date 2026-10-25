@@ -87,3 +87,28 @@ export const attach = action({ args: { ...auth, id: v.id('memorySources'), objec
     throw new ConvexError('The photo could not be attached. Check that sharing is enabled and the room is active. Expired photos may need a fresh import.');
   }
 } });
+
+/** A retrieved post's photo as the start of a visit (the Gate's Social Media offer). The photo is saved here with the
+ *  same checks as attaching (public media hosts only, an image, at most 5 MB), so the page can open it like a photo
+ *  someone chose; the visit then goes on exactly as it does from Photo. */
+export const photoForVisit = action({ args: { ...auth, id: v.id('memorySources') }, handler: async (ctx, a): Promise<string> => {
+  const source = await ctx.runQuery(internal.memorySources.source, a);
+  if (source.fileId) { const saved = await ctx.storage.getUrl(source.fileId); if (saved) return saved; }
+  const url = mediaUrl(source.imageUrl);
+  if (!url) throw new ConvexError('This photo is no longer available. Import the public post again.');
+  let fileId = null;
+  try {
+    const response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(20_000) });
+    const type = response.headers.get('content-type')?.split(';')[0] ?? '';
+    if (!response.ok || !['image/jpeg', 'image/png', 'image/webp'].includes(type) || Number(response.headers.get('content-length')) > 5_000_000) throw new Error('unusable');
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.byteLength > 5_000_000) throw new Error('too large');
+    fileId = await ctx.storage.store(new Blob([bytes], { type }));
+    const saved = await ctx.storage.getUrl(fileId);
+    if (!saved) throw new Error('not saved');
+    return saved;
+  } catch {
+    if (fileId) await ctx.storage.delete(fileId);
+    throw new ConvexError('That photo could not be opened. Try another public post.');
+  }
+} });

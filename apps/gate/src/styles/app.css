@@ -263,3 +263,34 @@ button { font: inherit; color: inherit; }
     radial-gradient(120% 70% at 50% 120%, rgba(40, 32, 78, 0.4), transparent 60%);
 }
 .overlay[data-world='palace'] .album-fade { background: linear-gradient(to top, rgba(40, 32, 78, 0.62), rgba(40, 32, 78, 0.24) 55%, rgba(40, 32, 78, 0)); }
+
+/* ---------- start from a social post (SocialPostSheet) ---------- */
+.social-sheet { width: min(500px, 100%); max-height: calc(100dvh - 40px); overflow-y: auto; }
+.social-live { display: grid; gap: 12px; text-align: left; }
+.social-field input {
+  width: 100%; min-height: 50px; padding: 0 18px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(4, 5, 14, 0.35); color: var(--ink); font: 400 16px/1.2 var(--sans);
+}
+.social-field input::placeholder { color: var(--ink-faint); }
+.social-field input:focus-visible { outline: 3px solid rgba(190, 172, 255, 0.95); outline-offset: 2px; }
+.social-check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; color: var(--ink-soft); cursor: pointer; }
+.social-check input { width: 20px; height: 20px; margin: 1px 0 0; flex: none; accent-color: #b9a6ff; }
+.social-go { justify-self: center; min-height: 50px; padding: 0 28px; font-size: 16px; color: var(--ink); }
+.social-go:disabled { opacity: 0.45; cursor: default; }
+.sheet .social-note { margin: 0; max-width: none; font-size: 14px; color: var(--ink-faint); text-align: center; }
+.social-photos { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.social-photos button { width: 100%; padding: 0; border: 0; border-radius: 16px; overflow: hidden; background: rgba(255, 255, 255, 0.08); cursor: pointer; color: var(--ink-soft); font-size: 12px; }
+.social-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.social-photos span { display: block; padding: 6px 8px; }
+.social-example { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.14); }
+.sheet .social-or { margin: 0 auto 12px; max-width: none; font-size: 14px; color: var(--ink-faint); }
+.social-post {
+  width: 100%; display: flex; gap: 14px; align-items: center; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06); color: var(--ink); text-align: left; cursor: pointer; font: 400 14px/1.35 var(--sans);
+}
+.social-post:hover { background: rgba(255, 255, 255, 0.11); }
+.social-post:focus-visible { outline: 3px solid rgba(190, 172, 255, 0.95); outline-offset: 2px; }
+.social-post img { width: 76px; height: 76px; border-radius: 12px; object-fit: cover; flex: none; }
+.social-post-text { display: flex; flex-direction: column; gap: 3px; }
+.social-post-text strong { font-size: 14px; }
+.social-post-text small { color: var(--ink-faint); font-size: 12px; }
