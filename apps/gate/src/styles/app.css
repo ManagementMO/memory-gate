@@ -110,6 +110,13 @@ button { font: inherit; color: inherit; }
   transition: opacity var(--calm);
 }
 .captions .heard[data-interim='true'] { color: var(--ink-faint); }
+/* The companion heard you and is thinking: three soft dots after your words. */
+.thinking-dots { display: inline-flex; gap: 0.28em; margin-left: 0.5em; vertical-align: middle; }
+.thinking-dots i { width: 0.34em; height: 0.34em; border-radius: 50%; background: currentColor; opacity: 0.25; animation: thinking-dot 1.2s ease-in-out infinite; }
+.thinking-dots i:nth-child(2) { animation-delay: 0.18s; }
+.thinking-dots i:nth-child(3) { animation-delay: 0.36s; }
+@keyframes thinking-dot { 0%, 100% { opacity: 0.2; transform: translateY(0); } 40% { opacity: 0.85; transform: translateY(-0.12em); } }
+@media (prefers-reduced-motion: reduce) { .thinking-dots i { animation: none; opacity: 0.55; } }
 .on-paper .captions .said { color: var(--paper-ink); text-shadow: 0 1px 18px rgba(255, 255, 255, 0.9), 0 0 2px rgba(255, 255, 255, 0.8); }
 .on-paper .captions .heard { color: var(--paper-ink-soft); text-shadow: 0 1px 12px rgba(255, 255, 255, 0.9); }
 

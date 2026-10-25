@@ -21,16 +21,19 @@ export function anthropic(): Anthropic | null {
 
 /** The model for the experience. Claude Opus 5.5 by default; GATE_MODEL can choose another (e.g. to trade cost). */
 export const gateModel = () => process.env.GATE_MODEL || 'claude-opus-5-5';
+/** The companion's conversational turns, where every second of silence is felt: Claude Sonnet 5.5 answers in about
+ *  a second with the same short, warm replies (GUIDE_MODEL overrides). Scene planning stays on gateModel(). */
+export const guideModel = () => process.env.GUIDE_MODEL || 'claude-sonnet-5-5';
 
 type Content = Anthropic.Beta.BetaContentBlockParam[] | string;
 
 export async function structured<S extends z.ZodType>(
   ctx: ActionCtx,
-  opts: { system: string; content: Content; schema: S; maxTokens?: number; effort?: 'low' | 'medium' | 'high' },
+  opts: { system: string; content: Content; schema: S; maxTokens?: number; effort?: 'low' | 'medium' | 'high'; model?: string },
 ): Promise<z.infer<S> | null> {
   const c = anthropic();
   if (!c) return null;
-  const model = gateModel();
+  const model = opts.model ?? gateModel();
   try {
     const res = await c.beta.messages.parse({
       model,

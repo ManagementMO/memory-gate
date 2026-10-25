@@ -40,7 +40,7 @@ export const VAD = {
   onsetDb: 11,         // above the noise floor
   onsetMs: 150,        // sustained before a turn begins (the mic keeps 200 ms of pre-roll, so nothing is clipped)
   keepDb: 6,           // above the floor counts as still talking
-  endSilenceMs: 1450,  // quiet this long ends the turn
+  endSilenceMs: 1100,  // quiet this long ends the turn (patient with pauses, without leaving the person waiting)
   minTurnMs: 450,
   maxTurnMs: 40_000,
   bargeInExtraDb: 9,   // while the companion speaks, only clearly louder speech interrupts it

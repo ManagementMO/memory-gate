@@ -40,6 +40,8 @@ export function Captions() {
   const said = useGate((s) => s.companionLine);
   const heard = useGate((s) => s.heardLine);
   const stage = useGate((s) => s.stage);
+  // Between your last word and the companion's reply: a quiet sign that it heard you and is thinking.
+  const thinking = useGate((s) => s.mood === 'thinking');
   const words = said ? said.text.split(/\s+/).filter(Boolean) : [];
   const shown = useRevealed(said?.id, words.length);
   if (stage === 'portal' || stage === 'album') return null;
@@ -58,6 +60,7 @@ export function Captions() {
       </p>
       <p className="heard" data-interim={heard?.interim ? 'true' : 'false'} data-testid="heard-line">
         {heard ? `“${heard.text}”` : ' '}
+        {heard && !heard.interim && thinking && <span className="thinking-dots" aria-hidden="true"><i /><i /><i /></span>}
       </p>
     </div>
   );

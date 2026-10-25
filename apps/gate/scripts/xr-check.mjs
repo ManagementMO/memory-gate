@@ -2,6 +2,23 @@
 // conversation, captions render in 3D, the memory forms around the wearer, and reaching the album ends the session.
 import { chromium } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
+import { PNG } from 'pngjs';
+
+/** Mean brightness (0-255) of a screenshot: a headset view that draws nothing is near the clear colour (about 6). */
+function brightness(buf) {
+  const png = PNG.sync.read(buf);
+  let sum = 0, n = 0;
+  for (let i = 0; i < png.data.length; i += 4 * 97) { sum += (png.data[i] + png.data[i + 1] + png.data[i + 2]) / 3; n++; }
+  return sum / Math.max(1, n);
+}
+let failed = false;
+/** Saves the shot and fails the check if the wearer would see black (the scene isn't being drawn into the headset). */
+async function view(page, file, label) {
+  const buf = await page.screenshot({ path: file });
+  const b = brightness(buf);
+  console.log(`   ${label}: brightness ${b.toFixed(0)}${b < 30 ? '  ← BLACK: nothing is drawn in the headset' : ''}`);
+  if (b < 30) failed = true;
+}
 const out = process.argv[2] ?? 'apps/gate/.shots/xr';
 const arg = (n, d) => (process.argv.includes(`--${n}`) ? process.argv[process.argv.indexOf(`--${n}`) + 1] : d);
 const world = arg('world', 'palace');
@@ -34,7 +51,7 @@ try {
   // Hide the emulator's control panels so the screenshot shows what the wearer sees.
   await page.evaluate(() => { for (const el of document.querySelectorAll('body > div')) { const s = getComputedStyle(el); if (el.id !== 'root' && (s.position === 'fixed' || s.position === 'absolute') && el.querySelector('canvas') === null) el.style.display = 'none'; } });
   await page.waitForTimeout(6000);
-  await page.screenshot({ path: `${out}/02-xr-greeting.png` });
+  await view(page, `${out}/02-xr-greeting.png`, 'headset view at the greeting');
   note(`state: ${JSON.stringify(await st())}`);
   await page.waitForFunction(() => window.__gate.store.getState().stage === 'gathering', null, { timeout: 40000 });
   await page.evaluate(() => window.__gate.flow.testHear('A cabin by the lake at dusk, with a wooden dock and a little rowboat.'));
@@ -42,7 +59,7 @@ try {
   await page.evaluate(() => window.__gate.flow.testHear('Yes please.'));
   await page.waitForFunction(() => window.__gate.store.getState().stage === 'memory', null, { timeout: 60000 });
   await page.waitForTimeout(5000);
-  await page.screenshot({ path: `${out}/03-xr-memory.png` });
+  await view(page, `${out}/03-xr-memory.png`, 'headset view in the memory');
   note(`state: ${JSON.stringify(await st())}`);
   await page.evaluate(() => window.__gate.flow.leave());
   await page.waitForFunction(() => window.__gate.store.getState().stage === 'album', null, { timeout: 40000 });
@@ -56,3 +73,4 @@ try {
 }
 note(`errors: ${errors.length}`); for (const e of errors.slice(0, 12)) note(`  ${e}`);
 await browser.close();
+if (failed) { note('FAILED: the headset view was black'); process.exitCode = 1; }
