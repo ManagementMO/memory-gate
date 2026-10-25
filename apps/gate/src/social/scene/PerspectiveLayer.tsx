@@ -3,7 +3,7 @@
 // other perspective remembers is there too, as faint ghosts and small lights: select one to hear their side.
 import { Billboard, Text } from '@react-three/drei';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff?url';
 import { entryOf, type Placement } from '../../../../../packages/shared/src/scene';
@@ -151,6 +151,7 @@ export function PerspectiveLayer() {
   const withThings = new Set(here.map((o) => o.storyId).filter(Boolean));
   const marks = ghosts ? stories.filter((s) => s.memoryId === mem && s.perspectiveId !== mine && !withThings.has(s.id)) : [];
   return (
+    <Suspense fallback={null}>
     <group name="perspectives">
       {ownObjects.map((o) => <SketchObject key={`own-${o.id}`} obj={o.data} place={o.placement} delay={0.2} />)}
       {otherObjects.map((o) => <Ghost key={`ghost-${o.id}`} o={o} />)}
@@ -158,5 +159,6 @@ export function PerspectiveLayer() {
       {pins.filter((p) => p.perspectiveId === mine || ghosts).map((p) => <ArchiveFrame key={p.id} pin={p} faint={p.perspectiveId !== mine} />)}
       <StoryCard3D />
     </group>
+    </Suspense>
   );
 }

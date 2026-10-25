@@ -69,16 +69,24 @@ node apps/gate/scripts/multiplayer-check.mjs   # two devices; perspective checks
 node apps/gate/scripts/xr-check.mjs            # emulated Quest: grandchild's eyes put the wearer's eyes at 1.1 m
 ```
 
-## Verification status
+## Verification status (2026-10-24, on `main` 08d1161 + this branch)
 
-**Verified so far:**
-- Module and gate typechecks; gate production build.
-- Convex smoke tests, including likeness consent and rename.
-- Emulated Quest: eyes measured at 1.60 m; grandchild's eyes give world scale 0.69, which puts the eyes at 1.10 m; switching back restores scale 1.00.
-- Flat-screen first-person at 1.1 m and 1.6 m, the picker and the dock, with no page errors.
+**Verified:**
+- `npm run test:exchange`: 7/7 against real SpacetimeDB 2.13 and the gateway. That is the team's 5 plus 2 for perspectives: room-scoped poses, claims, attributed stories and things, a handoff with copies, and erasure with the room.
+- Publishing this module over `main`'s (no `-c`) kept existing presence and board rows.
+- Convex smoke tests: 86/86.
+- Gate typecheck and build.
+- `multiplayer-check.mjs` passed every step, with presence on SpacetimeDB for both devices and 0 page errors:
+  - nearby join;
+  - each device picks whose eyes;
+  - the phone stands in the memory at 1.10 m;
+  - "look here";
+  - the phone's note is kept as the grandchild's (told by Lily), with its thing;
+  - handed to the grandparent and kept;
+  - the host's spoken words are kept as the grandparent's story.
+- `xr-check.mjs` (emulated Quest): eyes 1.60 m; the grandchild's eyes give world scale 0.69 and eyes at 1.10 m; switching back restores scale 1.00; 0 errors.
 
 **Not yet verified:**
-- Publishing the module to SpacetimeDB and the gateway tests (`tests/exchange/social.test.mjs`).
-- The two-device perspective check.
 - A real MPFB/FaceBuilder likeness.
-- Comfort of the scale blink on a physical Quest.
+- The wrist menu and the comfort of the scale blink on a physical Quest.
+- An archive search and pin end to end. This needs `ATLAS_MODE=local` and a room that isn't offline; the photo frame rendering is untested.

@@ -7,15 +7,16 @@ import { usePresence } from '../presence/presence';
 import { useGate } from '../state/store';
 import { useSocial, viewingPerspective } from './store';
 
-/** Standing spots by seat, relative to the memory's centre (the headset wearer stands at its open front, z ≈ 2.6). */
-const SPOTS: [number, number][] = [[-0.9, 1.8], [0.9, 1.8], [-1.7, 1.35], [1.7, 1.35], [-0.35, 2.15], [0.35, 2.15]];
+/** Standing spots by seat, relative to the memory's centre: along its open front, so even a grandchild's low view
+ *  takes in the room rather than the nearest tabletop. The headset wearer stands at the middle of it (z ≈ 2.6). */
+const SPOTS: [number, number][] = [[-1.0, 2.3], [1.0, 2.3], [-2.0, 1.9], [2.0, 1.9], [-1.6, 2.8], [1.6, 2.8]];
 
 export function spotOf(seat: number, out = new THREE.Vector3()): THREE.Vector3 {
   const s = SPOTS[((seat % SPOTS.length) + SPOTS.length) % SPOTS.length]!;
   return out.set(MEMORY_CENTER.x + s[0], 0, MEMORY_CENTER.z + s[1]);
 }
 
-const look = { yaw: 0, pitch: -0.1, dragging: false, x: 0, y: 0 };
+const look = { yaw: 0, pitch: -0.06, dragging: false, x: 0, y: 0 };
 const _spot = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 const _e = new THREE.Euler(0, 0, 0, 'YXZ');

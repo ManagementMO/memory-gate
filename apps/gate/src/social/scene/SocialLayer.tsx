@@ -2,7 +2,7 @@
 // about ten times a second, and everyone else appears where they really are, at their perspective's height. People
 // who aren't inside the memory yet (still at the gate, or without the exchange) stay the soft lights beside you.
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { deviceKind } from '../../presence/presence';
 import { useGate } from '../../state/store';
@@ -82,7 +82,9 @@ export function SocialLayer() {
     <group name="social" userData={{ noPoint: true }}>
       <PosePublisher />
       <FirstPersonLook />
-      {stage !== 'album' && [...ids].map((id) => <Avatar key={id} memberId={id} />)}
+      {/* Each figure loads (its name's font, its likeness) behind its own boundary: a suspension inside the canvas
+          would otherwise reach the page's boundary and briefly unmount everything, presence included. */}
+      {stage !== 'album' && [...ids].map((id) => <Suspense key={id} fallback={null}><Avatar memberId={id} /></Suspense>)}
     </group>
   );
 }

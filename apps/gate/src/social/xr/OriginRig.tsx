@@ -6,7 +6,7 @@
 import { Text } from '@react-three/drei';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useXR, useXRInputSourceState, XRSpace } from '@react-three/xr';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff?url';
 import { useGate } from '../../state/store';
@@ -223,12 +223,12 @@ export function OriginRig() {
       <group ref={anchor} />
       <Scaler anchor={anchor} />
       {presenting && <Buttons setMenu={setMenu} />}
-      {presenting && <Label anchor={anchor} />}
+      {presenting && <Suspense fallback={null}><Label anchor={anchor} /></Suspense>}
       {leftSpace && (
         <XRSpace space={leftSpace}>
           <object3D ref={(o) => { handAnchors.left = o; }} />
           {!leftC && !menu && <WristLight onSelect={() => setMenu(() => true)} />}
-          {menu && <MenuPanel onClose={() => setMenu(() => false)} />}
+          {menu && <Suspense fallback={null}><MenuPanel onClose={() => setMenu(() => false)} /></Suspense>}
         </XRSpace>
       )}
       {rightSpace && (

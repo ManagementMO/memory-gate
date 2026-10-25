@@ -188,9 +188,12 @@ wss.on('connection', socket => {
       if (Date.now() - c.window > 60_000) { c.count = 0; c.window = Date.now(); }
       if (++c.count > 60) throw new Error('Please slow down.');
       if (!message || typeof message !== 'object' || typeof message.requestId !== 'string' || message.requestId.length > 80) throw new Error('Invalid request.');
-      if (c.busy) throw new Error('Your previous action is still being saved.');
-      c.busy = true;
-      try { await action(c, message); send(c, { type: 'ack', requestId: message.requestId }); } finally { c.busy = false; }
+      // Presence (heartbeats, marks) and perspectives share this socket: each is one quick write, so they never wait
+      // behind (or block) the one-at-a-time exchange actions such as an archive search.
+      const quick = ['here', 'point', 'leave'].includes(message.type) || social.handles(message.type);
+      if (!quick && c.busy) throw new Error('Your previous action is still being saved.');
+      if (!quick) c.busy = true;
+      try { await action(c, message); send(c, { type: 'ack', requestId: message.requestId }); } finally { if (!quick) c.busy = false; }
     } catch (error) {
       // Never forward provider errors, auth arguments, stack traces or token-bearing URLs.
       const safe = error instanceof Error && !/token|stack|http|convex|requestid|server error/i.test(error.message) ? error.message.slice(0, 200) : 'This action could not complete. Check your connection and sharing permission.';

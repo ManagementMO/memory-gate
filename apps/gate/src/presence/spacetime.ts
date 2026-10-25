@@ -42,18 +42,19 @@ export function connectSpacetimePresence(session: Session, onUpdate: (u: Presenc
       socket.send(JSON.stringify({ ...m, requestId }));
     });
     const post = (m: Record<string, unknown>) => { if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify(m)); };
+    const wire = { request, post };
     const api: SpacetimePresence = {
       here: (device) => sendMsg({ type: 'here', device }),
       point: (at) => sendMsg({ type: 'point', at }),
       leave: () => sendMsg({ type: 'leave' }),
-      close: () => { clearTimeout(timer); socket.onclose = null; socket.close(); socialLink.detach(); },
+      close: () => { clearTimeout(timer); socket.onclose = null; socket.close(); socialLink.detach(wire); },
     };
     socket.onopen = () => sendMsg({ type: 'join', code: session.code, token: session.token });
     socket.onmessage = (event) => {
       let d: { type?: string; context?: { memberId: string; roomId: string; members?: Member[] }; presence?: Row[]; now?: number; requestId?: string; message?: string };
       try { d = JSON.parse(String(event.data)); } catch { return; }
       if (d.type === 'snapshot' && d.context) {
-        if (!memberId) socialLink.attach({ request, post }, d.context.memberId, d.context.members ?? [], d.context.roomId);
+        if (!memberId) socialLink.attach(wire, d.context.memberId, d.context.members ?? [], d.context.roomId);
         else socialLink.members(d.context.members ?? []);
         memberId = d.context.memberId; clearTimeout(timer); give(api);
       }
@@ -69,7 +70,7 @@ export function connectSpacetimePresence(session: Session, onUpdate: (u: Presenc
     socket.onclose = () => {
       clearTimeout(timer);
       for (const p of pending.values()) { window.clearTimeout(p.timer); p.reject(new Error('The exchange went away.')); }
-      pending.clear(); socialLink.detach();
+      pending.clear(); socialLink.detach(wire);
       if (!settled) give(null); else onLost();
     };
   });

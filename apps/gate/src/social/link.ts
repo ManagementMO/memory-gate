@@ -14,7 +14,9 @@ export const socialLink = {
     wire = w; room = roomId;
     useSocial.setState({ memberId, members });
   },
-  detach() {
+  /** Only the connection that attached can detach (a stale one closing late leaves the current one alone). */
+  detach(w: Wire) {
+    if (w !== wire) return;
     wire = null; room = null;
     poses.clear();
     useSocial.setState({ status: 'local' });
