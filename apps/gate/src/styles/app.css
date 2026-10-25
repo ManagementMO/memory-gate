@@ -97,6 +97,9 @@ button { font: inherit; color: inherit; }
 }
 .portal .lede { margin: 12px 0 24px; max-width: 34ch; font: 400 clamp(17px, 1.5vw, 20px)/1.5 var(--sans); color: var(--ink-soft); text-wrap: pretty; }
 .portal .fine { margin: 18px 0 0; max-width: 46ch; font: 400 14px/1.55 var(--sans); color: var(--ink-faint); text-wrap: pretty; }
+/* Begin sits under the line that says what it agrees to. */
+.portal h1 + .fine { margin-top: 0; }
+.portal .fine + .begin { margin-top: 22px; }
 .begin { color: var(--ink); }
 .begin .glow { position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; opacity: 0.55; transition: opacity var(--calm);
   background: radial-gradient(120% 160% at 50% 120%, rgba(98, 243, 198, 0.28), transparent 55%), radial-gradient(90% 140% at 0% 0%, rgba(154, 124, 255, 0.3), transparent 60%); }
@@ -236,6 +239,7 @@ button { font: inherit; color: inherit; }
   .portal h1 { font-size: clamp(26px, 6.4vh, 38px); margin-bottom: 12px !important; }
   .portal .pill.big { min-height: 50px; padding: 0 30px; font-size: 18px; }
   .portal .fine { margin-top: 10px; font-size: 12px; line-height: 1.4; max-width: 60ch; }
+  .portal .fine + .begin { margin-top: 14px; }
 }
 
 /* A quiet second choice under the main button (e.g. starting a new visit instead of joining the one nearby). */
@@ -245,6 +249,12 @@ button { font: inherit; color: inherit; }
 
 /* Fewer words on screen: the status is a breathing dot; offers are short. */
 .status.dot-only { width: 40px; padding: 0; justify-content: center; }
+/* Push to talk: the hint beside the dot on a computer (hold V); brighter while the key is down. */
+.status.ptt { font-size: 14px; color: var(--ink); }
+.status.ptt.glass { background: radial-gradient(120% 140% at 12% -10%, rgba(255, 255, 255, 0.2), transparent 46%), linear-gradient(180deg, rgba(36, 30, 92, 0.46), rgba(36, 30, 92, 0.3)); }
+.status.ptt[data-held='true'] { color: var(--ink); }
+.status kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; margin: 0 2px; padding: 0 5px; border-radius: 6px; font: 600 12px/1 var(--sans); color: var(--ink); background: rgba(255, 255, 255, 0.12); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 1px 0 rgba(255, 255, 255, 0.2); }
+.on-paper .status kbd { color: var(--paper-ink); background: rgba(255, 255, 255, 0.7); box-shadow: inset 0 0 0 1px rgba(40, 30, 70, 0.2); }
 .offer { min-height: 58px; padding: 0 24px 0 20px; }
 .portal h1 { margin-bottom: 26px; }
 
