@@ -53,6 +53,7 @@ if (!before.consents.some(c => c.scopes.includes('share_with_family'))) {
   await client.mutation(api.consents.give, { ...auth, scopes: ['share_with_family'] });
 }
 const selected = await client.mutation(api.splats.usePracticeWorld, { ...auth, setting: 'red-kite' });
+await client.mutation(api.redKite.prepare, auth);
 const view = await client.query(api.rooms.get, auth);
 room.joinKey = view.joinKey;
 room.splatId = selected.splatId;
