@@ -45,7 +45,7 @@ export function Overlay() {
       {stage === 'album' && (
         <AlbumUnavailable>
           <Suspense fallback={null}>
-            <AlbumView onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} />
+            <AlbumView onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} onClose={() => flow.home()} />
           </Suspense>
         </AlbumUnavailable>
       )}

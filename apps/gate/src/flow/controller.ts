@@ -2,7 +2,7 @@
 // companion says or does; the person only ever talks, shares a photo or video, or says they'd like to stop.
 //   portal → greeting → gathering (talk / photo / video / someone helps) → entering → forming → memory → leaving → album
 import { api } from '../../../../convex/_generated/api';
-import { asksToEnter, guideOffline, safeReply, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
+import { asksToEnter, asksToLeave, guideOffline, safeReply, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
 import { useGate, type MediaItem } from '../state/store';
@@ -43,7 +43,8 @@ class Flow {
 
   // ------------------------------------------------------------ the beginning
   async begin(): Promise<void> {
-    if (this.begun) return;
+    // Back at the start page after a visit (the album's ×): Begin starts the next visit in the same session.
+    if (this.begun) { if (useGate.getState().stage === 'portal') this.again(); return; }
     this.begun = true;
     const g = useGate.getState();
     // Joining a visit in the same room: this device stays quiet (no music, no voice of its own); the main device
@@ -123,6 +124,13 @@ class Flow {
     this.history.push({ who: 'person', text });
     this.clearNudge();
     music.duck(false);
+    // "I'd like to leave", "take me back", "I'm done": acted on at once, without waiting on a model, so leaving always
+    // works (even offline, even on a slow connection).
+    if (asksToLeave(text) && ['memory', 'forming', 'gathering', 'greeting'].includes(g.stage)) {
+      if (g.stage === 'memory' || g.stage === 'forming') return void this.leave();
+      await this.say('Of course. Thank you for spending this time with me.');
+      return void this.finish();
+    }
     if (g.stage === 'memory' || g.stage === 'forming') return void this.heardInMemory(text, h);
     if (g.stage !== 'gathering' && g.stage !== 'greeting') return;
     this.turnsInPhase++;
@@ -368,6 +376,22 @@ class Flow {
     music.setEnabled(g.musicOn);
     music.setMode('album');
     g.set({ stage: 'album' });
+  }
+
+  /** From the album's ×: back to the start page. The session continues; Begin (or the album link) from there. */
+  home(): void {
+    this.leaving = false;
+    this.history = [];
+    this.turnsInPhase = 0;
+    this.invitedToEnter = false;
+    this.mediaCaption = null;
+    this.place = null;
+    this.clearNudge();
+    this.listen(false);
+    memory.reset();
+    moments.reset();
+    music.setMode('gate');
+    useGate.getState().set({ stage: 'portal', media: null, memoryTitle: null, offers: { photo: false, video: false, invite: false }, enterProgress: 0, heardLine: null, companionLine: null, resting: false });
   }
 
   /** From the album: back to the gate for another memory (the session continues). */

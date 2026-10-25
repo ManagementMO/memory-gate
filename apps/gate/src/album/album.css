@@ -27,7 +27,8 @@
 }
 
 .album-inner { position: relative; z-index: 1; width: min(1260px, calc(100vw - 56px)); margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 0 170px; }
-.album-top { display: flex; align-items: center; min-height: 48px; }
+.album-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 48px; }
+.album-close { flex: none; color: var(--ink); }
 
 .album-head { margin: clamp(14px, 3.4vh, 40px) 0 clamp(22px, 4vh, 40px); max-width: 760px; }
 .album-head h1 {
