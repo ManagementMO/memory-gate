@@ -1,6 +1,7 @@
 // The companion in English, Spanish and French: which language the conversation is in, pure and offline.
 import { describe, expect, test } from 'vitest';
 import { asksToEnter, asksToLeave, guideOffline, languageLines, resolveReply, safeReply, type GuideInput } from '../../packages/shared/src/guide';
+import { planOffline } from '../../packages/shared/src/scene';
 import { asLang, detectLanguage, deviceLang, initialConversationLanguage, nextConversationLanguage, sameLanguage } from '../../packages/shared/src/language';
 
 const base: GuideInput = { phase: 'gathering', transcript: '', history: [], media: null, mediaCaption: null, place: null, invitedToEnter: false, turnsInPhase: 0 };
@@ -103,5 +104,15 @@ describe('the guide in three languages', () => {
     expect(auto).toContain('language of their latest words');
     expect(auto).toContain('French');
     for (const s of [languageLines({ setting: 'en' }), auto]) expect(s).toContain('reply_english');
+  });
+});
+
+describe('offline introductions follow the language', () => {
+  test('Spanish and French intros, English unchanged', () => {
+    expect(planOffline('a kitchen with a table', 'La cocina de la abuela', { language: 'es' }).intro).toBe('Aquí estamos. La cocina de la abuela, tal como lo describió.');
+    expect(planOffline('a kitchen with a table', null, { language: 'fr' }).intro).toBe('Nous y voilà, comme vous l’avez décrit.');
+    expect(planOffline('a beach by the sea', null, { language: 'es' }).intro).toBe('Aquí estamos. ¿Siente el aire?');
+    expect(planOffline('a beach by the sea', null, { language: 'fr' }).intro).toBe('Nous y voilà. Vous sentez l’air ?');
+    expect(planOffline('a kitchen with a table', 'Grandma’s kitchen').intro).toBe('Here we are. Grandma’s kitchen, just as you described it.');
   });
 });
