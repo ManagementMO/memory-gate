@@ -121,16 +121,16 @@ export function SketchObject({ obj, place, delay, onLight = 1 }: { obj: PlanObje
   const reveal = useMemo(() => newReveal(), [obj.id]);
   const [parts, setParts] = useState<Part[] | null>(null);
   // The photoreal library, when it has this kind (usually preloaded when the plan arrived).
-  const [real, setReal] = useState(() => hasRealModel(obj.kind));
+  const [real, setReal] = useState(() => hasRealModel(obj.kind, obj.label, obj.id));
   useEffect(() => {
     if (real) return;
     let live = true;
-    void loadRealModel(obj.kind).then((m) => { if (live && m) setReal(true); });
+    void loadRealModel(obj.kind, obj.label, obj.id).then((m) => { if (live && m) setReal(true); });
     return () => { live = false; };
-  }, [obj.kind, real]);
+  }, [obj.kind, obj.label, obj.id, real]);
   const entry = entryOf(obj.kind);
   const built = useMemo(() => {
-    if (real && (!obj.color || realTakesColour(obj.kind))) { const r = realObject(obj.kind, reveal, obj.scale ?? 1, obj.color); if (r) return r; }
+    if (real && (!obj.color || realTakesColour(obj.kind))) { const r = realObject(obj.kind, reveal, obj.scale ?? 1, obj.color, obj.label, obj.id); if (r) return r; }
     // Only a remembered material overrides the builder's own per-part finishes.
     const o: BuildOptions = { color: obj.color, material: obj.material, scale: obj.scale, seed: hash(obj.id), reveal, label: obj.label };
     const builder = LIBRARY_BUILDERS[obj.kind];

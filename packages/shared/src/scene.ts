@@ -53,62 +53,117 @@ export type Placement = { id: string; x: number; y: number; z: number; yaw: numb
 
 // ---------------------------------------------------------------- the library's vocabulary
 type Place = 'floor' | 'wall' | 'wall-mounted' | 'surface' | 'floor-under' | 'water' | 'backdrop' | 'edge';
-export type LibraryEntry = { fp: [number, number]; h: number; place: Place; surface?: number; syn: string[]; material: MaterialKind };
+/** `fit: 'footprint'`: a real model is sized by its footprint, not its height (a four-poster's posts or a bus's roof
+ *  would otherwise shrink it to a toy). `cluster`: drawn as about that many plants spread over the footprint. */
+export type LibraryEntry = { fp: [number, number]; h: number; place: Place; surface?: number; syn: string[]; material: MaterialKind; fit?: 'footprint'; cluster?: number };
 
 /** Default sizes are real-world metres (footprint width × depth, height); `surface` is the height things rest on. */
 export const LIBRARY: Record<string, LibraryEntry> = {
-  table: { fp: [1.4, 0.85], h: 0.76, place: 'floor', surface: 0.76, syn: ['table', 'dining table', 'kitchen table', 'desk', 'workbench'], material: 'wood' },
-  round_table: { fp: [1.0, 1.0], h: 0.74, place: 'floor', surface: 0.74, syn: ['round table', 'coffee table', 'cafe table'], material: 'wood' },
-  chair: { fp: [0.48, 0.5], h: 0.92, place: 'floor', syn: ['chair', 'chairs', 'stool', 'seat', 'kitchen chair', 'dining chair'], material: 'wood' },
-  armchair: { fp: [0.85, 0.85], h: 0.95, place: 'floor', syn: ['armchair', 'recliner', 'easy chair', 'rocking chair', 'reading chair'], material: 'fabric' },
-  sofa: { fp: [2.0, 0.9], h: 0.85, place: 'wall', syn: ['sofa', 'couch', 'settee', 'loveseat'], material: 'fabric' },
-  bed: { fp: [1.6, 2.1], h: 0.95, place: 'wall', syn: ['bed', 'crib', 'cot'], material: 'fabric' },
+  table: { fp: [1.4, 0.85], h: 0.76, place: 'floor', surface: 0.76, syn: ['table', 'dining table', 'kitchen table', 'desk', 'workbench', 'console table'], material: 'wood' },
+  round_table: { fp: [1.0, 1.0], h: 0.74, place: 'floor', surface: 0.74, syn: ['round table', 'coffee table', 'cafe table', 'tea table', 'bistro table'], material: 'wood' },
+  chair: { fp: [0.48, 0.5], h: 0.92, place: 'floor', syn: ['chair', 'chairs', 'stool', 'seat', 'kitchen chair', 'dining chair', 'school chair'], material: 'wood' },
+  armchair: { fp: [0.85, 0.85], h: 0.95, place: 'floor', syn: ['armchair', 'recliner', 'easy chair', 'rocking chair', 'reading chair', 'lounge chair', 'wingback'], material: 'fabric' },
+  sofa: { fp: [2.0, 0.9], h: 0.85, place: 'wall', syn: ['sofa', 'couch', 'settee', 'loveseat'], material: 'fabric', fit: 'footprint' },
+  bed: { fp: [1.6, 2.1], h: 0.95, place: 'wall', syn: ['bed', 'crib', 'cot', 'double bed', 'single bed', 'canopy bed', 'four poster', 'daybed', 'day bed'], material: 'fabric', fit: 'footprint' },
   bookshelf: { fp: [0.9, 0.32], h: 1.9, place: 'wall', surface: 1.9, syn: ['bookshelf', 'bookcase', 'shelves', 'shelf'], material: 'wood' },
-  cabinet: { fp: [1.0, 0.45], h: 0.9, place: 'wall', surface: 0.9, syn: ['cabinet', 'dresser', 'sideboard', 'cupboard', 'chest of drawers', 'drawers', 'nightstand', 'hutch'], material: 'wood' },
+  cabinet: { fp: [1.0, 0.45], h: 0.9, place: 'wall', surface: 0.9, syn: ['cabinet', 'dresser', 'sideboard', 'cupboard', 'chest of drawers', 'drawers', 'nightstand', 'hutch', 'bedside table', 'commode'], material: 'wood' },
   rug: { fp: [2.2, 1.5], h: 0.02, place: 'floor-under', syn: ['rug', 'carpet', 'mat'], material: 'fabric' },
-  lamp: { fp: [0.3, 0.3], h: 0.55, place: 'surface', syn: ['lamp', 'table lamp', 'reading lamp'], material: 'fabric' },
+  lamp: { fp: [0.3, 0.3], h: 0.55, place: 'surface', syn: ['lamp', 'table lamp', 'reading lamp', 'desk lamp', 'oil lamp', 'kerosene lamp'], material: 'fabric' },
   floor_lamp: { fp: [0.4, 0.4], h: 1.65, place: 'floor', syn: ['floor lamp', 'standing lamp'], material: 'metal' },
   fireplace: { fp: [1.5, 0.45], h: 1.2, place: 'wall', surface: 1.2, syn: ['fireplace', 'hearth', 'mantel', 'mantelpiece', 'wood stove'], material: 'stone' },
   window: { fp: [1.3, 0.12], h: 1.6, place: 'wall-mounted', syn: ['window', 'windows', 'curtains', 'curtain', 'drapes'], material: 'glass' },
   door: { fp: [0.95, 0.1], h: 2.1, place: 'wall-mounted', syn: ['door', 'doorway', 'front door'], material: 'wood' },
   piano: { fp: [1.5, 0.6], h: 1.25, place: 'wall', surface: 1.25, syn: ['piano', 'upright piano', 'organ'], material: 'wood' },
-  radio: { fp: [0.36, 0.18], h: 0.24, place: 'surface', syn: ['radio', 'record player', 'gramophone', 'phonograph', 'turntable', 'stereo'], material: 'wood' },
-  tv: { fp: [0.9, 0.3], h: 0.6, place: 'surface', syn: ['tv', 'television', 'telly'], material: 'plastic' },
+  radio: { fp: [0.36, 0.18], h: 0.24, place: 'surface', syn: ['radio', 'record player', 'gramophone', 'phonograph', 'turntable', 'stereo', 'transistor radio', 'boombox', 'cassette player'], material: 'wood' },
+  tv: { fp: [0.9, 0.3], h: 0.6, place: 'surface', syn: ['tv', 'television', 'telly', 'tv set', 'television set'], material: 'plastic' },
   clock: { fp: [0.4, 0.1], h: 0.4, place: 'wall-mounted', syn: ['clock', 'wall clock', 'cuckoo clock'], material: 'wood' },
-  picture_frame: { fp: [0.5, 0.05], h: 0.6, place: 'wall-mounted', syn: ['picture', 'painting', 'photo', 'photograph', 'frame', 'portrait', 'poster'], material: 'wood' },
+  picture_frame: { fp: [0.5, 0.05], h: 0.6, place: 'wall-mounted', syn: ['picture', 'painting', 'photo', 'photograph', 'frame', 'portrait', 'poster', 'photo frame', 'calendar'], material: 'wood' },
   vase_flowers: { fp: [0.25, 0.25], h: 0.5, place: 'surface', syn: ['vase', 'flowers in a vase', 'bouquet', 'vase of flowers'], material: 'ceramic' },
-  potted_plant: { fp: [0.5, 0.5], h: 1.0, place: 'floor', syn: ['plant', 'potted plant', 'fern', 'houseplant', 'ficus'], material: 'plant' },
-  teapot: { fp: [0.28, 0.2], h: 0.22, place: 'surface', syn: ['teapot', 'kettle', 'tea pot'], material: 'ceramic' },
-  cup: { fp: [0.12, 0.12], h: 0.1, place: 'surface', syn: ['cup', 'mug', 'teacup', 'coffee cup', 'cups'], material: 'ceramic' },
+  potted_plant: { fp: [0.5, 0.5], h: 1.0, place: 'floor', syn: ['plant', 'potted plant', 'fern', 'houseplant', 'ficus', 'succulent', 'jade plant'], material: 'plant' },
+  teapot: { fp: [0.28, 0.2], h: 0.22, place: 'surface', syn: ['teapot', 'kettle', 'tea pot', 'clay teapot', 'electric kettle', 'tea set'], material: 'ceramic' },
+  cup: { fp: [0.12, 0.12], h: 0.1, place: 'surface', syn: ['cup', 'mug', 'teacup', 'coffee cup', 'cups', 'enamel mug'], material: 'ceramic' },
   bowl_fruit: { fp: [0.32, 0.32], h: 0.18, place: 'surface', syn: ['fruit bowl', 'bowl of fruit', 'fruit', 'oranges', 'apples', 'bowl', 'lemons'], material: 'ceramic' },
   cake: { fp: [0.32, 0.32], h: 0.2, place: 'surface', syn: ['cake', 'pie', 'birthday cake', 'bread', 'cookies', 'loaf'], material: 'ceramic' },
-  books: { fp: [0.3, 0.22], h: 0.2, place: 'surface', syn: ['books', 'book', 'stack of books', 'newspaper'], material: 'paper' },
+  books: { fp: [0.3, 0.22], h: 0.2, place: 'surface', syn: ['books', 'book', 'stack of books', 'newspaper', 'newspapers', 'letters', 'envelopes', 'magazines'], material: 'paper' },
   candle: { fp: [0.1, 0.1], h: 0.25, place: 'surface', syn: ['candle', 'candles', 'candlestick', 'menorah'], material: 'light' },
   stove: { fp: [0.76, 0.65], h: 0.92, place: 'wall', surface: 0.92, syn: ['stove', 'oven', 'range', 'cooker'], material: 'metal' },
   fridge: { fp: [0.75, 0.7], h: 1.75, place: 'wall', syn: ['fridge', 'refrigerator', 'icebox'], material: 'metal' },
   counter: { fp: [1.8, 0.62], h: 0.92, place: 'wall', surface: 0.92, syn: ['counter', 'kitchen counter', 'sink', 'countertop', 'kitchen cabinets'], material: 'wood' },
-  tree: { fp: [2.2, 2.2], h: 4.2, place: 'floor', syn: ['tree', 'trees', 'oak', 'oak tree', 'maple', 'apple tree', 'cherry tree', 'willow', 'lemon tree', 'orange tree', 'fig tree'], material: 'plant' },
-  pine_tree: { fp: [1.8, 1.8], h: 4.8, place: 'floor', syn: ['pine', 'pine tree', 'pines', 'fir', 'evergreen', 'christmas tree', 'spruce'], material: 'plant' },
+  tree: { fp: [2.2, 2.2], h: 4.2, place: 'floor', syn: ['tree', 'trees', 'oak', 'oak tree', 'maple', 'apple tree', 'cherry tree', 'willow', 'lemon tree', 'orange tree', 'fig tree', 'eucalyptus', 'elm', 'birch', 'beech', 'linden', 'sycamore', 'plane tree', 'cherry blossom', 'sakura', 'weeping cherry'], material: 'plant' },
+  pine_tree: { fp: [1.8, 1.8], h: 4.8, place: 'floor', syn: ['pine', 'pine tree', 'pines', 'fir', 'evergreen', 'christmas tree', 'spruce', 'cypress', 'monterey cypress', 'italian cypress', 'juniper', 'redwood'], material: 'plant' },
   palm_tree: { fp: [1.6, 1.6], h: 4.5, place: 'floor', syn: ['palm', 'palm tree', 'palms', 'coconut tree'], material: 'plant' },
-  bush: { fp: [1.2, 1.0], h: 0.9, place: 'floor', syn: ['bush', 'bushes', 'shrub', 'hedge', 'hydrangea', 'rose bush', 'lilac'], material: 'plant' },
-  flowers: { fp: [1.4, 0.8], h: 0.45, place: 'floor', syn: ['flower bed', 'flowers', 'tulips', 'roses', 'garden bed', 'daisies', 'sunflowers', 'lavender', 'wildflowers'], material: 'plant' },
+  bush: { fp: [1.2, 1.0], h: 0.9, place: 'floor', syn: ['bush', 'bushes', 'shrub', 'hedge', 'hydrangea', 'rose bush', 'lilac', 'boxwood', 'azalea', 'laurel'], material: 'plant' },
+  flowers: { fp: [1.4, 0.8], h: 0.45, place: 'floor', syn: ['flower bed', 'flowers', 'tulips', 'roses', 'garden bed', 'daisies', 'sunflowers', 'lavender', 'wildflowers', 'flowerbed', 'poppies', 'geraniums', 'lupines', 'foxgloves', 'flower border'], material: 'plant', cluster: 9 },
   bench: { fp: [1.5, 0.55], h: 0.85, place: 'floor', syn: ['bench', 'park bench', 'garden bench'], material: 'wood' },
   fence: { fp: [3.0, 0.1], h: 1.0, place: 'edge', syn: ['fence', 'picket fence', 'railing', 'gate', 'wall'], material: 'wood' },
   swing: { fp: [1.8, 1.2], h: 2.2, place: 'floor', syn: ['swing', 'swing set', 'porch swing', 'hammock', 'tire swing'], material: 'wood' },
-  lamp_post: { fp: [0.4, 0.4], h: 3.0, place: 'floor', syn: ['lamp post', 'street lamp', 'streetlight', 'lantern'], material: 'metal' },
+  lamp_post: { fp: [0.4, 0.4], h: 3.0, place: 'floor', syn: ['lamp post', 'street lamp', 'streetlight', 'gas lamp'], material: 'metal' },
   umbrella: { fp: [2.0, 2.0], h: 2.2, place: 'floor', syn: ['umbrella', 'beach umbrella', 'parasol'], material: 'fabric' },
   picnic_blanket: { fp: [1.6, 1.3], h: 0.05, place: 'floor-under', syn: ['blanket', 'picnic blanket', 'picnic', 'towel', 'beach towel', 'quilt'], material: 'fabric' },
   boat: { fp: [1.3, 3.6], h: 0.9, place: 'water', syn: ['boat', 'rowboat', 'canoe', 'sailboat', 'kayak', 'fishing boat'], material: 'wood' },
   dock: { fp: [1.6, 5.0], h: 0.5, place: 'water', syn: ['dock', 'pier', 'jetty', 'boardwalk'], material: 'wood' },
   rock: { fp: [1.0, 0.9], h: 0.6, place: 'floor', syn: ['rock', 'rocks', 'boulder', 'stone', 'stones'], material: 'stone' },
-  car: { fp: [1.8, 4.3], h: 1.45, place: 'floor', syn: ['car', 'station wagon', 'truck', 'van', 'pickup'], material: 'metal' },
+  car: { fp: [1.8, 4.3], h: 1.45, place: 'floor', syn: ['car', 'station wagon', 'truck', 'van', 'pickup', 'taxi', 'cab', 'taxicab', 'sedan', 'convertible', 'cadillac'], material: 'metal', fit: 'footprint' },
   bicycle: { fp: [0.6, 1.75], h: 1.0, place: 'floor', syn: ['bike', 'bicycle', 'tricycle'], material: 'metal' },
-  house: { fp: [7.0, 6.0], h: 6.0, place: 'backdrop', syn: ['house', 'cottage', 'home', 'farmhouse', 'barn', 'cabin', 'church'], material: 'wood' },
+  house: { fp: [7.0, 6.0], h: 6.0, place: 'backdrop', syn: ['house', 'cottage', 'home', 'farmhouse', 'barn', 'cabin', 'church', 'victorian house', 'painted lady', 'painted ladies'], material: 'wood' },
   campfire: { fp: [1.0, 1.0], h: 0.5, place: 'floor', syn: ['campfire', 'bonfire', 'fire pit', 'fire'], material: 'stone' },
   tent: { fp: [2.2, 2.4], h: 1.5, place: 'floor', syn: ['tent'], material: 'fabric' },
   cat: { fp: [0.25, 0.5], h: 0.3, place: 'floor', syn: ['cat', 'kitten', 'cats'], material: 'ceramic' },
   dog: { fp: [0.4, 0.85], h: 0.55, place: 'floor', syn: ['dog', 'puppy', 'dogs'], material: 'ceramic' },
   bird: { fp: [0.15, 0.2], h: 0.15, place: 'surface', syn: ['bird', 'birds', 'robin', 'sparrow', 'parrot', 'canary', 'bird cage', 'birdcage'], material: 'ceramic' },
+  // The bigger photoreal library (the scene lab's bundles): more of what people remember, indoors and out.
+  wardrobe: { fp: [1.3, 0.6], h: 2.0, place: 'wall', syn: ['wardrobe', 'armoire', 'closet', 'clothes cupboard'], material: 'wood' },
+  school_desk: { fp: [0.7, 0.5], h: 0.76, place: 'floor', surface: 0.74, syn: ['school desk', 'classroom desk', 'student desk', 'desks'], material: 'wood' },
+  globe: { fp: [0.35, 0.35], h: 0.5, place: 'surface', syn: ['globe', 'world globe'], material: 'paper' },
+  sewing_machine: { fp: [0.9, 0.5], h: 1.0, place: 'floor', syn: ['sewing machine', 'treadle'], material: 'metal' },
+  telephone: { fp: [0.24, 0.2], h: 0.14, place: 'surface', syn: ['telephone', 'phone', 'rotary phone', 'dial phone'], material: 'plastic' },
+  typewriter: { fp: [0.45, 0.4], h: 0.2, place: 'surface', syn: ['typewriter'], material: 'metal' },
+  thermos: { fp: [0.14, 0.14], h: 0.34, place: 'surface', syn: ['thermos', 'flask', 'vacuum flask', 'hot water flask'], material: 'metal' },
+  rice_cooker: { fp: [0.3, 0.3], h: 0.26, place: 'surface', syn: ['rice cooker'], material: 'metal' },
+  electric_fan: { fp: [0.45, 0.4], h: 1.2, place: 'floor', syn: ['electric fan', 'standing fan', 'pedestal fan'], material: 'metal' },
+  desk_fan: { fp: [0.3, 0.25], h: 0.4, place: 'surface', syn: ['desk fan', 'table fan'], material: 'metal' },
+  mirror: { fp: [0.55, 0.05], h: 0.75, place: 'wall-mounted', syn: ['mirror', 'looking glass'], material: 'glass' },
+  guitar: { fp: [0.4, 0.15], h: 1.0, place: 'floor', syn: ['guitar', 'ukulele', 'acoustic guitar'], material: 'wood' },
+  suitcase: { fp: [0.7, 0.25], h: 0.45, place: 'floor', syn: ['suitcase', 'luggage', 'valise'], material: 'fabric' },
+  teddy_bear: { fp: [0.3, 0.25], h: 0.35, place: 'surface', syn: ['teddy bear', 'teddy', 'stuffed animal', 'stuffed bear', 'toy bear'], material: 'fabric' },
+  toy: { fp: [0.3, 0.2], h: 0.2, place: 'floor', syn: ['toy', 'toys', 'toy car', 'tin robot', 'robot', 'doll', 'dolls', 'building blocks', 'blocks', 'rubber duck'], material: 'plastic' },
+  camera: { fp: [0.15, 0.1], h: 0.12, place: 'surface', syn: ['camera', 'film camera', 'movie camera', 'cine camera'], material: 'metal' },
+  basket: { fp: [0.45, 0.35], h: 0.3, place: 'floor', syn: ['basket', 'wicker basket', 'laundry basket', 'picnic basket'], material: 'wood' },
+  bucket: { fp: [0.35, 0.35], h: 0.35, place: 'floor', syn: ['bucket', 'pail', 'wooden bucket'], material: 'metal' },
+  wash_basin: { fp: [0.45, 0.45], h: 0.18, place: 'floor', syn: ['wash basin', 'washbasin', 'basin', 'washtub', 'wash tub', 'enamel basin'], material: 'metal' },
+  mahjong: { fp: [0.6, 0.6], h: 0.05, place: 'surface', syn: ['mahjong', 'mahjong tiles', 'mah jong'], material: 'plastic' },
+  chess: { fp: [0.45, 0.45], h: 0.12, place: 'surface', syn: ['chess', 'chessboard', 'chess set', 'checkers'], material: 'wood' },
+  heater: { fp: [0.8, 0.3], h: 0.7, place: 'wall', syn: ['heater', 'radiator', 'space heater'], material: 'metal' },
+  shoes: { fp: [0.35, 0.3], h: 0.15, place: 'floor', syn: ['shoes', 'boots', 'rain boots', 'slippers'], material: 'fabric' },
+  hat: { fp: [0.32, 0.3], h: 0.14, place: 'surface', syn: ['hat', 'fedora', 'sun hat', 'cap'], material: 'fabric' },
+  handbag: { fp: [0.35, 0.15], h: 0.3, place: 'surface', syn: ['handbag', 'purse', 'bag'], material: 'fabric' },
+  backpack: { fp: [0.35, 0.22], h: 0.45, place: 'floor', syn: ['backpack', 'school bag', 'rucksack', 'satchel'], material: 'fabric' },
+  lantern: { fp: [0.2, 0.2], h: 0.4, place: 'surface', syn: ['lantern', 'lanterns', 'oil lantern', 'hurricane lamp'], material: 'metal' },
+  fire_hydrant: { fp: [0.45, 0.45], h: 0.8, place: 'floor', syn: ['fire hydrant', 'hydrant'], material: 'metal' },
+  mailbox: { fp: [0.5, 0.5], h: 1.2, place: 'floor', syn: ['mailbox', 'mail box', 'postbox', 'letterbox'], material: 'metal' },
+  trash_can: { fp: [0.6, 0.6], h: 0.95, place: 'floor', syn: ['trash can', 'garbage can', 'bin', 'dustbin', 'rubbish bin'], material: 'metal' },
+  // Vehicles too big for the memory's few metres pass behind it, broadside, like the houses.
+  cable_car: { fp: [8.4, 2.6], h: 3.4, place: 'backdrop', syn: ['cable car', 'trolley', 'tram', 'streetcar'], material: 'metal', fit: 'footprint' },
+  bus: { fp: [11.0, 2.6], h: 3.2, place: 'backdrop', syn: ['bus', 'school bus', 'city bus', 'coach'], material: 'metal', fit: 'footprint' },
+  building: { fp: [9.0, 7.0], h: 12.0, place: 'backdrop', syn: ['building', 'apartment', 'apartments', 'apartment building', 'tenement', 'brownstone', 'row house', 'flats'], material: 'stone' },
+  shop: { fp: [7.0, 6.0], h: 6.0, place: 'backdrop', syn: ['shop', 'store', 'storefront', 'shopfront', 'candy store', 'corner store', 'grocery', 'coffee shop'], material: 'wood' },
+  gazebo: { fp: [4.2, 4.2], h: 3.2, place: 'floor', syn: ['gazebo', 'pavilion', 'bandstand'], material: 'wood', fit: 'footprint' },
+  arbor: { fp: [1.6, 0.6], h: 2.4, place: 'floor', syn: ['arbor', 'arbour', 'pergola', 'trellis', 'rose arch', 'archway'], material: 'wood' },
+  birdbath: { fp: [0.7, 0.7], h: 0.9, place: 'floor', syn: ['birdbath', 'bird bath'], material: 'stone' },
+  planter: { fp: [0.8, 0.5], h: 0.6, place: 'floor', syn: ['planter', 'planter box', 'flower pot', 'flowerpot', 'window box', 'terracotta pot'], material: 'ceramic' },
+  wheelbarrow: { fp: [0.7, 1.5], h: 0.7, place: 'floor', syn: ['wheelbarrow', 'barrow'], material: 'metal', fit: 'footprint' },
+  watering_can: { fp: [0.45, 0.2], h: 0.35, place: 'floor', syn: ['watering can'], material: 'metal' },
+  picnic_table: { fp: [1.8, 1.6], h: 0.76, place: 'floor', surface: 0.76, syn: ['picnic table'], material: 'wood', fit: 'footprint' },
+  slide: { fp: [1.2, 3.5], h: 2.2, place: 'floor', syn: ['slide', 'playground slide'], material: 'plastic', fit: 'footprint' },
+  seesaw: { fp: [0.5, 3.0], h: 0.8, place: 'floor', syn: ['seesaw', 'see-saw', 'teeter-totter'], material: 'metal', fit: 'footprint' },
+  playground: { fp: [4.5, 4.5], h: 2.6, place: 'floor', syn: ['playground', 'jungle gym', 'climbing frame', 'monkey bars'], material: 'metal', fit: 'footprint' },
+  basketball_hoop: { fp: [1.2, 1.8], h: 3.6, place: 'floor', syn: ['basketball hoop', 'hoop', 'basketball net'], material: 'metal' },
+  goal: { fp: [7.3, 2.0], h: 2.4, place: 'floor', syn: ['goal', 'soccer goal', 'football goal', 'goal net'], material: 'metal', fit: 'footprint' },
+  goalpost: { fp: [5.6, 1.5], h: 9.0, place: 'floor', syn: ['goalpost', 'goal post', 'goalposts', 'field goal', 'uprights'], material: 'metal' },
+  bleachers: { fp: [6.0, 3.0], h: 2.5, place: 'floor', syn: ['bleachers', 'stands', 'grandstand'], material: 'metal', fit: 'footprint' },
+  ball: { fp: [0.25, 0.25], h: 0.22, place: 'floor', syn: ['ball', 'soccer ball', 'football', 'basketball', 'baseball', 'beach ball'], material: 'plastic' },
+  stump: { fp: [1.2, 1.2], h: 0.6, place: 'floor', syn: ['stump', 'tree stump', 'log', 'logs'], material: 'wood' },
+  agave: { fp: [1.2, 1.2], h: 0.8, place: 'floor', syn: ['agave', 'aloe', 'cactus'], material: 'plant' },
   // The team's Red Kite props (Blender, apps/gate/public/red-kite): a paper kite flies (layout lifts it into the air).
   kite: { fp: [0.68, 0.13], h: 1.93, place: 'floor', syn: ['kite', 'kites', 'paper kite'], material: 'paper' },
   spool: { fp: [0.17, 0.11], h: 0.11, place: 'surface', syn: ['spool', 'kite string', 'string spool', 'reel'], material: 'wood' },
@@ -191,6 +246,9 @@ export function validatePlan(raw: unknown, fallbackTitle = 'A remembered place')
       quote: x.quote ? clean(x.quote, 120) : null,
     });
   }
+  // A house, a shop or a cable car stands outside: a room's plan doesn't draw one inside it ("our living room in a
+  // Victorian" is the room, not a house in it).
+  if (indoor) for (let i = objects.length - 1; i >= 0; i--) if (entryOf(objects[i]!.kind).place === 'backdrop') { ids.delete(objects[i]!.id); objects.splice(i, 1); }
   // Targets must name an object in this plan.
   for (const o of objects) if (o.target && !ids.has(o.target)) o.target = null;
   const palette = (Array.isArray(s.palette) ? s.palette : []).map(hex).filter((c): c is string => !!c).slice(0, 3);
@@ -262,7 +320,9 @@ export function planOffline(text: string, title?: string | null, opts: { seeds?:
     }
   }
   mentions.sort((a, b) => a.at - b.at);
-  for (const m of mentions) {
+  // A mention inside a longer one ("flower beds" holds "beds", "picnic table" holds "table") isn't a thing of its own.
+  const inside = (m: { at: number; label: string }) => mentions.some((o) => o !== m && o.label.length > m.label.length && o.at <= m.at && o.at + o.label.length >= m.at + m.label.length);
+  for (const m of mentions.filter((x) => !inside(x) && !(setting.indoor && entryOf(x.key).place === 'backdrop'))) {
     // "a round wooden table": a round table, even with a word between.
     if (m.key === 'table' && /\bround(?: \w+)? $/.test(t.slice(Math.max(0, m.at - 22), m.at + 1))) m.key = 'round_table';
     if (used.has(m.key) && !['chair', 'tree', 'pine_tree', 'bench'].includes(m.key)) continue;
@@ -361,15 +421,18 @@ export function layout(plan: ScenePlan): Placement[] {
     }
     return { id: o.id, x: x0, z: z0, w, d };
   };
-  // The house first: everything else keeps clear of its walls.
-  for (const o of backdrops) {
+  // The house first: everything else keeps clear of its walls. Several (a house and a passing cable car) stand side by side.
+  const spans = backdrops.map((o) => entryOf(o.kind).fp[0] * o.scale);
+  let cursor = -(spans.reduce((a, b) => a + b, 0) + 1.2 * Math.max(0, spans.length - 1)) / 2;
+  for (const [i, o] of backdrops.entries()) {
     const e = entryOf(o.kind);
     const byWater = plan.setting.water;
     // By water it stands on the shore to one side, turned toward you, so the water stays open; elsewhere it stands
     // behind the place, facing you.
     const s = o.scale * (byWater ? 0.7 : 1);
-    const x = byWater ? -6.8 : 0, z = byWater ? -1.6 : backZ - (e.fp[1] * s) / 2 - 1.2;
-    const yaw = byWater ? Math.PI / 2 - 0.5 : 0;
+    const x = byWater ? (i % 2 ? 6.8 : -6.8) : cursor + spans[i]! / 2, z = byWater ? -1.6 : backZ - (e.fp[1] * s) / 2 - 1.2;
+    cursor += spans[i]! + 1.2;
+    const yaw = byWater ? (i % 2 ? -1 : 1) * (Math.PI / 2 - 0.5) : 0;
     out.set(o.id, { id: o.id, x, y: 0, z, yaw, scale: s, on: null });
     const span = Math.max(e.fp[0], e.fp[1]) * s;
     boxes.push({ id: o.id, x, z, w: byWater ? span : e.fp[0] * s + 0.6, d: byWater ? span : e.fp[1] * s + 0.6 });
@@ -528,7 +591,7 @@ Return JSON only, matching the schema:
 - title: a warm short name for the place in the speaker's terms ("Grandma's kitchen", "The lake at dusk"), at most 5 words.
 - setting: indoor (true/false); type (one or two plain words: kitchen, living room, garden, beach, lake, porch, park, street, classroom, café...); timeOfDay (morning|midday|golden|dusk|night) from their words, else golden; weather (clear|soft|rain|snow|mist); floor (wood|tile|carpet|grass|sand|stone|snow|water); palette: up to 3 hex colours they mentioned or that the place clearly has; walls (true for rooms); water (true for beaches, lakes, rivers).
 - ambience: dust (sunny rooms), petals, snow, fireflies (summer nights), rain, leaves, or none.
-- objects: 3 to 12 physical things, mentioned ones first. For each: id (short, unique, lowercase, e.g. "table", "chair-2"); kind (one of the library keys listed below, else "custom"); label (2-4 plain words, the speaker's own noun, e.g. "yellow curtains"); color (hex, only if said or obvious, else null); material (wood|fabric|metal|ceramic|glass|paper|plant|stone|plastic|water|light, or null); zone (center|back|left|right|back-left|back-right|front-left|front-right); relation (on|next_to|under|in_front_of|behind|against_wall|none) and target (the id it relates to, else null); scale (1 = ordinary size, 0.6-1.6); quote (the exact words that mention it, else null).
+- objects: 7 to 12 physical things, mentioned ones first, then the quiet context that makes the place feel whole and lived-in (a rug and a lamp in a living room, flower borders and a tree in a garden, a street lamp and a parked car on a street). For each: id (short, unique, lowercase, e.g. "table", "chair-2"); kind (one of the library keys listed below, else "custom"); label (2-4 plain words, the speaker's own noun with its telling word, e.g. "yellow curtains", "rocking chair", "old radio", "Monterey cypress": the label picks which real model is drawn); color (hex, only if said or obvious, else null); material (wood|fabric|metal|ceramic|glass|paper|plant|stone|plastic|water|light, or null); zone (center|back|left|right|back-left|back-right|front-left|front-right); relation (on|next_to|under|in_front_of|behind|against_wall|none) and target (the id it relates to, else null); scale (1 = ordinary size, 0.6-1.6); quote (the exact words that mention it, else null).
 - intro: the companion's first words once the place appears: present tense, at most 22 words, gently naming one or two remembered details. Never ask them to remember anything.
 
 Library keys: ${LIBRARY_KEYS.join(', ')}.

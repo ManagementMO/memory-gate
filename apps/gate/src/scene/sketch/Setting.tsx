@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { ROOM, type Floor, type ScenePlan } from '../../../../../packages/shared/src/scene';
 import { MEMORY_CENTER } from '../layout';
 import { atmoLive } from './atmosphere';
+import { GrassField } from './GrassField';
 import { tint } from './style';
 
 const FLOOR_BASE: Record<Floor, string> = {
@@ -257,6 +258,7 @@ function Outdoor({ plan }: { plan: ScenePlan }) {
       <mesh material={mat} rotation-x={-Math.PI / 2} position={[MEMORY_CENTER.x, 0.001, MEMORY_CENTER.z + (s.water ? 3.2 : 0)]} renderOrder={-2} receiveShadow>
         <circleGeometry args={[s.water ? ROOM.outdoorRadius + 0.6 : ROOM.outdoorRadius + 2.6, 96]} />
       </mesh>
+      {s.floor === 'grass' && <GrassField center={[MEMORY_CENTER.x, MEMORY_CENTER.z + (s.water ? 3.2 : 0)]} radius={s.water ? ROOM.outdoorRadius + 0.2 : ROOM.outdoorRadius + 1.8} tone={ground} grow={fade} tall={/meadow|field|farm|hill|prairie|wild|countryside/.test(s.type)} />}
       {s.water && <Water palette={s.palette} />}
       <Hills tone={s.floor === 'snow' ? '#dfe6f2' : s.floor === 'sand' ? '#c9d9de' : '#b7c9b4'} />
     </group>

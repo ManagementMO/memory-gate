@@ -6,7 +6,8 @@
 // millions of polygons), and the fireplace, vase of flowers and radio (the library's nearest models read as something
 // else: a masonry heater, a bare vase, a military field radio). Any .glb (a Blender export, for instance) can be added by hand: put it in
 // public/models/ and list it in the manifest.
-//   node apps/gate/scripts/fetch-models.mjs          (re-runs skip what is already cached; --reoptimize redoes the light copies)
+//   node apps/gate/scripts/fetch-models.mjs          (re-runs skip what is already cached; --reoptimize redoes the light copies;
+//                                                     then runs build-library.mjs for the rest of the library)
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -99,3 +100,5 @@ rmSync(rawDir, { recursive: true, force: true });
 writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 const total = Object.values(manifest.kinds).reduce((s, k) => s + k.bytes, 0);
 console.log(`\n${Object.keys(manifest.kinds).length} models, ${(total / 1e6).toFixed(1)} MB → ${path.relative(process.cwd(), outDir)}`);
+// The bigger library (more kinds, label-chosen variants) is laid over these picks: see build-library.mjs.
+await import('./build-library.mjs');

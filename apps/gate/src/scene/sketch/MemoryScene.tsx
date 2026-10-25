@@ -71,9 +71,9 @@ export function MemoryScene() {
   // and are made ready to draw (shaders, textures) in the background so they appear without a stutter.
   useEffect(() => {
     if (!plan) return;
-    const kinds = plan.objects.map((o) => o.kind);
-    preloadRealModels(kinds);
-    void warmRealModels(gl, camera, sceneRoot, kinds);
+    const things = plan.objects.map((o) => ({ kind: o.kind, label: o.label, id: o.id }));
+    preloadRealModels(things);
+    void warmRealModels(gl, camera, sceneRoot, things);
   }, [plan, gl, camera, sceneRoot]);
   const stage = useGate((s) => s.stage);
   const preview = !!(window as unknown as { __scenePreview?: boolean }).__scenePreview;

@@ -1,0 +1,2704 @@
+{
+ "about": "The photoreal library beyond Poly Haven (apps/gate/scripts/build-library.mjs): for each kind, the model drawn by default (\"use\", else the Poly Haven pick from fetch-models.mjs) and variants chosen by the words in an object's label. Every model is CC0, CC-BY or CC-BY-SA (Rocketbox: MIT); credits in \"models\", shown at /models/credits.html.",
+ "kinds": {
+  "bed": {
+   "use": "furn_bed_double_carved",
+   "variants": {
+    "furn_bed_single_old": [
+     "single bed",
+     "cot",
+     "iron bed",
+     "old bed",
+     "narrow bed"
+    ],
+    "furn_vintage_day_bed": [
+     "daybed",
+     "day bed"
+    ]
+   }
+  },
+  "sofa": {
+   "use": "furn_sofa_03",
+   "variants": {
+    "furn_sofa_midcentury": [
+     "mid century",
+     "mid-century",
+     "modern sofa",
+     "grey sofa",
+     "gray sofa"
+    ],
+    "furn_sofa_02": [
+     "leather sofa",
+     "chesterfield",
+     "black sofa"
+    ]
+   }
+  },
+  "armchair": {
+   "variants": {
+    "furn_rocking_chair": [
+     "rocking chair",
+     "rocker"
+    ],
+    "furn_mid_century_lounge_chair": [
+     "lounge chair",
+     "recliner",
+     "leather chair"
+    ],
+    "furn_green_armchair": [
+     "green chair",
+     "green armchair",
+     "reading chair"
+    ],
+    "furn_chinese_armchair": [
+     "chinese chair",
+     "wooden armchair",
+     "rosewood chair"
+    ]
+   }
+  },
+  "chair": {
+   "variants": {
+    "furn_dining_chair": [
+     "dining chair",
+     "kitchen chair"
+    ],
+    "furn_schoolchair_01": [
+     "school chair",
+     "classroom chair"
+    ],
+    "furn_chinese_stool": [
+     "stool",
+     "wooden stool"
+    ]
+   }
+  },
+  "table": {
+   "variants": {
+    "furn_dining_table": [
+     "dining table",
+     "long table"
+    ],
+    "furn_chinese_console_table": [
+     "console table",
+     "altar table",
+     "chinese table"
+    ]
+   }
+  },
+  "round_table": {
+   "variants": {
+    "furn_chinese_tea_table": [
+     "tea table",
+     "chinese tea table"
+    ],
+    "nat_bistro_set": [
+     "bistro table",
+     "cafe table",
+     "patio table"
+    ]
+   }
+  },
+  "cabinet": {
+   "variants": {
+    "furn_drawer_cabinet": [
+     "dresser",
+     "chest of drawers",
+     "drawers"
+    ],
+    "furn_classic_nightstand": [
+     "nightstand",
+     "bedside table"
+    ],
+    "furn_chinese_cabinet": [
+     "chinese cabinet",
+     "lacquer cabinet"
+    ],
+    "furn_chinese_commode": [
+     "commode",
+     "sideboard"
+    ]
+   }
+  },
+  "wardrobe": {
+   "use": "furn_wardrobe_antique"
+  },
+  "bookshelf": {
+   "variants": {
+    "furn_bookcase_antique": [
+     "bookcase",
+     "antique bookcase"
+    ],
+    "furn_bookshelf_books": [
+     "bookshelves",
+     "full bookshelf"
+    ]
+   }
+  },
+  "lamp": {
+   "variants": {
+    "furn_desk_lamp_green": [
+     "desk lamp",
+     "green lamp",
+     "banker"
+    ],
+    "furn_desk_lamp_arm": [
+     "work lamp",
+     "arm lamp",
+     "anglepoise"
+    ],
+    "obj_oil_lamp": [
+     "oil lamp",
+     "kerosene lamp"
+    ]
+   }
+  },
+  "floor_lamp": {
+   "use": "furn_floor_lamp_drum"
+  },
+  "fireplace": {
+   "use": "arch_fireplace_victorian",
+   "variants": {
+    "arch_fireplace_white": [
+     "white fireplace",
+     "modern fireplace"
+    ]
+   }
+  },
+  "piano": {
+   "use": "furn_piano_upright"
+  },
+  "radio": {
+   "use": "furn_radio_1950s",
+   "variants": {
+    "furn_radio_tube": [
+     "tube radio",
+     "valve radio",
+     "old radio"
+    ],
+    "furn_radio_wood": [
+     "wooden radio"
+    ],
+    "obj_record_player": [
+     "record player",
+     "turntable",
+     "phonograph",
+     "gramophone"
+    ],
+    "furn_boombox": [
+     "boombox",
+     "cassette",
+     "stereo"
+    ],
+    "furn_zenith_console": [
+     "console stereo",
+     "hi-fi",
+     "radio cabinet"
+    ]
+   }
+  },
+  "tv": {
+   "variants": {
+    "obj_tv_1950s": [
+     "old tv",
+     "black and white",
+     "1950s tv",
+     "tube tv"
+    ],
+    "obj_tv_1960s": [
+     "1960s tv",
+     "vintage tv",
+     "console tv"
+    ],
+    "furn_tv_trinitron": [
+     "trinitron",
+     "80s tv",
+     "1980s tv"
+    ],
+    "obj_tv_1980s": [
+     "small tv",
+     "portable tv"
+    ]
+   }
+  },
+  "clock": {
+   "variants": {
+    "furn_wall_clock": [
+     "wall clock",
+     "kitchen clock"
+    ],
+    "furn_alarm_clock": [
+     "alarm clock"
+    ]
+   }
+  },
+  "picture_frame": {
+   "use": "obj_wall_photo",
+   "variants": {
+    "obj_painting_gilt": [
+     "painting",
+     "gilt frame",
+     "portrait"
+    ],
+    "furn_hanging_picture_frame_03": [
+     "framed picture"
+    ],
+    "obj_photo_frame_black": [
+     "standing frame"
+    ]
+   }
+  },
+  "vase_flowers": {
+   "use": "obj_flowers_vase",
+   "variants": {
+    "obj_blossom_vase": [
+     "blossoms",
+     "branches",
+     "cherry blossoms"
+    ],
+    "obj_vase_blue_white": [
+     "blue and white vase",
+     "porcelain vase",
+     "chinese vase"
+    ],
+    "obj_vase_white": [
+     "white vase",
+     "empty vase"
+    ]
+   }
+  },
+  "potted_plant": {
+   "variants": {
+    "furn_potted_plant_02": [
+     "big plant",
+     "ficus",
+     "tall plant"
+    ],
+    "nat_succulent_pot": [
+     "succulent",
+     "succulents",
+     "cactus"
+    ],
+    "nat_jade_plant": [
+     "jade plant",
+     "bonsai"
+    ]
+   }
+  },
+  "teapot": {
+   "variants": {
+    "furn_teapot_yixing": [
+     "clay teapot",
+     "yixing",
+     "chinese teapot"
+    ],
+    "obj_kettle_vintage": [
+     "kettle",
+     "electric kettle"
+    ]
+   }
+  },
+  "cup": {
+   "use": "obj_mug_red",
+   "variants": {
+    "furn_enamel_mug": [
+     "enamel mug",
+     "tin cup",
+     "enamel cup"
+    ],
+    "obj_mug_white": [
+     "white mug"
+    ]
+   }
+  },
+  "bowl_fruit": {
+   "use": "obj_fruit_bowl",
+   "variants": {
+    "obj_wooden_bowl": [
+     "wooden bowl"
+    ]
+   }
+  },
+  "cake": {
+   "variants": {
+    "obj_cake_carrot": [
+     "carrot cake"
+    ]
+   }
+  },
+  "books": {
+   "variants": {
+    "obj_newspapers": [
+     "newspaper",
+     "newspapers"
+    ],
+    "obj_letters": [
+     "letters",
+     "envelopes",
+     "papers"
+    ]
+   }
+  },
+  "candle": {
+   "variants": {
+    "obj_candelabra": [
+     "candelabra",
+     "candleholders"
+    ]
+   }
+  },
+  "fridge": {
+   "use": "furn_fridge_old"
+  },
+  "rug": {
+   "use": "furn_rug_persian"
+  },
+  "tree": {
+   "use": "nat_oak_tree",
+   "variants": {
+    "nat_maple_tree": [
+     "maple",
+     "maple tree"
+    ],
+    "nat_elm_tree": [
+     "elm"
+    ],
+    "nat_beech_tree": [
+     "beech",
+     "apple tree",
+     "fruit tree",
+     "orange tree",
+     "lemon tree",
+     "fig tree",
+     "pear tree",
+     "plum tree"
+    ],
+    "nat_birch_tree": [
+     "birch"
+    ],
+    "nat_willow_tree": [
+     "willow",
+     "weeping willow"
+    ],
+    "nat_weeping_cherry": [
+     "cherry blossom",
+     "sakura",
+     "cherry tree",
+     "weeping cherry"
+    ]
+   },
+   "mix": true
+  },
+  "pine_tree": {
+   "use": "nat_pine_tree",
+   "variants": {
+    "nat_spruce": [
+     "spruce",
+     "fir",
+     "christmas tree"
+    ],
+    "nat_italian_cypress": [
+     "italian cypress"
+    ],
+    "nat_cypress": [
+     "cypress",
+     "monterey cypress"
+    ],
+    "nat_juniper": [
+     "juniper"
+    ]
+   }
+  },
+  "palm_tree": {
+   "use": "nat_canary_palm"
+  },
+  "bush": {
+   "use": "nat_boxwood_bush",
+   "variants": {
+    "nat_hedge": [
+     "hedge",
+     "hedges",
+     "hedgerow"
+    ],
+    "nat_hydrangea_blue": [
+     "hydrangea"
+    ],
+    "nat_azalea": [
+     "azalea"
+    ],
+    "nat_laurel_bush": [
+     "laurel"
+    ],
+    "nat_tall_bush": [
+     "tall bush"
+    ]
+   },
+   "mix": true
+  },
+  "flowers": {
+   "use": "nat_phlox",
+   "variants": {
+    "nat_pink_rose": [
+     "roses",
+     "rose",
+     "rose garden"
+    ],
+    "nat_lupine": [
+     "lupines",
+     "lupine"
+    ],
+    "nat_foxglove": [
+     "foxgloves",
+     "foxglove",
+     "snapdragons"
+    ],
+    "nat_stachys": [
+     "lavender",
+     "salvia",
+     "stachys"
+    ],
+    "nat_daisies": [
+     "daisies",
+     "daisy",
+     "wildflowers"
+    ]
+   },
+   "mix": true
+  },
+  "fence": {
+   "use": "nat_fence_picket_white",
+   "variants": {
+    "nat_fence_iron": [
+     "iron fence",
+     "railing",
+     "iron railing",
+     "wrought iron"
+    ],
+    "nat_fence_board": [
+     "wooden fence",
+     "board fence"
+    ],
+    "nat_garden_wall_gate": [
+     "garden wall",
+     "stone wall",
+     "wall"
+    ]
+   }
+  },
+  "swing": {
+   "use": "nat_swing_set",
+   "variants": {
+    "sport_swing_set": [
+     "swing set",
+     "swings"
+    ]
+   }
+  },
+  "lamp_post": {
+   "variants": {
+    "city_lamp_lantern": [
+     "gas lamp",
+     "lantern lamp",
+     "old street lamp"
+    ]
+   }
+  },
+  "car": {
+   "use": "city_station_wagon",
+   "variants": {
+    "city_vintage_eldorado": [
+     "cadillac",
+     "classic car",
+     "convertible",
+     "1950s car",
+     "old car",
+     "vintage car"
+    ],
+    "city_taxi_crown_vic": [
+     "taxi",
+     "cab",
+     "taxicab",
+     "yellow cab"
+    ],
+    "city_vintage_checker_taxi": [
+     "checker cab",
+     "old taxi"
+    ],
+    "city_dodge_diplomat": [
+     "sedan",
+     "1980s car"
+    ]
+   }
+  },
+  "bicycle": {
+   "use": "obj_bicycle_vintage",
+   "variants": {
+    "city_bicycle": [
+     "road bike",
+     "racing bike"
+    ]
+   }
+  },
+  "house": {
+   "use": "city_suburban_house",
+   "variants": {
+    "city_sf_victorian_green": [
+     "victorian house",
+     "painted lady",
+     "painted ladies",
+     "queen anne",
+     "san francisco house"
+    ],
+    "city_farmhouse": [
+     "farmhouse",
+     "barn",
+     "farm house"
+    ],
+    "city_brick_house": [
+     "brick house",
+     "cottage"
+    ]
+   }
+  },
+  "building": {
+   "use": "city_brick_shop_building",
+   "variants": {
+    "city_apartments_facade_kit": [
+     "apartment",
+     "apartments",
+     "apartment building"
+    ]
+   }
+  },
+  "shop": {
+   "variants": {
+    "arch_sf_shopfront_building": [
+     "chinatown",
+     "chinatown shop",
+     "trading company"
+    ]
+   }
+  },
+  "cable_car": {
+   "use": "city_cable_car"
+  },
+  "bus": {
+   "use": "city_transit_bus",
+   "variants": {
+    "city_school_bus": [
+     "school bus"
+    ],
+    "city_vintage_bus_1940s": [
+     "old bus",
+     "vintage bus"
+    ]
+   }
+  },
+  "fire_hydrant": {
+   "use": "city_hydrant_nyc"
+  },
+  "mailbox": {
+   "use": "city_usps_mailbox",
+   "variants": {
+    "nat_mailbox": [
+     "home mailbox",
+     "letterbox"
+    ]
+   }
+  },
+  "trash_can": {
+   "use": "city_trash_can"
+  },
+  "gazebo": {
+   "use": "nat_gazebo"
+  },
+  "arbor": {
+   "use": "nat_rose_arch",
+   "variants": {
+    "nat_arbor_bench": [
+     "pergola",
+     "arbor bench"
+    ]
+   }
+  },
+  "birdbath": {
+   "use": "nat_birdbath"
+  },
+  "planter": {
+   "use": "nat_planter_box",
+   "variants": {
+    "nat_clay_pot": [
+     "flower pot",
+     "terracotta pot",
+     "clay pot"
+    ]
+   }
+  },
+  "wheelbarrow": {
+   "use": "nat_wheelbarrow"
+  },
+  "watering_can": {
+   "use": "nat_watering_can"
+  },
+  "picnic_table": {
+   "use": "sport_picnic_table"
+  },
+  "slide": {
+   "use": "sport_slide"
+  },
+  "seesaw": {
+   "use": "sport_seesaw"
+  },
+  "playground": {
+   "use": "sport_playground_set"
+  },
+  "basketball_hoop": {
+   "use": "sport_basketball_hoop"
+  },
+  "goal": {
+   "use": "sport_soccer_goal"
+  },
+  "goalpost": {
+   "use": "sport_goalpost"
+  },
+  "bleachers": {
+   "use": "sport_bleachers_alu"
+  },
+  "ball": {
+   "use": "sport_soccer_ball",
+   "variants": {
+    "sport_basketball": [
+     "basketball"
+    ],
+    "sport_football_vintage": [
+     "football",
+     "american football"
+    ],
+    "sport_baseball": [
+     "baseball"
+    ]
+   }
+  },
+  "stump": {
+   "use": "nat_tree_stump"
+  },
+  "agave": {
+   "use": "nat_agave"
+  },
+  "school_desk": {
+   "use": "furn_schooldesk_01",
+   "variants": {
+    "furn_school_desk_chair": [
+     "desk and chair"
+    ],
+    "furn_school_desk_cn": [
+     "chinese school desk"
+    ]
+   }
+  },
+  "globe": {
+   "use": "furn_globe"
+  },
+  "sewing_machine": {
+   "use": "furn_sewing_machine_treadle",
+   "variants": {
+    "obj_sewing_machine": [
+     "portable sewing machine"
+    ]
+   }
+  },
+  "telephone": {
+   "use": "obj_rotary_phone"
+  },
+  "typewriter": {
+   "use": "obj_typewriter"
+  },
+  "thermos": {
+   "use": "furn_thermos_red",
+   "variants": {
+    "obj_thermos_green": [
+     "green thermos",
+     "plastic thermos"
+    ]
+   }
+  },
+  "rice_cooker": {
+   "use": "obj_rice_cooker"
+  },
+  "electric_fan": {
+   "use": "obj_pedestal_fan"
+  },
+  "desk_fan": {
+   "use": "obj_desk_fan"
+  },
+  "mirror": {
+   "use": "obj_mirror_ornate"
+  },
+  "guitar": {
+   "use": "obj_guitar",
+   "variants": {
+    "obj_ukulele": [
+     "ukulele"
+    ]
+   }
+  },
+  "suitcase": {
+   "use": "furn_vintage_suitcase"
+  },
+  "teddy_bear": {
+   "use": "obj_teddy_bears"
+  },
+  "toy": {
+   "use": "obj_toy_car_tin",
+   "variants": {
+    "obj_tin_robot": [
+     "robot",
+     "tin robot"
+    ],
+    "obj_doll_antique": [
+     "doll",
+     "dolls"
+    ],
+    "obj_alphabet_blocks": [
+     "blocks",
+     "building blocks"
+    ],
+    "obj_rubber_duck": [
+     "rubber duck",
+     "duck"
+    ]
+   }
+  },
+  "camera": {
+   "use": "obj_camera_rangefinder",
+   "variants": {
+    "obj_movie_camera": [
+     "movie camera",
+     "cine camera"
+    ]
+   }
+  },
+  "basket": {
+   "use": "furn_wicker_basket_02",
+   "variants": {
+    "obj_laundry_basket": [
+     "laundry basket"
+    ],
+    "obj_wicker_basket": [
+     "picnic basket"
+    ]
+   }
+  },
+  "bucket": {
+   "use": "furn_wooden_bucket",
+   "variants": {
+    "obj_bucket_steel": [
+     "metal bucket",
+     "tin bucket",
+     "pail"
+    ]
+   }
+  },
+  "wash_basin": {
+   "use": "obj_wash_basin",
+   "variants": {
+    "obj_wash_tub": [
+     "wash tub",
+     "washtub",
+     "tub"
+    ]
+   }
+  },
+  "mahjong": {
+   "use": "obj_mahjong_tiles"
+  },
+  "chess": {
+   "use": "obj_chess_set"
+  },
+  "heater": {
+   "use": "arch_radiator",
+   "variants": {
+    "obj_space_heater": [
+     "space heater"
+    ]
+   }
+  },
+  "shoes": {
+   "use": "obj_oxford_shoe",
+   "variants": {
+    "obj_rain_boots": [
+     "boots",
+     "rain boots"
+    ]
+   }
+  },
+  "hat": {
+   "use": "obj_fedora",
+   "variants": {
+    "obj_bucket_hat": [
+     "sun hat",
+     "bucket hat",
+     "fishing hat"
+    ]
+   }
+  },
+  "handbag": {
+   "use": "obj_handbag"
+  },
+  "backpack": {
+   "use": "furn_backpack_blue",
+   "variants": {
+    "furn_backpack_black": [
+     "black backpack"
+    ]
+   }
+  },
+  "lantern": {
+   "use": "obj_lantern_wood",
+   "variants": {
+    "obj_lantern_hurricane": [
+     "hurricane lamp",
+     "oil lantern"
+    ]
+   }
+  },
+  "rock": {
+   "variants": {
+    "nat_rocks_mossy": [
+     "mossy rocks",
+     "mossy rock"
+    ]
+   }
+  }
+ },
+ "models": {
+  "furn_bed_double_carved": {
+   "title": "Bed",
+   "source": "Sketchfab",
+   "uid": "8e77fe0f95e84ca6943e8636bc042570",
+   "url": "https://sketchfab.com/3d-models/bed-8e77fe0f95e84ca6943e8636bc042570",
+   "author": "Maxmalow",
+   "authorUrl": "https://sketchfab.com/Maxmalow",
+   "license": "CC Attribution",
+   "tris": 20435
+  },
+  "furn_bed_single_old": {
+   "title": "Old Bed",
+   "source": "Sketchfab",
+   "uid": "210be84bcb5449f5a9f66a923c8ae307",
+   "url": "https://sketchfab.com/3d-models/old-bed-210be84bcb5449f5a9f66a923c8ae307",
+   "author": "donnichols",
+   "authorUrl": "https://sketchfab.com/donnichols",
+   "license": "CC Attribution",
+   "tris": 4900
+  },
+  "furn_vintage_day_bed": {
+   "title": "Vintage Day Bed",
+   "source": "Poly Haven",
+   "asset": "vintage_day_bed",
+   "url": "https://polyhaven.com/a/vintage_day_bed",
+   "author": "Aron \u0141yczek",
+   "license": "CC0",
+   "tris": 2715
+  },
+  "furn_sofa_03": {
+   "title": "Sofa 03",
+   "source": "Poly Haven",
+   "asset": "sofa_03",
+   "url": "https://polyhaven.com/a/sofa_03",
+   "author": "Fran Calvente",
+   "license": "CC0",
+   "tris": 8004
+  },
+  "furn_sofa_midcentury": {
+   "title": "Mid Century Modern Sofa",
+   "source": "Sketchfab",
+   "uid": "1f9f52ae17d642b582d0c5ccf9dd64b3",
+   "url": "https://sketchfab.com/3d-models/mid-century-modern-sofa-1f9f52ae17d642b582d0c5ccf9dd64b3",
+   "author": "Tom Seddon",
+   "authorUrl": "https://sketchfab.com/bloodmeat08",
+   "license": "CC Attribution",
+   "tris": 5403
+  },
+  "furn_sofa_02": {
+   "title": "Sofa 02",
+   "source": "Poly Haven",
+   "asset": "sofa_02",
+   "url": "https://polyhaven.com/a/sofa_02",
+   "author": "Kirill Sannikov",
+   "license": "CC0",
+   "tris": 2728
+  },
+  "furn_rocking_chair": {
+   "title": "Rockingchair 01",
+   "source": "Poly Haven",
+   "asset": "Rockingchair_01",
+   "url": "https://polyhaven.com/a/Rockingchair_01",
+   "author": "Jorge Camacho",
+   "license": "CC0",
+   "tris": 11866
+  },
+  "furn_mid_century_lounge_chair": {
+   "title": "Mid Century Lounge Chair",
+   "source": "Poly Haven",
+   "asset": "mid_century_lounge_chair",
+   "url": "https://polyhaven.com/a/mid_century_lounge_chair",
+   "author": "Kuutti Siitonen",
+   "license": "CC0",
+   "tris": 6148
+  },
+  "furn_green_armchair": {
+   "title": "Green Chair 01",
+   "source": "Poly Haven",
+   "asset": "GreenChair_01",
+   "url": "https://polyhaven.com/a/GreenChair_01",
+   "author": "Kirill Sannikov",
+   "license": "CC0",
+   "tris": 4213
+  },
+  "furn_chinese_armchair": {
+   "title": "Chinese Armchair",
+   "source": "Poly Haven",
+   "asset": "chinese_armchair",
+   "url": "https://polyhaven.com/a/chinese_armchair",
+   "author": "Kirill Sannikov",
+   "license": "CC0",
+   "tris": 2675
+  },
+  "furn_dining_chair": {
+   "title": "Dining Chair 02",
+   "source": "Poly Haven",
+   "asset": "dining_chair_02",
+   "url": "https://polyhaven.com/a/dining_chair_02",
+   "author": "James Ray Cock",
+   "license": "CC0",
+   "tris": 22013
+  },
+  "furn_schoolchair_01": {
+   "title": "School Chair 01",
+   "source": "Poly Haven",
+   "asset": "SchoolChair_01",
+   "url": "https://polyhaven.com/a/SchoolChair_01",
+   "author": "Ethan Place",
+   "license": "CC0",
+   "tris": 5072
+  },
+  "furn_chinese_stool": {
+   "title": "Chinese Stool",
+   "source": "Poly Haven",
+   "asset": "chinese_stool",
+   "url": "https://polyhaven.com/a/chinese_stool",
+   "author": "Kirill Sannikov",
+   "license": "CC0",
+   "tris": 1090
+  },
+  "furn_dining_table": {
+   "title": "Dining Table",
+   "source": "Poly Haven",
+   "asset": "dining_table",
+   "url": "https://polyhaven.com/a/dining_table",
+   "author": "Aron \u0141yczek",
+   "license": "CC0",
+   "tris": 1048
+  },
+  "furn_chinese_console_table": {
+   "title": "Chinese Console Table",
+   "source": "Poly Haven",
+   "asset": "chinese_console_table",
+   "url": "https://polyhaven.com/a/chinese_console_table",
+   "author": "Kirill Sannikov",
+   "license": "CC0",
+   "tris": 13648
+  },
+  "furn_chinese_tea_table": {
+   "title": "Chinese Tea Table",
+   "source": "Poly Haven",
+   "asset": "chinese_tea_table",
+   "url": "https://polyhaven.com/a/chinese_tea_table",
+   "author": "Kirill Sannikov",
+   "license": "CC0",
+   "tris": 2508
+  },
+  "nat_bistro_set": {
+   "title": "Outdoor Table Chair Set 01",
+   "source": "Poly Haven",
+   "asset": "outdoor_table_chair_set_01",
+   "url": "https://polyhaven.com/a/outdoor_table_chair_set_01",
+   "author": "James Ray Cock",
+   "license": "CC0",
+   "tris": 9828
+  },
+  "furn_drawer_cabinet": {
+   "title": "Drawer Cabinet",
+   "source": "Poly Haven",
+   "asset": "drawer_cabinet",
+   "url": "https://polyhaven.com/a/drawer_cabinet",
+   "author": "Ulan Cabanilla",
+   "license": "CC0",
+   "tris": 26406
+  },
+  "furn_classic_nightstand": {
+   "title": "Classic Nightstand 01",
+   "source": "Poly Haven",
+   "asset": "ClassicNightstand_01",
+   "url": "https://polyhaven.com/a/ClassicNightstand_01",
+   "author": "Kirill Sannikov",
+   "license": "CC0",
+   "tris": 2002
+  },
+  "furn_chinese_cabinet": {
+   "title": "Chinese Cabinet",
+   "source": "Poly Haven",
+   "asset": "chinese_cabinet",
+   "url": "https://polyhaven.com/a/chinese_cabinet",
+   "author": "Kirill Sannikov",
+   "license": "CC0",
+   "tris": 15668
+  },
+  "furn_chinese_commode": {
+   "title": "Chinese Commode",
+   "source": "Poly Haven",
+   "asset": "chinese_commode",
+   "url": "https://polyhaven.com/a/chinese_commode",
+   "author": "Kirill Sannikov",
+   "license": "CC0",
+   "tris": 6775
+  },
+  "furn_wardrobe_antique": {
+   "title": "Antique Wooden Wardrobe",
+   "source": "Sketchfab",
+   "uid": "a3c221e5504d40a8ba019f8f1bf5ab0e",
+   "url": "https://sketchfab.com/3d-models/antique-wooden-wardrobe-a3c221e5504d40a8ba019f8f1bf5ab0e",
+   "author": "Kuutti Siitonen",
+   "authorUrl": "https://sketchfab.com/kuuttisiitonen",
+   "license": "CC Attribution",
+   "tris": 2432
+  },
+  "furn_bookcase_antique": {
+   "title": "Antique wooden bookcase - Game model",
+   "source": "Sketchfab",
+   "uid": "75aa9519195647d99cf1e2d4863dbe87",
+   "url": "https://sketchfab.com/3d-models/antique-wooden-bookcase-game-model-75aa9519195647d99cf1e2d4863dbe87",
+   "author": "Lorenzo Drago",
+   "authorUrl": "https://sketchfab.com/LorenzoDrago",
+   "license": "CC Attribution",
+   "tris": 2962
+  },
+  "furn_bookshelf_books": {
+   "title": "Bookshelf",
+   "source": "Sketchfab",
+   "uid": "8df6adc634bd4004894a5e70565dc52a",
+   "url": "https://sketchfab.com/3d-models/bookshelf-8df6adc634bd4004894a5e70565dc52a",
+   "author": "Idmenthal",
+   "authorUrl": "https://sketchfab.com/idmental.id",
+   "license": "CC Attribution",
+   "tris": 29784
+  },
+  "furn_desk_lamp_green": {
+   "title": "Desk lamp",
+   "source": "Sketchfab",
+   "uid": "b9458e04d30e4b6284d46d35880a9b95",
+   "url": "https://sketchfab.com/3d-models/desk-lamp-b9458e04d30e4b6284d46d35880a9b95",
+   "author": "HASSAN",
+   "authorUrl": "https://sketchfab.com/7ASSAN",
+   "license": "CC Attribution",
+   "tris": 7570
+  },
+  "furn_desk_lamp_arm": {
+   "title": "Desk Lamp Arm 01",
+   "source": "Poly Haven",
+   "asset": "desk_lamp_arm_01",
+   "url": "https://polyhaven.com/a/desk_lamp_arm_01",
+   "author": "Yann Kervran, Kuutti Siitonen",
+   "license": "CC0",
+   "tris": 24102
+  },
+  "obj_oil_lamp": {
+   "title": "Vintage Oil Lamp",
+   "source": "Poly Haven",
+   "asset": "vintage_oil_lamp",
+   "url": "https://polyhaven.com/a/vintage_oil_lamp",
+   "author": "Monsta3D",
+   "license": "CC0",
+   "tris": 7208
+  },
+  "furn_floor_lamp_drum": {
+   "title": "Drum shade floor lamp",
+   "source": "Sketchfab",
+   "uid": "1aa6739d774348efa691340e3a12b870",
+   "url": "https://sketchfab.com/3d-models/drum-shade-floor-lamp-1aa6739d774348efa691340e3a12b870",
+   "author": "alpaca.",
+   "authorUrl": "https://sketchfab.com/alpaca.",
+   "license": "CC Attribution",
+   "tris": 31559
+  },
+  "arch_fireplace_victorian": {
+   "title": "Victorian Fire Place (Free)",
+   "source": "Sketchfab",
+   "uid": "7154a82dc7844075996c65aeb508bfd5",
+   "url": "https://sketchfab.com/3d-models/victorian-fire-place-free-7154a82dc7844075996c65aeb508bfd5",
+   "author": "wolfgar74",
+   "authorUrl": "https://sketchfab.com/wolfgar74",
+   "license": "CC Attribution",
+   "tris": 4474
+  },
+  "arch_fireplace_white": {
+   "title": "Sketchup Fireplace",
+   "source": "Sketchfab",
+   "uid": "c95276929eda4cfb842f73d29b071893",
+   "url": "https://sketchfab.com/3d-models/sketchup-fireplace-c95276929eda4cfb842f73d29b071893",
+   "author": "Narutonic",
+   "authorUrl": "https://sketchfab.com/Narutonic",
+   "license": "CC Attribution",
+   "tris": 8178
+  },
+  "furn_piano_upright": {
+   "title": "Brown Cherry Wood Upright Piano",
+   "source": "Sketchfab",
+   "uid": "ae0529d9da834820b8a9c30ec0b6228f",
+   "url": "https://sketchfab.com/3d-models/brown-cherry-wood-upright-piano-ae0529d9da834820b8a9c30ec0b6228f",
+   "author": "Glowbox 3D",
+   "authorUrl": "https://sketchfab.com/glowbox3d",
+   "license": "CC Attribution",
+   "tris": 3604
+  },
+  "furn_radio_1950s": {
+   "title": "VINTAGE RETRO RADIO",
+   "source": "Sketchfab",
+   "uid": "26fb0de1015d4570bac28cd8b1fb0a62",
+   "url": "https://sketchfab.com/3d-models/vintage-retro-radio-26fb0de1015d4570bac28cd8b1fb0a62",
+   "author": "Pavlo_Holubov",
+   "authorUrl": "https://sketchfab.com/Pavlo_Holubov",
+   "license": "CC Attribution",
+   "tris": 2940
+  },
+  "furn_radio_tube": {
+   "title": "Vintage Radio",
+   "source": "Sketchfab",
+   "uid": "b21a849e084345faad4316fa879088af",
+   "url": "https://sketchfab.com/3d-models/vintage-radio-b21a849e084345faad4316fa879088af",
+   "author": "Martin Trafas",
+   "authorUrl": "https://sketchfab.com/TinoD2",
+   "license": "CC Attribution",
+   "tris": 3996
+  },
+  "furn_radio_wood": {
+   "title": "Vintage radio",
+   "source": "Sketchfab",
+   "uid": "e2b64f5031fa45e8be661a89baeae3f0",
+   "url": "https://sketchfab.com/3d-models/vintage-radio-e2b64f5031fa45e8be661a89baeae3f0",
+   "author": "Lo\u00efc",
+   "authorUrl": "https://sketchfab.com/loichuet1",
+   "license": "CC Attribution",
+   "tris": 1894
+  },
+  "obj_record_player": {
+   "title": "Record Player (Philips GF-623)",
+   "source": "Sketchfab",
+   "uid": "d8c332152d8841e8b0122bc483682434",
+   "url": "https://sketchfab.com/3d-models/record-player-philips-gf-623-d8c332152d8841e8b0122bc483682434",
+   "author": "AleixoAlonso",
+   "authorUrl": "https://sketchfab.com/AleixoAlonso",
+   "license": "CC Attribution",
+   "tris": 48974
+  },
+  "furn_boombox": {
+   "title": "Boombox",
+   "source": "Poly Haven",
+   "asset": "boombox",
+   "url": "https://polyhaven.com/a/boombox",
+   "author": "Thomas Paul Mouilleron",
+   "license": "CC0",
+   "tris": 10168
+  },
+  "furn_zenith_console": {
+   "title": "Zenith Console - Mid Century Modern",
+   "source": "Sketchfab",
+   "uid": "a9d5edadaf494489b33d4e98290d349b",
+   "url": "https://sketchfab.com/3d-models/zenith-console-mid-century-modern-a9d5edadaf494489b33d4e98290d349b",
+   "author": "MattDonlan",
+   "authorUrl": "https://sketchfab.com/MattDonlan",
+   "license": "CC Attribution",
+   "tris": 1694
+  },
+  "obj_tv_1950s": {
+   "title": "Tv Set",
+   "source": "Sketchfab",
+   "uid": "356d85b4451f4ff4aeb04d6a3ebb1b9a",
+   "url": "https://sketchfab.com/3d-models/tv-set-356d85b4451f4ff4aeb04d6a3ebb1b9a",
+   "author": "oisougabo",
+   "authorUrl": "https://sketchfab.com/oisougabo",
+   "license": "CC Attribution",
+   "tris": 1698
+  },
+  "obj_tv_1960s": {
+   "title": "Vintage TV Free",
+   "source": "Sketchfab",
+   "uid": "ed92cac6b8d64ea48ea4f91ce9bf350b",
+   "url": "https://sketchfab.com/3d-models/vintage-tv-free-ed92cac6b8d64ea48ea4f91ce9bf350b",
+   "author": "donnichols",
+   "authorUrl": "https://sketchfab.com/donnichols",
+   "license": "CC Attribution",
+   "tris": 3326
+  },
+  "furn_tv_trinitron": {
+   "title": "Sony Trinitron PRL",
+   "source": "Sketchfab",
+   "uid": "dce3f599de634388aef1eaf49e3606bf",
+   "url": "https://sketchfab.com/3d-models/sony-trinitron-prl-dce3f599de634388aef1eaf49e3606bf",
+   "author": "Martin Trafas",
+   "authorUrl": "https://sketchfab.com/TinoD2",
+   "license": "CC Attribution",
+   "tris": 8582
+  },
+  "obj_tv_1980s": {
+   "title": "Television 02",
+   "source": "Poly Haven",
+   "asset": "television_02",
+   "url": "https://polyhaven.com/a/television_02",
+   "author": "Benny Weimer",
+   "license": "CC0",
+   "tris": 2310
+  },
+  "furn_wall_clock": {
+   "title": "Wall Clock",
+   "source": "Poly Haven",
+   "asset": "wall_clock",
+   "url": "https://polyhaven.com/a/wall_clock",
+   "author": "PierreB3D",
+   "license": "CC0",
+   "tris": 3658
+  },
+  "furn_alarm_clock": {
+   "title": "Alarm Clock 01",
+   "source": "Poly Haven",
+   "asset": "alarm_clock_01",
+   "url": "https://polyhaven.com/a/alarm_clock_01",
+   "author": "Yann Kervran, James Ray Cock",
+   "license": "CC0",
+   "tris": 8985
+  },
+  "obj_wall_photo": {
+   "title": "Hanging Picture Frame 02",
+   "source": "Poly Haven",
+   "asset": "hanging_picture_frame_02",
+   "url": "https://polyhaven.com/a/hanging_picture_frame_02",
+   "author": "James Ray Cock",
+   "license": "CC0",
+   "tris": 3678
+  },
+  "obj_painting_gilt": {
+   "title": "Fancy Picture Frame 01",
+   "source": "Poly Haven",
+   "asset": "fancy_picture_frame_01",
+   "url": "https://polyhaven.com/a/fancy_picture_frame_01",
+   "author": "Rob Tuytel, Rico Cilliers",
+   "license": "CC0",
+   "tris": 938
+  },
+  "furn_hanging_picture_frame_03": {
+   "title": "Hanging Picture Frame 03",
+   "source": "Poly Haven",
+   "asset": "hanging_picture_frame_03",
+   "url": "https://polyhaven.com/a/hanging_picture_frame_03",
+   "author": "James Ray Cock",
+   "license": "CC0",
+   "tris": 24348
+  },
+  "obj_photo_frame_black": {
+   "title": "Standing Picture Frame 01",
+   "source": "Poly Haven",
+   "asset": "standing_picture_frame_01",
+   "url": "https://polyhaven.com/a/standing_picture_frame_01",
+   "author": "James Ray Cock",
+   "license": "CC0",
+   "tris": 1634
+  },
+  "obj_flowers_vase": {
+   "title": "Flowers in Vase",
+   "source": "Sketchfab",
+   "uid": "b1047276fc7f4421b5f695ad9ff59e72",
+   "url": "https://sketchfab.com/3d-models/flowers-in-vase-b1047276fc7f4421b5f695ad9ff59e72",
+   "author": "Michael Douglass",
+   "authorUrl": "https://sketchfab.com/drmdouglass",
+   "license": "CC Attribution",
+   "tris": 59949
+  },
+  "obj_blossom_vase": {
+   "title": "flowers with the vase",
+   "source": "Sketchfab",
+   "uid": "0f58352d377840cdbeef0bd71b24aff6",
+   "url": "https://sketchfab.com/3d-models/flowers-with-the-vase-0f58352d377840cdbeef0bd71b24aff6",
+   "author": "Musaev H.N.",
+   "authorUrl": "https://sketchfab.com/Gajk.Mv",
+   "license": "CC Attribution",
+   "tris": 59999
+  },
+  "obj_vase_blue_white": {
+   "title": "Baluster vase, from a five-piece garniture",
+   "source": "Sketchfab",
+   "uid": "76a3f7bf75d049458dfaa48aa342e0b8",
+   "url": "https://sketchfab.com/3d-models/baluster-vase-from-a-five-piece-garniture-76a3f7bf75d049458dfaa48aa342e0b8",
+   "author": "The Smithsonian Institution",
+   "authorUrl": "https://sketchfab.com/Smithsonian",
+   "license": "CC0 Public Domain",
+   "tris": 59997
+  },
+  "obj_vase_white": {
+   "title": "Ceramic Vase 01",
+   "source": "Poly Haven",
+   "asset": "ceramic_vase_01",
+   "url": "https://polyhaven.com/a/ceramic_vase_01",
+   "author": "James Ray Cock",
+   "license": "CC0",
+   "tris": 10296
+  },
+  "furn_potted_plant_02": {
+   "title": "Potted Plant 02",
+   "source": "Poly Haven",
+   "asset": "potted_plant_02",
+   "url": "https://polyhaven.com/a/potted_plant_02",
+   "author": "Rico Cilliers",
+   "license": "CC0",
+   "tris": 60032
+  },
+  "nat_succulent_pot": {
+   "title": "Flower pot with succulent plants",
+   "source": "Sketchfab",
+   "uid": "acce0c2e1e5b4986b4ff18198eb90e3e",
+   "url": "https://sketchfab.com/3d-models/flower-pot-with-succulent-plants-acce0c2e1e5b4986b4ff18198eb90e3e",
+   "author": "fuinur",
+   "authorUrl": "https://sketchfab.com/fuinur",
+   "license": "CC Attribution",
+   "tris": 18000
+  },
+  "nat_jade_plant": {
+   "title": "287: Jade Plant",
+   "source": "Sketchfab",
+   "uid": "1219f6d549b2472f9af3452b122f45b9",
+   "url": "https://sketchfab.com/3d-models/287-jade-plant-1219f6d549b2472f9af3452b122f45b9",
+   "author": "alexdelker",
+   "authorUrl": "https://sketchfab.com/alexdelker",
+   "license": "CC Attribution",
+   "tris": 15590
+  },
+  "furn_teapot_yixing": {
+   "title": "Chinese Ancient Teapot",
+   "source": "Sketchfab",
+   "uid": "a9b8dac2bf8045688d4ec6e95b2a51d2",
+   "url": "https://sketchfab.com/3d-models/chinese-ancient-teapot-a9b8dac2bf8045688d4ec6e95b2a51d2",
+   "author": "UniquePlayer",
+   "authorUrl": "https://sketchfab.com/uniqueplayer",
+   "license": "CC Attribution",
+   "tris": 5096
+  },
+  "obj_kettle_vintage": {
+   "title": "Vintage Electric Kettle",
+   "source": "Poly Haven",
+   "asset": "vintage_electric_kettle",
+   "url": "https://polyhaven.com/a/vintage_electric_kettle",
+   "author": "SV Garip",
+   "license": "CC0",
+   "tris": 14838
+  },
+  "obj_mug_red": {
+   "title": "Cup of Coffee",
+   "source": "Sketchfab",
+   "uid": "8b50e457f817453c8e62d93aa016565b",
+   "url": "https://sketchfab.com/3d-models/cup-of-coffee-8b50e457f817453c8e62d93aa016565b",
+   "author": "Davide Specchi",
+   "authorUrl": "https://sketchfab.com/Davide.Specchi",
+   "license": "CC Attribution",
+   "tris": 41968
+  },
+  "furn_enamel_mug": {
+   "title": "Soviet Enamel Mug",
+   "source": "Sketchfab",
+   "uid": "15418a900807467495ea46f574effd20",
+   "url": "https://sketchfab.com/3d-models/soviet-enamel-mug-15418a900807467495ea46f574effd20",
+   "author": "Rusty-exe",
+   "authorUrl": "https://sketchfab.com/dustyrusty",
+   "license": "CC Attribution",
+   "tris": 3824
+  },
+  "obj_mug_white": {
+   "title": "Coffee Mug (School Project)",
+   "source": "Sketchfab",
+   "uid": "5f5ccee1514c440887c072fae8e0d699",
+   "url": "https://sketchfab.com/3d-models/coffee-mug-school-project-5f5ccee1514c440887c072fae8e0d699",
+   "author": "Ole Gunnar Isager",
+   "authorUrl": "https://sketchfab.com/FrenchBaguette",
+   "license": "CC Attribution",
+   "tris": 1032
+  },
+  "obj_fruit_bowl": {
+   "title": "Fruit Bowl",
+   "source": "Sketchfab",
+   "uid": "373c679b7bd644aea12373945834e973",
+   "url": "https://sketchfab.com/3d-models/fruit-bowl-373c679b7bd644aea12373945834e973",
+   "author": "Meerschaum Digital",
+   "authorUrl": "https://sketchfab.com/meerschaumdigital",
+   "license": "CC Attribution",
+   "tris": 22736
+  },
+  "obj_wooden_bowl": {
+   "title": "Wooden Bowl 02",
+   "source": "Poly Haven",
+   "asset": "wooden_bowl_02",
+   "url": "https://polyhaven.com/a/wooden_bowl_02",
+   "author": "Kuutti Siitonen",
+   "license": "CC0",
+   "tris": 4666
+  },
+  "obj_cake_carrot": {
+   "title": "Carrot Cake",
+   "source": "Poly Haven",
+   "asset": "carrot_cake",
+   "url": "https://polyhaven.com/a/carrot_cake",
+   "author": "Greg Zaal, James Ray Cock",
+   "license": "CC0",
+   "tris": 13790
+  },
+  "obj_newspapers": {
+   "title": "[CC0] Newspaper Stack - Ready to Unity HDRP",
+   "source": "Sketchfab",
+   "uid": "c4311a0b918643af97904e10c7a34efc",
+   "url": "https://sketchfab.com/3d-models/cc0-newspaper-stack-ready-to-unity-hdrp-c4311a0b918643af97904e10c7a34efc",
+   "author": "karlwirbelwind",
+   "authorUrl": "https://sketchfab.com/karlwirbelwind",
+   "license": "CC Attribution",
+   "tris": 2132
+  },
+  "obj_letters": {
+   "title": "Papers & Envelopes",
+   "source": "Sketchfab",
+   "uid": "303f54d7a6e84aad9af3f341c2fa4ad7",
+   "url": "https://sketchfab.com/3d-models/papers-envelopes-303f54d7a6e84aad9af3f341c2fa4ad7",
+   "author": "Michael V",
+   "authorUrl": "https://sketchfab.com/bossdeff",
+   "license": "CC Attribution",
+   "tris": 460
+  },
+  "obj_candelabra": {
+   "title": "Brass Candleholders",
+   "source": "Poly Haven",
+   "asset": "brass_candleholders",
+   "url": "https://polyhaven.com/a/brass_candleholders",
+   "author": "Tina",
+   "license": "CC0",
+   "tris": 41936
+  },
+  "furn_fridge_old": {
+   "title": "Old Fridge",
+   "source": "Sketchfab",
+   "uid": "6b2862c241754f5d81690e8664e41091",
+   "url": "https://sketchfab.com/3d-models/old-fridge-6b2862c241754f5d81690e8664e41091",
+   "author": "sergeilihandristov",
+   "authorUrl": "https://sketchfab.com/sergeilihandristov",
+   "license": "CC Attribution",
+   "tris": 1020
+  },
+  "furn_rug_persian": {
+   "title": "Persian Rug",
+   "source": "Sketchfab",
+   "uid": "fe13eecfc9b8405dab1fe76c5dd28a4c",
+   "url": "https://sketchfab.com/3d-models/persian-rug-fe13eecfc9b8405dab1fe76c5dd28a4c",
+   "author": "Nicholas Record",
+   "authorUrl": "https://sketchfab.com/nrecord",
+   "license": "CC Attribution",
+   "tris": 48
+  },
+  "nat_oak_tree": {
+   "title": "Oak tree",
+   "source": "Sketchfab",
+   "uid": "6468dd4d3eb240ef902b9057d9913606",
+   "url": "https://sketchfab.com/3d-models/oak-tree-6468dd4d3eb240ef902b9057d9913606",
+   "author": "evolveduk",
+   "authorUrl": "https://sketchfab.com/evolveduk",
+   "license": "CC Attribution",
+   "tris": 14480
+  },
+  "nat_maple_tree": {
+   "title": "Maple Tree",
+   "source": "Sketchfab",
+   "uid": "b5e945e7abcc471da6547c04e314774c",
+   "url": "https://sketchfab.com/3d-models/maple-tree-b5e945e7abcc471da6547c04e314774c",
+   "author": "evolveduk",
+   "authorUrl": "https://sketchfab.com/evolveduk",
+   "license": "CC Attribution",
+   "tris": 12855
+  },
+  "nat_elm_tree": {
+   "title": "Elm tree",
+   "source": "Sketchfab",
+   "uid": "f36443d3e59946bfa38b3f5cb90ea5fa",
+   "url": "https://sketchfab.com/3d-models/elm-tree-f36443d3e59946bfa38b3f5cb90ea5fa",
+   "author": "evolveduk",
+   "authorUrl": "https://sketchfab.com/evolveduk",
+   "license": "CC Attribution",
+   "tris": 4984
+  },
+  "nat_beech_tree": {
+   "title": "Beech tree",
+   "source": "Sketchfab",
+   "uid": "0983d8933531491f9be71c669e8a907b",
+   "url": "https://sketchfab.com/3d-models/beech-tree-0983d8933531491f9be71c669e8a907b",
+   "author": "evolveduk",
+   "authorUrl": "https://sketchfab.com/evolveduk",
+   "license": "CC Attribution",
+   "tris": 6017
+  },
+  "nat_birch_tree": {
+   "title": "Birch tree",
+   "source": "Sketchfab",
+   "uid": "aa842dffd9654d33b8b91170ce83c172",
+   "url": "https://sketchfab.com/3d-models/birch-tree-aa842dffd9654d33b8b91170ce83c172",
+   "author": "evolveduk",
+   "authorUrl": "https://sketchfab.com/evolveduk",
+   "license": "CC Attribution",
+   "tris": 5309
+  },
+  "nat_willow_tree": {
+   "title": "Willow",
+   "source": "Sketchfab",
+   "uid": "422de2372f3d46dfb314a0cd5da512fe",
+   "url": "https://sketchfab.com/3d-models/willow-422de2372f3d46dfb314a0cd5da512fe",
+   "author": "evolveduk",
+   "authorUrl": "https://sketchfab.com/evolveduk",
+   "license": "CC Attribution",
+   "tris": 9005
+  },
+  "nat_weeping_cherry": {
+   "title": "Sakura",
+   "source": "Sketchfab",
+   "uid": "a995ce485d4d4329a19f6d4604b18c71",
+   "url": "https://sketchfab.com/3d-models/sakura-a995ce485d4d4329a19f6d4604b18c71",
+   "author": "RosticOstafi",
+   "authorUrl": "https://sketchfab.com/RosticOstafi",
+   "license": "CC Attribution",
+   "tris": 45750
+  },
+  "nat_pine_tree": {
+   "title": "Pine Tree",
+   "source": "Sketchfab",
+   "uid": "d45218a3fab349e5b1de040f29e7b6f9",
+   "url": "https://sketchfab.com/3d-models/pine-tree-d45218a3fab349e5b1de040f29e7b6f9",
+   "author": "evolveduk",
+   "authorUrl": "https://sketchfab.com/evolveduk",
+   "license": "CC Attribution",
+   "tris": 5627
+  },
+  "nat_spruce": {
+   "title": "Spruce",
+   "source": "Sketchfab",
+   "uid": "a50a5df3164246a5af97992cec33a143",
+   "url": "https://sketchfab.com/3d-models/spruce-a50a5df3164246a5af97992cec33a143",
+   "author": "evolveduk",
+   "authorUrl": "https://sketchfab.com/evolveduk",
+   "license": "CC Attribution",
+   "tris": 5074
+  },
+  "nat_italian_cypress": {
+   "title": "Cypress tree",
+   "source": "Sketchfab",
+   "uid": "249d8cb553a8469e9d645713f8e96ed1",
+   "url": "https://sketchfab.com/3d-models/cypress-tree-249d8cb553a8469e9d645713f8e96ed1",
+   "author": "ElectroNick",
+   "authorUrl": "https://sketchfab.com/ElectroNick",
+   "license": "CC Attribution",
+   "tris": 29205
+  },
+  "nat_cypress": {
+   "title": "Cypress",
+   "source": "Sketchfab",
+   "uid": "877cf2f6e001422c8233edb9c45162dc",
+   "url": "https://sketchfab.com/3d-models/cypress-877cf2f6e001422c8233edb9c45162dc",
+   "author": "SCADL & Co",
+   "authorUrl": "https://sketchfab.com/scadl",
+   "license": "CC Attribution",
+   "tris": 31702
+  },
+  "nat_juniper": {
+   "title": "Juniper",
+   "source": "Sketchfab",
+   "uid": "e74c7156984542c2a4cdf6ce8a0c8e96",
+   "url": "https://sketchfab.com/3d-models/juniper-e74c7156984542c2a4cdf6ce8a0c8e96",
+   "author": "evolveduk",
+   "authorUrl": "https://sketchfab.com/evolveduk",
+   "license": "CC Attribution",
+   "tris": 2616
+  },
+  "nat_canary_palm": {
+   "title": "Realistic HD Canary Island date palm (31/40)",
+   "source": "Sketchfab",
+   "uid": "622ffb9dc2904166a1b6f58de6cee854",
+   "url": "https://sketchfab.com/3d-models/realistic-hd-canary-island-date-palm-3140-622ffb9dc2904166a1b6f58de6cee854",
+   "author": "PlantCatalog",
+   "authorUrl": "https://sketchfab.com/PlantCatalog",
+   "license": "CC Attribution",
+   "tris": 31254
+  },
+  "nat_boxwood_bush": {
+   "title": "Photorealistic Bush",
+   "source": "Sketchfab",
+   "uid": "8db54bf299954daa9ee29b233e923672",
+   "url": "https://sketchfab.com/3d-models/photorealistic-bush-8db54bf299954daa9ee29b233e923672",
+   "author": "Adrian Sheremet",
+   "authorUrl": "https://sketchfab.com/adriansheremet",
+   "license": "CC Attribution",
+   "tris": 47151
+  },
+  "nat_hedge": {
+   "title": "Hedge",
+   "source": "Sketchfab",
+   "uid": "f2006b1a3af9442987963da054283ad7",
+   "url": "https://sketchfab.com/3d-models/hedge-f2006b1a3af9442987963da054283ad7",
+   "author": "1-3D.com",
+   "authorUrl": "https://sketchfab.com/1-3D.com",
+   "license": "CC Attribution-ShareAlike",
+   "tris": 19456
+  },
+  "nat_hydrangea_blue": {
+   "title": "Hydrangea_blue_20220615 \u7d2b\u967d\u82b1\uff08\u9752\uff09",
+   "source": "Sketchfab",
+   "uid": "69fd19ab6fe545999fa1e71bea910288",
+   "url": "https://sketchfab.com/3d-models/hydrangea-blue-20220615-69fd19ab6fe545999fa1e71bea910288",
+   "author": "Akiko_NAKAMURA",
+   "authorUrl": "https://sketchfab.com/Akiko_NAKAMUR",
+   "license": "CC Attribution",
+   "tris": 4500
+  },
+  "nat_azalea": {
+   "title": "SpeedTree, Open Research Content Archive (ORCA)",
+   "source": "Sketchfab",
+   "uid": "30cdf765befd45c08d629fedc5290604",
+   "url": "https://sketchfab.com/3d-models/speedtree-open-research-content-archive-orca-30cdf765befd45c08d629fedc5290604",
+   "author": "trigrou",
+   "authorUrl": "https://sketchfab.com/trigrou",
+   "license": "CC Attribution",
+   "tris": 14631
+  },
+  "nat_laurel_bush": {
+   "title": "Laurel Bush",
+   "source": "Sketchfab",
+   "uid": "2616665bf38b4ff7b62c5452629bd5b1",
+   "url": "https://sketchfab.com/3d-models/laurel-bush-2616665bf38b4ff7b62c5452629bd5b1",
+   "author": "SCADL & Co",
+   "authorUrl": "https://sketchfab.com/scadl",
+   "license": "CC Attribution",
+   "tris": 1511
+  },
+  "nat_tall_bush": {
+   "title": "Tall Bush",
+   "source": "Sketchfab",
+   "uid": "acc6c43913864ace8d5942d65417ab35",
+   "url": "https://sketchfab.com/3d-models/tall-bush-acc6c43913864ace8d5942d65417ab35",
+   "author": "SCADL & Co",
+   "authorUrl": "https://sketchfab.com/scadl",
+   "license": "CC Attribution",
+   "tris": 96
+  },
+  "nat_phlox": {
+   "title": "Garden Flower - vegetation",
+   "source": "Sketchfab",
+   "uid": "683e2043a99d4bddb750098a934e3533",
+   "url": "https://sketchfab.com/3d-models/garden-flower-vegetation-683e2043a99d4bddb750098a934e3533",
+   "author": "raguramkgr",
+   "authorUrl": "https://sketchfab.com/ragukgr",
+   "license": "CC Attribution",
+   "tris": 13525
+  },
+  "nat_pink_rose": {
+   "title": "rose flower",
+   "source": "Sketchfab",
+   "uid": "65df7c2d34ca47d4ae0c0e2b91850ee7",
+   "url": "https://sketchfab.com/3d-models/rose-flower-65df7c2d34ca47d4ae0c0e2b91850ee7",
+   "author": "SCANIMAT",
+   "authorUrl": "https://sketchfab.com/scanimat",
+   "license": "CC Attribution",
+   "tris": 13502
+  },
+  "nat_lupine": {
+   "title": "Lupine Plant",
+   "source": "Sketchfab",
+   "uid": "bf30f1110c174d4baedda0ed63778439",
+   "url": "https://sketchfab.com/3d-models/lupine-plant-bf30f1110c174d4baedda0ed63778439",
+   "author": "rufusrockwell",
+   "authorUrl": "https://sketchfab.com/rufusrockwell",
+   "license": "CC Attribution",
+   "tris": 2126
+  },
+  "nat_foxglove": {
+   "title": "Snapdragon",
+   "source": "Sketchfab",
+   "uid": "b4a95a86f35d48fd9a5020372d44539f",
+   "url": "https://sketchfab.com/3d-models/snapdragon-b4a95a86f35d48fd9a5020372d44539f",
+   "author": "rufusrockwell",
+   "authorUrl": "https://sketchfab.com/rufusrockwell",
+   "license": "CC Attribution",
+   "tris": 2302
+  },
+  "nat_stachys": {
+   "title": "Stachys monieri 'Hummelo'_A",
+   "source": "Sketchfab",
+   "uid": "0c1f1e1bc488444c8c5931d8c51ffedc",
+   "url": "https://sketchfab.com/3d-models/stachys-monieri-hummelo-a-0c1f1e1bc488444c8c5931d8c51ffedc",
+   "author": "Livin Vision",
+   "authorUrl": "https://sketchfab.com/LivinVision",
+   "license": "CC Attribution",
+   "tris": 23591
+  },
+  "nat_daisies": {
+   "title": "Daisies",
+   "source": "Sketchfab",
+   "uid": "c914e2eb8bab46e0b60b891aa4b125fe",
+   "url": "https://sketchfab.com/3d-models/daisies-c914e2eb8bab46e0b60b891aa4b125fe",
+   "author": "evolveduk",
+   "authorUrl": "https://sketchfab.com/evolveduk",
+   "license": "CC Attribution",
+   "tris": 9247
+  },
+  "nat_fence_picket_white": {
+   "title": "Fence picket",
+   "source": "Sketchfab",
+   "uid": "de3e8fccf4304ca2b9ab3c43dedb7870",
+   "url": "https://sketchfab.com/3d-models/fence-picket-de3e8fccf4304ca2b9ab3c43dedb7870",
+   "author": "1-3D.com",
+   "authorUrl": "https://sketchfab.com/1-3D.com",
+   "license": "CC Attribution-ShareAlike",
+   "tris": 120
+  },
+  "nat_fence_iron": {
+   "title": "CC0 - Iron Fence",
+   "source": "Sketchfab",
+   "uid": "9c5ad29c104c48e69a1227927655d489",
+   "url": "https://sketchfab.com/3d-models/cc0-iron-fence-9c5ad29c104c48e69a1227927655d489",
+   "author": "plaggy",
+   "authorUrl": "https://sketchfab.com/plaggy",
+   "license": "CC Attribution",
+   "tris": 3768
+  },
+  "nat_fence_board": {
+   "title": "Wooden Fence",
+   "source": "Sketchfab",
+   "uid": "43f8b3127fba4800bfc3f36078393e87",
+   "url": "https://sketchfab.com/3d-models/wooden-fence-43f8b3127fba4800bfc3f36078393e87",
+   "author": "DmitriyGDS",
+   "authorUrl": "https://sketchfab.com/DmitriyGDS",
+   "license": "CC Attribution",
+   "tris": 1060
+  },
+  "nat_garden_wall_gate": {
+   "title": "English Country Garden Wall",
+   "source": "Sketchfab",
+   "uid": "f7e159cea8f14d0e9d694b6a157c9c92",
+   "url": "https://sketchfab.com/3d-models/english-country-garden-wall-f7e159cea8f14d0e9d694b6a157c9c92",
+   "author": "fieldworks",
+   "authorUrl": "https://sketchfab.com/fieldworks",
+   "license": "CC Attribution",
+   "tris": 15949
+  },
+  "nat_swing_set": {
+   "title": "Swing",
+   "source": "Sketchfab",
+   "uid": "9ea308ef1062419183ec4315449a3967",
+   "url": "https://sketchfab.com/3d-models/swing-9ea308ef1062419183ec4315449a3967",
+   "author": "Bijay",
+   "authorUrl": "https://sketchfab.com/hembram1",
+   "license": "CC Attribution",
+   "tris": 30008
+  },
+  "sport_swing_set": {
+   "title": "Swing Set",
+   "source": "Sketchfab",
+   "uid": "8712f53da0e04736802f1bc84ca7df97",
+   "url": "https://sketchfab.com/3d-models/swing-set-8712f53da0e04736802f1bc84ca7df97",
+   "author": "Glowbox 3D",
+   "authorUrl": "https://sketchfab.com/glowbox3d",
+   "license": "CC Attribution",
+   "tris": 59997
+  },
+  "city_lamp_lantern": {
+   "title": "Street Lamp",
+   "source": "Sketchfab",
+   "uid": "6881aa1e84b047d79860fa9297e05e22",
+   "url": "https://sketchfab.com/3d-models/street-lamp-6881aa1e84b047d79860fa9297e05e22",
+   "author": "bez_glaza",
+   "authorUrl": "https://sketchfab.com/bez_glaza",
+   "license": "CC Attribution",
+   "tris": 7810
+  },
+  "city_station_wagon": {
+   "title": "Fairheaven SW '84 - Low poly model",
+   "source": "Sketchfab",
+   "uid": "aa0becb6e854422596cac6b21bf79787",
+   "url": "https://sketchfab.com/3d-models/fairheaven-sw-84-low-poly-model-aa0becb6e854422596cac6b21bf79787",
+   "author": "Daniel Zhabotinsky",
+   "authorUrl": "https://sketchfab.com/DanielZhabotinsky",
+   "license": "CC Attribution",
+   "tris": 23581
+  },
+  "city_vintage_eldorado": {
+   "title": "Day 13: Biggie's Eldorado",
+   "source": "Sketchfab",
+   "uid": "8a2225af5a9a4608ae9d5212006beca9",
+   "url": "https://sketchfab.com/3d-models/day-13-biggies-eldorado-8a2225af5a9a4608ae9d5212006beca9",
+   "author": "alban",
+   "authorUrl": "https://sketchfab.com/alban",
+   "license": "CC Attribution",
+   "tris": 49989
+  },
+  "city_taxi_crown_vic": {
+   "title": "2001 Crown Victoria Taxi Game Prop",
+   "source": "Sketchfab",
+   "uid": "2429a825ff1646568e8e6e1453f9c501",
+   "url": "https://sketchfab.com/3d-models/2001-crown-victoria-taxi-game-prop-2429a825ff1646568e8e6e1453f9c501",
+   "author": "8sianDude",
+   "authorUrl": "https://sketchfab.com/haoliu95",
+   "license": "CC Attribution",
+   "tris": 33866
+  },
+  "city_vintage_checker_taxi": {
+   "title": "FREE 1950s American Taxi (based on Checker)",
+   "source": "Sketchfab",
+   "uid": "d1b10defaed94a1094419e84ca9b0bf1",
+   "url": "https://sketchfab.com/3d-models/free-1950s-american-taxi-based-on-checker-d1b10defaed94a1094419e84ca9b0bf1",
+   "author": "Libau Media",
+   "authorUrl": "https://sketchfab.com/robinmikart",
+   "license": "CC Attribution",
+   "tris": 60186
+  },
+  "city_dodge_diplomat": {
+   "title": "Dodge Diplomat #3DST51",
+   "source": "Sketchfab",
+   "uid": "bc3516e5018b443fb1aff108458554e5",
+   "url": "https://sketchfab.com/3d-models/dodge-diplomat-3dst51-bc3516e5018b443fb1aff108458554e5",
+   "author": "alban",
+   "authorUrl": "https://sketchfab.com/alban",
+   "license": "CC Attribution",
+   "tris": 50005
+  },
+  "obj_bicycle_vintage": {
+   "title": "Vintage Bicycle",
+   "source": "Sketchfab",
+   "uid": "973be19e62d94d308b668679d9abacf0",
+   "url": "https://sketchfab.com/3d-models/vintage-bicycle-973be19e62d94d308b668679d9abacf0",
+   "author": "Onur",
+   "authorUrl": "https://sketchfab.com/onurpearl",
+   "license": "CC Attribution",
+   "tris": 59975
+  },
+  "city_bicycle": {
+   "title": "Bicycle",
+   "source": "Sketchfab",
+   "uid": "25aa85eeba944baea33ce5cde985ca49",
+   "url": "https://sketchfab.com/3d-models/bicycle-25aa85eeba944baea33ce5cde985ca49",
+   "author": "Lyskilde",
+   "authorUrl": "https://sketchfab.com/longtail",
+   "license": "CC Attribution",
+   "tris": 20864
+  },
+  "city_sf_victorian_green": {
+   "title": "Victorian house",
+   "source": "Sketchfab",
+   "uid": "dbb02bf8f5ed4851b05dd97a1784a1fb",
+   "url": "https://sketchfab.com/3d-models/victorian-house-dbb02bf8f5ed4851b05dd97a1784a1fb",
+   "author": "massive-graphisme",
+   "authorUrl": "https://sketchfab.com/greg-l",
+   "license": "CC Attribution",
+   "tris": 186329
+  },
+  "city_suburban_house": {
+   "title": "Suburban House",
+   "source": "Sketchfab",
+   "uid": "b8375c5e5e6b40639fc06492fbd95fcb",
+   "url": "https://sketchfab.com/3d-models/suburban-house-b8375c5e5e6b40639fc06492fbd95fcb",
+   "author": "mbuannoart",
+   "authorUrl": "https://sketchfab.com/mbuannoart",
+   "license": "CC Attribution",
+   "tris": 8568
+  },
+  "city_farmhouse": {
+   "title": "Farmhouse _low-poly",
+   "source": "Sketchfab",
+   "uid": "442eb96d05a24a3eb3325da990147264",
+   "url": "https://sketchfab.com/3d-models/farmhouse--low-poly-442eb96d05a24a3eb3325da990147264",
+   "author": "Raphael Escamilla",
+   "authorUrl": "https://sketchfab.com/Raffey",
+   "license": "CC Attribution",
+   "tris": 2187
+  },
+  "city_brick_house": {
+   "title": "Small Brick House",
+   "source": "Sketchfab",
+   "uid": "c9ef0a360eff405682015c8813eee41d",
+   "url": "https://sketchfab.com/3d-models/small-brick-house-c9ef0a360eff405682015c8813eee41d",
+   "author": "jimbogies",
+   "authorUrl": "https://sketchfab.com/jimbogies",
+   "license": "CC Attribution",
+   "tris": 10239
+  },
+  "city_brick_shop_building": {
+   "title": "Low-poly Old American brick building with shop.",
+   "source": "Sketchfab",
+   "uid": "3170993b67ee4e58b27d69d5877f71bd",
+   "url": "https://sketchfab.com/3d-models/low-poly-old-american-brick-building-with-shop-3170993b67ee4e58b27d69d5877f71bd",
+   "author": "Orzechu",
+   "authorUrl": "https://sketchfab.com/Orzechu",
+   "license": "CC Attribution",
+   "tris": 2946
+  },
+  "city_apartments_facade_kit": {
+   "title": "Modular Urban Apartments Facade",
+   "source": "Poly Haven",
+   "asset": "modular_urban_apartments_facade",
+   "url": "https://polyhaven.com/a/modular_urban_apartments_facade",
+   "author": "James Ray Cock",
+   "license": "CC0",
+   "tris": 83155
+  },
+  "arch_sf_shopfront_building": {
+   "title": "C.C. Trading Co - San Francisco, CA.",
+   "source": "Sketchfab",
+   "uid": "a38f9d855a854b78b3942257cb74c66d",
+   "url": "https://sketchfab.com/3d-models/cc-trading-co-san-francisco-ca-a38f9d855a854b78b3942257cb74c66d",
+   "author": "Azad Balabanian",
+   "authorUrl": "https://sketchfab.com/azadbal",
+   "license": "CC Attribution",
+   "tris": 71671
+  },
+  "city_cable_car": {
+   "title": "Cable Car Tram | Realistic 3D Model | Free",
+   "source": "Sketchfab",
+   "uid": "499eeed64638432fa08b9bf39c101cc9",
+   "url": "https://sketchfab.com/3d-models/cable-car-tram-realistic-3d-model-free-499eeed64638432fa08b9bf39c101cc9",
+   "author": "GAMICO",
+   "authorUrl": "https://sketchfab.com/gamico",
+   "license": "CC Attribution",
+   "tris": 42972
+  },
+  "city_transit_bus": {
+   "title": "Generic Town Bus",
+   "source": "Sketchfab",
+   "uid": "14fe03d792914d51b6c6250b393c44fd",
+   "url": "https://sketchfab.com/3d-models/generic-town-bus-14fe03d792914d51b6c6250b393c44fd",
+   "author": "own.guest",
+   "authorUrl": "https://sketchfab.com/own.guest",
+   "license": "CC Attribution",
+   "tris": 55527
+  },
+  "city_school_bus": {
+   "title": "School bus",
+   "source": "Sketchfab",
+   "uid": "d22d36e8883943cf8733120fde611c48",
+   "url": "https://sketchfab.com/3d-models/school-bus-d22d36e8883943cf8733120fde611c48",
+   "author": "alban",
+   "authorUrl": "https://sketchfab.com/alban",
+   "license": "CC Attribution",
+   "tris": 34247
+  },
+  "city_vintage_bus_1940s": {
+   "title": "FREE 1940s City Bus/Coach (White Motor Co.)",
+   "source": "Sketchfab",
+   "uid": "3c9c813fedba4f5caf3fe8cefee1bd0c",
+   "url": "https://sketchfab.com/3d-models/free-1940s-city-buscoach-white-motor-co-3c9c813fedba4f5caf3fe8cefee1bd0c",
+   "author": "Libau Media",
+   "authorUrl": "https://sketchfab.com/robinmikart",
+   "license": "CC Attribution",
+   "tris": 52171
+  },
+  "city_hydrant_nyc": {
+   "title": "Fire Hydrant",
+   "source": "Sketchfab",
+   "uid": "7f9164e6018c4ec7a3585bbf6e6d70df",
+   "url": "https://sketchfab.com/3d-models/fire-hydrant-7f9164e6018c4ec7a3585bbf6e6d70df",
+   "author": "jvouillon",
+   "authorUrl": "https://sketchfab.com/jvouillon",
+   "license": "CC Attribution",
+   "tris": 24935
+  },
+  "city_usps_mailbox": {
+   "title": "Mailbox",
+   "source": "Sketchfab",
+   "uid": "b96a14c5c5284835aee749bf888c2073",
+   "url": "https://sketchfab.com/3d-models/mailbox-b96a14c5c5284835aee749bf888c2073",
+   "author": "Raphael Escamilla",
+   "authorUrl": "https://sketchfab.com/Raffey",
+   "license": "CC Attribution",
+   "tris": 2832
+  },
+  "nat_mailbox": {
+   "title": "Home US Mailbox \ud83d\udceb",
+   "source": "Sketchfab",
+   "uid": "132c790ac74c42a0bb1a5fc7e3d43d7e",
+   "url": "https://sketchfab.com/3d-models/home-us-mailbox-132c790ac74c42a0bb1a5fc7e3d43d7e",
+   "author": "Glowbox 3D",
+   "authorUrl": "https://sketchfab.com/glowbox3d",
+   "license": "CC Attribution",
+   "tris": 2072
+  },
+  "city_trash_can": {
+   "title": "Metal Trash Can",
+   "source": "Poly Haven",
+   "asset": "metal_trash_can",
+   "url": "https://polyhaven.com/a/metal_trash_can",
+   "author": "GurJas Studios",
+   "license": "CC0",
+   "tris": 13960
+  },
+  "nat_gazebo": {
+   "title": "Gazebo",
+   "source": "Sketchfab",
+   "uid": "ab95dfb3816e4160989f26972c4c7c39",
+   "url": "https://sketchfab.com/3d-models/gazebo-ab95dfb3816e4160989f26972c4c7c39",
+   "author": "ZareShadows",
+   "authorUrl": "https://sketchfab.com/ZareShadows",
+   "license": "CC Attribution",
+   "tris": 5196
+  },
+  "nat_rose_arch": {
+   "title": "CC0 - Rose Arch",
+   "source": "Sketchfab",
+   "uid": "5578bdc83ed743feb5f7c775197f5fbe",
+   "url": "https://sketchfab.com/3d-models/cc0-rose-arch-5578bdc83ed743feb5f7c775197f5fbe",
+   "author": "plaggy",
+   "authorUrl": "https://sketchfab.com/plaggy",
+   "license": "CC Attribution",
+   "tris": 2824
+  },
+  "nat_arbor_bench": {
+   "title": "Pergola",
+   "source": "Sketchfab",
+   "uid": "eca838f2af7b4969813747fbc64f207f",
+   "url": "https://sketchfab.com/3d-models/pergola-eca838f2af7b4969813747fbc64f207f",
+   "author": "alex999m",
+   "authorUrl": "https://sketchfab.com/alex999m",
+   "license": "CC Attribution",
+   "tris": 1857
+  },
+  "nat_birdbath": {
+   "title": "Bird Bath Antique",
+   "source": "Sketchfab",
+   "uid": "d2379e9d0c8445c1a1c421fcf7063c58",
+   "url": "https://sketchfab.com/3d-models/bird-bath-antique-d2379e9d0c8445c1a1c421fcf7063c58",
+   "author": "fizyman",
+   "authorUrl": "https://sketchfab.com/fizyman",
+   "license": "CC Attribution",
+   "tris": 19998
+  },
+  "nat_planter_box": {
+   "title": "Planter Box 03",
+   "source": "Poly Haven",
+   "asset": "planter_box_03",
+   "url": "https://polyhaven.com/a/planter_box_03",
+   "author": "James Ray Cock",
+   "license": "CC0",
+   "tris": 13112
+  },
+  "nat_clay_pot": {
+   "title": "Planter Pot Clay",
+   "source": "Poly Haven",
+   "asset": "planter_pot_clay",
+   "url": "https://polyhaven.com/a/planter_pot_clay",
+   "author": "Amal Kumar",
+   "license": "CC0",
+   "tris": 3080
+  },
+  "nat_wheelbarrow": {
+   "title": "Wheelbarrow",
+   "source": "Sketchfab",
+   "uid": "c0dcebcb0d4b47bd98df534334f4caf6",
+   "url": "https://sketchfab.com/3d-models/wheelbarrow-c0dcebcb0d4b47bd98df534334f4caf6",
+   "author": "Alex",
+   "authorUrl": "https://sketchfab.com/i.aleksey.yakovlev",
+   "license": "CC Attribution",
+   "tris": 7224
+  },
+  "nat_watering_can": {
+   "title": "Watering Can Metal 01",
+   "source": "Poly Haven",
+   "asset": "watering_can_metal_01",
+   "url": "https://polyhaven.com/a/watering_can_metal_01",
+   "author": "Charles Nderitu",
+   "license": "CC0",
+   "tris": 11837
+  },
+  "sport_picnic_table": {
+   "title": "Wooden Picnic Table",
+   "source": "Poly Haven",
+   "asset": "wooden_picnic_table",
+   "url": "https://polyhaven.com/a/wooden_picnic_table",
+   "author": "Ulan Cabanilla",
+   "license": "CC0",
+   "tris": 10210
+  },
+  "sport_slide": {
+   "title": "Slide PlayGround",
+   "source": "Sketchfab",
+   "uid": "e59c8559ba42463881732790dcbfbb3c",
+   "url": "https://sketchfab.com/3d-models/slide-playground-e59c8559ba42463881732790dcbfbb3c",
+   "author": "vaedskalw",
+   "authorUrl": "https://sketchfab.com/vaedskalw",
+   "license": "CC Attribution",
+   "tris": 59989
+  },
+  "sport_seesaw": {
+   "title": "Seesaw - 445",
+   "source": "Sketchfab",
+   "uid": "a4c2c68115a64c158f61b3456cee2b0f",
+   "url": "https://sketchfab.com/3d-models/seesaw-445-a4c2c68115a64c158f61b3456cee2b0f",
+   "author": "amt16",
+   "authorUrl": "https://sketchfab.com/amt16",
+   "license": "CC Attribution",
+   "tris": 6420
+  },
+  "sport_playground_set": {
+   "title": "Abandoned Playground",
+   "source": "Sketchfab",
+   "uid": "fee40d7bf3e24de5b694d7aa3486066a",
+   "url": "https://sketchfab.com/3d-models/abandoned-playground-fee40d7bf3e24de5b694d7aa3486066a",
+   "author": "sergeilihandristov",
+   "authorUrl": "https://sketchfab.com/sergeilihandristov",
+   "license": "CC Attribution",
+   "tris": 2340
+  },
+  "sport_basketball_hoop": {
+   "title": "Basketball Hoop Panel",
+   "source": "Sketchfab",
+   "uid": "a30a5de53a6748c39cbd2923946b5993",
+   "url": "https://sketchfab.com/3d-models/basketball-hoop-panel-a30a5de53a6748c39cbd2923946b5993",
+   "author": "Nimrod Assaf",
+   "authorUrl": "https://sketchfab.com/nimrodassaf",
+   "license": "CC Attribution",
+   "tris": 6044
+  },
+  "sport_soccer_goal": {
+   "title": "Gary Fixter Football Goal",
+   "source": "Sketchfab",
+   "uid": "3001e42d65d3486ba56da3a36d6e5219",
+   "url": "https://sketchfab.com/3d-models/gary-fixter-football-goal-3001e42d65d3486ba56da3a36d6e5219",
+   "author": "Gary Fixter - Physical Training in Soccer",
+   "authorUrl": "https://sketchfab.com/garyfixter",
+   "license": "CC Attribution",
+   "tris": 27896
+  },
+  "sport_goalpost": {
+   "title": "Football Field Goal",
+   "source": "Sketchfab",
+   "uid": "0846e1a237d04b4d8106dde49ea668d5",
+   "url": "https://sketchfab.com/3d-models/football-field-goal-0846e1a237d04b4d8106dde49ea668d5",
+   "author": "Christian Gentry",
+   "authorUrl": "https://sketchfab.com/christianjgentry",
+   "license": "CC Attribution",
+   "tris": 2100
+  },
+  "sport_bleachers_alu": {
+   "title": "Bleacher",
+   "source": "Sketchfab",
+   "uid": "4960023d1ea340bfb07625aaa7f9713b",
+   "url": "https://sketchfab.com/3d-models/bleacher-4960023d1ea340bfb07625aaa7f9713b",
+   "author": "JanStano",
+   "authorUrl": "https://sketchfab.com/JanStano",
+   "license": "CC Attribution",
+   "tris": 888
+  },
+  "sport_soccer_ball": {
+   "title": "Football",
+   "source": "Poly Haven",
+   "asset": "football",
+   "url": "https://polyhaven.com/a/football",
+   "author": "Amal Kumar",
+   "license": "CC0",
+   "tris": 4296
+  },
+  "sport_basketball": {
+   "title": "Basketball",
+   "source": "Sketchfab",
+   "uid": "45aee654bbd541d18c9cd1a6c951f72d",
+   "url": "https://sketchfab.com/3d-models/basketball-45aee654bbd541d18c9cd1a6c951f72d",
+   "author": "Mauro3D",
+   "authorUrl": "https://sketchfab.com/maurogsw",
+   "license": "CC Attribution",
+   "tris": 12112
+  },
+  "sport_football_vintage": {
+   "title": "American Football",
+   "source": "Poly Haven",
+   "asset": "american_football",
+   "url": "https://polyhaven.com/a/american_football",
+   "author": "Riley Queen",
+   "license": "CC0",
+   "tris": 4480
+  },
+  "sport_baseball": {
+   "title": "Baseball 01",
+   "source": "Poly Haven",
+   "asset": "baseball_01",
+   "url": "https://polyhaven.com/a/baseball_01",
+   "author": "Rico Cilliers",
+   "license": "CC0",
+   "tris": 10848
+  },
+  "nat_tree_stump": {
+   "title": "Tree Stump 01",
+   "source": "Poly Haven",
+   "asset": "tree_stump_01",
+   "url": "https://polyhaven.com/a/tree_stump_01",
+   "author": "Rob Tuytel",
+   "license": "CC0",
+   "tris": 41046
+  },
+  "nat_agave": {
+   "title": "Big Aloe Scan HIGHPOLY",
+   "source": "Sketchfab",
+   "uid": "2ba4cea47ae740c49c9f1a690b3ce8c0",
+   "url": "https://sketchfab.com/3d-models/big-aloe-scan-highpoly-2ba4cea47ae740c49c9f1a690b3ce8c0",
+   "author": "sixonetwo",
+   "authorUrl": "https://sketchfab.com/evan4129",
+   "license": "CC Attribution",
+   "tris": 15017
+  },
+  "furn_schooldesk_01": {
+   "title": "School Desk 01",
+   "source": "Poly Haven",
+   "asset": "SchoolDesk_01",
+   "url": "https://polyhaven.com/a/SchoolDesk_01",
+   "author": "Ethan Place",
+   "license": "CC0",
+   "tris": 4162
+  },
+  "furn_school_desk_chair": {
+   "title": "School Desk and Chair",
+   "source": "Sketchfab",
+   "uid": "004b95391e4e48a797ee8d0cf612b5cf",
+   "url": "https://sketchfab.com/3d-models/school-desk-and-chair-004b95391e4e48a797ee8d0cf612b5cf",
+   "author": "T I A N",
+   "authorUrl": "https://sketchfab.com/Tian96",
+   "license": "CC Attribution",
+   "tris": 11230
+  },
+  "furn_school_desk_cn": {
+   "title": "Chinese High School Desk Chair",
+   "source": "Sketchfab",
+   "uid": "fedd5874a0a049b9b8a3b8fb44701362",
+   "url": "https://sketchfab.com/3d-models/chinese-high-school-desk-chair-fedd5874a0a049b9b8a3b8fb44701362",
+   "author": "Renderedbyzhai",
+   "authorUrl": "https://sketchfab.com/renderedbyzhai",
+   "license": "CC Attribution",
+   "tris": 6080
+  },
+  "furn_globe": {
+   "title": "Globe",
+   "source": "Sketchfab",
+   "uid": "f219f29dbd7f4b28be84c92e5c9507e6",
+   "url": "https://sketchfab.com/3d-models/globe-f219f29dbd7f4b28be84c92e5c9507e6",
+   "author": "Lassi Kaukonen",
+   "authorUrl": "https://sketchfab.com/thesidekick",
+   "license": "CC Attribution",
+   "tris": 13184
+  },
+  "furn_sewing_machine_treadle": {
+   "title": "Willoughsby Sewing Machine",
+   "source": "Sketchfab",
+   "uid": "0d0e00e5735440efa86b5da2ea8498b1",
+   "url": "https://sketchfab.com/3d-models/willoughsby-sewing-machine-0d0e00e5735440efa86b5da2ea8498b1",
+   "author": "Kuba \"Volant\" W\u00f3jcik",
+   "authorUrl": "https://sketchfab.com/KWojcik",
+   "license": "CC Attribution",
+   "tris": 17970
+  },
+  "obj_sewing_machine": {
+   "title": "Vintage Sewing Machine",
+   "source": "Sketchfab",
+   "uid": "8c6ea1ed6d7b42fdbf0fce21142fb846",
+   "url": "https://sketchfab.com/3d-models/vintage-sewing-machine-8c6ea1ed6d7b42fdbf0fce21142fb846",
+   "author": "Eryn_Noel",
+   "authorUrl": "https://sketchfab.com/Eryn_Noel",
+   "license": "CC Attribution",
+   "tris": 14852
+  },
+  "obj_rotary_phone": {
+   "title": "Rotary Phone",
+   "source": "Sketchfab",
+   "uid": "09f3f6bd3c914283924caf0754e0d00a",
+   "url": "https://sketchfab.com/3d-models/rotary-phone-09f3f6bd3c914283924caf0754e0d00a",
+   "author": "Patrick Cauty",
+   "authorUrl": "https://sketchfab.com/patrickcauty",
+   "license": "CC Attribution",
+   "tris": 60002
+  },
+  "obj_typewriter": {
+   "title": "Typewriter",
+   "source": "Sketchfab",
+   "uid": "f8339a2f7ea849b8afbebb76a40e1759",
+   "url": "https://sketchfab.com/3d-models/typewriter-f8339a2f7ea849b8afbebb76a40e1759",
+   "author": "Francesco Coldesina",
+   "authorUrl": "https://sketchfab.com/topfrank2013",
+   "license": "CC Attribution",
+   "tris": 60011
+  },
+  "furn_thermos_red": {
+   "title": "a thermos kettle",
+   "source": "Sketchfab",
+   "uid": "99f750217a8e47df8445cb63bbaa66ec",
+   "url": "https://sketchfab.com/3d-models/a-thermos-kettle-99f750217a8e47df8445cb63bbaa66ec",
+   "author": "downpink97",
+   "authorUrl": "https://sketchfab.com/downpink97",
+   "license": "CC Attribution",
+   "tris": 59576
+  },
+  "obj_thermos_green": {
+   "title": "Plastic Thermos",
+   "source": "Poly Haven",
+   "asset": "plastic_thermos",
+   "url": "https://polyhaven.com/a/plastic_thermos",
+   "author": "PierreB3D",
+   "license": "CC0",
+   "tris": 5514
+  },
+  "obj_rice_cooker": {
+   "title": "National Rice Cooker",
+   "source": "Sketchfab",
+   "uid": "8376d2613cb74acdbfad039e7b5e161c",
+   "url": "https://sketchfab.com/3d-models/national-rice-cooker-8376d2613cb74acdbfad039e7b5e161c",
+   "author": "National Heritage Board",
+   "authorUrl": "https://sketchfab.com/nhbheritage",
+   "license": "CC Attribution",
+   "tris": 60011
+  },
+  "obj_pedestal_fan": {
+   "title": "Electric Fan",
+   "source": "Sketchfab",
+   "uid": "c27f71e432b84353a245fb9b65dcdbf2",
+   "url": "https://sketchfab.com/3d-models/electric-fan-c27f71e432b84353a245fb9b65dcdbf2",
+   "author": "Lillya",
+   "authorUrl": "https://sketchfab.com/Lillya",
+   "license": "CC Attribution",
+   "tris": 58888
+  },
+  "obj_desk_fan": {
+   "title": "Retro-style Desk Fan",
+   "source": "Sketchfab",
+   "uid": "79bb384f2ed545a5ae8c2b9cfa06cd8f",
+   "url": "https://sketchfab.com/3d-models/retro-style-desk-fan-79bb384f2ed545a5ae8c2b9cfa06cd8f",
+   "author": "futaba@blender",
+   "authorUrl": "https://sketchfab.com/futaba_blender",
+   "license": "CC Attribution",
+   "tris": 20452
+  },
+  "obj_mirror_ornate": {
+   "title": "Ornate Mirror 01",
+   "source": "Poly Haven",
+   "asset": "ornate_mirror_01",
+   "url": "https://polyhaven.com/a/ornate_mirror_01",
+   "author": "James Ray Cock",
+   "license": "CC0",
+   "tris": 14246
+  },
+  "obj_guitar": {
+   "title": "Acoustic Guitar",
+   "source": "Sketchfab",
+   "uid": "b52fcec4b641493f8939c50c253c4ac3",
+   "url": "https://sketchfab.com/3d-models/acoustic-guitar-b52fcec4b641493f8939c50c253c4ac3",
+   "author": "afurokn",
+   "authorUrl": "https://sketchfab.com/afurokn",
+   "license": "CC Attribution",
+   "tris": 60022
+  },
+  "obj_ukulele": {
+   "title": "Ukulele 01",
+   "source": "Poly Haven",
+   "asset": "Ukulele_01",
+   "url": "https://polyhaven.com/a/Ukulele_01",
+   "author": "Joseph Burgan",
+   "license": "CC0",
+   "tris": 8912
+  },
+  "furn_vintage_suitcase": {
+   "title": "Vintage Suitcase",
+   "source": "Poly Haven",
+   "asset": "vintage_suitcase",
+   "url": "https://polyhaven.com/a/vintage_suitcase",
+   "author": "Maximilian Schuster",
+   "license": "CC0",
+   "tris": 16474
+  },
+  "obj_teddy_bears": {
+   "title": "Teddy bears",
+   "source": "Sketchfab",
+   "uid": "e84b12b4ac20402aaf4d40f2219cd0e2",
+   "url": "https://sketchfab.com/3d-models/teddy-bears-e84b12b4ac20402aaf4d40f2219cd0e2",
+   "author": "hectopod",
+   "authorUrl": "https://sketchfab.com/hectopod",
+   "license": "CC Attribution",
+   "tris": 34792
+  },
+  "obj_toy_car_tin": {
+   "title": "Car (Old Spanish Tin Toys)",
+   "source": "Sketchfab",
+   "uid": "d73bdf6fa58c4f5ea0d260261b4473a7",
+   "url": "https://sketchfab.com/3d-models/car-old-spanish-tin-toys-d73bdf6fa58c4f5ea0d260261b4473a7",
+   "author": "AERO3D",
+   "authorUrl": "https://sketchfab.com/aero3d.org",
+   "license": "CC Attribution",
+   "tris": 59947
+  },
+  "obj_tin_robot": {
+   "title": "Wind-up Tin Robot - toy",
+   "source": "Sketchfab",
+   "uid": "db96c5d4efc04a77a88403deacb1619e",
+   "url": "https://sketchfab.com/3d-models/wind-up-tin-robot-toy-db96c5d4efc04a77a88403deacb1619e",
+   "author": "Brian Trepanier",
+   "authorUrl": "https://sketchfab.com/CMBC",
+   "license": "CC Attribution",
+   "tris": 13852
+  },
+  "obj_doll_antique": {
+   "title": "Doll 4",
+   "source": "Sketchfab",
+   "uid": "5be2b6019f804566a8a390c6e0725e25",
+   "url": "https://sketchfab.com/3d-models/doll-4-5be2b6019f804566a8a390c6e0725e25",
+   "author": "IU Indianapolis University Library",
+   "authorUrl": "https://sketchfab.com/IUI-UniversityLibrary",
+   "license": "CC Attribution",
+   "tris": 49750
+  },
+  "obj_alphabet_blocks": {
+   "title": "Wooden Alphabet Blocks",
+   "source": "Sketchfab",
+   "uid": "5f8dfddbbc7d468784ca014378f7e5fe",
+   "url": "https://sketchfab.com/3d-models/wooden-alphabet-blocks-5f8dfddbbc7d468784ca014378f7e5fe",
+   "author": "Cherryvania",
+   "authorUrl": "https://sketchfab.com/mikequeen123",
+   "license": "CC Attribution",
+   "tris": 728
+  },
+  "obj_rubber_duck": {
+   "title": "Rubber Duck Toy",
+   "source": "Poly Haven",
+   "asset": "rubber_duck_toy",
+   "url": "https://polyhaven.com/a/rubber_duck_toy",
+   "author": "Plat251",
+   "license": "CC0",
+   "tris": 4288
+  },
+  "obj_camera_rangefinder": {
+   "title": "Camera 01",
+   "source": "Poly Haven",
+   "asset": "Camera_01",
+   "url": "https://polyhaven.com/a/Camera_01",
+   "author": "Rajil Jose Macatangay",
+   "license": "CC0",
+   "tris": 26987
+  },
+  "obj_movie_camera": {
+   "title": "Vintage Video Camera",
+   "source": "Poly Haven",
+   "asset": "vintage_video_camera",
+   "url": "https://polyhaven.com/a/vintage_video_camera",
+   "author": "James Ray Cock, Jenelle van Heerden",
+   "license": "CC0",
+   "tris": 18682
+  },
+  "furn_wicker_basket_02": {
+   "title": "Wicker Basket 02",
+   "source": "Poly Haven",
+   "asset": "wicker_basket_02",
+   "url": "https://polyhaven.com/a/wicker_basket_02",
+   "author": "Kuutti Siitonen",
+   "license": "CC0",
+   "tris": 17850
+  },
+  "obj_laundry_basket": {
+   "title": "laundry basket",
+   "source": "Sketchfab",
+   "uid": "2049ca95ca424b66a8e1948660c68b7e",
+   "url": "https://sketchfab.com/3d-models/laundry-basket-2049ca95ca424b66a8e1948660c68b7e",
+   "author": "chanmagomed",
+   "authorUrl": "https://sketchfab.com/chanmagomed",
+   "license": "CC Attribution",
+   "tris": 5761
+  },
+  "obj_wicker_basket": {
+   "title": "Wicker Basket 01",
+   "source": "Poly Haven",
+   "asset": "wicker_basket_01",
+   "url": "https://polyhaven.com/a/wicker_basket_01",
+   "author": "Kuutti Siitonen",
+   "license": "CC0",
+   "tris": 22276
+  },
+  "furn_wooden_bucket": {
+   "title": "Wooden Bucket 01",
+   "source": "Poly Haven",
+   "asset": "wooden_bucket_01",
+   "url": "https://polyhaven.com/a/wooden_bucket_01",
+   "author": "James Ray Cock",
+   "license": "CC0",
+   "tris": 5116
+  },
+  "obj_bucket_steel": {
+   "title": "Galvanised Steel Bucket",
+   "source": "Sketchfab",
+   "uid": "d9e6ece6e7e84597bef214ce3b289acd",
+   "url": "https://sketchfab.com/3d-models/galvanised-steel-bucket-d9e6ece6e7e84597bef214ce3b289acd",
+   "author": "DJMiddi",
+   "authorUrl": "https://sketchfab.com/DJMiddi",
+   "license": "CC Attribution",
+   "tris": 1290
+  },
+  "obj_wash_basin": {
+   "title": "CC0 - Plastic Wash Basin 2",
+   "source": "Sketchfab",
+   "uid": "1524f04f2d8147d7a63d36bfee1c5458",
+   "url": "https://sketchfab.com/3d-models/cc0-plastic-wash-basin-2-1524f04f2d8147d7a63d36bfee1c5458",
+   "author": "plaggy",
+   "authorUrl": "https://sketchfab.com/plaggy",
+   "license": "CC Attribution",
+   "tris": 3272
+  },
+  "obj_wash_tub": {
+   "title": "Wooden Bucket 02",
+   "source": "Poly Haven",
+   "asset": "wooden_bucket_02",
+   "url": "https://polyhaven.com/a/wooden_bucket_02",
+   "author": "James Ray Cock",
+   "license": "CC0",
+   "tris": 7252
+  },
+  "obj_mahjong_tiles": {
+   "title": "Mahjong",
+   "source": "Sketchfab",
+   "uid": "a0d118ec8fa84e9ab556a10529ef7bbb",
+   "url": "https://sketchfab.com/3d-models/mahjong-a0d118ec8fa84e9ab556a10529ef7bbb",
+   "author": "tsutomu.saito",
+   "authorUrl": "https://sketchfab.com/tsutomu.saito",
+   "license": "CC Attribution",
+   "tris": 17000
+  },
+  "obj_chess_set": {
+   "title": "Chess Set",
+   "source": "Poly Haven",
+   "asset": "chess_set",
+   "url": "https://polyhaven.com/a/chess_set",
+   "author": "Riley Queen",
+   "license": "CC0",
+   "tris": 76920
+  },
+  "arch_radiator": {
+   "title": "PLAIN 3K cast-iron radiator",
+   "source": "Sketchfab",
+   "uid": "f100fab40964464a99103ffe53e6b8f5",
+   "url": "https://sketchfab.com/3d-models/plain-3k-cast-iron-radiator-f100fab40964464a99103ffe53e6b8f5",
+   "author": "termagroup",
+   "authorUrl": "https://sketchfab.com/termagroup",
+   "license": "CC Attribution",
+   "tris": 61070
+  },
+  "obj_space_heater": {
+   "title": "space Heater",
+   "source": "Sketchfab",
+   "uid": "7b35843ab9364ca695f11224698efabe",
+   "url": "https://sketchfab.com/3d-models/space-heater-7b35843ab9364ca695f11224698efabe",
+   "author": "Tom Seddon",
+   "authorUrl": "https://sketchfab.com/bloodmeat08",
+   "license": "CC Attribution",
+   "tris": 5950
+  },
+  "obj_oxford_shoe": {
+   "title": "Old Oxford Shoe",
+   "source": "Sketchfab",
+   "uid": "29a5ed053eab46a7af308215600985a2",
+   "url": "https://sketchfab.com/3d-models/old-oxford-shoe-29a5ed053eab46a7af308215600985a2",
+   "author": "inciprocal",
+   "authorUrl": "https://sketchfab.com/inciprocal.com",
+   "license": "CC Attribution",
+   "tris": 19982
+  },
+  "obj_rain_boots": {
+   "title": "Rubber Boots",
+   "source": "Poly Haven",
+   "asset": "rubber_boots",
+   "url": "https://polyhaven.com/a/rubber_boots",
+   "author": "L",
+   "license": "CC0",
+   "tris": 56128
+  },
+  "obj_fedora": {
+   "title": "Fedora Hat",
+   "source": "Sketchfab",
+   "uid": "bff84a883a65460790e186bfb63f7581",
+   "url": "https://sketchfab.com/3d-models/fedora-hat-bff84a883a65460790e186bfb63f7581",
+   "author": "denj666",
+   "authorUrl": "https://sketchfab.com/denj666",
+   "license": "CC Attribution",
+   "tris": 10000
+  },
+  "obj_bucket_hat": {
+   "title": "Fishermans Hat",
+   "source": "Poly Haven",
+   "asset": "fishermans_hat",
+   "url": "https://polyhaven.com/a/fishermans_hat",
+   "author": "PierreB3D",
+   "license": "CC0",
+   "tris": 10304
+  },
+  "obj_handbag": {
+   "title": "Worn leather handbag",
+   "source": "Sketchfab",
+   "uid": "0732e0dfee7747e49cef95f3d179d880",
+   "url": "https://sketchfab.com/3d-models/worn-leather-handbag-0732e0dfee7747e49cef95f3d179d880",
+   "author": "Lassi Kaukonen",
+   "authorUrl": "https://sketchfab.com/thesidekick",
+   "license": "CC Attribution",
+   "tris": 60031
+  },
+  "furn_backpack_blue": {
+   "title": "Light Blue Eastpak-like backpack",
+   "source": "Sketchfab",
+   "uid": "9d36b64828b145f7bce0ba9b9b8bb740",
+   "url": "https://sketchfab.com/3d-models/light-blue-eastpak-like-backpack-9d36b64828b145f7bce0ba9b9b8bb740",
+   "author": "Jungle Jim",
+   "authorUrl": "https://sketchfab.com/jungle_jim",
+   "license": "CC Attribution",
+   "tris": 10546
+  },
+  "furn_backpack_black": {
+   "title": "Small Black Backpack",
+   "source": "Sketchfab",
+   "uid": "3f584ae6b16e45c8ae69081f4609d75a",
+   "url": "https://sketchfab.com/3d-models/small-black-backpack-3f584ae6b16e45c8ae69081f4609d75a",
+   "author": "Jungle Jim",
+   "authorUrl": "https://sketchfab.com/jungle_jim",
+   "license": "CC Attribution",
+   "tris": 10462
+  },
+  "obj_lantern_wood": {
+   "title": "Wooden Lantern 01",
+   "source": "Poly Haven",
+   "asset": "wooden_lantern_01",
+   "url": "https://polyhaven.com/a/wooden_lantern_01",
+   "author": "James Ray Cock",
+   "license": "CC0",
+   "tris": 8321
+  },
+  "obj_lantern_hurricane": {
+   "title": "Lantern 01",
+   "source": "Poly Haven",
+   "asset": "Lantern_01",
+   "url": "https://polyhaven.com/a/Lantern_01",
+   "author": "Rajil Jose Macatangay",
+   "license": "CC0",
+   "tris": 33902
+  },
+  "nat_rocks_mossy": {
+   "title": "Rock Moss Set 01",
+   "source": "Poly Haven",
+   "asset": "rock_moss_set_01",
+   "url": "https://polyhaven.com/a/rock_moss_set_01",
+   "author": "Kless Gyzen",
+   "license": "CC0",
+   "tris": 59968
+  }
+ }
+}
