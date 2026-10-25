@@ -26,6 +26,8 @@ type MemoryState = {
   /** Someone else's memory, shared publicly (the San Francisco map): seen through their eyes, without the family's
    *  two perspectives standing in it. */
   shared?: boolean;
+  /** A place we already have finished (a garden, a football field...): it forms whole instead of being planned. */
+  showcase?: string | null;
 };
 
 export const useMemory = create<MemoryState>(() => ({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null, place: null }));

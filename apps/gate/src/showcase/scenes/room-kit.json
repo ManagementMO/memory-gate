@@ -1,0 +1,683 @@
+{
+ "title": "Victorian parlour, San Francisco, 1960s (kit assembly)",
+ "env": {
+  "hdri": "kloofendal_48d_partly_cloudy_puresky",
+  "background": "hdri",
+  "hdriRotation": 120,
+  "envIntensity": 0.42,
+  "backgroundIntensity": 0.85,
+  "exposure": 1.2,
+  "toneMapping": "aces",
+  "sun": {
+   "dir": [
+    0.62,
+    0.48,
+    -0.8
+   ],
+   "intensity": 8,
+   "color": "#ffc98a",
+   "shadowArea": 6,
+   "center": [
+    0,
+    1,
+    -1
+   ],
+   "bias": -2e-05,
+   "normalBias": 0.03
+  },
+  "hemi": {
+   "sky": "#fff3e2",
+   "ground": "#e3cfb0",
+   "intensity": 0.8
+  },
+  "ground": {
+   "texture": "asphalt_02",
+   "size": 400,
+   "tile": 4,
+   "color": "#8a8580",
+   "y": -3.4
+  },
+  "ao": true,
+  "aoRadius": 0.35,
+  "aoIntensity": 0.9
+ },
+ "room": {
+  "w": 4.8,
+  "d": 6.0,
+  "h": 3.3,
+  "bayDepth": 0.8,
+  "bayOpen": 2.8,
+  "bayWinSide": 0.62,
+  "bayWinFront": 0.9,
+  "sill": 0.62,
+  "bayHead": 2.75,
+  "windowModel": "arch_window_sash",
+  "lace": null,
+  "laceOpacity": 0.6,
+  "door": {
+   "x0": 1.05,
+   "x1": 2.0,
+   "h": 2.07
+  },
+  "wainscot": {
+   "m": "arch_wainscot_panel",
+   "h": 0.95,
+   "ry": 90,
+   "skipLeft": [
+    2.25,
+    3.75
+   ],
+   "cap": true,
+   "capColor": "#a8724f"
+  },
+  "trimKit": "arch_trim_kit",
+  "crown": [
+   "Crown_Molding_Trim_0"
+  ],
+  "crownH": 0.16,
+  "crownFlip": false,
+  "pictureRail": 2.42,
+  "doorParts": [
+   "Door_Six_Panel",
+   "Casing",
+   "Door_Jamb",
+   "Door_Stop",
+   "Knob",
+   "Hinge"
+  ],
+  "wallColor": "#f2e6cc",
+  "windowPaint": "#f2ece0",
+  "windowPaintFlat": true
+ },
+ "lights": [
+  {
+   "type": "point",
+   "p": [
+    0.2,
+    2.45,
+    0.2
+   ],
+   "color": "#ffd9a0",
+   "intensity": 5,
+   "distance": 8
+  },
+  {
+   "type": "point",
+   "p": [
+    -2.2,
+    1.85,
+    0.75
+   ],
+   "color": "#ffcf8a",
+   "intensity": 1.2,
+   "distance": 3.5
+  },
+  {
+   "type": "point",
+   "p": [
+    -2.2,
+    1.85,
+    -0.75
+   ],
+   "color": "#ffcf8a",
+   "intensity": 1.2,
+   "distance": 3.5
+  },
+  {
+   "type": "point",
+   "p": [
+    2.05,
+    1.45,
+    -1.2
+   ],
+   "color": "#ffd59a",
+   "intensity": 2.5,
+   "distance": 5
+  }
+ ],
+ "items": [
+  {
+   "m": "arch_sf_shopfront_building",
+   "p": [
+    0,
+    -3.4,
+    -21
+   ],
+   "h": 12.5
+  },
+  {
+   "m": "arch_fireplace_victorian",
+   "p": [
+    -2.04,
+    0,
+    0
+   ],
+   "ry": 90,
+   "h": 1.35
+  },
+  {
+   "m": "obj_painting_gilt",
+   "p": [
+    -2.385,
+    1.5,
+    0
+   ],
+   "ry": 90,
+   "w": 0.95
+  },
+  {
+   "m": "arch_wall_lamp",
+   "p": [
+    -2.4,
+    1.72,
+    0.78
+   ],
+   "ry": 90,
+   "h": 0.32
+  },
+  {
+   "m": "arch_wall_lamp",
+   "p": [
+    -2.4,
+    1.72,
+    -0.78
+   ],
+   "ry": 90,
+   "h": 0.32
+  },
+  {
+   "m": "obj_mantel_clock",
+   "p": [
+    -2.26,
+    1.35,
+    0
+   ],
+   "ry": 90
+  },
+  {
+   "m": "obj_photo_frame_black",
+   "p": [
+    -2.27,
+    1.35,
+    0.42
+   ],
+   "ry": 0
+  },
+  {
+   "m": "obj_photo_frame_white",
+   "p": [
+    -2.27,
+    1.35,
+    -0.4
+   ],
+   "ry": 0
+  },
+  {
+   "m": "obj_candlestick",
+   "p": [
+    -2.27,
+    1.35,
+    0.62
+   ]
+  },
+  {
+   "m": "obj_candlestick",
+   "p": [
+    -2.27,
+    1.35,
+    -0.6
+   ]
+  },
+  {
+   "m": "obj_fireplace_tools",
+   "p": [
+    -2.15,
+    0,
+    0.92
+   ],
+   "ry": 90,
+   "h": 0.72
+  },
+  {
+   "m": "arch_chandelier_shades",
+   "p": [
+    0.2,
+    2.52,
+    0.2
+   ]
+  },
+  {
+   "m": "furn_sofa_03",
+   "p": [
+    1.92,
+    0,
+    0.35
+   ],
+   "ry": -90,
+   "w": 2.2
+  },
+  {
+   "m": "furn_chinese_tea_table",
+   "p": [
+    0.85,
+    0,
+    0.35
+   ],
+   "h": 0.48
+  },
+  {
+   "m": "furn_green_armchair",
+   "p": [
+    -1.15,
+    0,
+    1.75
+   ],
+   "ry": 140
+  },
+  {
+   "m": "furn_rocking_chair",
+   "p": [
+    0.55,
+    0,
+    -2.85
+   ],
+   "ry": 205
+  },
+  {
+   "m": "furn_classic_nightstand",
+   "p": [
+    2.1,
+    0,
+    1.85
+   ],
+   "ry": -90
+  },
+  {
+   "m": "obj_rotary_phone",
+   "p": [
+    2.12,
+    0.7,
+    1.82
+   ],
+   "ry": -120,
+   "w": 0.24
+  },
+  {
+   "m": "furn_floor_lamp_drum",
+   "p": [
+    2.05,
+    0,
+    -1.2
+   ],
+   "h": 1.6
+  },
+  {
+   "m": "obj_tv_1960s",
+   "p": [
+    -1.85,
+    0,
+    2.5
+   ],
+   "ry": 140,
+   "h": 1.08
+  },
+  {
+   "m": "furn_zenith_console",
+   "p": [
+    -0.35,
+    0,
+    2.7
+   ],
+   "ry": 180,
+   "w": 1.55
+  },
+  {
+   "m": "furn_potted_plant_02",
+   "p": [
+    -1.0,
+    0,
+    -3.25
+   ],
+   "h": 0.95
+  },
+  {
+   "m": "furn_potted_plant_04",
+   "p": [
+    0.0,
+    0.64,
+    -3.7
+   ],
+   "h": 0.24
+  },
+  {
+   "m": "obj_mirror_ornate",
+   "p": [
+    2.395,
+    1.3,
+    0.35
+   ],
+   "ry": -90,
+   "h": 0.9
+  },
+  {
+   "m": "obj_wall_photo",
+   "p": [
+    2.395,
+    1.55,
+    -0.75
+   ],
+   "ry": -90,
+   "w": 0.45
+  },
+  {
+   "m": "furn_hanging_picture_frame_03",
+   "p": [
+    2.395,
+    1.5,
+    1.45
+   ],
+   "ry": -90,
+   "h": 0.42
+  },
+  {
+   "m": "obj_tea_set",
+   "part": [
+    "teapot_01"
+   ],
+   "p": [
+    0.85,
+    0.48,
+    0.2
+   ],
+   "h": 0.17
+  },
+  {
+   "m": "obj_tea_set",
+   "part": [
+    "cup_small_01",
+    "saucer_circular_03"
+   ],
+   "p": [
+    0.62,
+    0.48,
+    0.52
+   ]
+  },
+  {
+   "m": "obj_fruit_bowl",
+   "p": [
+    1.05,
+    0.48,
+    0.5
+   ]
+  },
+  {
+   "m": "obj_spectacles",
+   "p": [
+    0.7,
+    0.48,
+    0.05
+   ],
+   "ry": 30
+  },
+  {
+   "m": "obj_throw_pillows",
+   "p": [
+    2.02,
+    0.42,
+    0.95
+   ],
+   "ry": -75,
+   "w": 0.5,
+   "part": [
+    "pillow01"
+   ]
+  },
+  {
+   "m": "obj_vase_white",
+   "p": [
+    0.55,
+    0.66,
+    2.8
+   ],
+   "h": 0.32
+  },
+  {
+   "m": "obj_record_player",
+   "p": [
+    0.1,
+    0.66,
+    2.78
+   ],
+   "ry": 180,
+   "w": 0.42
+  },
+  {
+   "m": "furn_books_encyclopedia",
+   "p": [
+    -0.6,
+    0.66,
+    2.8
+   ],
+   "ry": 180,
+   "w": 0.42
+  },
+  {
+   "m": "obj_fedora",
+   "p": [
+    0.35,
+    0.66,
+    2.72
+   ],
+   "ry": 160,
+   "w": 0.3
+  },
+  {
+   "m": "furn_antique_ceramic_vase_01",
+   "p": [
+    -2.1,
+    0,
+    -0.95
+   ],
+   "h": 0.5
+  },
+  {
+   "m": "obj_newspapers",
+   "p": [
+    -0.65,
+    0,
+    1.95
+   ],
+   "ry": 20,
+   "w": 0.45
+  },
+  {
+   "m": "obj_throw_pillows",
+   "part": [
+    "pillow02"
+   ],
+   "p": [
+    2.02,
+    0.42,
+    -0.3
+   ],
+   "ry": -105,
+   "w": 0.45
+  },
+  {
+   "m": "obj_rug_persian",
+   "p": [
+    0.75,
+    0.005,
+    0.35
+   ],
+   "ry": 90,
+   "w": 2.6
+  },
+  {
+   "m": "arch_curtain_victorian",
+   "p": [
+    -1.55,
+    0,
+    -2.93
+   ],
+   "ry": 0,
+   "h": 2.72
+  },
+  {
+   "m": "arch_curtain_victorian",
+   "p": [
+    1.55,
+    0,
+    -2.93
+   ],
+   "ry": 180,
+   "h": 2.72
+  },
+  {
+   "m": "furn_potted_plant_02",
+   "p": [
+    1.05,
+    0,
+    -3.35
+   ],
+   "h": 0.85,
+   "ry": 120
+  },
+  {
+   "m": "furn_hanging_picture_frame_03",
+   "p": [
+    -2.395,
+    1.55,
+    2.35
+   ],
+   "ry": 90,
+   "h": 0.4
+  },
+  {
+   "m": "obj_photo_frame_black",
+   "p": [
+    2.12,
+    0.7,
+    1.62
+   ],
+   "ry": -110
+  },
+  {
+   "m": "obj_flowers_vase",
+   "p": [
+    -0.95,
+    0.66,
+    2.78
+   ],
+   "h": 0.42
+  },
+  {
+   "m": "obj_vase_copper",
+   "p": [
+    -2.27,
+    1.35,
+    -0.82
+   ],
+   "h": 0.16
+  },
+  {
+   "m": "obj_wicker_basket",
+   "p": [
+    -1.55,
+    0,
+    2.35
+   ],
+   "ry": 30
+  },
+  {
+   "m": "obj_tin_robot",
+   "p": [
+    0.15,
+    0,
+    1.75
+   ],
+   "ry": 200,
+   "h": 0.22
+  },
+  {
+   "m": "obj_mug_white",
+   "p": [
+    2.02,
+    0.7,
+    2.02
+   ],
+   "h": 0.095,
+   "ry": 40
+  },
+  {
+   "m": "obj_newspapers",
+   "p": [
+    1.75,
+    0.45,
+    -0.25
+   ],
+   "ry": 75,
+   "w": 0.38
+  }
+ ],
+ "script": "room-kit.js",
+ "cameras": [
+  {
+   "name": "standing in the parlour",
+   "pos": [
+    1.5,
+    1.6,
+    2.5
+   ],
+   "target": [
+    -0.7,
+    1.25,
+    -1.6
+   ],
+   "fov": 62
+  },
+  {
+   "name": "whole room",
+   "pos": [
+    2.15,
+    2.85,
+    2.85
+   ],
+   "target": [
+    -0.9,
+    0.9,
+    -1.0
+   ],
+   "fov": 74
+  },
+  {
+   "name": "the mantel",
+   "pos": [
+    -0.85,
+    1.55,
+    0.55
+   ],
+   "target": [
+    -2.3,
+    1.45,
+    0.0
+   ],
+   "fov": 50
+  },
+  {
+   "name": "dbg back wall",
+   "pos": [
+    0.5,
+    1.6,
+    -1.0
+   ],
+   "target": [
+    1.4,
+    1.2,
+    3.0
+   ],
+   "fov": 70
+  }
+ ]
+}

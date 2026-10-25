@@ -1,0 +1,84 @@
+{
+ "title": "Bedroom, China, 1950s",
+ "env": {
+  "hdri": "chinese_garden",
+  "background": "hdri",
+  "hdriRotation": 90,
+  "envIntensity": 0.55,
+  "backgroundIntensity": 0.9,
+  "exposure": 1.2,
+  "toneMapping": "aces",
+  "sun": {
+   "dir": [
+    -0.85,
+    0.5,
+    -0.12
+   ],
+   "intensity": 7,
+   "color": "#ffd29a",
+   "shadowArea": 4.5,
+   "center": [
+    0,
+    1,
+    0
+   ],
+   "bias": -0.0003,
+   "normalBias": 0.02
+  },
+  "hemi": {
+   "sky": "#fff0dc",
+   "ground": "#d9c2a6",
+   "intensity": 0.35
+  },
+  "ground": null,
+  "ao": true,
+  "aoRadius": 0.35,
+  "aoIntensity": 0.9
+ },
+ "items": [],
+ "script": "bedroom-1950s-china.js",
+ "cameras": [
+  {
+   "name": "in the doorway",
+   "pos": [
+    1.55,
+    1.6,
+    1.75
+   ],
+   "target": [
+    -0.6,
+    0.95,
+    -1.4
+   ],
+   "fov": 62
+  },
+  {
+   "name": "whole room",
+   "pos": [
+    2.15,
+    2.7,
+    1.95
+   ],
+   "target": [
+    -0.8,
+    0.6,
+    -1.0
+   ],
+   "fov": 72
+  },
+  {
+   "name": "the bed",
+   "pos": [
+    0.55,
+    1.3,
+    0.6
+   ],
+   "target": [
+    0.5,
+    0.62,
+    -1.3
+   ],
+   "fov": 50
+  }
+ ]
+}

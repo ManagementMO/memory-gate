@@ -17,6 +17,7 @@ import { atmoLive, stepAtmosphere, useAtmosphere } from './atmosphere';
 import { Setting } from './Setting';
 import { Landmark } from './Landmark';
 import { PlanPeople } from './PlanPeople';
+import { Showcase, showcaseFor } from '../../showcase/Showcase';
 import { formation, SketchObject } from './SketchObject';
 import { memoryPlacements } from '../../social/overlay';
 import { PerspectiveLayer } from '../../social/scene/PerspectiveLayer';
@@ -85,6 +86,9 @@ export function MemoryScene() {
   const photoWorld = useGate((s) => s.photoWorld);
   const placeKey = useMemory((s) => s.place);
   const shared = useMemory((s) => !!s.shared);
+  // A garden, a football field, a classroom we already have finished: it forms whole, nothing to plan or draw.
+  const showcase = useMemo(() => (!shared && !photoWorld && !placeKey ? showcaseFor(plan) : null), [plan, shared, photoWorld, placeKey]);
+  useEffect(() => { useMemory.setState({ showcase }); return () => { useMemory.setState({ showcase: null }); }; }, [showcase]);
   const place = placeKey ? PLACES[placeKey] : null;
   const coveredByPhoto = useRef(new Set<string>());
   // When the photo becomes the world, everything planned from it so far is already in the picture.
@@ -119,17 +123,18 @@ export function MemoryScene() {
 
   // Fog that matches the memory's horizon gives the place depth and lets distant things dissolve into the dream.
   useEffect(() => {
-    if (!active) { scene.fog = null; return; }
+    if (!active || showcase) { if (!showcase) scene.fog = null; return; }
     const fog = new THREE.Fog(new THREE.Color('#f2f2f6'), plan?.setting.water ? 16 : 9, plan?.setting.water ? 52 : 30);
     scene.fog = fog;
     return () => { if (scene.fog === fog) scene.fog = null; };
-  }, [active, scene, plan?.setting.water]);
+  }, [active, scene, plan?.setting.water, showcase]);
 
   const lastFormed = useRef(0);
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05);
     stepAtmosphere(dt, active && !!plan);
-    if (scene.fog instanceof THREE.Fog) scene.fog.color.copy(atmoLive.horizon).lerp(new THREE.Color('#f2f2f6'), 1 - atmoLive.amount);
+    if (scene.fog instanceof THREE.Fog && !showcase) scene.fog.color.copy(atmoLive.horizon).lerp(new THREE.Color('#f2f2f6'), 1 - atmoLive.amount);
+    if (plan && showcase) { if (lastFormed.current !== 1) { lastFormed.current = 1; useMemory.setState({ formed: 1 }); } return; }
     if (!plan) { if (lastFormed.current !== 0) { lastFormed.current = 0; useMemory.setState({ formed: 0 }); } return; }
     const counted = (useGate.getState().photoWorld ? plan.objects.filter((o) => !coveredByPhoto.current.has(o.id)) : plan.objects).filter((o) => !held(plan, o.kind));
     let sum = 0;
@@ -158,12 +163,13 @@ export function MemoryScene() {
   const sorted = [...shown].sort((a, b) => (ORDER[entryOf(a.kind).place] ?? 3) - (ORDER[entryOf(b.kind).place] ?? 3));
   return (
     <group name="memory">
-      {!photoWorld && !place && <Setting plan={plan} />}
-      {!photoWorld && plan.landmark && <Landmark landmark={plan.landmark} />}
+      {showcase && <Showcase name={showcase} />}
+      {!photoWorld && !place && !showcase && <Setting plan={plan} />}
+      {!photoWorld && !showcase && plan.landmark && <Landmark landmark={plan.landmark} />}
       {!!plan.people?.length && <PlanPeople plan={plan} />}
       {ground}
       <Ambience kind={plan.ambience} />
-      {sorted.map((o, i) => {
+      {!showcase && sorted.map((o, i) => {
         const p = placements.get(o.id);
         if (!p) return null;
         return <SketchObject key={o.id} obj={o} place={p} delay={delayOf(o.id, i, o.kind)} />;

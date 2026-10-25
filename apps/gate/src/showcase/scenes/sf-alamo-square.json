@@ -1,0 +1,97 @@
+{
+  "title": "Alamo Square \u2014 the Painted Ladies",
+  "env": {
+    "hdri": "kloofendal_48d_partly_cloudy_puresky",
+    "background": "hdri",
+    "hdriRotation": 200,
+    "envIntensity": 0.85,
+    "backgroundIntensity": 1.0,
+    "exposure": 0.95,
+    "toneMapping": "aces",
+    "sun": {
+      "dir": [
+        -0.62,
+        0.55,
+        0.42
+      ],
+      "intensity": 3.0,
+      "color": "#fff1df",
+      "shadowArea": 140,
+      "center": [
+        -40,
+        0,
+        0
+      ]
+    },
+    "hemi": {
+      "sky": "#dbe8f5",
+      "ground": "#6b6a55",
+      "intensity": 0.35
+    },
+    "ground": {
+      "color": "#8e8b84",
+      "size": 30000,
+      "y": -49
+    },
+    "fog": {
+      "color": "#d9e1e8",
+      "density": 0.0002
+    },
+    "ao": true,
+    "aoRadius": 0.6,
+    "aoIntensity": 0.8,
+    "far": 30000
+  },
+  "alamo": {
+    "seed": 5
+  },
+  "items": [],
+  "cameras": [
+    {
+      "name": "on the lawn (eye level)",
+      "pos": [
+        -100,
+        0,
+        38
+      ],
+      "eye": 1.6,
+      "target": [
+        0,
+        11,
+        -14
+      ],
+      "fov": 38
+    },
+    {
+      "name": "wide over the park",
+      "pos": [
+        -245,
+        0,
+        24
+      ],
+      "eye": 30,
+      "target": [
+        40,
+        0,
+        -20
+      ],
+      "fov": 55
+    },
+    {
+      "name": "detail: the row from the lawn's foot",
+      "pos": [
+        -30,
+        0,
+        44
+      ],
+      "eye": 1.6,
+      "target": [
+        2,
+        8,
+        4
+      ],
+      "fov": 50
+    }
+  ],
+  "script": "sf-alamo-square.js"
+}

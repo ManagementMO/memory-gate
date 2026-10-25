@@ -1,0 +1,235 @@
+{
+ "title": "Friday night football \u2014 Lincoln High",
+ "env": {
+  "hdri": "qwantani_dusk_2_puresky",
+  "background": "hdri",
+  "hdriRotation": 0,
+  "envIntensity": 0.14,
+  "backgroundIntensity": 0.16,
+  "exposure": 1.05,
+  "toneMapping": "aces",
+  "sun": null,
+  "ground": {
+   "texture": "leafy_grass",
+   "size": 3000,
+   "tile": 4,
+   "color": "#3f5530",
+   "y": -0.05
+  },
+  "fog": {
+   "color": "#3a4058",
+   "density": 0.0022
+  },
+  "ao": true,
+  "aoRadius": 0.6,
+  "aoIntensity": 0.8,
+  "far": 3000
+ },
+ "items": [
+  {
+   "m": "sport_water_cooler",
+   "p": [
+    -13.2,
+    0,
+    -33.4
+   ],
+   "ry": 30,
+   "h": 0.62
+  },
+  {
+   "m": "sport_water_cooler",
+   "p": [
+    -13.9,
+    0,
+    -33.9
+   ],
+   "ry": -20,
+   "h": 0.62
+  },
+  {
+   "m": "sport_football_helmet",
+   "p": [
+    -9.2,
+    0.475,
+    -33.98
+   ],
+   "ry": 80,
+   "h": 0.27
+  },
+  {
+   "m": "sport_football_helmet",
+   "p": [
+    -7.9,
+    0.475,
+    -33.98
+   ],
+   "ry": 110,
+   "h": 0.27
+  },
+  {
+   "m": "sport_football_helmet",
+   "p": [
+    -4.6,
+    0.475,
+    -33.98
+   ],
+   "ry": 60,
+   "h": 0.27
+  },
+  {
+   "m": "sport_football_helmet",
+   "p": [
+    1.2,
+    0.475,
+    -33.98
+   ],
+   "ry": 95,
+   "h": 0.27
+  },
+  {
+   "m": "sport_football_helmet",
+   "p": [
+    -6.4,
+    0,
+    -33.3
+   ],
+   "ry": 160,
+   "h": 0.27
+  },
+  {
+   "m": "sport_megaphone",
+   "p": [
+    -2.7,
+    0.475,
+    -33.98
+   ],
+   "ry": 20,
+   "len": 0.37
+  },
+  {
+   "m": "sport_clipboard",
+   "p": [
+    -11.4,
+    0.475,
+    -33.98
+   ],
+   "ry": 75,
+   "len": 0.34
+  },
+  {
+   "m": "sport_football",
+   "p": [
+    -11.0,
+    0.0,
+    -29.2
+   ],
+   "ry": 35,
+   "len": 0.28
+  },
+  {
+   "m": "sport_football",
+   "p": [
+    -11.6,
+    0.0,
+    -29.6
+   ],
+   "ry": 120,
+   "len": 0.28
+  },
+  {
+   "m": "sport_chain_set",
+   "p": [
+    3.5,
+    0,
+    26.4
+   ],
+   "ry": 0,
+   "h": 2.44
+  },
+  {
+   "m": "sport_picnic_table",
+   "p": [
+    -96,
+    0,
+    -36
+   ],
+   "ry": 90,
+   "h": 0.75
+  },
+  {
+   "m": "sport_picnic_table",
+   "p": [
+    -96,
+    0,
+    -23
+   ],
+   "ry": 80,
+   "h": 0.75
+  },
+  {
+   "m": "sport_school_bus",
+   "p": [
+    58,
+    0,
+    72
+   ],
+   "ry": 0,
+   "h": 3.0
+  },
+  {
+   "m": "sport_school_bus",
+   "p": [
+    58,
+    0,
+    77
+   ],
+   "ry": 0,
+   "h": 3.0
+  }
+ ],
+ "cameras": [
+  {
+   "name": "sideline, eye level",
+   "pos": [
+    -8,
+    1.6,
+    -27.2
+   ],
+   "target": [
+    16.6,
+    1.0,
+    -10.0
+   ],
+   "fov": 60
+  },
+  {
+   "name": "from the home stands",
+   "pos": [
+    -18,
+    8.0,
+    -60.6
+   ],
+   "target": [
+    10,
+    0,
+    4
+   ],
+   "fov": 60
+  },
+  {
+   "name": "the home bench",
+   "pos": [
+    -4.2,
+    1.05,
+    -30.4
+   ],
+   "target": [
+    -11.5,
+    1.1,
+    -38.5
+   ],
+   "fov": 55
+  }
+ ],
+ "script": "football-field.js"
+}

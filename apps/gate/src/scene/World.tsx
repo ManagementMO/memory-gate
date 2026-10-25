@@ -72,7 +72,7 @@ function MemoryLights() {
     const g = useGate.getState();
     const inPalace = g.world === 'palace' && !isDay;
     palace.current += ((inPalace ? 1 : 0) - palace.current) * (1 - Math.exp(-Math.min(dt, 0.05) * 3));
-    const pk = 1 - palace.current;
+    const pk = (1 - palace.current) * (useMemory.getState().showcase ? 0.15 : 1); // a showcase brings its own sun
     scene.environmentIntensity = 0.9 - 0.4 * k;
     if (fill.current) fill.current.intensity = 0.35 * k;
     if (sun.current) {

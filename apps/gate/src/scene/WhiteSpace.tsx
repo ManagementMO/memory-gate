@@ -9,6 +9,7 @@ import { MEMORY_CENTER } from './layout';
 import { HASH, SIMPLEX3 } from './shaders/noise.glsl';
 import { damp, glowBlending } from './util';
 import { atmoLive } from './sketch/atmosphere';
+import { useMemory } from '../flow/memory';
 
 const SKY_FRAG = /* glsl */ `
 varying vec3 vDir;
@@ -124,7 +125,8 @@ export function WhiteSpace() {
     const dt = Math.min(dtRaw, 0.05);
     const s = useGate.getState();
     const day = s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving' || (s.stage === 'entering' && s.enterProgress > 0.9);
-    const target = day ? 1 : 0;
+    // a showcase place wears its own sky: the white space steps back
+    const target = day && !useMemory.getState().showcase ? 1 : 0;
     const u = skyMat.uniforms;
     u.uFade!.value = damp(u.uFade!.value, target, day ? 1.2 : 3, dt);
     u.uTime!.value += dt;

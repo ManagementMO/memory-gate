@@ -35,3 +35,5 @@ apps/gate/public/memories/sf/
 photos/
 # Brainstorming mockups (superpowers visual companion)
 .superpowers/
+# The showcase places' models, skies and textures (scripts/prepare-showcase.mjs, from the scene lab)
+apps/gate/public/showcase/

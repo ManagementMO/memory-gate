@@ -1,0 +1,66 @@
+// From the scene lab (apps/gate/.models-cache/scene-lab/scenes/garden.js); run in the app by src/showcase/build.js.
+// Garden extras: a small reflective pond with a soil bank and a few lily pads.
+import { Reflector } from 'three/addons/objects/Reflector.js';
+
+export default async ({ THREE, scene, texSet, rng }) => {
+  const C = [4.9, -5.6]; // pond centre (x, z)
+  const RX = 1.95, RZ = 1.55;
+  const outline = (grow) => {
+    const pts = [];
+    for (let i = 0; i < 48; i++) {
+      const a = (i / 48) * Math.PI * 2;
+      const r = grow * (1 + 0.07 * Math.sin(a * 3 + 1.3) + 0.045 * Math.sin(a * 5 + 0.4));
+      pts.push(new THREE.Vector2(Math.cos(a) * RX * r, Math.sin(a) * RZ * r));
+    }
+    return pts;
+  };
+  const flat = (mesh, y) => { mesh.rotation.x = -Math.PI / 2; mesh.position.set(C[0], y, C[1]); return mesh; };
+
+  // water: a real mirror under a dark, murky tint
+  const waterGeo = new THREE.ShapeGeometry(new THREE.Shape(outline(1)), 6);
+  const mirror = new Reflector(waterGeo, { clipBias: 0.003, textureWidth: 1024, textureHeight: 1024, color: 0x8a9a92 });
+  scene.add(flat(mirror, 0.03));
+  // the reflection only needs trees, rocks and sky: skip it in the AO pass and hide the grass fields while it renders
+  const mirrorRender = mirror.onBeforeRender;
+  let grass = null;
+  mirror.onBeforeRender = function (r, s, cam) {
+    if (s.overrideMaterial) return;
+    grass ??= (() => { const g = []; scene.traverse((o) => { if (o.isInstancedMesh && o.count > 20000) g.push(o); }); return g; })();
+    for (const g of grass) g.visible = false;
+    mirrorRender.call(this, r, s, cam);
+    for (const g of grass) g.visible = true;
+  };
+  const tint = new THREE.Mesh(waterGeo, new THREE.MeshBasicMaterial({ color: '#13261f', transparent: true, opacity: 0.5, depthWrite: false }));
+  scene.add(flat(tint, 0.034));
+
+  // wet soil bank around the water, so grass does not run straight into it
+  const bankShape = new THREE.Shape(outline(1.2));
+  bankShape.holes.push(new THREE.Path(outline(0.98)));
+  const bankMat = new THREE.MeshStandardMaterial({ color: '#6d6152', roughness: 0.95, ...texSet('farm_soil', [0.7, 0.7]) });
+  const bank = flat(new THREE.Mesh(new THREE.ShapeGeometry(bankShape, 6), bankMat), 0.02);
+  bank.receiveShadow = true;
+  scene.add(bank);
+
+  // lily pads
+  const rand = rng(77);
+  const padMat = new THREE.MeshStandardMaterial({ color: '#3d6626', roughness: 0.55, side: THREE.DoubleSide });
+  const pads = [[0.6, 0.35], [0.9, 0.1], [0.75, -0.3], [-0.9, -0.5], [-1.2, -0.2], [-0.4, 0.7], [1.15, 0.45]];
+  for (const [dx, dz] of pads) {
+    const r = 0.13 + rand() * 0.1;
+    const pad = new THREE.Mesh(new THREE.CircleGeometry(r, 20, rand() * 6.28, Math.PI * 2 - 0.45), padMat.clone());
+    pad.material.color.offsetHSL((rand() - 0.5) * 0.04, 0, (rand() - 0.5) * 0.08);
+    pad.rotation.x = -Math.PI / 2;
+    pad.position.set(C[0] + dx, 0.04, C[1] + dz);
+    pad.receiveShadow = true;
+    scene.add(pad);
+  }
+  // two water-lily flowers
+  const petal = new THREE.MeshStandardMaterial({ color: '#f4e9ef', roughness: 0.6 });
+  for (const [dx, dz] of [[0.62, 0.33], [-1.15, -0.22]]) {
+    const f = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.06, 8, 1, true), petal);
+    f.rotation.x = Math.PI;
+    f.position.set(C[0] + dx, 0.07, C[1] + dz);
+    f.castShadow = true;
+    scene.add(f);
+  }
+};

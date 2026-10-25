@@ -1,0 +1,44 @@
+{
+  "title": "San Francisco — painted row houses and the cable car",
+  "env": {
+    "hdri": "belfast_sunset_puresky",
+    "background": "hdri",
+    "hdriRotation": 200,
+    "envIntensity": 0.8,
+    "exposure": 1.0,
+    "toneMapping": "aces",
+    "sun": { "dir": [0.62, 0.3, -0.5], "intensity": 3.6, "color": "#ffd9a8", "shadowArea": 90, "center": [0, 0, -50] },
+    "hemi": { "sky": "#f3dcc0", "ground": "#6b5a4a", "intensity": 0.35 },
+    "ground": { "texture": "asphalt_02", "size": 3000, "tile": 6, "color": "#9a9a9a", "y": 0 },
+    "fog": { "color": "#ead8c4", "density": 0.0035 },
+    "ao": true, "aoRadius": 0.6, "aoIntensity": 0.9,
+    "far": 4000
+  },
+  "street": { "seed": 23 },
+  "items": [
+    { "m": "city_cable_car", "p": [1.6, 0, -24], "ry": 0, "len": 8.4 },
+    { "m": "city_vintage_eldorado", "p": [4.8, 0, -4], "ry": 90 },
+    { "m": "city_vintage_checker_taxi", "p": [-4.8, 0, -14], "ry": 180 },
+    { "m": "city_dodge_diplomat", "p": [4.8, 0, -40], "ry": 90 },
+    { "m": "city_street_art_van", "p": [-4.8, 0, 6], "ry": 90 },
+    { "m": "city_crown_vic_sedan", "p": [-4.8, 0, -48], "ry": 90, "len": 5.38 },
+    { "m": "city_taxi_crown_vic", "p": [-1.6, 0, -70], "ry": 180, "len": 5.39 },
+    { "m": "city_vintage_bus_1940s", "p": [-1.6, 0, -110], "ry": 180, "len": 10.5 },
+    { "m": "city_person_woman_walking", "p": [-8.2, 0.15, 10], "ry": 180, "h": 1.68 },
+    { "m": "city_person_man_standing", "p": [8.6, 0.15, -6], "ry": -100, "h": 1.82 },
+    { "m": "city_person_mother_child", "p": [-7.4, 0.15, -16], "ry": 10, "h": 1.66 },
+    { "m": "city_person_man_walking", "p": [7.8, 0.15, -30], "ry": 0, "h": 1.75 },
+    { "m": "city_person_woman_standing", "p": [-9.0, 0.15, -38], "ry": 90, "h": 1.7 },
+    { "m": "city_lamp_led_pole", "p": [6.7, 0.15, 2], "ry": 180, "h": 8.5, "repeat": { "n": 7, "step": [0, -27] } },
+    { "m": "city_lamp_led_pole", "p": [-6.7, 0.15, -11], "ry": 0, "h": 8.5, "repeat": { "n": 7, "step": [0, -27] } },
+    { "m": "city_hydrant_nyc", "p": [6.6, 0.15, -18], "ry": 30, "h": 0.8 },
+    { "m": "city_usps_mailbox", "p": [-6.8, 0.15, 2], "ry": 90, "h": 1.3 },
+    { "m": "city_trash_can", "p": [6.8, 0.15, -9], "ry": 90, "part": "metal_trash_can", "h": 0.9 }
+  ],
+  "cameras": [
+    { "name": "on the sidewalk", "pos": [-8.4, 1.75, 22], "target": [0.5, 5.0, -60], "fov": 60 },
+    { "name": "the block from above", "pos": [4, 24, 46], "target": [0, 5, -80], "fov": 58 },
+    { "name": "the cable car", "pos": [-4.2, 1.6, -8], "target": [2.0, 2.0, -26], "fov": 55 }
+  ],
+  "script": "sf-street.js"
+}
