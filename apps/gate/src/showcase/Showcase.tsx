@@ -12,7 +12,7 @@ import { heldHeard } from './held';
 const specs = import.meta.glob('./scenes/*.json', { eager: true, import: 'default' }) as Record<string, ShowcaseSpec>;
 const scripts = import.meta.glob('./scenes/*.js') as Record<string, () => Promise<{ default?: (api: unknown) => Promise<void> }>>;
 const QUEST = /OculusBrowser|Quest/i.test(navigator.userAgent);
-type ShowcaseSpec = { title?: string; cameras?: { name?: string; pos: [number, number, number]; target: [number, number, number] }[] };
+type ShowcaseSpec = { title?: string; env?: Record<string, unknown>; cameras?: { name?: string; pos: [number, number, number]; target: [number, number, number]; env?: Record<string, unknown> }[] };
 
 /** Which showcase a memory is, from what it's called and what's in it (null: plan and draw it as usual). */
 export function showcaseFor(plan: ScenePlan | null): string | null {
@@ -66,9 +66,12 @@ async function warm(b: BuiltShowcase, gl: THREE.WebGLRenderer, camera: THREE.Cam
   await compiled.catch(() => undefined);
 }
 
-async function make(name: string, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene): Promise<BuiltShowcase | null> {
-  const spec = specs[`./scenes/${name}.json`];
-  if (!spec) return null;
+async function make(name: string, view: number, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene): Promise<BuiltShowcase | null> {
+  const base = specs[`./scenes/${name}.json`];
+  if (!base) return null;
+  // a view can wear its own light: the same bridge in the late sun, at dusk, at noon
+  const own = base.cameras?.[view]?.env;
+  const spec = own ? { ...base, env: { ...base.env, ...own } } : base;
   try {
     const load = scripts[`./scenes/${name}.js`];
     const script = load ? (await load().catch(() => null))?.default : undefined;
@@ -87,11 +90,17 @@ const ahead = new Map<string, Promise<BuiltShowcase | null>>();
 /** The place being shown now (it needs no second build). */
 const showing = new Set<string>();
 
-export function prebuildShowcase(name: string, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene): void {
-  if (ahead.has(name) || showing.has(name) || !specs[`./scenes/${name}.json`]) return;
+export function prebuildShowcase(name: string, view: number, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene): void {
+  const key = `${name}:${view}`;
+  if (ahead.has(key) || showing.has(key) || !specs[`./scenes/${name}.json`]) return;
   for (const [other, p] of ahead) { ahead.delete(other); void p.then((b) => b && dispose(b)); } // they've moved on from that one
-  ahead.set(name, make(name, gl, camera, scene));
+  ahead.set(key, make(name, view, gl, camera, scene));
 }
+
+/** The ground of the place being shown under a point (world x, z), near where you stand: for the people standing in
+ *  it (a beach runs down to the water). Null when there's none, or no place is shown. */
+let groundUnder: ((x: number, z: number) => number | null) | null = null;
+export const showcaseGround = (x: number, z: number): number | null => groundUnder?.(x, z) ?? null;
 
 export function Showcase({ name, camera: view = 0 }: { name: string; camera?: number }) {
   const gl = useThree((s) => s.gl);
@@ -105,17 +114,43 @@ export function Showcase({ name, camera: view = 0 }: { name: string; camera?: nu
     let live = true;
     let made: BuiltShowcase | null = null;
     drawnFrames.current = 0;
-    showing.add(name);
-    const p = ahead.get(name) ?? make(name, gl, camera, scene);
-    ahead.delete(name);
+    const key = `${name}:${view}`;
+    showing.add(key);
+    const p = ahead.get(key) ?? make(name, view, gl, camera, scene);
+    ahead.delete(key);
     void p.then((b) => {
       if (!b) return;
       if (!live) { dispose(b); return; }
       made = b;
       setBuilt(b);
     });
-    return () => { live = false; showing.delete(name); if (made) dispose(made); setBuilt(null); useMemory.setState({ showcaseReady: false }); };
-  }, [name]);
+    return () => { live = false; showing.delete(key); if (made) dispose(made); setBuilt(null); useMemory.setState({ showcaseReady: false }); };
+  }, [name, view]);
+  useEffect(() => {
+    if (!built) return;
+    let grounds: THREE.Object3D[] | null = null;
+    const ray = new THREE.Raycaster(), from = new THREE.Vector3(), down = new THREE.Vector3(0, -1, 0);
+    groundUnder = (x, z) => {
+      if (!grounds) {
+        // what's broad and low is ground (a lawn, a beach, a hillside); a tree, a table or a bench isn't
+        const box = new THREE.Box3(), size = new THREE.Vector3();
+        const found: THREE.Object3D[] = [];
+        built.group.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (!m.isMesh || (m as THREE.InstancedMesh).isInstancedMesh) return;
+          box.setFromObject(m).getSize(size);
+          const wide = Math.max(size.x, size.z);
+          if (wide > 8 && size.y < wide * 0.3) found.push(m);
+        });
+        grounds = found;
+      }
+      from.set(x, 4, z);
+      ray.set(from, down);
+      ray.far = 8;
+      return ray.intersectObjects(grounds, false)[0]?.point.y ?? null;
+    };
+    return () => { groundUnder = null; };
+  }, [built]);
   // Its sky, light and fog while it's here; the white space's own come back after.
   useEffect(() => {
     if (!built) return;
