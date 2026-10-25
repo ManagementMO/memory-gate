@@ -4,7 +4,15 @@
 // free. Shown as a place from the library: never presented as the person's own photograph.
 // Spots are metres in the world's own frame, with the visitor at its origin (the world's camera): x right and z back
 // as seen from that camera, y up from the floor. `view` turns the visitor to face the place's best side.
-import { planOffline, type PlanObject, type ScenePlan } from './scene';
+import { COLORS, planOffline, type PlanObject, type ScenePlan } from './scene';
+
+const COLOUR_WORDS = Object.keys(COLORS).sort((a, b) => b.length - a.length).join('|');
+const SHADE = '(?:(?:a|all|so|very|quite|bright|light|dark|deep|pale) )*';
+/** A colour said after the thing, in the same breath ("the kite was red", "a kite, bright red", "the kite's red"). */
+function colourAfter(plain: string, label: string): string | null {
+  const m = plain.match(new RegExp(`\\b${label}(?:'s)? (?:(?:it|that|which) )?(?:(?:was|is|were|looked) )?${SHADE}(${COLOUR_WORDS})\\b`));
+  return m ? COLORS[m[1]!] ?? null : null;
+}
 
 export type PlaceKey = 'courtyard' | 'red-kite';
 /** `on`: rests on that kind of thing; `of`: belongs around it (chairs at a table). Both move with it. */
@@ -168,18 +176,26 @@ export function bringIn(p: PreparedPlace, plan: ScenePlan, words: string, pointe
   const named = planOffline(words, plan.title, { seeds: false }).objects.filter((o) => p.spots[o.kind]);
   const added: PlanObject[] = [];
   let objects = plan.objects;
+  const plain = norm(words).replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
   for (const o of named) {
     const have = [...objects, ...added].filter((x) => x.kind === o.kind).length;
     const many = /\b(two|both|pair|couple)\b/.test(norm(words)) || /s$/.test(o.label) ? 2 : 1;
     const room = Math.min(p.spots[o.kind]!.length, many) - have;
     const where = saidWhere(p, { ...plan, objects: [...objects, ...added] }, words, o.kind, pointed);
+    const color = o.color ?? colourAfter(plain, o.label);
     if (room <= 0) {
-      // Already there: words that place it move it.
-      if (where) objects = objects.map((x) => (x.kind === o.kind && x === objects.find((y) => y.kind === o.kind) ? { ...x, at: where } : x));
+      // Already there: words that place it move it, and a colour said now ("the kite was red") is its colour.
+      const first = objects.find((y) => y.kind === o.kind);
+      if (where || (color && color !== first?.color)) objects = objects.map((x) => (x === first ? { ...x, ...(where ? { at: where } : {}), ...(color ? { color } : {}) } : x));
       continue;
     }
-    for (let i = 0; i < room; i++) added.push({ ...o, id: `${o.kind}-${have + i + 1}`, quote: o.quote ?? words.slice(0, 120), ...(where ? { at: [where[0] + i * 0.7, where[1]] as [number, number] } : {}) });
+    for (let i = 0; i < room; i++) added.push({ ...o, color, id: `${o.kind}-${have + i + 1}`, quote: o.quote ?? words.slice(0, 120), ...(where ? { at: [where[0] + i * 0.7, where[1]] as [number, number] } : {}) });
   }
+  // "It was red": the colour of the thing just talked about.
+  // (Only as the whole sentence, so "it was so green there" stays about the place.)
+  const it = !named.length ? plain.match(new RegExp(`^(?:(?:and|oh|yes|yeah|well|so|i think) )*(?:it|that|this)(?: one)?(?:'s | was | is | were | looked )(?:(?:a|bright|light|dark|deep|pale) )*(${COLOUR_WORDS})(?: (?:one|colou?r))?$`)) : null;
+  const last = it ? [...objects].reverse().find((x) => p.spots[x.kind]) : undefined;
+  if (it && last && COLORS[it[1]!] !== last.color) objects = objects.map((x) => (x === last ? { ...x, color: COLORS[it[1]!]! } : x));
   // Things that rest on something bring it with them (a teapot its table, a spool its little table).
   for (const o of [...added]) {
     const on = p.spots[o.kind]?.[0]?.on ?? p.spots[o.kind]?.[0]?.of;

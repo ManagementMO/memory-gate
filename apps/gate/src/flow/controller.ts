@@ -2,7 +2,7 @@
 // companion says or does; the person only ever talks, shares a photo or video, or says they'd like to stop.
 //   portal → greeting → gathering (talk / photo / video / someone helps) → entering → forming → memory → leaving → album
 import { api } from '../../../../convex/_generated/api';
-import { asksToEnter, asksToLeave, guideOffline, safeReply, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
+import { asksToEnter, asksToGoIn, asksToLeave, guideOffline, safeReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
 import { useGate, type MediaItem } from '../state/store';
@@ -19,6 +19,8 @@ import { useMemory } from './memory';
 import { guideContext, story, turn } from '../social/attribution';
 import { overlayActive } from '../social/overlay';
 import { companion, type CompanionLine, type RoomVoice } from './companion';
+import { visitFromUrl } from '../album/prepared';
+import { useAtlas, type PlaceId, type Tab } from '../map/state';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -37,6 +39,8 @@ class Flow {
   private nudgeTimer: ReturnType<typeof setTimeout> | null = null;
   private nudges = 0;
   private thinking = false;
+  /** Counts questions to the companion's brain while gathering, so only the newest answer is said. */
+  private askSeq = 0;
   private raf = 0;
   private begun = false;
   private speakingLine: Promise<void> = Promise.resolve();
@@ -60,6 +64,9 @@ class Flow {
   async begin(): Promise<void> {
     // Back at the start page after a visit (the album's ×): Begin starts the next visit in the same session.
     if (this.begun) { if (useGate.getState().stage === 'portal') this.again(); return; }
+    // ?visit=red-kite: straight into that sample, with the things it holds (for checking a place quickly).
+    const shortcut = visitFromUrl();
+    if (shortcut) return this.visitPlace(shortcut.key, shortcut.plan);
     const { invite, session } = await this.setup(true);
     await sleep(500);
     if (invite) {
@@ -160,9 +167,19 @@ class Flow {
     if (!companion.live()) turn('person', text);
     this.clearNudge();
     music.duck(false);
+    const beforeMemory = g.stage === 'gathering' || g.stage === 'greeting';
+    // "Yes" to "Shall we go and see it?", or "let's go" once there's somewhere to go: step through at once, without
+    // waiting on a model (and before the gate, "let's go" is never taken for goodbye). The host's device starts the
+    // visit; a guest's "let's go" goes to the room's companion, and they follow the host in.
+    if (beforeMemory && companion.leads() && ((this.invitedToEnter && saysYes(text)) || (asksToGoIn(text) && this.somewhereToGo()))) {
+      this.askSeq++; // a reply still on its way is not said over the walk
+      this.thinking = false;
+      await this.say('Come with me.');
+      return void this.enter();
+    }
     // "I'd like to leave", "take me back", "I'm done": acted on at once, without waiting on a model, so leaving always
     // works (even offline, even on a slow connection).
-    if (asksToLeave(text) && ['memory', 'forming', 'gathering', 'greeting'].includes(g.stage)) {
+    if (asksToLeave(text) && !(beforeMemory && asksToGoIn(text)) && ['memory', 'forming', 'gathering', 'greeting'].includes(g.stage)) {
       if (g.stage === 'memory' || g.stage === 'forming') return void this.leave();
       await this.say('Of course. Thank you for spending this time with me.');
       return void this.finish();
@@ -173,11 +190,14 @@ class Flow {
     this.turnsInPhase++;
     this.placeWords(text);
     this.thinking = true;
+    const mine = ++this.askSeq;
     const reply = await this.ask({ phase: 'gathering', transcript: text });
-    this.thinking = false;
+    if (mine === this.askSeq) this.thinking = false;
     // Only words that describe the place feed the drawing ("yes, let's go" doesn't).
     if (reply.intent === 'describe' || (reply.intent === 'chat' && text.split(/\s+/).length >= 5)) memory.addWords(text, h.audioFileId);
     if (reply.place) { this.place = reply.place; useGate.getState().set({ memoryTitle: reply.place }); memory.setTitle(reply.place); }
+    // They spoke again while this was on its way, or are already stepping through: it's no longer the line to say.
+    if (mine !== this.askSeq || !['gathering', 'greeting'].includes(useGate.getState().stage)) return;
     switch (reply.intent) {
       case 'enter':
         await this.say(reply.reply);
@@ -285,6 +305,11 @@ class Flow {
   }
 
   // ------------------------------------------------------------ prepared places from the library
+  /** There is a place to step into: a prepared place, a named one, a shared photo, or something already described. */
+  private somewhereToGo(): boolean {
+    return !!(useMemory.getState().place || this.place || useGate.getState().media || this.turnsInPhase >= 1);
+  }
+
   /** Words that describe a prepared place (the courtyard, the meadow) make the visit step into it; things named
    *  come in from the library. Recognised from everything said so far, so details can arrive across turns. A visit
    *  opened as the meadow steps into it whatever is said first (a few misheard words never sketch a room inside it). */
@@ -471,6 +496,7 @@ class Flow {
     this.engine?.hush();
     music.setMode('album');
     music.cue('album');
+    useAtlas.getState().show('sf', 'mine'); // the album, where the moment just kept is
     useGate.getState().set({ stage: 'album', resting: false, heardLine: null, companionLine: null, mood: 'idle' });
   }
 
@@ -551,13 +577,15 @@ class Flow {
     this.listen(true);
   }
 
-  /** From the start page: the album of earlier visits on this device, before any conversation begins. */
-  openAlbum(): void {
+  /** From the start page: the memory map (earlier visits on this device are its San Francisco pin), before any
+   *  conversation begins; or straight onto one place's memories. */
+  openAlbum(place: PlaceId | null = null, tab: Tab = 'mine'): void {
     const g = useGate.getState();
     if (g.stage !== 'portal') return;
     music.start();
     music.setEnabled(g.musicOn);
     music.setMode('album');
+    useAtlas.getState().show(place, tab); // the memory map, or that place
     g.set({ stage: 'album' });
   }
 
@@ -694,4 +722,4 @@ async function describeMedia(file: File): Promise<MediaItem | null> {
 export const flow = new Flow();
 export { uploadFile };
 // Exposed for the dogfood loop and Playwright: drive the conversation without a microphone.
-(window as unknown as { __gate: unknown }).__gate = { flow, store: useGate, memory, moments };
+(window as unknown as { __gate: unknown }).__gate = { flow, store: useGate, memory, moments, memoryStore: useMemory };

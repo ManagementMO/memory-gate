@@ -10,6 +10,7 @@ import { VIEWPOINTS, viewpointYaw } from './viewpoints';
 import { initialNavigation, lookAround, stepNavigation, type WalkInput } from './navigation';
 import type { MeadowTraversal } from './traversal';
 import { xrStore } from '../scene/xr';
+import { GroundStep } from './GroundStep';
 import { MEMORY_OBJECTS, type MemoryObject } from './memory-lens';
 import { sourceMediaUrl, type XRSource } from '../memory-objects/types';
 
@@ -116,6 +117,9 @@ export function StoryView({ transition, motion, eye, paused, navigationBlocked, 
   const drag = useRef<{ id: number; x: number; y: number } | null>(null);
   const centered = useRef(recenter.current), wasXR = useRef(false), pivot = useRef(new THREE.Vector2());
   const localHead = useRef(new THREE.Vector3()), rotation = useRef(new THREE.Quaternion()), angles = useRef(new THREE.Euler(0, 0, 0, 'YXZ'));
+  // Seated wearers: their eyes are measured over the first moments in the headset, and the floor rises so they see
+  // the meadow from the story's standing eye line rather than from knee height (as the Gate's perspectives do).
+  const seated = useRef({ samples: [] as number[], since: 0, lift: 0, done: false });
   const moves = useRef<{ from: Perspective; to: Perspective; opacity: number; frame: number }[]>([]);
   useEffect(() => { onXR(presenting); }, [presenting, onXR]);
   useEffect(() => {
@@ -208,6 +212,7 @@ export function StoryView({ transition, motion, eye, paused, navigationBlocked, 
     const t = transition.current, p = VIEWPOINTS[t.current];
     if (previous.current !== t.current || (centered.current !== recenter.current && t.phase === 'covered') || wasXR.current !== gl.xr.isPresenting || physicsSeen.current !== traversal.current) {
       navigation.current = initialNavigation(); pivot.current.set(0, 0); keys.current.clear(); drag.current = null;
+      if (wasXR.current !== gl.xr.isPresenting) seated.current = { samples: [], since: 0, lift: 0, done: false };
       centered.current = recenter.current; wasXR.current = gl.xr.isPresenting;
       traversal.current?.place(p.feet); physicsSeen.current = traversal.current;
     }
@@ -239,7 +244,16 @@ export function StoryView({ transition, motion, eye, paused, navigationBlocked, 
         pivot.current.x += Math.cos(oldYaw) * x + Math.sin(oldYaw) * z - Math.cos(yaw) * x - Math.sin(yaw) * z;
         pivot.current.y += -Math.sin(oldYaw) * x + Math.cos(oldYaw) * z + Math.sin(yaw) * x - Math.cos(yaw) * z;
       }
-      origin.current.position.set(p.feet[0] + n.x + pivot.current.x, n.y, p.feet[2] + n.z + pivot.current.y);
+      const sit = seated.current;
+      if (gl.xr.isPresenting && !sit.done) {
+        camera.getWorldPosition(localHead.current); origin.current.worldToLocal(localHead.current);
+        if (localHead.current.y > .3) { sit.samples.push(localHead.current.y); sit.since += dt; }
+        if (sit.since >= 1.5) {
+          const measured = [...sit.samples].sort((a, b) => a - b)[sit.samples.length >> 1] ?? eye;
+          sit.lift = measured < eye - .15 ? Math.min(.9, eye - measured) : 0; sit.done = true;
+        }
+      }
+      origin.current.position.set(p.feet[0] + n.x + pivot.current.x, n.y + sit.lift, p.feet[2] + n.z + pivot.current.y);
       origin.current.rotation.y = yaw;
     }
     if (!gl.xr.isPresenting) {
@@ -254,6 +268,7 @@ export function StoryView({ transition, motion, eye, paused, navigationBlocked, 
   }, -2);
   return <>
     <XROrigin ref={origin}>{presenting && <Suspense fallback={null}><NativeControls controls={controls} /></Suspense>}</XROrigin>
+    <GroundStep traversal={traversal} blocked={navigationBlocked} />
     {/* A real scene mask covers both XR eyes; a DOM fade alone is invisible in immersive VR. */}
     <mesh ref={mask} renderOrder={100000} frustumCulled={false} visible={false} raycast={() => null}>
       <sphereGeometry args={[.18, 16, 12]} />

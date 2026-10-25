@@ -46,9 +46,9 @@ function Experience() {
   const reducedMotion = motionOverride ?? systemReducedMotion;
   const recenter = useRef(0), navigationBlocked = useRef(true);
   const traversal = useRef<MeadowTraversal | null>(null), touch = useRef({ right: 0, forward: 0 }), debugTerrain = useRef(false);
-  const [terrainReady, setTerrainReady] = useState(false), [verticalShift, setVerticalShift] = useState(0), [showCollider, setShowCollider] = useState(false);
+  const [terrainReady, setTerrainReady] = useState(false), [showCollider, setShowCollider] = useState(false);
   const onTerrainReady = useCallback((world: MeadowTraversal | null) => {
-    traversal.current = world; setTerrainReady(!!world); if (world) { setVerticalShift(world.verticalShift); setTerrainError(''); }
+    traversal.current = world; setTerrainReady(!!world); if (world) setTerrainError('');
   }, []);
   useLayoutEffect(() => { debugTerrain.current = showCollider; }, [showCollider]);
   const connected = useConvexConnectionState().isWebSocketConnected && online;
@@ -110,7 +110,8 @@ function Experience() {
   // DOM and Canvas have separate React roots. A frame reads these guards directly, so rest cannot
   // keep animating while an expensive Canvas commit is still catching up with the visible controls.
   useLayoutEffect(() => { simulationPaused.current = quiet; viewPaused.current = paused || !connected; reduced.current = reducedMotion; }, [quiet, paused, connected, reducedMotion]);
-  useLayoutEffect(() => { navigationBlocked.current = quiet || (compare && !xr) || sourcesOpen || objectsOpen || !ready; }, [quiet, compare, ready, xr, sourcesOpen, objectsOpen]);
+  // Walking is local: a dropped connection quiets the story, not the visitor's feet.
+  useLayoutEffect(() => { navigationBlocked.current = paused || switching || (compare && !xr) || sourcesOpen || objectsOpen || !ready; }, [paused, switching, compare, ready, xr, sourcesOpen, objectsOpen]);
   useEffect(() => { if (quiet) { stopSpeech(); motion.current = releaseSpool(motion.current); } }, [quiet, stopSpeech]);
   useEffect(() => {
     if (paused || !connected) { transition.current = cancelSwitch(transition.current); setSwitching(false); }
@@ -206,13 +207,17 @@ function Experience() {
   return <main className={`red-kite app${xr ? ' rk-in-xr' : ''}${selectedModel && sourcesOpen ? ' rk-object-selected' : ''}`} data-testid="red-kite-experience" data-perspective={perspective} data-paused={String(paused)} data-speaking={String(speaking)} data-world-ready={String(ready)} data-motion-mode={reducedMotion ? 'reduced' : 'full'} data-ui={panelsVisible ? 'visible' : 'hidden'}>
     {source?.url && <SceneCanvas effects={false}>
       <StoryView transition={transition} motion={motion} eye={source.floorY === null ? 1.5246 : -source.floorY * source.scale} paused={viewPaused} navigationBlocked={navigationBlocked} recenter={recenter} reduced={reduced} traversal={traversal} touch={touch} controls={controls} onPerspective={selected} onXR={onXR} />
-      <Meadow source={source} lite={lite} detailed={quality === 'detail'} verticalShift={verticalShift} onReady={onReady} onError={onWorldError} />
+      {/* The meadow stays where its own floor estimate puts it: measured from its splats, the visible ground under the
+          entrance, both viewpoints and the props is at y = 0. The collider sits ~1.15 m lower in the same frame, so its
+          correction (traversal.verticalShift) moves only the walking surface; moving the splats too put the ground at
+          eye level in the headset. */}
+      <Meadow source={source} lite={lite} detailed={quality === 'detail'} onReady={onReady} onError={onWorldError} />
       <Suspense fallback={null}><Terrain source={source} debug={debugTerrain} onReady={onTerrainReady} onError={onTerrainError} /><MemoryProps look={look} proposed={proposal} paused={simulationPaused} reduced={reduced} motion={motion} onKeepsake={onKeepsake} onReady={onPropsReady} onKite={() => { stopSpeech(); setSelectedModelId(null); setSourceObject('kite'); setSourceIndex(0); setSourcesOpen(true); }} /></Suspense>
       <OptionalObjects objects={objectLibrary?.objects ?? []} perspective={perspective} previewId={previewId} paused={quiet} onSelect={id => { stopSpeech(); setSelectedModelId(id); setSourcesOpen(true); }} />
     </SceneCanvas>}
     <div className="rk-vignette" aria-hidden="true" />
     <header className="rk-header">
-      <a className="rk-wordmark" href="/" aria-label="Return to Memory Gate">gate<span>/</span></a>
+      <a className="rk-wordmark" href="/" aria-label="Return to Memora">memora<span>/</span></a>
       <div><p className="rk-eyebrow">One afternoon. Two tellings.</p><h1>The Red Kite<span>California, a long time ago</span></h1></div>
       <span className="rk-sample">Fictional sample</span>
       <div className="rk-top-actions"><button className="rk-invite" onClick={share} disabled={!session}>Invite a viewer</button><button className="rk-desktop-rest" data-testid="rest" onClick={rest} disabled={!ready || (data?.paused && !data.canAuthor)}>{paused ? 'Continue' : 'Rest'}</button><button data-testid="toggle-panels" aria-expanded={panelsVisible} aria-controls="rk-story-panel rk-perspective-controls" onClick={() => { setPanelsVisible(v => !v); setCompare(false); }}>{panelsVisible ? 'Hide panels' : 'Show story'}</button></div>

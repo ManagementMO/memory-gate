@@ -1,7 +1,8 @@
 // Prepared memories: the team's demonstration scenes, kept in the album beside the person's own visits and opened
 // from it like any memory. They are fictional samples and say so wherever they're shown. Their pictures are taken from
 // the real scenes (apps/gate/scripts/album-pictures.mjs), so polishing a scene and re-running it updates the album.
-import { bringIn, placePlan, PLACES } from '../../../../packages/shared/src/places';
+import { bringIn, placePlan, PLACES, type PlaceKey } from '../../../../packages/shared/src/places';
+import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import type { AlbumMemory, AlbumMoment } from './types';
 
 const AT = Date.parse('2026-10-24T21:35:00Z');
@@ -18,6 +19,14 @@ const COURTYARD_WORDS = [
   'And a bench by the wall, with pots of plants.',
 ];
 const courtyardPlan = COURTYARD_WORDS.reduce((plan, words) => bringIn(PLACES.courtyard, plan, words) ?? plan, placePlan(PLACES.courtyard, 'The courtyard'));
+
+/** The Red Kite in a headset: its page is a page of its own (opening it would end the immersive session), so from the
+ *  headset's album it's the meadow itself, with the kite in your hands and the things the friends remember. */
+const RED_KITE_WORDS = [
+  'Rosa’s red kite, with a cream ribbon on its tail.',
+  'Two benches where we sat, and a picnic blanket.',
+];
+const redKitePlan = RED_KITE_WORDS.reduce((plan, words) => bringIn(PLACES['red-kite'], plan, words) ?? plan, placePlan(PLACES['red-kite'], 'The Red Kite'));
 
 const RED_KITE = 'prepared:red-kite';
 const COURTYARD = 'prepared:courtyard';
@@ -44,20 +53,35 @@ export const PREPARED: AlbumMemory[] = [
   },
 ];
 
-/** Coming back from a prepared memory's own page lands in the album again (set when it's opened from there). */
+/** Coming back from a prepared memory's own page lands in the album again (set when it's opened from there): your
+ *  album, or World memories when it was opened from someone else's (the proposal showcase). */
 const RETURN_KEY = 'mg.return-to';
-export function openPrepared(m: AlbumMemory, visitScene?: (scene: string) => void): void {
+export function openPrepared(m: AlbumMemory, visitScene?: (scene: string) => void, from: 'album' | 'world' = 'album'): void {
   if (!m.open) return;
   if ('href' in m.open) {
-    try { sessionStorage.setItem(RETURN_KEY, 'album'); } catch { /* the way back is a convenience */ }
+    try { sessionStorage.setItem(RETURN_KEY, from); } catch { /* the way back is a convenience */ }
     location.assign(m.open.href);
   } else visitScene?.(m.open.scene);
 }
-/** True once, when this page was reached by coming back from a prepared memory opened in the album. */
-export function cameBackToAlbum(): boolean {
+/** In a headset, where a prepared memory steps you: its place and the things in it (never another page). */
+export function preparedVisit(m: AlbumMemory): { key: PlaceKey; plan: ScenePlan } | null {
+  if (m.id === RED_KITE) return { key: 'red-kite', plan: redKitePlan };
+  if (m.id === COURTYARD) return { key: 'courtyard', plan: courtyardPlan };
+  return null;
+}
+/** ?visit=red-kite or ?visit=courtyard: the sample a visit steps straight into when it begins (to check a place fast). */
+export function visitFromUrl(): { key: PlaceKey; plan: ScenePlan } | null {
+  const id = new URLSearchParams(location.search).get('visit');
+  const m = id ? PREPARED.find((p) => p.id === `prepared:${id}`) : undefined;
+  return m ? preparedVisit(m) : null;
+}
+/** Once, when this page was reached by coming back from a prepared memory opened in the album: which tab it came
+ *  from (your album or World memories), else null. */
+export function cameBackToAlbum(): 'mine' | 'world' | null {
   try {
-    if (new URLSearchParams(location.search).has('story') || sessionStorage.getItem(RETURN_KEY) !== 'album') return false;
+    const from = sessionStorage.getItem(RETURN_KEY);
+    if (new URLSearchParams(location.search).has('story') || (from !== 'album' && from !== 'world')) return null;
     sessionStorage.removeItem(RETURN_KEY);
-    return true;
-  } catch { return false; }
+    return from === 'world' ? 'world' : 'mine';
+  } catch { return null; }
 }

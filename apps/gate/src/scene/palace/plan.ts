@@ -26,17 +26,26 @@ export const SPOT = {
 } as const;
 export const WATER_Y = -0.3;
 
-/** The rotunda in real metres (scaled by S where used): an octagon of eight arches under a raised dome. */
+/** The rotunda in real metres (scaled by S where used), after the real one: an open octagon of eight piers framing
+ *  tall round arches; at every corner a pair of red Corinthian columns (tinted like Numidian marble) on a high
+ *  pedestal; a deep entablature that breaks forward over each pair; a tall attic with relief panels and a statue over
+ *  every pair; and a low dome, wider than it is tall, springing from behind the attic. */
 export const R = {
-  apothem: 14, wall: 2.6, archHalf: 3.55, spring: 9.3,
-  colH: 14.2, colR: 0.72, colOut: 0.85, colSide: 4.75,
-  entTop: 16.1, cornice: 16.8, drumApothem: 12.1, drumTop: 23.4,
-  domeR: 11.4, domeH: 16.4, oculus: 1.6,
+  apothem: 15.4, wall: 3.0, // the piers' outer faces, and their depth
+  archHalf: 4.3, spring: 12.6, // each arch: half its span, and the height it springs from
+  podium: 3.0, colH: 16.2, colR: 0.8, // the columns stand on pedestals this high; their height and radius
+  pairOut: 1.25, pairHalf: 1.2, // a pair stands this far out from its corner, its two columns this far either side
+  entTop: 22.2, cornice: 23.2, // top of the frieze, and of the cornice above it
+  atticTop: 27.6, // the attic and its relief panels (a cornice of 0.6 m along its top)
+  drumTop: 28.0, domeR: 15.0, domeH: 13.6, // the dome: broad, a little less than a hemisphere, close behind the attic
+  oculus: 1.6,
 };
-export const ROT_RADIUS = sc(R.apothem);
+/** Where the columns end and the entablature begins. */
+export const COL_TOP = R.podium + R.colH;
 
-/** The colonnade: two arms of an arc that embraces the lagoon (centre toward you), in real metres. */
-export const COL = { radius: 70, from: 0.25, to: 1.06, rows: 2.6, spacing: 5.3, height: 13, boxEvery: 3 };
+/** The colonnade: two arms of an arc that embraces the lagoon (centre toward you), in real metres. Every third bay
+ *  carries a planter box (from the arm's first bay). */
+export const COL = { radius: 70, from: 0.326, to: 1.06, rows: 2.6, spacing: 5.3, height: 13, boxEvery: 3 };
 
 /** The lagoon: a formal basin with softly rounded corners (a superellipse), on the axis between you and the dome. */
 export const LAGOON = { cx: 0, cz: 23.6, hw: 21, hd: 15.4, n: 3.4 };
