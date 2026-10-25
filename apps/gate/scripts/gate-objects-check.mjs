@@ -11,7 +11,9 @@ const errors = [], checks = [], out = '.logs/place-object-evidence'; mkdirSync(o
 page.on('pageerror', error => errors.push(error.message));
 const check = async (name, fn) => { await fn(); checks.push(name); console.log('PASS ' + name); };
 try {
-  await page.goto(`${base}/?mode=offline&voice=off&memory=red-kite&emulate=1`); await page.getByTestId('begin').click();
+  await page.goto(`${base}/?mode=offline&voice=off&memory=red-kite&emulate=1&objectInfo=off`); await page.getByTestId('begin').click({ timeout: 90000 });
+  await page.waitForFunction(() => window.__gateFrames > 2);
+  assert.equal(await page.evaluate(() => typeof window.__objectInfo), 'undefined', 'discovery can be disabled without losing the source/object add-on');
   await page.waitForFunction(() => window.__gate?.store.getState().stage === 'gathering', null, { timeout: 30000 });
   await page.getByTestId('choose-grandparent').click();
   await page.waitForFunction(() => window.__social.store.getState().status === 'live', null, { timeout: 20000 });

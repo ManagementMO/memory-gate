@@ -22,8 +22,7 @@ import { WhiteSpace } from './WhiteSpace';
 import { PresenceLights } from '../presence/PresenceLights';
 import { SocialLayer } from '../social/scene/SocialLayer';
 import { OriginRig } from '../social/xr/OriginRig';
-import { GateObjectsLayer } from '../memory-objects/GateObjects';
-import { ObjectInfoLayer } from '../object-info/ObjectInfo';
+import { MemoryAddOnsScene } from '../memory-addons/MemoryAddOns';
 import { applyPerspectiveToOrigin, perspectiveAnchored } from '../social/xr/perspectiveScale';
 import { pointBus } from '../presence/presence';
 import type { ThreeEvent } from '@react-three/fiber';
@@ -136,8 +135,7 @@ export function World({ quality }: { quality: number }) {
       <CompanionRig />
       <PresenceLights />
       <SocialLayer />
-      <GateObjectsLayer />
-      <ObjectInfoLayer />
+      <MemoryAddOnsScene />
       <Snapshotter />
       <XrLayer />
     </>

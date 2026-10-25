@@ -15,8 +15,7 @@ import { XrButton } from './XrButton';
 import { PresenceSync } from '../presence/PresenceSync';
 import { SocialUI } from '../social/ui/SocialUI';
 import { lazyRetry } from './lazyRetry';
-import { GateObjectsUI } from '../memory-objects/GateObjects';
-import { ObjectInfoHUD } from '../object-info/ObjectInfo';
+import { MemoryAddOnsOverlay } from '../memory-addons/MemoryAddOns';
 
 const AlbumView = lazyRetry(() => import('../album/AlbumView'));
 
@@ -62,8 +61,7 @@ export function Overlay() {
       <DropZone />
       <PresenceSync />
       <SocialUI />
-      <GateObjectsUI />
-      <ObjectInfoHUD />
+      <MemoryAddOnsOverlay />
     </div>
   );
 }

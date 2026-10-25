@@ -6,18 +6,17 @@ import { Component, Suspense, useEffect, useMemo, useRef, type ReactNode } from 
 import * as THREE from 'three';
 import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff?url';
 import { api } from '../../../../convex/_generated/api';
-import { OBJECT_TOPICS, topicForKind, type ObjectTopicKey } from '../../../../actors/historical-memory-atlas/src/knowledge.mjs';
-import { entryOf } from '../../../../packages/shared/src/scene';
+import { OBJECT_TOPICS } from '../../../../actors/historical-memory-atlas/src/knowledge.mjs';
 import { useGate } from '../state/store';
 import { useMemory } from '../flow/memory';
 import { memoryKey } from '../social/perspectives';
 import { useSocial, viewingPerspective } from '../social/store';
-import { MEADOW_WORLD_ID } from '../social/world';
 import { useObjectWorkshop } from '../memory-objects/workshop';
 import { formation } from '../scene/sketch/SketchObject';
 import { xrStore } from '../scene/xr';
 import { convex } from '../backend/client';
 import { closeObjectInfo, infoButtons, useObjectInfo, type InfoTarget } from './state';
+import { buildInfoTargets } from './targets';
 import './object-info.css';
 const enabled = new URLSearchParams(location.search).get('objectInfo') !== 'off';
 
@@ -102,27 +101,9 @@ function useTargets() {
   const plan = useMemory(s => s.plan), own = useSocial(s => s.objects), viewing = useSocial(s => s.viewing), perspectives = useSocial(s => s.perspectives);
   const memoryId = useGate(s => s.memoryId), session = useGate(s => s.session), photoWorld = useGate(s => !!s.photoWorld), worldId = useSocial(s => s.worldId);
   const optional = useQuery(api.memoryObjects.list, session ? { code: session.code, token: session.token } : 'skip');
-  return useMemo(() => {
-    const targets: InfoTarget[] = [], seen = new Set<string>(), key = memoryKey(), perspective = viewingPerspective().id;
-    const add = (id: string, kind: string, label: string, scale = 1) => {
-      const topic = topicForKind(kind); if (!topic || kind === 'spool' || seen.has(id)) return; seen.add(id);
-      targets.push({ id, label: label.length > 32 ? OBJECT_TOPICS[topic].label : label, topic, node: kind === 'kite' ? 'memory-held-spool' : `memory-${id}`, lift: kind === 'kite' ? .16 : Math.min(1.7, entryOf(kind).h * scale) + .16 });
-    };
-    for (const o of plan?.objects ?? []) add(o.id, o.kind, o.label, o.scale);
-    for (const o of own) if (o.memoryId === key && o.perspectiveId === perspective) add(o.data.id, o.data.kind, o.data.label, o.data.scale);
-    // Authored semantic hotspots for this one checked world, whose scenery is baked into a splat.
-    // These do not add flowers/trees, infer a species, or appear in arbitrary uploaded/generated worlds.
-    if (photoWorld && worldId === MEADOW_WORLD_ID) targets.push(
-      { id: 'meadow:flowers', label: 'Flowers by the path', topic: 'flowers', node: '', lift: 0, anchor: [1.65, .42, -1.8] },
-      { id: 'meadow:oak', label: 'The tree', topic: 'trees', node: '', lift: 0, anchor: [-1.7, 1.5, -3.4] },
-    );
-    for (const o of optional?.objects ?? []) {
-      if (o.status !== 'placed' || (o.memoryKey ?? 'red-kite') !== key || ![viewing, 'shared'].includes(o.perspective)) continue;
-      const kind = o.assetKey === 'flower' ? 'flower' : o.assetKey === 'kite' || o.choice.includes('kite') ? 'kite' : o.choice.replace('library:', ''), topic = topicForKind(kind);
-      if (topic) targets.push({ id: `optional:${o._id}`, label: OBJECT_TOPICS[topic].label, topic, node: `MemoryObject:${o._id}`, lift: o.size + .14 });
-    }
-    return targets.slice(0, 12);
-  }, [plan, own, viewing, perspectives, optional, memoryId, photoWorld, worldId]);
+  return useMemo(() => buildInfoTargets({ planObjects: plan?.objects ?? [], perspectiveObjects: own, optionalObjects: optional?.objects ?? [],
+    memoryKey: memoryKey(), perspectiveId: viewingPerspective().id, viewing, photoWorld, worldId,
+  }), [plan, own, viewing, perspectives, optional, memoryId, photoWorld, worldId]);
 }
 const point = new THREE.Vector3(), eye = new THREE.Vector3(), projected = new THREE.Vector3();
 function isVisible(node: THREE.Object3D) { for (let p: THREE.Object3D | null = node; p; p = p.parent) if (!p.visible) return false; return true; }
@@ -188,7 +169,7 @@ function NativeInfo({ target, job }: { target: InfoTarget; job: ReturnType<typeo
     <mesh renderOrder={1994}><planeGeometry args={[.70, .56]} /><meshBasicMaterial color="#fcf2df" transparent opacity={1} depthTest={false} depthWrite={false} toneMapped={false} /></mesh>
     <Text font={fontUrl} fontSize={.031} maxWidth={.60} position={[0, .215, .004]} color="#282d35" renderOrder={1995} material-depthTest={false} material-toneMapped={false}>{topic.heading}</Text>
     <Text font={fontUrl} fontSize={.025} maxWidth={.60} anchorY="top" textAlign="left" position={[-.30, .15, .004]} anchorX="left" color="#282d35" renderOrder={1995} material-depthTest={false} material-toneMapped={false}>{more && source ? `${source.title}\n${topic.context}\n${source.attribution}` : infoText(job, busy, error)}</Text>
-    <Text font={fontUrl} fontSize={.017} maxWidth={.61} textAlign="center" position={[0, -.13, .004]} color="#59604e" renderOrder={1995} material-depthTest={false} material-toneMapped={false}>{source ? `via Apify · ${source.attribution}\nPublic context, separate from your story` : 'via Apify · public references'}</Text>
+    <Text font={fontUrl} fontSize={.017} maxWidth={.61} textAlign="center" position={[0, -.13, .004]} color="#59604e" renderOrder={1995} material-depthTest={false} material-toneMapped={false}>{source ? `via Apify · ${source.attribution}\n${target.topic === 'flowers' ? 'Flower example · species not identified' : 'Public context, separate from your story'}` : 'via Apify · public references'}</Text>
     {([[-.17, 'Back', closeObjectInfo], [.17, more ? 'Less' : 'Details', () => useObjectInfo.setState({ more: !more })]] as const).map(([x, label, fn]) => <group key={x} position={[x, -.225, .006]} name={`ObjectInfoAction:${label}`}><mesh onClick={press(fn)} renderOrder={1996}><planeGeometry args={[.29, .07]} /><meshBasicMaterial color="#e5d2ae" transparent opacity={1} depthTest={false} depthWrite={false} toneMapped={false} /></mesh><Text font={fontUrl} fontSize={.024} position-z={.002} color="#282d35" renderOrder={1997} material-depthTest={false} material-toneMapped={false}>{label}</Text></group>)}
   </group>;
 }
