@@ -30,6 +30,11 @@ const CHUNK = 2400; // later chunks are merged to >= 100 ms
 // sonic-3.6 languages (research/cartesia.md); anything else is sent without `language` (Cartesia then infers it).
 const SONIC_LANGS = new Set('en de es fr ja pt zh hi ko it nl pl ru sv tr tl bg ro ar cs el fi hr ms sk da ta uk hu no vi bn th he ka id te gu kn ml mr pa or ur'.split(' '));
 
+/** The calm pace for every line; Sonic's emotion control is English-only (beta), so it goes only with English lines. */
+export function generationConfig(language: string | null): { speed: number; emotion?: string } {
+  return language && language !== 'en' ? { speed: 0.95 } : { speed: 0.95, emotion: 'calm' };
+}
+
 type Line = {
   gen: number; text: string; language: string | null; t0: number; resolve: () => void; settled: boolean;
   gain: GainNode | null; sources: Set<AudioBufferSourceNode>; abort: AbortController;
@@ -193,7 +198,7 @@ export class Speaker {
         voice: { mode: 'id', id: a.voiceId },
         ...(l.language ? { language: l.language } : {}),
         output_format: { container: 'wav', encoding: 'pcm_s16le', sample_rate: 24000 },
-        generation_config: { speed: 0.95, emotion: 'calm' },
+        generation_config: generationConfig(l.language),
       }),
     });
   }

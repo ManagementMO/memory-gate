@@ -1,6 +1,7 @@
 import { ConvexError, v } from 'convex/values';
 import { query } from './_generated/server';
 import { activeScopes, requireMember, requireScope } from './lib/auth';
+import { clipsAllowed } from './voiceGuard';
 
 // A bounded reconciliation query lets the gateway erase deleted rooms after an
 // outage too. It reveals only absence, and requires the existing server secret.
@@ -29,6 +30,8 @@ export const context = query({
     const recordingAllowed = (await activeScopes(ctx, room._id)).has('voice_recording');
     return {
       roomId: room._id, memberId: member._id, displayName: member.displayName, isOwner: member.isOwner, paused: room.paused, offline: room.offline ?? false, recordingAllowed,
+      // This person's voice may be kept as clips (for the grandchild, only with a guardian's agreement: voiceGuard.ts).
+      clipsAllowed: await clipsAllowed(ctx, room._id, member._id),
       members: members.filter(m => m.revokedAt === null && m.role !== 'viewer').map(m => ({ id: m._id, name: m.displayName, role: m.role })),
       sources: sources.filter(s => s.memberId === member._id && s.status === 'done').map(s => ({ id: s._id, transcript: s.transcript, source: s.source, language: s.language })),
     };

@@ -7,7 +7,7 @@ import { api } from '../../../../../convex/_generated/api';
 import type { Id } from '../../../../../convex/_generated/dataModel';
 import { convex, uploadFile } from '../../backend/client';
 import { TouchPad } from '../../red-kite/TouchPad';
-import { useGate } from '../../state/store';
+import { recognitionLang, useGate } from '../../state/store';
 import { CloseIcon } from '../../ui/Icons';
 import { pinArchive, searchArchive, type ArchiveResult } from '../archive';
 import { story } from '../attribution';
@@ -20,6 +20,8 @@ import { walkPad } from '../walk';
 import './social.css';
 
 const AVATAR_KEY = 'mg.gate.avatar';
+/** The visit whose perspectives were last set up fresh (see SocialUI). */
+let freshFor: string | null = null;
 const readKey = () => { try { return localStorage.getItem(AVATAR_KEY); } catch { return null; } };
 const writeKey = (k: string | null) => { try { if (k) localStorage.setItem(AVATAR_KEY, k); else localStorage.removeItem(AVATAR_KEY); } catch { /* private mode */ } };
 
@@ -47,8 +49,17 @@ function PerspectivePicker({ onClose }: { onClose: () => void }) {
   const role = useGate((s) => s.session?.role);
   const mine = members.find((m) => m.id === memberId)?.name;
   const [name, setName] = useState(mine && mine !== 'You' && mine !== 'Family' ? mine : '');
-  const suggested: PerspectiveKey = role === 'guest' ? 'child' : 'grandparent';
-  const pick = (key: PerspectiveKey) => { void claimPerspective(key, name || null); onClose(); };
+  // The eyes nobody has claimed yet (the other person in the room may already be seeing through the other pair).
+  const free = perspectives.filter((p) => !p.claimedBy || p.claimedBy === memberId).map((p) => p.key);
+  const usual: PerspectiveKey = role === 'guest' ? 'child' : 'grandparent';
+  const suggested: PerspectiveKey = free.includes(usual) || !free.length ? usual : free[0]!;
+  const [guardian, setGuardian] = useState(false);
+  const pick = (key: PerspectiveKey) => {
+    void claimPerspective(key, name || null);
+    // The grandchild's voice is kept as words only, unless a parent or guardian agrees to keep the clips too.
+    if (key === 'child' && useGate.getState().session) setGuardian(true); else onClose();
+  };
+  if (guardian) return <ChildVoice name={name} onClose={onClose} />;
   return (
     <Sheet title="Whose eyes will you see through?" onClose={() => { useSocial.getState().set({ chosen: true }); onClose(); }} testId="perspective-picker">
       <p>Everyone sees the memory from their own height. What you say stays with the eyes you see through.</p>
@@ -73,6 +84,58 @@ function PerspectivePicker({ onClose }: { onClose: () => void }) {
   );
 }
 
+/** Choosing the grandchild's eyes: may their voice be kept (for replaying in the album), or only their words? */
+function ChildVoice({ name, onClose }: { name: string; onClose: () => void }) {
+  const session = useGate((s) => s.session);
+  const status = useQuery(api.voiceGuard.status, session ? { code: session.code, token: session.token } : 'skip');
+  const [guardianName, setGuardianName] = useState('');
+  const [agree, setAgree] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const who = name.trim() || 'the grandchild';
+  const keep = async () => {
+    if (!session) return;
+    setBusy(true); setError('');
+    try { await convex.mutation(api.voiceGuard.agree, { code: session.code, token: session.token, guardianName }); onClose(); }
+    catch (e) { setError((e as { data?: { message?: string } }).data?.message ?? 'That couldn’t be saved. Please try again.'); }
+    finally { setBusy(false); }
+  };
+  const stop = async () => {
+    if (!session) return;
+    setBusy(true);
+    try {
+      await convex.mutation(api.voiceGuard.revoke, { code: session.code, token: session.token });
+      await socialLink.request({ type: 'clear-my-clips' }).catch(() => undefined);
+      notify('Only the words are kept now.');
+      onClose();
+    } finally { setBusy(false); }
+  };
+  return (
+    <Sheet title={`Keep ${who}’s voice?`} onClose={onClose} testId="child-voice">
+      <p>Everything {who} says is kept as words, for the family’s album. The recordings of their voice are kept too only if a parent or guardian agrees.</p>
+      {status?.agreed ? (
+        <>
+          <p className="muted">{status.guardianName ? `${status.guardianName} agreed to keep their voice.` : 'A guardian agreed to keep their voice.'}</p>
+          <div className="social-actions">
+            <button type="button" className="pill glass" onClick={() => void stop()} disabled={busy} data-testid="child-voice-stop">Keep words only, delete the recordings</button>
+            <button type="button" className="pill glass" onClick={onClose} data-testid="child-voice-done">Done</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <label className="social-field"><span>Parent or guardian’s name</span><input value={guardianName} onChange={(e) => setGuardianName(e.target.value)} maxLength={80} data-testid="child-voice-guardian" /></label>
+          <label className="social-check"><input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} data-testid="child-voice-agree" /> I am their parent or guardian, and I agree to recordings of their voice being kept for the family’s album in these visits.</label>
+          {error && <p className="social-error" role="alert">{error}</p>}
+          <div className="social-actions">
+            <button type="button" className="pill glass" onClick={() => void keep()} disabled={busy || !agree || !guardianName.trim()} data-testid="child-voice-keep">Keep their voice too</button>
+            <button type="button" className="pill glass" onClick={onClose} data-testid="child-voice-words">Words only</button>
+          </div>
+        </>
+      )}
+    </Sheet>
+  );
+}
+
 function Composer({ onClose }: { onClose: () => void }) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -84,7 +147,7 @@ function Composer({ onClose }: { onClose: () => void }) {
   const hold = () => {
     if (!Speech || rec.current) return;
     const r = new Speech();
-    r.interimResults = false; r.continuous = true; r.lang = navigator.language || 'en-US';
+    r.interimResults = false; r.continuous = true; r.lang = recognitionLang();
     r.onresult = (e) => { const said = Array.from(e.results).map((x) => x[0]?.transcript ?? '').join(' ').trim(); if (said) setText((t) => (t ? `${t} ${said}` : said)); };
     r.onend = () => { rec.current = null; setHearing(false); };
     try { r.start(); rec.current = r; setHearing(true); } catch { setHearing(false); }
@@ -301,9 +364,12 @@ export function SocialUI() {
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving';
   const touch = useMemo(() => matchMedia('(pointer: coarse)').matches, []);
 
-  // A new visit starts fresh; guests look through their own eyes by default, the host at the whole place.
+  // A new visit starts fresh; guests look through their own eyes by default, the host at the whole place. Once per
+  // visit: effects also run again when the page re-suspends (a model loading), which must never undo a choice (a guest
+  // who chose the grandparent's eyes was sent back to the grandchild's).
   useEffect(() => {
-    if (!session) return;
+    if (!session || freshFor === `${session.code}:${session.token}`) return;
+    freshFor = `${session.code}:${session.token}`;
     useSocial.getState().set({ chosen: false, viewing: session.role === 'guest' ? 'child' : 'grandparent', view: session.role === 'guest' ? 'first' : 'overview' });
   }, [session]);
   // Which prepared world this visit's memory is shown in (the team's cached meadow, say): perspectives stand at its

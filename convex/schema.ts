@@ -276,6 +276,17 @@ export default defineSchema({
   // A person's likeness for shared visits: a rigged GLB built offline (docs/AVATARS.md). Not tied to one room, since
   // every visit is a new room; the device that uploaded it keeps the unguessable key and wears it again. A minor's
   // likeness is never accepted without a guardian's recorded agreement. Revoking deletes the file.
+  // The grandchild's voice clips: kept only once a parent or guardian agreed (convex/voiceGuard.ts). childClaimant
+  // comes from the exchange gateway, which keeps who sees through the grandchild's eyes.
+  voiceGuardians: defineTable({
+    roomId: v.id('rooms'),
+    memberId: v.id('members'),
+    childClaimant: v.boolean(),
+    guardianName: v.union(v.string(), v.null()),
+    agreedAt: v.union(v.number(), v.null()),
+    revokedAt: v.union(v.number(), v.null()),
+    updatedAt: v.number(),
+  }).index('by_room', ['roomId']).index('by_member', ['memberId']),
   avatars: defineTable({
     key: v.string(),
     fileId: v.union(v.id('_storage'), v.null()),

@@ -33,3 +33,5 @@ apps/gate/.models-cache/
 # The San Francisco demo photographs (scripts/prepare-sf-photos.mjs; rights not ours to redistribute)
 apps/gate/public/memories/sf/
 photos/
+# Brainstorming mockups (superpowers visual companion)
+.superpowers/

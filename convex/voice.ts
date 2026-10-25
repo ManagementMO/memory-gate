@@ -4,6 +4,7 @@ import { ConvexError, v } from 'convex/values';
 import { action, internalQuery } from './_generated/server';
 import { internal } from './_generated/api';
 import { activeScopes, readFlags, requireMember } from './lib/auth';
+import { clipsAllowed } from './voiceGuard';
 import type { Flags } from '../packages/shared/src/flags';
 
 type VoiceCheck = { paused: boolean; consent: boolean; recording: boolean; flags: Flags; keyterms: string[] };
@@ -16,9 +17,10 @@ export const CARTESIA_VERSION = '2026-08-14';
 export const check = internalQuery({
   args: { code: v.string(), token: v.string() },
   handler: async (ctx, { code, token }) => {
-    const { room } = await requireMember(ctx, code, token, ['storyteller', 'family']);
+    const { room, member } = await requireMember(ctx, code, token, ['storyteller', 'family']);
     const scopes = await activeScopes(ctx, room._id);
-    return { paused: room.paused, consent: scopes.has('voice_processing'), recording: scopes.has('voice_recording'), flags: await readFlags(ctx, room), keyterms: room.familyNames };
+    // Recording also needs a guardian's yes when this person sees through the grandchild's eyes (voiceGuard.ts).
+    return { paused: room.paused, consent: scopes.has('voice_processing'), recording: await clipsAllowed(ctx, room._id, member._id), flags: await readFlags(ctx, room), keyterms: room.familyNames };
   },
 });
 

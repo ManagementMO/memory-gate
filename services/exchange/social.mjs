@@ -3,13 +3,15 @@
 // place, the companion's thread with it, archive photographs pinned to it, the likeness each person wears). It rides
 // the same private SpacetimeDB connection and the same Convex check as the rest of the gateway: roomId and memberId
 // always come from that check, never from the browser, and each room's devices only ever receive their own room.
+// The one conversation the companion holds with everyone in a visit rides here too (conversation.mjs).
 import { createHash } from 'node:crypto';
 import { makeFunctionReference } from 'convex/server';
 import { safeArchiveUrl } from '../../actors/historical-memory-atlas/src/archive.mjs';
 
-const TABLES = ['perspective', 'perspectiveStory', 'perspectiveObject', 'companionTurn', 'companionSummary', 'handoff', 'perspectivePin', 'avatar', 'perspectiveSpot'];
-export const SOCIAL_SUBSCRIPTIONS = ['perspective', 'pose', 'perspective_story', 'perspective_object', 'companion_turn', 'companion_summary', 'handoff', 'perspective_pin', 'avatar', 'perspective_spot'].map(t => `SELECT * FROM ${t}`);
-const ACTIONS = new Set(['claim', 'perspective-settings', 'story', 'story-remove', 'object', 'object-remove', 'turn', 'summary', 'pass-story', 'respond-handoff', 'pin-perspective', 'unpin-perspective', 'place-pin', 'avatar', 'avatar-clear', 'spot']);
+const TABLES = ['perspective', 'perspectiveStory', 'perspectiveObject', 'companionTurn', 'companionSummary', 'handoff', 'perspectivePin', 'avatar', 'perspectiveSpot', 'conversationTurn', 'conversationSummary'];
+export const SOCIAL_SUBSCRIPTIONS = ['perspective', 'pose', 'perspective_story', 'perspective_object', 'companion_turn', 'companion_summary', 'handoff', 'perspective_pin', 'avatar', 'perspective_spot', 'conversation_turn', 'conversation_summary'].map(t => `SELECT * FROM ${t}`);
+const ACTIONS = new Set(['claim', 'perspective-settings', 'story', 'story-remove', 'object', 'object-remove', 'turn', 'summary', 'pass-story', 'respond-handoff', 'pin-perspective', 'unpin-perspective', 'place-pin', 'avatar', 'avatar-clear', 'spot',
+  'utterance', 'flow', 'line', 'hush', 'clear-my-clips']);
 const DEVICES = ['headset', 'phone', 'desktop'];
 const POSES_PER_SECOND = 20;
 const IMAGE_MAX = 5_000_000;
@@ -44,7 +46,7 @@ function placement(p, id) {
   return JSON.stringify({ id, x: n('x', 8), y: n('y', 4), z: n('z', 8), yaw: n('yaw', 7), scale: Math.max(0.1, n('scale', 4)), on: typeof p.on === 'string' ? p.on.slice(0, 60) : null });
 }
 
-export function createSocial({ db, clients, send, convex, authorize, isReady }) {
+export function createSocial({ db, clients, send, convex, authorize, isReady, conversation }) {
   const rows = (table, roomId) => [...db.db[table].iter()].filter(r => r.roomId === roomId);
   const fresh = (c, roomId) => c.context?.roomId === roomId && Date.now() - c.authorizedAt < 15_000;
 
@@ -60,7 +62,21 @@ export function createSocial({ db, clients, send, convex, authorize, isReady }) 
       // A child's likeness only ever travels with a guardian's agreement (the module refuses it otherwise, too).
       avatars: rows('avatar', roomId).filter(a => !a.subjectIsMinor || a.guardianConsent).map(a => ({ memberId: a.memberId, url: a.url, bytes: a.bytes })),
       spots: rows('perspectiveSpot', roomId).map(({ perspectiveId, memoryId, x, z, objectId, source, quote, updatedAt }) => ({ perspectiveId, memoryId, x, z, objectId, source, quote, updatedAt })),
+      // Everyone in the visit hears the whole conversation anyway; what each microphone heard (utterance) never travels.
+      conversation: rows('conversationTurn', roomId).sort((a, b) => a.createdAt - b.createdAt)
+        .map(({ id, who, memberId, speakerName, perspectiveId, text, intent, createdAt }) => ({ id, who, memberId, speakerName, perspectiveId, text, intent, createdAt })),
+      conversationSummary: db.db.conversationSummary.roomId.find(roomId)?.summary ?? null,
     };
+  }
+  // Who sees through the grandchild's eyes, told to Convex (it keeps that person's voice as words only until a
+  // guardian agrees): after a claim, and every reconcile pass for the rooms in use.
+  const claimants = new Map();
+  async function syncClaimant(roomId) {
+    if (!process.env.WORKER_SECRET) return;
+    const who = rows('perspective', roomId).find(p => p.key === 'child')?.claimedBy ?? '';
+    if (claimants.get(roomId) === who) return;
+    await convex.mutation(makeFunctionReference('voiceGuard:setClaimant'), { secret: process.env.WORKER_SECRET, roomId, memberId: who || null });
+    claimants.set(roomId, who);
   }
   const posesOf = (roomId) => rows('pose', roomId).map(p => ({ memberId: p.memberId, perspectiveId: p.perspectiveId, device: p.device, inScene: p.inScene, head: Array.from(p.head), left: Array.from(p.left), right: Array.from(p.right), updatedAt: p.updatedAt }));
 
@@ -123,7 +139,11 @@ export function createSocial({ db, clients, send, convex, authorize, isReady }) 
     const host = !!ctx.isOwner;
     const r = db.reducers;
     switch (m.type) {
-      case 'claim': return r.claimPerspective({ roomId, memberId, memberName: displayName, host, perspectiveId: str(m.perspectiveId, 240), claim: !!m.claim });
+      case 'claim': {
+        await r.claimPerspective({ roomId, memberId, memberName: displayName, host, perspectiveId: str(m.perspectiveId, 240), claim: !!m.claim });
+        await syncClaimant(roomId).catch(() => undefined);
+        return;
+      }
       case 'perspective-settings': {
         const years = [m.yearFrom, m.yearTo];
         if (!years.every(y => Number.isInteger(y) && y >= 1000 && y <= 2100)) throw bad();
@@ -170,6 +190,14 @@ export function createSocial({ db, clients, send, convex, authorize, isReady }) 
         return r.setAvatar({ roomId, memberId, avatarId: a.id, url: a.url, bytes: a.bytes, subjectIsMinor: a.subjectIsMinor, guardianConsent: a.guardianConsent });
       }
       case 'avatar-clear': return r.clearAvatar({ roomId, memberId });
+      // The companion's conversation (conversation.mjs): what a microphone heard, the host's view of the visit, its
+      // scripted lines, and someone speaking over the companion.
+      case 'utterance': return conversation.utterance(c, ctx, m);
+      case 'flow': return conversation.flow(c, ctx, m);
+      case 'line': return conversation.line(c, ctx, m);
+      case 'hush': return conversation.hush(c, ctx);
+      // A guardian took back their agreement (Convex deleted the clips): the stories keep their words, without them.
+      case 'clear-my-clips': return r.clearSpeakerAudio({ roomId, memberId });
       case 'spot': {
         if (![m.x, m.z].every(n => typeof n === 'number' && Number.isFinite(n) && Math.abs(n) <= 8)) throw bad();
         return r.setSpot({ roomId, perspectiveId: str(m.perspectiveId, 240), memoryId: str(m.memoryId, 180), x: m.x, z: m.z, objectId: str(m.objectId ?? '', 120, true),
@@ -186,6 +214,7 @@ export function createSocial({ db, clients, send, convex, authorize, isReady }) 
     await db.reducers.ensurePerspectives({ roomId }).catch(() => undefined);
     send(c, { type: 'social', social: snapshot(roomId) });
     send(c, { type: 'poses', poses: posesOf(roomId), now: Date.now() });
+    await conversation.joined(c).catch(() => undefined);
   }
   async function left(ctx) {
     if (!ctx || !isReady()) return;
@@ -206,6 +235,8 @@ export function createSocial({ db, clients, send, convex, authorize, isReady }) 
         for (const a of chunk) if (!active.has(a.avatarId)) await db.reducers.clearAvatar({ roomId: a.roomId, memberId: a.memberId });
       }
     } catch { console.warn('Avatar reconciliation will retry; no likeness was removed on a failed query.'); }
+    try { for (const roomId of new Set([...clients].map(c => c.context?.roomId).filter(Boolean))) await syncClaimant(roomId); }
+    catch { console.warn('The grandchild’s voice setting will sync on the next pass.'); }
     finally { reconciling = false; }
   }
   const roomIds = () => [...db.db.perspective.iter()].map(p => p.roomId);

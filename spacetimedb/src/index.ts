@@ -66,6 +66,21 @@ const db = schema({
     id: t.string().primaryKey(), roomId: t.string(), memberId: t.string(), avatarId: t.string(), url: t.string(), bytes: t.u32(),
     subjectIsMinor: t.bool(), guardianConsent: t.bool(), consentedAt: t.f64(), updatedAt: t.f64(),
   }),
+  // One conversation with everyone in the visit (the companion talks with the grandparent and the grandchild together):
+  // who said what, by name and the eyes they see through, and the companion's lines (the last 120), plus a summary.
+  conversationTurn: table({ indexes: [{ accessor: 'byRoom', algorithm: 'btree', columns: ['roomId'] }] }, {
+    id: t.string().primaryKey(), roomId: t.string(), who: t.string(), memberId: t.string(), speakerName: t.string(), perspectiveId: t.string(),
+    text: t.string(), intent: t.string(), createdAt: t.f64(),
+  }),
+  conversationSummary: table({}, {
+    roomId: t.string().primaryKey(), summary: t.string(), turnCount: t.u32(), updatedAt: t.f64(),
+  }),
+  // Everything each microphone heard, including the other person picked up faintly across the room (kept once, for
+  // the louder mic; the rest marked duplicate or crosstalk). Never sent to devices.
+  utterance: table({ indexes: [{ accessor: 'byRoom', algorithm: 'btree', columns: ['roomId'] }] }, {
+    id: t.string().primaryKey(), roomId: t.string(), memberId: t.string(), speakerName: t.string(), perspectiveId: t.string(), device: t.string(),
+    text: t.string(), snrDb: t.f32(), durationMs: t.u32(), heardAt: t.f64(), duplicateOf: t.string(), reason: t.string(), audioFileId: t.string(), createdAt: t.f64(),
+  }),
 });
 export default db;
 export const init = db.init(ctx => { ctx.db.operator.insert({ id: 0, identity: ctx.sender }); });
@@ -133,6 +148,9 @@ export const purgeRoom = db.reducer({ roomId: t.string() }, (ctx, { roomId }) =>
   for (const row of [...ctx.db.perspectivePin.byRoom.filter(roomId)]) ctx.db.perspectivePin.id.delete(row.id);
   for (const row of [...ctx.db.avatar.byRoom.filter(roomId)]) ctx.db.avatar.id.delete(row.id);
   for (const row of [...ctx.db.perspectiveSpot.byRoom.filter(roomId)]) ctx.db.perspectiveSpot.id.delete(row.id);
+  for (const row of [...ctx.db.conversationTurn.byRoom.filter(roomId)]) ctx.db.conversationTurn.id.delete(row.id);
+  ctx.db.conversationSummary.roomId.delete(roomId);
+  for (const row of [...ctx.db.utterance.byRoom.filter(roomId)]) ctx.db.utterance.id.delete(row.id);
 });
 
 // Being together: the gateway calls these for a member it has just checked in Convex.
@@ -408,4 +426,34 @@ export const setSpot = db.reducer({ roomId: t.string(), perspectiveId: t.string(
   const row = { id, roomId: a.roomId, perspectiveId: a.perspectiveId, memoryId: a.memoryId, x: a.x, z: a.z, objectId: a.objectId, source: a.source, quote: a.quote.trim(), setBy: a.memberId, updatedAt: nowMs(ctx) };
   if (prior) ctx.db.perspectiveSpot.id.update(row); else ctx.db.perspectiveSpot.insert(row);
   if ([...ctx.db.perspectiveSpot.byRoom.filter(a.roomId)].length > 400) throw new SenderError('This visit has too many places.');
+});
+
+// ---------------------------------------------------------------- one conversation with everyone (the room's companion)
+// The gateway's companion agent is the only writer: it hears every kept utterance, judges crosstalk, and speaks.
+export const addConversationTurn = db.reducer({ id: t.string(), roomId: t.string(), who: t.string(), memberId: t.string(), speakerName: t.string(), perspectiveId: t.string(), text: t.string(), intent: t.string() }, (ctx, a) => {
+  requireOperator(ctx); bounded(a.id, 240, 'turn ID'); bounded(a.roomId, 180, 'roomId'); bounded(a.text, 600, 'turn');
+  if (!['person', 'companion'].includes(a.who) || a.speakerName.length > 80 || a.memberId.length > 80 || a.perspectiveId.length > 240 || a.intent.length > 32) throw new SenderError('Invalid turn.');
+  if (ctx.db.conversationTurn.id.find(a.id)) return;
+  ctx.db.conversationTurn.insert({ ...a, text: a.text.trim(), createdAt: nowMs(ctx) });
+  const turns = [...ctx.db.conversationTurn.byRoom.filter(a.roomId)].sort((x, y) => x.createdAt - y.createdAt);
+  for (const old of turns.slice(0, Math.max(0, turns.length - 120))) ctx.db.conversationTurn.id.delete(old.id);
+});
+export const setConversationSummary = db.reducer({ roomId: t.string(), summary: t.string(), turnCount: t.u32() }, (ctx, a) => {
+  requireOperator(ctx); bounded(a.roomId, 180, 'roomId'); bounded(a.summary, 1200, 'summary');
+  const row = { roomId: a.roomId, summary: a.summary.trim(), turnCount: a.turnCount, updatedAt: nowMs(ctx) };
+  if (ctx.db.conversationSummary.roomId.find(a.roomId)) ctx.db.conversationSummary.roomId.update(row); else ctx.db.conversationSummary.insert(row);
+});
+export const addUtterance = db.reducer({ id: t.string(), roomId: t.string(), memberId: t.string(), speakerName: t.string(), perspectiveId: t.string(), device: t.string(), text: t.string(), snrDb: t.f32(), durationMs: t.u32(), heardAt: t.f64(), duplicateOf: t.string(), reason: t.string(), audioFileId: t.string() }, (ctx, a) => {
+  requireOperator(ctx); bounded(a.id, 240, 'utterance ID'); bounded(a.roomId, 180, 'roomId'); bounded(a.text, 600, 'utterance');
+  if (!['own', 'duplicate', 'crosstalk'].includes(a.reason) || !finite(a.snrDb, 200) || a.speakerName.length > 80 || a.audioFileId.length > 80 || a.duplicateOf.length > 240 || a.device.length > 16) throw new SenderError('Invalid utterance.');
+  if (ctx.db.utterance.id.find(a.id)) return;
+  ctx.db.utterance.insert({ ...a, createdAt: nowMs(ctx) });
+  const rows = [...ctx.db.utterance.byRoom.filter(a.roomId)].sort((x, y) => x.createdAt - y.createdAt);
+  for (const old of rows.slice(0, Math.max(0, rows.length - 300))) ctx.db.utterance.id.delete(old.id);
+});
+/** A guardian took back their agreement: this member's stories and utterances keep their words, without the clips. */
+export const clearSpeakerAudio = db.reducer({ roomId: t.string(), memberId: t.string() }, (ctx, a) => {
+  requireOperator(ctx);
+  for (const s of [...ctx.db.perspectiveStory.byRoom.filter(a.roomId)]) if (s.speakerId === a.memberId && s.audioFileId) ctx.db.perspectiveStory.id.update({ ...s, audioFileId: '' });
+  for (const u of [...ctx.db.utterance.byRoom.filter(a.roomId)]) if (u.memberId === a.memberId && u.audioFileId) ctx.db.utterance.id.update({ ...u, audioFileId: '' });
 });
