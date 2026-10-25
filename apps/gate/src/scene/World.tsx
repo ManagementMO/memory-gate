@@ -15,6 +15,7 @@ import { GateDust } from './GateDust';
 import { MediaCard } from './MediaCard';
 import { PhotoWorld } from './PhotoWorld';
 import { MemoryScene } from './sketch/MemoryScene';
+import { HeldKite } from './sketch/HeldKite';
 import { PalaceWorld } from './palace/PalaceWorld';
 import { SHORE, XR_MOVE_AT } from './palace/plan';
 import { WhiteSpace } from './WhiteSpace';
@@ -22,7 +23,7 @@ import { PresenceLights } from '../presence/PresenceLights';
 import { SocialLayer } from '../social/scene/SocialLayer';
 import { OriginRig } from '../social/xr/OriginRig';
 import { GateObjectsLayer } from '../memory-objects/GateObjects';
-import { applyPerspectiveToOrigin } from '../social/xr/perspectiveScale';
+import { applyPerspectiveToOrigin, perspectiveAnchored } from '../social/xr/perspectiveScale';
 import { pointBus } from '../presence/presence';
 import type { ThreeEvent } from '@react-three/fiber';
 
@@ -35,6 +36,8 @@ function pointInHeadset(e: ThreeEvent<MouseEvent>) {
   pointBus.send([e.point.x, e.point.y, e.point.z]);
 }
 import { XrLayer } from './XrLayer';
+import { viewOf } from '../../../../packages/shared/src/places';
+import { useMemory } from '../flow/memory';
 
 /** A soft studio environment for glossy surfaces (the figure's shell, sketch objects). Generated, no download. */
 function StudioEnvironment() {
@@ -101,6 +104,10 @@ function PlayerOrigin() {
     const s = useGate.getState();
     const atShore = s.world === 'palace' && (s.stage === 'portal' || s.stage === 'greeting' || s.stage === 'gathering' || (s.stage === 'entering' && s.enterProgress < XR_MOVE_AT));
     applyPerspectiveToOrigin(origin.current, 0, atShore ? SHORE.z : 0);
+    // In a prepared place the wearer faces its best side (turned while the world is white, never in view), unless
+    // they stand in someone's perspective, which places and turns them itself.
+    const inMemory = s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving';
+    if (origin.current && inMemory && !perspectiveAnchored()) origin.current.rotation.y = viewOf(useMemory.getState().place);
   });
   return <XROrigin ref={origin}><OriginRig /></XROrigin>;
 }
@@ -123,6 +130,7 @@ export function World({ quality }: { quality: number }) {
       <group onClick={pointInHeadset}>
         <MemoryScene />
       </group>
+      <HeldKite />
       <MediaCard />
       <CompanionRig />
       <PresenceLights />

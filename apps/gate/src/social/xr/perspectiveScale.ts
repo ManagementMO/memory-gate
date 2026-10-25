@@ -10,6 +10,8 @@ const state = { k: 1, offX: 0, offZ: 0, anchor: null as null | { x: number; z: n
 const inMemory = () => { const st = useGate.getState().stage; return st === 'forming' || st === 'memory' || st === 'leaving'; };
 
 export const originScale = () => state.k;
+/** Whether the wearer is standing in someone's perspective right now (it places and turns the origin itself). */
+export const perspectiveAnchored = () => !!state.anchor && inMemory();
 
 /** PlayerOrigin calls this every frame instead of setting the position itself. */
 export function applyPerspectiveToOrigin(origin: THREE.Group | null, baseX: number, baseZ: number): void {

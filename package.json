@@ -26,7 +26,7 @@
     "demo:world": "node scripts/story-world-demo.mjs",
     "demo:journey": "node scripts/story-journey-room.mjs",
     "demo:kite": "node scripts/red-kite-room.mjs",
-    "test:red-kite": "node tools/red-kite/validate_assets.mjs && node apps/gate/scripts/red-kite-check.mjs && node apps/gate/scripts/red-kite-xr-check.mjs",
+    "test:red-kite": "node tools/red-kite/validate_assets.mjs && node --import tsx tools/red-kite/check_traversal.ts && node apps/gate/scripts/red-kite-check.mjs && node apps/gate/scripts/red-kite-traversal-check.mjs && node apps/gate/scripts/red-kite-xr-check.mjs",
     "demo:links": "node scripts/demo-links.mjs",
     "palace:prepare": "node --experimental-transform-types scripts/prepare-palace.mjs",
     "test:palace": "node --test tests/palace/preparation.test.mjs",

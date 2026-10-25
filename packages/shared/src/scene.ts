@@ -25,6 +25,8 @@ export type PlanObject = {
   scale: number;
   /** The words that put it there (shown when someone asks "who said that?"). */
   quote: string | null;
+  /** Where the person put it, in a prepared place's own frame (metres, x/z), when they said or showed where. */
+  at?: [number, number];
 };
 
 export type ScenePlan = {
@@ -56,7 +58,7 @@ export type LibraryEntry = { fp: [number, number]; h: number; place: Place; surf
 /** Default sizes are real-world metres (footprint width × depth, height); `surface` is the height things rest on. */
 export const LIBRARY: Record<string, LibraryEntry> = {
   table: { fp: [1.4, 0.85], h: 0.76, place: 'floor', surface: 0.76, syn: ['table', 'dining table', 'kitchen table', 'desk', 'workbench'], material: 'wood' },
-  round_table: { fp: [1.0, 1.0], h: 0.74, place: 'floor', surface: 0.74, syn: ['round table', 'small table', 'coffee table', 'side table', 'cafe table'], material: 'wood' },
+  round_table: { fp: [1.0, 1.0], h: 0.74, place: 'floor', surface: 0.74, syn: ['round table', 'coffee table', 'cafe table'], material: 'wood' },
   chair: { fp: [0.48, 0.5], h: 0.92, place: 'floor', syn: ['chair', 'chairs', 'stool', 'seat', 'kitchen chair', 'dining chair'], material: 'wood' },
   armchair: { fp: [0.85, 0.85], h: 0.95, place: 'floor', syn: ['armchair', 'recliner', 'easy chair', 'rocking chair', 'reading chair'], material: 'fabric' },
   sofa: { fp: [2.0, 0.9], h: 0.85, place: 'wall', syn: ['sofa', 'couch', 'settee', 'loveseat'], material: 'fabric' },
@@ -107,6 +109,12 @@ export const LIBRARY: Record<string, LibraryEntry> = {
   cat: { fp: [0.25, 0.5], h: 0.3, place: 'floor', syn: ['cat', 'kitten', 'cats'], material: 'ceramic' },
   dog: { fp: [0.4, 0.85], h: 0.55, place: 'floor', syn: ['dog', 'puppy', 'dogs'], material: 'ceramic' },
   bird: { fp: [0.15, 0.2], h: 0.15, place: 'surface', syn: ['bird', 'birds', 'robin', 'sparrow', 'parrot', 'canary', 'bird cage', 'birdcage'], material: 'ceramic' },
+  // The team's Red Kite props (Blender, apps/gate/public/red-kite): a paper kite flies (layout lifts it into the air).
+  kite: { fp: [0.68, 0.13], h: 1.93, place: 'floor', syn: ['kite', 'kites', 'paper kite'], material: 'paper' },
+  spool: { fp: [0.17, 0.11], h: 0.11, place: 'surface', syn: ['spool', 'kite string', 'string spool', 'reel'], material: 'wood' },
+  keepsake_box: { fp: [0.26, 0.18], h: 0.1, place: 'surface', syn: ['keepsake box', 'little box', 'wooden box', 'memory box', 'treasure box'], material: 'wood' },
+  story_card: { fp: [0.15, 0.01], h: 0.1, place: 'surface', syn: ['story card', 'postcard', 'little card', 'note card'], material: 'paper' },
+  side_table: { fp: [0.65, 0.45], h: 0.76, place: 'floor', surface: 0.76, syn: ['side table', 'small table', 'little table', 'folding table'], material: 'wood' },
 };
 export const LIBRARY_KEYS = Object.keys(LIBRARY);
 /** A generic default for 'custom' objects composed from primitives. */
@@ -152,7 +160,7 @@ export function kindFor(label: string, proposed?: string): string {
   const l = ` ${label.toLowerCase()} `;
   let best: { key: string; len: number } | null = null;
   for (const [key, e] of Object.entries(LIBRARY)) {
-    for (const s of e.syn) if (l.includes(` ${s} `) || l.includes(` ${s}s `)) { if (!best || s.length > best.len) best = { key, len: s.length }; }
+    for (const s of e.syn) if (l.includes(` ${s} `) || l.includes(` ${s}s `) || l.includes(` ${s}es `)) { if (!best || s.length > best.len) best = { key, len: s.length }; }
   }
   return best?.key ?? 'custom';
 }
@@ -249,8 +257,8 @@ export function planOffline(text: string, title?: string | null, opts: { seeds?:
   for (const [key, e] of Object.entries(LIBRARY)) {
     for (const s of [...e.syn].sort((a, b) => b.length - a.length)) {
       const i = t.indexOf(` ${s} `);
-      const j = i >= 0 ? i : t.indexOf(` ${s}s `);
-      if (j >= 0) { mentions.push({ key, at: j, label: s }); break; }
+      const j = i >= 0 ? i : t.indexOf(` ${s}s `) >= 0 ? t.indexOf(` ${s}s `) : t.indexOf(` ${s}es `); // benches, boxes
+      if (j >= 0) { mentions.push({ key, at: j, label: i >= 0 ? s : `${s}s` }); break; }
     }
   }
   mentions.sort((a, b) => a.at - b.at);
@@ -475,7 +483,7 @@ export function layout(plan: ScenePlan): Placement[] {
     boxes.push(b);
     let yaw = onWater ? 0 : facingCenter(b.x, b.z);
     if (o.kind === 'chair' && target) yaw = Math.atan2(target.x - b.x, target.z - b.z);
-    out.set(o.id, { id: o.id, x: b.x, y: 0, z: b.z, yaw, scale: o.scale, on: null });
+    out.set(o.id, { id: o.id, x: b.x, y: o.kind === 'kite' ? 1.0 : 0, z: b.z, yaw, scale: o.scale, on: null }); // a kite flies (its tail hangs below)
   }
   // 7. Things that rest on something: on their target, else on the first table/counter/cabinet. A small thing said
   //    to be in front of, beside or behind something it can't rest on ("a TV in front of the bed") stands there

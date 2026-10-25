@@ -26,6 +26,9 @@ try {
     const code = await page.evaluate(() => JSON.parse(localStorage.getItem('mg.red-kite.session.owner')).code);
     viewer = await (await browser.newContext({ ignoreHTTPSErrors: true })).newPage();
     await viewer.goto(`${base}/?story=red-kite&room=${code}&lite=1`); await ready(viewer);
+    await page.bringToFront();
+    // The scene deliberately rests when its tab is hidden; resume through the same host control.
+    if (await page.getByTestId('red-kite-experience').getAttribute('data-paused') === 'true') await page.getByTestId('rest').click();
     await page.getByTestId('object-note').fill('The little bridge reminds me of walking to the park together.');
     await page.getByTestId('create-object').click(); await expect(page.getByTestId('model-preview')).toContainText('Private preview');
     await page.waitForFunction(() => window.__memoryObjectScene?.snapshot().some(o => o.loaded && o.preview));
@@ -50,8 +53,9 @@ try {
     await page.evaluate(() => {
       const o = window.__memoryObjectScene.snapshot()[0], s = window.__redKite3D.snapshot(), c = window.__redKite3D.emulator().controllers.right;
       const dx = o.position[0] - s.origin[0], dz = o.position[2] - s.origin[2], cy = Math.cos(s.yaw), sy = Math.sin(s.yaw);
-      const x = cy * dx - sy * dz, y = o.position[1] + .4, z = sy * dx + cy * dz;
-      c.position.set(.3, 1.1, -.5); const vx = x - .3, vy = y - 1.1, vz = z + .5, len = Math.hypot(vx, vy, vz);
+      const x = cy * dx - sy * dz, y = o.position[1] + .4 - s.origin[1], z = sy * dx + cy * dz;
+      // Reach beside the new right-hand story panel; its visible buttons correctly occlude a ray through it.
+      c.position.set(.65, 1.1, -.5); const vx = x - .65, vy = y - 1.1, vz = z + .5, len = Math.hypot(vx, vy, vz);
       const qx = vy / len, qy = -vx / len, qw = 1 - vz / len, norm = Math.hypot(qx, qy, qw); c.quaternion.set(qx / norm, qy / norm, 0, qw / norm);
     });
     await page.waitForTimeout(400); await button('right', 'trigger');

@@ -10,6 +10,21 @@
   "floorY": -0.5775501930381995,
   "scale": 2.6397884,
   "numSplats": 500000,
+  "fullResolution": {
+    "file": "apps/gate/public/red-kite/meadow-full.spz",
+    "bytes": 30775647,
+    "sha256": "d565169bf18a4009dc37385c165cb447c226b098d4ee873054a61e1f41d7c09d",
+    "numSplats": 1920000,
+    "source": "Existing full-resolution export from the same World Labs world; no new generation"
+  },
+  "collision": {
+    "file": "apps/gate/public/red-kite/meadow-collider.glb",
+    "bytes": 1398788,
+    "sha256": "5871a615750e77ce751077bc3b82cbce592b7decb9c600107f09ecffe6d60600",
+    "triangles": 51610,
+    "source": "Collider mesh from the same completed World Labs generation; no new generation",
+    "frame": "Raw OpenCV; apply the same scale, axis conversion and vertical calibration as the visible meadow"
+  },
   "liteNumSplats": 100000,
   "assets": [
     {

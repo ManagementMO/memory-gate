@@ -13,7 +13,7 @@ import { MEMORY_CENTER } from '../layout';
 import { glowBlending } from '../util';
 import { fromParts, token, type Part } from './custom';
 import { LIBRARY_BUILDERS } from './library';
-import { hasRealModel, loadRealModel, realObject, realTakesColour } from './realModels';
+import { hasLibraryModel, hasRealModel, loadRealModel, realObject, realTakesColour } from './realModels';
 import { newReveal, type BuildOptions } from './style';
 
 const hash = (s: string) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
@@ -143,7 +143,7 @@ export function SketchObject({ obj, place, delay, onLight = 1 }: { obj: PlanObje
 
   // Ask Claude to compose things the library can't draw (cached server-side per label + colour).
   useEffect(() => {
-    if (LIBRARY_BUILDERS[obj.kind]) return;
+    if (LIBRARY_BUILDERS[obj.kind] || hasLibraryModel(obj.kind)) return; // the library draws it: nothing to compose
     const s = useGate.getState().session;
     if (!s) return;
     let live = true;
@@ -212,7 +212,19 @@ export function SketchObject({ obj, place, delay, onLight = 1 }: { obj: PlanObje
     }
     if (st.shadow) (st.shadow.material as THREE.MeshBasicMaterial).opacity = 0.22 * reveal.reveal.value;
     formation.set(obj.id, p);
+    // A kite rides the breeze: a slow drift and roll, its tail rippling behind (the team model's Tail_00..08 nodes).
+    if (obj.kind === 'kite') {
+      const t = st.t;
+      built.position.set(Math.sin(t * 0.63) * 0.12, Math.sin(t * 1.1) * 0.07, Math.sin(t * 0.47) * 0.1);
+      built.rotation.z = Math.sin(t * 0.8) * 0.07;
+      tail.forEach((n, i) => { n.rotation.x = Math.sin(t * 2.6 - i * 0.7) * 0.16 * (i + 1) / tail.length; n.rotation.z = Math.sin(t * 1.9 - i * 0.55) * 0.12 * (i + 1) / tail.length; });
+    }
   });
+  const tail = useMemo(() => {
+    const nodes: THREE.Object3D[] = [];
+    if (obj.kind === 'kite') built.traverse((o) => { if (/^Tail_\d+$/.test(o.name)) nodes.push(o); });
+    return nodes.sort((a, b) => a.name.localeCompare(b.name));
+  }, [built, obj.kind]);
   useEffect(() => () => { formation.delete(obj.id); }, [obj.id]);
 
   return (

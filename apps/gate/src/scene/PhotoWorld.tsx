@@ -39,16 +39,17 @@ export function PhotoWorld() {
     };
   }, [usable, splat?.source, camera]);
 
+  // A whole World Labs world is seen from several places (each perspective's viewpoint), not only where a photo was
+  // taken: Spark's default kernel coverage, as the Red Kite meadow uses, since the photo-tuned one leaves gaps there.
+  // (Chosen when the renderer is made: changing it on a running renderer stopped splats drawing in the headset.)
+  const kernel = splat?.source === 'worldlabs' ? Math.sqrt(8) : Math.sqrt(5);
   const spark = useMemo(() => {
-    const s = new SparkRenderer({ renderer: gl, maxStdDev: Math.sqrt(5), lodCleanupTimeoutMs: Infinity } as ConstructorParameters<typeof SparkRenderer>[0]);
+    const s = new SparkRenderer({ renderer: gl, maxStdDev: kernel, lodCleanupTimeoutMs: Infinity } as ConstructorParameters<typeof SparkRenderer>[0]);
     const mat = (s as unknown as { material?: THREE.Material }).material;
     if (mat) mat.forceSinglePass = true;
     return s;
-  }, [gl]);
-  useEffect(() => { scene.add(spark); return () => { scene.remove(spark); }; }, [scene, spark]);
-  // A whole World Labs world is seen from several places (each perspective's viewpoint), not only where a photo was
-  // taken: Spark's default kernel coverage, as the Red Kite meadow uses, since the photo-tuned one leaves gaps there.
-  useEffect(() => { spark.maxStdDev = splat?.source === 'worldlabs' ? Math.sqrt(8) : Math.sqrt(5); }, [spark, splat?.source]);
+  }, [gl, kernel]);
+  useEffect(() => { scene.add(spark); return () => { scene.remove(spark); spark.dispose(); }; }, [scene, spark]);
 
   const mesh = useRef<SplatMesh | null>(null);
   const ready = useRef(false);

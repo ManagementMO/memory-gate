@@ -1,10 +1,12 @@
 {
-  "date": "2026-10-25T00:18:21.301Z",
+  "date": "2026-10-25T03:16:08.220Z",
   "origin": "https://localhost:5180",
   "fixture": "The Red Kite fictional sample",
   "paidGenerationCalls": 0,
   "checks": [
     "actual cached meadow and all five GLBs load in Gate",
+    "desktop drag looks around and keyboard steps move within the memory",
+    "compact panels can disappear without stopping the scene, and motion can be explicitly selected",
     "viewer may choose Rosa locally but cannot author details",
     "Elena can leave color unknown then choose red with her source attached",
     "breeze and real pointer capture lift the world-space spool, then release it",
@@ -17,54 +19,389 @@
     "local viewpoint survives reload, and the 100k meadow works on a narrow screen"
   ],
   "snapshots": {
+    "traversal": {
+      "before": {
+        "selected": "elena",
+        "phase": "idle",
+        "fade": 0,
+        "camera": [
+          0,
+          1.5447868012741088,
+          0.25
+        ],
+        "origin": [
+          0,
+          0.02017650127410886,
+          0.25
+        ],
+        "yaw": -0.08145204430587098,
+        "viewDirection": [
+          0.08136200843247153,
+          0.00015853387343064525,
+          -0.9966846032977762
+        ],
+        "navigation": {
+          "x": 0,
+          "y": 0.02017650127410886,
+          "z": 0,
+          "yaw": 0,
+          "pitch": 0,
+          "snapReady": true
+        },
+        "motionMode": "full",
+        "physics": "critically damped tether springs",
+        "meadow": {
+          "instance": "424157ce-5d3c-44ef-950e-a0be8fd9e721",
+          "detail": "adaptive-full",
+          "renderBudget": 1200000,
+          "activeSplats": 1200000,
+          "opacity": 0.9957144226562037,
+          "ready": true
+        },
+        "traversal": {
+          "engine": "Rapier 0.21",
+          "feet": [
+            0,
+            0.02017650127410886,
+            0.25
+          ],
+          "grounded": true,
+          "triangles": 51610,
+          "verticalShift": 1.1462371349334717,
+          "distance": 0,
+          "edgeBlocked": false
+        },
+        "nativeButtons": {},
+        "spoolScreen": [
+          -0.5352014095855343,
+          -0.9856451528644875,
+          0.8892281379525558
+        ],
+        "kite": [
+          0.1890299006983381,
+          2.281191557877187,
+          -2.149565732539033
+        ],
+        "propsResting": false,
+        "kiteRotation": [
+          0.16999751960361975,
+          -0.21289754184239024,
+          -0.01259842772541482
+        ],
+        "tailRotation": [
+          0,
+          0,
+          -0.06545874133695477
+        ],
+        "xr": false,
+        "frames": 574,
+        "held": false,
+        "spool": [
+          -0.55,
+          0.825,
+          -0.7
+        ],
+        "simulationTime": 9.828000000000001,
+        "breeze": 0,
+        "grabs": 0,
+        "lifts": 0,
+        "spoolVelocity": [
+          0,
+          0,
+          0
+        ],
+        "kiteLift": 0,
+        "kiteLiftVelocity": 0,
+        "boxLidAngle": 0,
+        "moves": [],
+        "inputSources": []
+      },
+      "walked": {
+        "selected": "elena",
+        "phase": "idle",
+        "fade": 0,
+        "camera": [
+          1.5259218215942383,
+          1.5087795757606506,
+          -2.745612382888794
+        ],
+        "origin": [
+          1.5259218215942383,
+          -0.015830724239349392,
+          -2.745612382888794
+        ],
+        "yaw": -0.47145204430587107,
+        "viewDirection": [
+          0.45329811332158626,
+          -0.06230109271974643,
+          -0.8891790563801061
+        ],
+        "navigation": {
+          "x": 1.5259218215942383,
+          "y": -0.015830724239349392,
+          "z": -2.995612382888794,
+          "yaw": -0.39000000000000007,
+          "pitch": -0.0625,
+          "snapReady": true
+        },
+        "motionMode": "full",
+        "physics": "critically damped tether springs",
+        "meadow": {
+          "instance": "424157ce-5d3c-44ef-950e-a0be8fd9e721",
+          "detail": "adaptive-full",
+          "renderBudget": 1200000,
+          "activeSplats": 1200000,
+          "opacity": 0.9999864855354789,
+          "ready": true
+        },
+        "traversal": {
+          "engine": "Rapier 0.21",
+          "feet": [
+            1.5259218215942383,
+            -0.015830724239349392,
+            -2.745612382888794
+          ],
+          "grounded": true,
+          "triangles": 51610,
+          "verticalShift": 1.1462371349334717,
+          "distance": 3.3618651320758337,
+          "edgeBlocked": false
+        },
+        "nativeButtons": {},
+        "spoolScreen": [
+          0.26141890387118677,
+          0.3884356430785157,
+          1.036902717092455
+        ],
+        "kite": [
+          0.31740758859157814,
+          2.3993954655573453,
+          -2.104736991256783
+        ],
+        "propsResting": false,
+        "kiteRotation": [
+          0.0803793080307918,
+          -0.18618517656400393,
+          0.01615908232910089
+        ],
+        "tailRotation": [
+          0,
+          0,
+          0.047215036289156354
+        ],
+        "xr": false,
+        "frames": 688,
+        "held": false,
+        "spool": [
+          -0.55,
+          0.825,
+          -0.7
+        ],
+        "simulationTime": 12.136100000023848,
+        "breeze": 0,
+        "grabs": 0,
+        "lifts": 0,
+        "spoolVelocity": [
+          0,
+          0,
+          0
+        ],
+        "kiteLift": 0,
+        "kiteLiftVelocity": 0,
+        "boxLidAngle": 0,
+        "moves": [],
+        "inputSources": []
+      },
+      "home": {
+        "selected": "elena",
+        "phase": "idle",
+        "fade": 0,
+        "camera": [
+          0,
+          1.5447868012741088,
+          0.25
+        ],
+        "origin": [
+          0,
+          0.02017650127410886,
+          0.25
+        ],
+        "yaw": -0.08145204430587098,
+        "viewDirection": [
+          0.08136200843247153,
+          0.00015853387343064525,
+          -0.9966846032977762
+        ],
+        "navigation": {
+          "x": 0,
+          "y": 0.02017650127410886,
+          "z": 0,
+          "yaw": 0,
+          "pitch": 0,
+          "snapReady": true
+        },
+        "motionMode": "full",
+        "physics": "critically damped tether springs",
+        "meadow": {
+          "instance": "424157ce-5d3c-44ef-950e-a0be8fd9e721",
+          "detail": "adaptive-full",
+          "renderBudget": 1200000,
+          "activeSplats": 1199999,
+          "opacity": 0.9999999259296115,
+          "ready": true
+        },
+        "traversal": {
+          "engine": "Rapier 0.21",
+          "feet": [
+            0,
+            0.02017650127410886,
+            0.25
+          ],
+          "grounded": true,
+          "triangles": 51610,
+          "verticalShift": 1.1462371349334717,
+          "distance": 3.3618651320758337,
+          "edgeBlocked": false
+        },
+        "nativeButtons": {},
+        "spoolScreen": [
+          -0.5352014095855343,
+          -0.9856451528644875,
+          0.8892281379525558
+        ],
+        "kite": [
+          0.3030871701537481,
+          2.410941405116942,
+          -2.0522971286468437
+        ],
+        "propsResting": true,
+        "kiteRotation": [
+          0.03400470602113115,
+          -0.09432249728018054,
+          -0.06789367568278774
+        ],
+        "tailRotation": [
+          0,
+          0,
+          -0.08571039291427017
+        ],
+        "xr": false,
+        "frames": 788,
+        "held": false,
+        "spool": [
+          -0.55,
+          0.825,
+          -0.7
+        ],
+        "simulationTime": 13.31959999996425,
+        "breeze": 0,
+        "grabs": 0,
+        "lifts": 0,
+        "spoolVelocity": [
+          0,
+          0,
+          0
+        ],
+        "kiteLift": 0,
+        "kiteLiftVelocity": 0,
+        "boxLidAngle": 0,
+        "moves": [],
+        "inputSources": []
+      }
+    },
     "elena": {
       "selected": "elena",
       "phase": "idle",
       "fade": 0,
       "camera": [
         0,
-        1.5246103,
+        1.5447868012741088,
         0.25
       ],
       "origin": [
         0,
-        0,
+        0.02017650127410886,
         0.25
       ],
       "yaw": -0.08145204430587098,
+      "viewDirection": [
+        0.08136200843247153,
+        0.00015853387343064525,
+        -0.9966846032977762
+      ],
+      "navigation": {
+        "x": 0,
+        "y": 0.02017650127410886,
+        "z": 0,
+        "yaw": 0,
+        "pitch": 0,
+        "snapReady": true
+      },
+      "motionMode": "full",
+      "physics": "critically damped tether springs",
+      "meadow": {
+        "instance": "424157ce-5d3c-44ef-950e-a0be8fd9e721",
+        "detail": "adaptive-full",
+        "renderBudget": 1200000,
+        "activeSplats": 1200000,
+        "opacity": 0.9999999999999996,
+        "ready": true
+      },
+      "traversal": {
+        "engine": "Rapier 0.21",
+        "feet": [
+          0,
+          0.02017650127410886,
+          0.25
+        ],
+        "grounded": true,
+        "triangles": 51610,
+        "verticalShift": 1.1462371349334717,
+        "distance": 3.3618651320758337,
+        "edgeBlocked": false
+      },
+      "nativeButtons": {},
       "spoolScreen": [
-        -0.5351995116420152,
-        -0.9580184090745926,
-        0.8892285311289149
+        -0.5352014095855343,
+        -0.9856451528644875,
+        0.8892281379525558
       ],
       "kite": [
-        0.1747400052842195,
-        2.3209746808190896,
-        -1.9903092025115003
+        0.270940272846471,
+        2.2891238598467143,
+        -2.0909589499046013
       ],
       "propsResting": false,
       "kiteRotation": [
-        0.03708329292282907,
-        0.1648862097040191,
-        -0.14623564502815328
+        0.039192908889639395,
+        0.04716131277824723,
+        0.023642666863451456
       ],
       "tailRotation": [
         0,
         0,
-        0.022610249528374093
+        -0.005059389373446304
       ],
       "xr": false,
-      "frames": 330,
+      "frames": 1130,
       "held": false,
       "spool": [
         -0.55,
         0.825,
         -0.7
       ],
-      "simulationTime": 5.323300000011916,
+      "simulationTime": 20.950599999934447,
       "breeze": 0,
       "grabs": 0,
       "lifts": 0,
+      "spoolVelocity": [
+        0,
+        0,
+        0
+      ],
+      "kiteLift": 0,
+      "kiteLiftVelocity": 0,
+      "boxLidAngle": 0,
       "moves": [],
       "inputSources": []
     },
@@ -73,55 +410,100 @@
       "phase": "idle",
       "fade": 0,
       "camera": [
-        -2,
-        1.5246103,
+        0.8500000238418579,
+        1.5269443892791748,
         -4
       ],
       "origin": [
-        -2,
-        0,
+        0.8500000238418579,
+        0.002334089279174778,
         -4
       ],
-      "yaw": -2.356194490192345,
+      "yaw": 2.854311200192659,
+      "viewDirection": [
+        -0.2785967093229041,
+        0.18232641630747282,
+        0.9429427084775213
+      ],
+      "navigation": {
+        "x": 2.384185793236071e-8,
+        "y": 0.002334089279174778,
+        "z": 0,
+        "yaw": 0,
+        "pitch": 0,
+        "snapReady": true
+      },
+      "motionMode": "full",
+      "physics": "critically damped tether springs",
+      "meadow": {
+        "instance": "424157ce-5d3c-44ef-950e-a0be8fd9e721",
+        "detail": "adaptive-full",
+        "renderBudget": 1200000,
+        "activeSplats": 1145910,
+        "opacity": 0.9999999999999996,
+        "ready": true
+      },
+      "traversal": {
+        "engine": "Rapier 0.21",
+        "feet": [
+          0.8500000238418579,
+          0.002334089279174778,
+          -4
+        ],
+        "grounded": true,
+        "triangles": 51610,
+        "verticalShift": 1.1462371349334717,
+        "distance": 3.64989536362351,
+        "edgeBlocked": false
+      },
+      "nativeButtons": {},
       "spoolScreen": [
-        0.31229040250788725,
-        -0.4385536281899247,
-        0.9691676622233297
+        0.09324204177119597,
+        -0.49030524737780984,
+        0.9704580324054456
       ],
       "kite": [
-        0.10573170842107471,
-        2.6482585606576103,
-        -2.126544807004354
+        0.20293110062045563,
+        2.673490422343811,
+        -2.1261714765848057
       ],
       "propsResting": false,
       "kiteRotation": [
-        0.13646955738561622,
-        -0.13280701926654584,
-        -0.116136500594504
+        0.16127060181493574,
+        -0.22979722498057084,
+        -0.19869892204502387
       ],
       "tailRotation": [
         0,
         0,
-        0.08901804158806675
+        0.14878287921912822
       ],
       "xr": false,
-      "frames": 581,
+      "frames": 1431,
       "held": false,
       "spool": [
         -0.55,
         0.825,
         -0.7
       ],
-      "simulationTime": 8.53900000002979,
-      "breeze": 0.6817599999964233,
+      "simulationTime": 24.894499999940358,
+      "breeze": 0.6117599999994057,
       "grabs": 1,
       "lifts": 1,
+      "spoolVelocity": [
+        0,
+        0,
+        0
+      ],
+      "kiteLift": 0.26907849061253053,
+      "kiteLiftVelocity": -0.04196577870170459,
+      "boxLidAngle": 0,
       "moves": [
         {
           "from": "elena",
           "to": "rosa",
           "opacity": 1,
-          "frame": 428
+          "frame": 1250
         }
       ],
       "inputSources": []

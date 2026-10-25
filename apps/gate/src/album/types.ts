@@ -17,6 +17,8 @@ export type AlbumMoment = {
   /** The person's own voice saying it, when kept. */
   audioUrl: string | null;
   kind: 'arrival' | 'detail' | 'final';
+  /** Whose words these are, in a memory told by more than one person ("Elena, along the path"). */
+  who?: string;
 };
 
 export type AlbumMemory = {
@@ -31,4 +33,11 @@ export type AlbumMemory = {
   sample?: boolean;
   /** The plan the place was drawn from, so "Visit again" can bring it back exactly. */
   plan?: ScenePlan;
+  /** The prepared place from the library it was visited in, if any (its world comes back with it). */
+  place?: import('../../../../packages/shared/src/places').PlaceKey;
+  /** A prepared memory (one of the team's demonstration scenes) opens its own place: a page of its own, or a
+   *  prepared scene inside a visit. */
+  open?: { href: string } | { scene: string };
+  /** The line under its title, instead of when and how it was made. */
+  about?: string;
 };

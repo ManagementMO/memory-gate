@@ -3,7 +3,7 @@
 // are delivered through the page's test hook because a headless browser can't speak.
 //   node apps/gate/scripts/flow.mjs <outDir> [--base https://localhost:5180] [--mobile] [--companion light|figure] [--world palace|aurora]
 //        [--words "..."] [--live] (live = real Claude through the backend; spends tokens)
-import { chromium } from '@playwright/test';
+import { launchBrowser } from './browser.mjs';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
 const args = process.argv.slice(2);
@@ -19,13 +19,15 @@ const words = opt('words', 'My grandmother’s kitchen, in the morning. Yellow c
 const world = opt('world', 'palace');
 const url = `${base}/?voice=off&companion=${companion}&world=${world}${flag('live') ? '' : '&mode=offline'}`;
 
-const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--ignore-gpu-blocklist', '--use-angle=metal', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
+const browser = await launchBrowser();
 const ctx = await browser.newContext({ viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 900 }, deviceScaleFactor: mobile ? 2 : 1, isMobile: mobile, hasTouch: mobile, ignoreHTTPSErrors: true });
 const page = await ctx.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(`pageerror: ${String(e).slice(0, 300)}`));
 page.on('console', (m) => { if (m.type() === 'error') errors.push(`console: ${m.text().slice(0, 300)}`); });
 const t0 = Date.now();
+// The perspective chooser (social/ui) opens on flat screens during a visit; this journey looks without choosing.
+await page.addLocatorHandler(page.getByTestId('perspective-picker'), async () => { await page.getByText('Just look for now').click(); });
 const log = [];
 const note = (s) => { const line = `${((Date.now() - t0) / 1000).toFixed(1)}s  ${s}`; log.push(line); console.log(line); };
 const state = () => page.evaluate(() => { const g = window.__gate.store.getState(); return { stage: g.stage, said: g.companionLine?.text ?? null, heard: g.heardLine?.text ?? null, voice: g.voice, session: !!g.session, title: g.memoryTitle, offers: g.offers }; });

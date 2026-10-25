@@ -1,6 +1,8 @@
 // The DOM layer over the world: what's on screen at each part of the journey. Everything here is optional to use;
 // the companion offers each thing out loud when it matters.
-import { Component, Suspense, type ReactNode } from 'react';
+import { Component, Suspense, useEffect, type ReactNode } from 'react';
+import { cameBackToAlbum, PREPARED } from '../album/prepared';
+import type { PlaceKey } from '../../../../packages/shared/src/places';
 import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
 import { Captions } from './Captions';
@@ -35,6 +37,8 @@ class AlbumUnavailable extends Component<{ children: ReactNode }, { failed: bool
 
 export function Overlay() {
   const stage = useGate((s) => s.stage);
+  // Back from a prepared memory's own page (the Red Kite) that was opened in the album: the album again.
+  useEffect(() => { if (cameBackToAlbum()) flow.openAlbum(); }, []);
   const world = useGate((s) => s.world);
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving';
   return (
@@ -47,7 +51,8 @@ export function Overlay() {
       {stage === 'album' && (
         <AlbumUnavailable>
           <Suspense fallback={null}>
-            <AlbumView onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} onClose={() => flow.home()} />
+            <AlbumView onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} onClose={() => flow.home()}
+              onVisitScene={(scene) => { const m = PREPARED.find((p) => p.open && 'scene' in p.open && p.open.scene === scene); void flow.visitPlace(scene as PlaceKey, m?.plan ?? null); }} />
           </Suspense>
         </AlbumUnavailable>
       )}

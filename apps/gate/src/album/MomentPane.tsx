@@ -98,7 +98,7 @@ export function MomentPane({ moment, memory, open, base, onEnter, onToggle, onFo
         )}
       </AnimatePresence>
       <div className="plate" id={id}>
-        <p className="plate-label"><span>{momentLabel(moment)}</span><span className="plate-time">{timeOf(moment.at)}</span></p>
+        <p className="plate-label"><span>{momentLabel(moment)}</span>{!memory.open && <span className="plate-time">{timeOf(moment.at)}</span>}</p>
         <p className={`plate-caption by-${moment.speaker}`}>{quoted}</p>
         <AnimatePresence initial={false}>
           {open && (moment.audioUrl || onRevisit) && (
@@ -106,7 +106,7 @@ export function MomentPane({ moment, memory, open, base, onEnter, onToggle, onFo
               {moment.audioUrl && <VoiceButton url={moment.audioUrl} />}
               {onRevisit && (
                 <button type="button" className="plate-btn quiet" onClick={(e) => { e.stopPropagation(); onRevisit(memory.id); }} data-testid="moment-revisit">
-                  Visit again
+                  {memory.open ? 'Step into it' : 'Visit again'}
                 </button>
               )}
             </motion.div>

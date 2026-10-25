@@ -1,0 +1,73 @@
+{
+  "steps": [
+    {
+      "name": "portal",
+      "stage": "portal",
+      "title": null,
+      "voice": "off",
+      "session": false,
+      "intro": null
+    },
+    {
+      "name": "assistant asks for a memory",
+      "stage": "gathering",
+      "said": "Is there a moment you\u00e2\u20ac\u2122d like to visit today? You can tell me about it, or show me a photo.",
+      "title": null,
+      "voice": "unsupported",
+      "session": true,
+      "intro": null
+    },
+    {
+      "name": "spoken story selects prepared meadow",
+      "stage": "gathering",
+      "said": "I can almost see it. Shall we go there together?",
+      "title": null,
+      "voice": "unsupported",
+      "session": true,
+      "intro": "Here we are. The little path, and the old oak at the bend."
+    },
+    {
+      "name": "inside the main memory",
+      "stage": "memory",
+      "said": "Here we are. The little path, and the old oak at the bend.",
+      "title": null,
+      "voice": "unsupported",
+      "session": true,
+      "intro": "Here we are. The little path, and the old oak at the bend."
+    },
+    {
+      "name": "Apify workshop is manual and available after entry",
+      "stage": "memory",
+      "said": "Tell me what else was here, or anything you notice. Say when you\u00e2\u20ac\u2122d like to leave.",
+      "title": null,
+      "voice": "unsupported",
+      "session": true,
+      "intro": "Here we are. The little path, and the old oak at the bend."
+    },
+    {
+      "name": "an extra spoken detail",
+      "stage": "memory",
+      "said": "Tell me what else was here, or anything you notice. Say when you\u00e2\u20ac\u2122d like to leave.",
+      "title": null,
+      "voice": "unsupported",
+      "session": true,
+      "intro": "Here we are. The little path, and the old oak at the bend."
+    },
+    {
+      "name": "album keeps the visit",
+      "stage": "album",
+      "title": null,
+      "voice": "unsupported",
+      "session": true,
+      "intro": "Here we are. The little path, and the old oak at the bend."
+    }
+  ],
+  "errors": [],
+  "mode": "offline, simulated speech; no paid calls",
+  "mainCommit": "8b1948c",
+  "verification": {
+    "contracts": 126,
+    "gateTypecheck": "passed",
+    "gateProductionBuild": "passed"
+  }
+}

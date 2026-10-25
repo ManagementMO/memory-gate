@@ -6,6 +6,7 @@ import { internalMutation, mutation, query } from './_generated/server';
 import { internal } from './_generated/api';
 import { readFlags, requireMember, requireScope, activeScopes } from './lib/auth';
 import type { MutationCtx } from './_generated/server';
+import type { Doc } from './_generated/dataModel';
 import { storyWorldPrompt } from '../packages/shared/src/worldlabs';
 
 function checkSecret(secret: string) {
@@ -103,25 +104,43 @@ export const usePracticeWorld = mutation({
     const { room, member } = await requireMember(ctx, code, token, ['family']);
     if (!room.demo) throw new ConvexError({ code: 'FORBIDDEN', message: 'The fictional practice world is available only in a labeled sample room.' });
     if (room.paused) throw new ConvexError({ code: 'PAUSED', message: 'Resume when everyone is ready before changing the setting.' });
-    const assetKey = setting === 'red-kite' ? 'world.practice-red-kite' : 'world.practice-courtyard';
-    const asset = await ctx.db.query('assets').withIndex('by_key', q => q.eq('key', assetKey)).unique();
-    const m = asset?.meta as { floorY: number; scale: number; numSplats: number; liteNumSplats: number; bytes: number; worldId: string; sourceWords: string;
-      liteFileId?: import('./_generated/dataModel').Id<'_storage'>; previewFileId?: import('./_generated/dataModel').Id<'_storage'> } | undefined;
-    if (!asset || !m || !Number.isFinite(m.scale) || m.scale <= 0 || !Number.isFinite(m.floorY) || typeof m.sourceWords !== 'string') {
-      throw new ConvexError({ code: 'UNAVAILABLE', message: setting === 'red-kite' ? 'Run node scripts/red-kite-room.mjs to load the cached fictional meadow.' : 'Run npm run seed:world to load the cached fictional courtyard.' });
-    }
-    const existing = (await ctx.db.query('splats').withIndex('by_room', q => q.eq('roomId', room._id)).collect()).find(s => s.worldId === m.worldId && s.status === 'ready');
-    if (existing) { await ctx.db.patch(room._id, { activeSplatId: existing._id, layout: 'courtyard', openedAt: Date.now() }); return { splatId: existing._id, reused: true }; }
-    const sourceUtteranceId = await ctx.db.insert('utterances', { roomId: room._id, memberId: member._id, speaker: 'Sample storyteller (fictional)',
-      transcript: m.sourceWords, source: 'fixture', audioFileId: null, language: 'en', translation: null, pointer: null, durationMs: 0, status: 'done', intent: 'none', reply: null,
-      sayBack: null, aiMode: 'fixture', aiMs: null, dropped: [], commandId: `prepared-world-${m.worldId}`, createdAt: Date.now() });
-    const splatId = await ctx.db.insert('splats', { roomId: room._id, photoId: null, sourceUtteranceId, status: 'ready', source: 'worldlabs', fileId: asset.fileId,
-      liteFileId: m.liteFileId ?? null, ...(m.previewFileId ? { previewFileId: m.previewFileId } : {}), liteNumSplats: m.liteNumSplats, worldId: m.worldId,
-      numSplats: m.numSplats, bytes: m.bytes, gpuSeconds: 0, fPx: null, floorY: m.floorY, scale: m.scale, error: null, createdAt: Date.now(), readyAt: Date.now() });
-    await ctx.db.patch(room._id, { activeSplatId: splatId, layout: 'courtyard', openedAt: Date.now() });
-    return { splatId, reused: false };
+    return activatePreparedWorld(ctx, room, member, setting, 'Sample storyteller (fictional)');
   },
 });
+
+/**
+ * A prepared place from the team's library (a cached World Labs world: the courtyard, the Red Kite meadow) called up in
+ * any visit when the person's words describe it. It is recorded as a place from the library, never as their photo.
+ */
+export const usePreparedPlace = mutation({
+  args: { code: v.string(), token: v.string(), place: v.union(v.literal('courtyard'), v.literal('red-kite')) },
+  handler: async (ctx, { code, token, place }) => {
+    const { room, member } = await requireMember(ctx, code, token, ['family']);
+    if (room.paused) throw new ConvexError({ code: 'PAUSED', message: 'Resume when everyone is ready before changing the setting.' });
+    return activatePreparedWorld(ctx, room, member, place, 'A prepared place from the library');
+  },
+});
+
+/** Makes a cached prepared world the room's place (reusing it if this room already has it). */
+async function activatePreparedWorld(ctx: MutationCtx, room: Doc<'rooms'>, member: Doc<'members'>, setting: 'courtyard' | 'red-kite', speaker: string) {
+  const assetKey = setting === 'red-kite' ? 'world.practice-red-kite' : 'world.practice-courtyard';
+  const asset = await ctx.db.query('assets').withIndex('by_key', q => q.eq('key', assetKey)).unique();
+  const m = asset?.meta as { floorY: number; scale: number; numSplats: number; liteNumSplats: number; bytes: number; worldId: string; sourceWords: string;
+    liteFileId?: import('./_generated/dataModel').Id<'_storage'>; previewFileId?: import('./_generated/dataModel').Id<'_storage'> } | undefined;
+  if (!asset || !m || !Number.isFinite(m.scale) || m.scale <= 0 || !Number.isFinite(m.floorY) || typeof m.sourceWords !== 'string') {
+    throw new ConvexError({ code: 'UNAVAILABLE', message: setting === 'red-kite' ? 'Run node scripts/red-kite-room.mjs to load the cached fictional meadow.' : 'Run npm run seed:world to load the cached fictional courtyard.' });
+  }
+  const existing = (await ctx.db.query('splats').withIndex('by_room', q => q.eq('roomId', room._id)).collect()).find(s => s.worldId === m.worldId && s.status === 'ready');
+  if (existing) { await ctx.db.patch(room._id, { activeSplatId: existing._id, layout: 'courtyard', openedAt: Date.now() }); return { splatId: existing._id, reused: true }; }
+  const sourceUtteranceId = await ctx.db.insert('utterances', { roomId: room._id, memberId: member._id, speaker,
+    transcript: m.sourceWords, source: 'fixture', audioFileId: null, language: 'en', translation: null, pointer: null, durationMs: 0, status: 'done', intent: 'none', reply: null,
+    sayBack: null, aiMode: 'fixture', aiMs: null, dropped: [], commandId: `prepared-world-${m.worldId}`, createdAt: Date.now() });
+  const splatId = await ctx.db.insert('splats', { roomId: room._id, photoId: null, sourceUtteranceId, status: 'ready', source: 'worldlabs', fileId: asset.fileId,
+    liteFileId: m.liteFileId ?? null, ...(m.previewFileId ? { previewFileId: m.previewFileId } : {}), liteNumSplats: m.liteNumSplats, worldId: m.worldId,
+    numSplats: m.numSplats, bytes: m.bytes, gpuSeconds: 0, fPx: null, floorY: m.floorY, scale: m.scale, error: null, createdAt: Date.now(), readyAt: Date.now() });
+  await ctx.db.patch(room._id, { activeSplatId: splatId, layout: 'courtyard', openedAt: Date.now() });
+  return { splatId, reused: false };
+}
 
 async function attachPrebaked(ctx: MutationCtx, splatId: import('./_generated/dataModel').Id<'splats'>, reason: string) {
   const s = await ctx.db.get(splatId);

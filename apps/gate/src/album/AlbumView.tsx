@@ -10,14 +10,17 @@ import { useGate } from '../state/store';
 import { useAlbum } from './useAlbum';
 import './album.css';
 import { CloseIcon } from '../ui/Icons';
+import { openPrepared, PREPARED } from './prepared';
 
-export type AlbumViewProps = { onBeginAnother: () => void; onRevisit?: (memoryId: string) => void; onClose?: () => void };
+export type AlbumViewProps = { onBeginAnother: () => void; onRevisit?: (memoryId: string) => void; onClose?: () => void; onVisitScene?: (scene: string) => void };
 
 const HOVER_OPEN_MS = 130;
 const HOVER_CLOSE_MS = 320;
 
-export default function AlbumView({ onBeginAnother, onRevisit, onClose }: AlbumViewProps) {
+export default function AlbumView({ onBeginAnother, onRevisit, onClose, onVisitScene }: AlbumViewProps) {
   const memories = useAlbum();
+  // The team's prepared scenes, opened from here like any memory (after the person's own visits).
+  const openSample = useCallback((id: string) => { const m = PREPARED.find((p) => p.id === id); if (m) openPrepared(m, onVisitScene); }, [onVisitScene]);
   const session = useGate((s) => s.session);
   const reduce = useReducedMotion();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -82,6 +85,13 @@ export default function AlbumView({ onBeginAnother, onRevisit, onClose }: AlbumV
               onToggle={onToggle} onFocusOpen={onFocusOpen} onRevisit={onRevisit} />
           ))
         )}
+        <section className="album-samples" aria-labelledby="album-samples-h" data-testid="album-samples">
+          <h2 id="album-samples-h" className="album-section">Samples to step into</h2>
+          {PREPARED.map((m, i) => (
+            <MemoryChapter key={m.id} memory={m} index={(empty ? 1 : memories.length) + i} openId={openId} onEnter={onEnter} onLeaveStrip={onLeaveStrip}
+              onToggle={onToggle} onFocusOpen={onFocusOpen} onRevisit={openSample} />
+          ))}
+        </section>
         <FromFamily session={session} />
       </div>
       </div>

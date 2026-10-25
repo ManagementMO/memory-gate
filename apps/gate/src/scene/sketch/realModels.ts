@@ -18,22 +18,29 @@ let manifest: Promise<Manifest | null> | null = null;
 
 const getManifest = () => (manifest ??= fetch('/models/manifest.json').then((r) => (r.ok ? (r.json() as Promise<Manifest>) : null)).catch(() => null));
 
+/** The team's own Blender models (in git, metre-scaled, front +z), beside the fetched photoreal library. Always on. */
+const TEAM_MODELS: Record<string, string> = {
+  kite: '/red-kite/models/kite.glb',
+  spool: '/red-kite/models/spool.glb',
+  keepsake_box: '/red-kite/models/keepsake-box.glb',
+  story_card: '/red-kite/models/story-card.glb',
+  side_table: '/red-kite/models/side-table.glb',
+};
+
 export const realObjectsOn = () => REAL;
 export const hasRealModel = (kind: string) => templates.has(kind);
+/** Whether the library has a model for this kind at all (so nothing needs composing for it). */
+export const hasLibraryModel = (kind: string) => kind in TEAM_MODELS || templates.has(kind);
 
 /** Load one kind's model (once); resolves null when the library has none for it. */
 export function loadRealModel(kind: string): Promise<THREE.Object3D | null> {
-  if (!REAL) return Promise.resolve(null);
+  if (!REAL && !TEAM_MODELS[kind]) return Promise.resolve(null);
   const ready = templates.get(kind);
   if (ready) return Promise.resolve(ready);
   let p = loading.get(kind);
   if (!p) {
-    p = getManifest()
-      .then((m) => {
-        const e = m?.kinds[kind];
-        if (!e) return null;
-        return loader.loadAsync(`/models/${e.file}`).then((g) => { templates.set(kind, g.scene); return g.scene; });
-      })
+    p = (TEAM_MODELS[kind] ? Promise.resolve(TEAM_MODELS[kind]) : getManifest().then((m) => (m?.kinds[kind] ? `/models/${m.kinds[kind].file}` : null)))
+      .then((url) => (url ? loader.loadAsync(url).then((g) => { templates.set(kind, g.scene); return g.scene; }) : null))
       .catch(() => null);
     loading.set(kind, p);
   }
@@ -74,8 +81,15 @@ export async function warmRealModels(gl: THREE.WebGLRenderer, camera: THREE.Came
 /** Whether a remembered colour can be shown on the real model (plants keep their own: a red geranium is drawn). */
 export const realTakesColour = (kind: string) => entryOf(kind).material !== 'plant';
 
-/** The surface a remembered colour belongs on: the material covering most of the model (the upholstery, the paint). */
+/** The surface a remembered colour belongs on: one named for it (a kite's paper, a chair's fabric), else the material
+ *  covering most of the model (the upholstery, the paint). */
 function mainMaterial(model: THREE.Object3D): THREE.Material | null {
+  let named: THREE.Material | null = null;
+  model.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    if (!named && mesh.isMesh) for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) if (/paper|sail|fabric|cloth|upholster|cushion|paint/i.test(m.name)) { named = m; break; }
+  });
+  if (named) return named;
   const share = new Map<THREE.Material, number>();
   model.traverse((o) => {
     const mesh = o as THREE.Mesh;

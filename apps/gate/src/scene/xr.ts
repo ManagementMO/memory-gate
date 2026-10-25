@@ -6,7 +6,8 @@ const emulate = new URLSearchParams(location.search).get('emulate') === '1';
 
 export const xrStore = createXRStore({
   emulate: emulate ? { type: 'metaQuest3', ipd: .064, stereoEnabled: true, syntheticEnvironment: false } : false,
-  // Controllers point and select; hands pinch. No teleport: a memory is a place to stand in, not to run through.
+  // Controllers point/select and hands pinch. Red Kite adds its own collider-based stick locomotion;
+  // shared-store teleport pointers stay off so other Gate scenes keep their existing interactions.
   controller: { teleportPointer: false },
   hand: { teleportPointer: false },
   // Only what a memory needs: the floor and hands. Room scanning (planes, the room mesh, anchors, hit tests) would

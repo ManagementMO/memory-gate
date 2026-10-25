@@ -3,7 +3,8 @@
 // apps/gate/.models-cache/, never served), then made light enough for a headset: meshopt-compressed geometry,
 // WebP textures at most 1024 px, and heavy scans simplified. The results go to public/models/ (not in git) with a
 // manifest the app reads. Kinds not listed keep their porcelain sketch: trees (every Poly Haven tree is a scan of
-// millions of polygons), and the fireplace and vase of flowers (the library's nearest models read as something else). Any .glb (a Blender export, for instance) can be added by hand: put it in
+// millions of polygons), and the fireplace, vase of flowers and radio (the library's nearest models read as something
+// else: a masonry heater, a bare vase, a military field radio). Any .glb (a Blender export, for instance) can be added by hand: put it in
 // public/models/ and list it in the manifest.
 //   node apps/gate/scripts/fetch-models.mjs          (re-runs skip what is already cached; --reoptimize redoes the light copies)
 import { execFileSync } from 'node:child_process';
@@ -29,7 +30,6 @@ export const PICKS = {
   bookshelf: 'wooden_bookshelf_worn',
   cabinet: 'vintage_cabinet_01',
   lamp: 'vintage_oil_lamp',
-  radio: 'vintage_radio_transceiver',
   tv: 'Television_01',
   clock: 'mantel_clock_01',
   picture_frame: 'standing_picture_frame_01',
