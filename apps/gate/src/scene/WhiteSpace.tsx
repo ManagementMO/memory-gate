@@ -126,9 +126,10 @@ export function WhiteSpace() {
     const s = useGate.getState();
     const day = s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving' || (s.stage === 'entering' && s.enterProgress > 0.9);
     // a showcase place wears its own sky: the white space steps back
-    const target = day && !useMemory.getState().showcaseReady ? 1 : 0;
+    const ready = useMemory.getState().showcaseReady;
+    const target = day && !ready ? 1 : 0;
     const u = skyMat.uniforms;
-    u.uFade!.value = damp(u.uFade!.value, target, day ? 1.2 : 3, dt);
+    u.uFade!.value = damp(u.uFade!.value, target, day && !ready ? 1.2 : 3, dt); // a place that's arrived shows its own sky soon
     u.uTime!.value += dt;
     u.uAmount!.value = atmoLive.amount;
     floorMat.uniforms.uFade!.value = damp(floorMat.uniforms.uFade!.value, target, 0.9, dt);

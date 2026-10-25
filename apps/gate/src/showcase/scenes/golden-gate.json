@@ -53,7 +53,32 @@
     105,
     0
    ],
-   "fov": 50
+   "fov": 50,
+   "env": {
+    "hdri": "qwantani_late_afternoon_puresky",
+    "hdriRotation": -69,
+    "exposure": 0.9,
+    "envIntensity": 0.9,
+    "sun": {
+     "dir": [
+      -0.244,
+      0.329,
+      0.912
+     ],
+     "intensity": 2.8,
+     "color": "#ffd2a1",
+     "shadowArea": 60,
+     "center": [
+      1200,
+      1,
+      -1150
+     ]
+    },
+    "fog": {
+     "color": "#e9d7c2",
+     "density": 8e-05
+    }
+   }
   },
   {
    "name": "the Gate from above the Presidio",
@@ -114,7 +139,32 @@
     110,
     200
    ],
-   "fov": 60
+   "fov": 60,
+   "env": {
+    "hdri": "qwantani_dusk_2_puresky",
+    "hdriRotation": -40,
+    "exposure": 1.5,
+    "envIntensity": 1.6,
+    "sun": {
+     "dir": [
+      0.173,
+      0.105,
+      0.979
+     ],
+     "intensity": 0.9,
+     "color": "#ffb08a",
+     "shadowArea": 50,
+     "center": [
+      -1010,
+      120,
+      -260
+     ]
+    },
+    "fog": {
+     "color": "#9a90a6",
+     "density": 0.0001
+    }
+   }
   },
   {
    "name": "Vista Point",
@@ -129,7 +179,32 @@
     110,
     40
    ],
-   "fov": 60
+   "fov": 60,
+   "env": {
+    "hdri": "kloofendal_48d_partly_cloudy_puresky",
+    "hdriRotation": 74,
+    "exposure": 1.0,
+    "envIntensity": 0.95,
+    "sun": {
+     "dir": [
+      0.513,
+      0.743,
+      -0.43
+     ],
+     "intensity": 3.2,
+     "color": "#fff4e2",
+     "shadowArea": 50,
+     "center": [
+      -1160,
+      70,
+      -170
+     ]
+    },
+    "fog": {
+     "color": "#cfdbe3",
+     "density": 6e-05
+    }
+   }
   }
  ],
  "script": "golden-gate.js"

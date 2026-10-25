@@ -9,6 +9,7 @@ import type { PlanPerson, ScenePlan, Zone } from '../../../../../packages/shared
 import { MEMORY_CENTER } from '../layout';
 import { dressPerson, matchPerson, peopleCatalog, personCopy, posePerson } from '../people/runtime';
 import { sfMemory } from '../../sf/memories';
+import { showcaseGround } from '../../showcase/Showcase';
 
 const ANCHOR: Record<Zone, [number, number]> = {
   center: [0, 0.1], back: [0, -1.55], left: [-2.2, -0.2], right: [2.2, -0.2],
@@ -47,6 +48,17 @@ function Person({ p, at, delay, onStep }: { p: PlanPerson; at: [number, number];
   const card = useMemo(() => { const m = p.memory ? sfMemory(p.memory) : null; return m ? photoCard(m.photo) : null; }, [p.memory]);
   const camera = useThree((s) => s.camera);
   const t = useRef(-delay);
+  const root = useRef<THREE.Group | null>(null);
+  const [lift, setLift] = useState(0);
+  // On the place's own ground where it isn't flat (a beach running down to the water), not hovering at your feet' height.
+  useEffect(() => {
+    const parent = root.current?.parent;
+    if (!body || !parent) return;
+    parent.updateWorldMatrix(true, false);
+    const w = parent.localToWorld(new THREE.Vector3(MEMORY_CENTER.x + at[0], 0, MEMORY_CENTER.z + at[1]));
+    const y = showcaseGround(w.x, w.z);
+    setLift(y === null ? 0 : parent.worldToLocal(w.setY(y)).y);
+  }, [body, at[0], at[1]]);
   useEffect(() => {
     let live = true;
     void (async () => {
@@ -79,9 +91,9 @@ function Person({ p, at, delay, onStep }: { p: PlanPerson; at: [number, number];
   if (!body) return null;
   const click = onStep && p.memory ? (e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onStep(p.memory!); } : undefined;
   return (
-    <group position={[MEMORY_CENTER.x + at[0], 0, MEMORY_CENTER.z + at[1]]} rotation-y={(p.facing * Math.PI) / 180} onClick={click}
+    <group position={[MEMORY_CENTER.x + at[0], lift, MEMORY_CENTER.z + at[1]]} rotation-y={(p.facing * Math.PI) / 180} onClick={click}
       // Someone with no memory to step into lets a ray through (a pinch held on the ground behind them still walks).
-      ref={(g) => { if (g) (g as unknown as { pointerEvents?: string }).pointerEvents = click ? undefined : 'none'; }}
+      ref={(g) => { root.current = g; if (g) (g as unknown as { pointerEvents?: string }).pointerEvents = click ? undefined : 'none'; }}
       onPointerOver={click ? () => { document.body.style.cursor = 'pointer'; } : undefined} onPointerOut={click ? () => { document.body.style.cursor = ''; } : undefined}>
       <primitive object={body.obj} />
       {/* an easy target for a pinch or a click: an animated body is hard to hit with a ray */}

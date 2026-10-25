@@ -322,6 +322,26 @@ export function perspectiveFromWords(transcript: string): 'child' | 'grandparent
 }
 
 /**
+ * Asking to see it through other eyes: "show me through my grandmother's eyes", "switch to the grandchild", "let me be
+ * the kid", "switch perspective" ('other': the eyes they aren't seeing through now). Unlike perspectiveFromWords, "my
+ * grandmother's eyes" here means hers. Only a request counts: "as a kid I ran down that path" is a memory, not one.
+ */
+export function perspectiveAsked(transcript: string): 'child' | 'grandparent' | 'other' | null {
+  const t = norm(transcript);
+  if (!t) return null;
+  const eyes = "(eyes|view|point of view|perspective|side)";
+  const whose = "(my |your |the |a |her |his |our )?";
+  const elder = "(grand ?(mother|father|ma|pa|parent)|gran ?(ny|ma|pa)|gram ?(ma|pa)|nana|abuel[ao]|grand ?(mère|père))";
+  const young = "(grand ?(child|son|daughter|kid)|child|kid|little one|little (boy|girl)|young (me|one)|niet[ao]|niñ[ao]|petit ?(fils|fille|enfant)|enfant)";
+  const ask = "(switch|change|go|swap) (back )?to|let me (see it )?(be|as)|i want to be|show me (it )?(as|through)|see (it )?(as|through)|look (at it )?(as|through)";
+  const said = (who: string) => new RegExp(`\\b(through|from|in|by|with) ${whose}${who}'?s? ${eyes}\\b|\\b(${ask}) ${whose}${who}('?s)?( ${eyes})?\\b`).test(t);
+  if (said(elder) || /\b(por|con) los ojos de (mi |la |el )?abuel[ao]\b|\bavec les yeux de (ma |mon )?grand ?(mère|père)\b/.test(t)) return 'grandparent';
+  if (said(young) || /\b(por|con) los ojos de(l| la| mi)? (niñ[ao]|niet[ao])\b|\bavec (les |des )?yeux d'enfant\b/.test(t)) return 'child';
+  if (/\b(switch|change|swap|flip) (the |our |my )?(perspective|view|eyes|side)s?\b|\b(the other|other) (perspective|eyes|view|side)\b|\bcambi(ar|emos) (de |la )?(perspectiva|vista)\b|\bchang(er|eons) de (perspective|point de vue)\b/.test(t)) return 'other';
+  return null;
+}
+
+/**
  * They said who was there with them, anyone at all ("with my parents", "my sister and I", "with friends", "just me"):
  * the companion never asks "Who was there with you?" after that. Whose eyes is perspectiveFromWords' (only a
  * grandparent or a grandchild settles it).

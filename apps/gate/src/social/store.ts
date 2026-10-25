@@ -108,7 +108,9 @@ export const poseClock = { offset: 0 };
 export const perspectiveOf = (key: PerspectiveKey): Perspective => useSocial.getState().perspectives.find((p) => p.key === key) ?? local(key);
 export const perspectiveById = (id: string): Perspective | undefined => useSocial.getState().perspectives.find((p) => p.id === id);
 export const viewingPerspective = (): Perspective => perspectiveOf(useSocial.getState().viewing);
-export const notify = (text: string) => useSocial.getState().set({ notice: { text, at: Date.now() } });
+// An exchange still running older code doesn't know newer actions (whose eyes, who said it): nothing the person can act
+// on, and it surfaced mid-conversation as "Unknown exchange action."
+export const notify = (text: string) => { if (!/unknown exchange action/i.test(text)) useSocial.getState().set({ notice: { text, at: Date.now() } }); };
 
 export function applySnapshot(s: SocialSnapshot): void {
   const perspectives = s.perspectives.length ? s.perspectives.map((p) => ({ ...p, key: (p.key === 'child' ? 'child' : 'grandparent') as PerspectiveKey })) : useSocial.getState().perspectives;

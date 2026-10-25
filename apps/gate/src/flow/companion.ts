@@ -100,6 +100,7 @@ export const companion = {
       say: (text, language) => (socialLink.ready ? engine.say(text, language) : sleep(700 + text.split(/\s+/).length * 260)),
       hush: () => engine.hush(),
       setListening: (on) => { wanted = on; apply(); },
+      pushToTalk: (down) => engine.pushToTalk(down),
       level: () => engine.level(),
       canSpeak: () => engine.canSpeak(),
       speaking: () => engine.speaking(),

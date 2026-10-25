@@ -311,6 +311,22 @@ export default async ({ THREE, scene, renderer, spec, rng, loadModel, normalized
       gm.rotation.y = Math.atan2(1, 0.2);
       const o = crissyFrame(CRISSY.beach + 11, zc);
       gm.position.set(o.x, CRISSY.meadow, zc);
+      // only where the meadow is: the shore wanders twenty metres either side of the grass's straight edge, and a
+      // blade over the sand stood in the air above the beach
+      gm.updateMatrix();
+      const M = new THREE.Matrix4(), W = new THREE.Vector3(), C = new THREE.Color();
+      let n = 0;
+      for (let i = 0; i < gm.count; i++) {
+        gm.getMatrixAt(i, M);
+        W.setFromMatrixPosition(M).applyMatrix4(gm.matrix);
+        const ds = W.x - sfShore(W.z);
+        if (ds < CRISSY.beach + 2 || ds > CRISSY.meadowEnd) continue;
+        if (n !== i) { gm.setMatrixAt(n, M); if (gm.instanceColor) { gm.getColorAt(i, C); gm.setColorAt(n, C); } }
+        n++;
+      }
+      gm.count = n;
+      gm.instanceMatrix.needsUpdate = true;
+      if (gm.instanceColor) gm.instanceColor.needsUpdate = true;
     }
   }
 
@@ -366,11 +382,6 @@ export default async ({ THREE, scene, renderer, spec, rng, loadModel, normalized
         const a = R() * Math.PI * 2, rr = 5 + R() * 22, x = cx + Math.cos(a) * rr, z = cz + Math.sin(a) * rr;
         if (inView(x, z, 40)) continue;
         await placeItem({ m: plants[i % plants.length], p: [x, terrain(x, z).h - 0.1, z], ry: R() * 360, h: 0.7 + R() * 1.1 }).catch(() => {});
-      }
-      for (let i = 0; i < 6; i++) {
-        const a = R() * Math.PI * 2, rr = 4 + R() * 16, x = cx + Math.cos(a) * rr, z = cz + Math.sin(a) * rr;
-        if (inView(x, z, 30)) continue;
-        await placeItem({ m: 'nat_rocks_mossy', p: [x, terrain(x, z).h - 0.3, z], ry: R() * 360, w: 1.5 + R() * 2.5 }).catch(() => {});
       }
     }
   }

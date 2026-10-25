@@ -475,12 +475,7 @@
     -10.2
    ],
    "h": 3.2,
-   "ry": 22,
-   "say": [
-    "gazebo",
-    "pavilion",
-    "summer house"
-   ]
+   "ry": 22
   },
   {
    "m": "nat_arbor_bench",
@@ -490,7 +485,13 @@
     0,
     -1.6
    ],
-   "h": 2.2
+   "h": 2.2,
+   "say": [
+    "bench",
+    "garden bench",
+    "wooden bench",
+    "park bench"
+   ]
   },
   {
    "m": "nat_planter_box",
@@ -537,11 +538,7 @@
     0,
     4.6
    ],
-   "h": 0.95,
-   "say": [
-    "birdbath",
-    "bird bath"
-   ]
+   "h": 0.95
   },
   {
    "m": "bench_painted",
@@ -555,7 +552,8 @@
    "say": [
     "bench",
     "garden bench",
-    "wooden bench"
+    "wooden bench",
+    "park bench"
    ]
   },
   {
@@ -586,7 +584,15 @@
     11.3
    ],
    "h": 0.86,
-   "ry": 90
+   "ry": 90,
+   "say": [
+    "table",
+    "garden table",
+    "patio table",
+    "bistro table",
+    "table and chairs",
+    "little table"
+   ]
   },
   {
    "m": "nat_clay_pot",
@@ -634,6 +640,17 @@
     12.5
    ],
    "h": 0.6
+  },
+  {
+   "m": "@pond",
+   "say": [
+    "pond",
+    "pool",
+    "fish pond",
+    "lily pond",
+    "koi pond",
+    "little pond"
+   ]
   }
  ],
  "scatter": [

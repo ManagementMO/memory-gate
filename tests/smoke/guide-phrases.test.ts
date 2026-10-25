@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { asksToEnter, asksToGoIn, asksToLeave, companyFromReply, guideOffline, mentionsCompany, perspectiveFromReply, perspectiveFromWords, saysYes, type GuideInput } from '../../packages/shared/src/guide';
+import { asksToEnter, asksToGoIn, asksToLeave, companyFromReply, guideOffline, mentionsCompany, perspectiveAsked, perspectiveFromReply, perspectiveFromWords, saysYes, type GuideInput } from '../../packages/shared/src/guide';
 import { bringIn, placeFor, placePlan, PLACES } from '../../packages/shared/src/places';
 import { COLORS } from '../../packages/shared/src/scene';
 
@@ -113,3 +113,16 @@ test('what the companion said back about who was there counts too', () => {
   expect(companyFromReply('How lovely, a picnic with your parents. Shall we go there?')).toBe(true);
   expect(companyFromReply('Was anyone with you, your parents perhaps?')).toBe(false);
 });
+
+test.each([
+  ['Show me through my grandmother’s eyes.', 'grandparent'],
+  ['Can I see it through grandma’s eyes?', 'grandparent'],
+  ['Switch to the grandchild.', 'child'],
+  ['Let me be the kid.', 'child'],
+  ['Switch perspective.', 'other'],
+  ['Change the view.', 'other'],
+  ['Por los ojos de mi abuela.', 'grandparent'],
+  ['As a kid I ran down that path.', null],
+  ['I remember being here with my grandmother.', null],
+  ['There were two benches by the path.', null],
+])('asking for other eyes: %s → %s', (t, who) => expect(perspectiveAsked(t)).toBe(who));

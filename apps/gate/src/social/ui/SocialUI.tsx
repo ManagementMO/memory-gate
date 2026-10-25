@@ -403,7 +403,7 @@ export function SocialUI() {
     <>
       <nav className="social-dock" aria-label="Perspectives" data-testid="social-dock">
         {/* Whose eyes you see through comes from what you say (or the companion asks): no chip for it in the corner.
-            ?eyes=1 brings it back, to choose by hand while testing, and then only inside the memory, where the
+            ?eyes=1 brings it back, to choose by hand while testing; even then only inside the memory, where the
             grandparent and the grandchild are (not at the gate). */}
         {EYES_CHIP && day && <button type="button" className="pill glass perspective-chip" style={{ '--p': p?.color ?? '#cdb4ff' } as React.CSSProperties} onClick={() => setSheet('pick')} data-testid="perspective-chip">
           <span className="dot" aria-hidden="true" />{p ? `${p.label}’s eyes` : 'Whose eyes?'}

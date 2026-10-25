@@ -8,11 +8,15 @@ import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { buildShowcase, type BuiltShowcase } from './build';
 import { useMemory } from '../flow/memory';
 import { heldHeard } from './held';
+import { reportDevice } from '../diag/deviceLog';
 
 const specs = import.meta.glob('./scenes/*.json', { eager: true, import: 'default' }) as Record<string, ShowcaseSpec>;
 const scripts = import.meta.glob('./scenes/*.js') as Record<string, () => Promise<{ default?: (api: unknown) => Promise<void> }>>;
 const QUEST = /OculusBrowser|Quest/i.test(navigator.userAgent);
-type ShowcaseSpec = { title?: string; cameras?: { name?: string; pos: [number, number, number]; target: [number, number, number] }[] };
+type ShowcaseSpec = {
+  title?: string; env?: Record<string, unknown>; items?: { m?: string; say?: string[] }[]; scatter?: { m?: string }[];
+  cameras?: { name?: string; pos: [number, number, number]; target: [number, number, number]; env?: Record<string, unknown> }[];
+};
 
 /** Which showcase a memory is, from what it's called and what's in it (null: plan and draw it as usual). */
 export function showcaseFor(plan: ScenePlan | null): string | null {
@@ -51,29 +55,25 @@ function dispose(b: BuiltShowcase) {
   b.hdr?.dispose();
 }
 
-/** Ahead of its first frame: its pictures go up to the GPU a few at a time and its shaders compile alongside (in its
- *  own sky and fog, as it will be drawn), so its first frame in a headset is not a long stall. */
-async function warm(b: BuiltShowcase, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene) {
+/** Ahead of its first frame its pictures go up to the GPU, so that frame isn't a long stall in a headset. (Not its
+ *  shaders: waiting on a headset's driver to say they've compiled can wait forever, and the place never came.) */
+function warm(b: BuiltShowcase, gl: THREE.WebGLRenderer) {
   const textures = new Set<THREE.Texture>();
   b.group.traverse((o) => { for (const mat of [(o as THREE.Mesh).material].flat()) if (mat) for (const t of texturesOf(mat)) textures.add(t); });
-  let n = 0;
-  for (const t of textures) { gl.initTexture(t); if (++n % 4 === 0) await new Promise((r) => setTimeout(r, 0)); }
-  const { environment, fog } = scene;
-  scene.environment = b.envMap; scene.fog = b.fog;
-  let compiled: Promise<unknown> = Promise.resolve();
-  try { compiled = gl.compileAsync(b.group, camera, scene); } catch { /* it compiles on its first frame instead */ }
-  scene.environment = environment; scene.fog = fog;
-  await compiled.catch(() => undefined);
+  for (const t of textures) { try { gl.initTexture(t); } catch { /* it goes up on its first frame instead */ } }
 }
 
-async function make(name: string, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene): Promise<BuiltShowcase | null> {
-  const spec = specs[`./scenes/${name}.json`];
-  if (!spec) return null;
+async function make(name: string, view: number, gl: THREE.WebGLRenderer, camera: THREE.Camera): Promise<BuiltShowcase | null> {
+  const base = specs[`./scenes/${name}.json`];
+  if (!base) return null;
+  // a view can wear its own light: the same bridge in the late sun, at dusk, at noon
+  const own = base.cameras?.[view]?.env;
+  const spec = own ? { ...base, env: { ...base.env, ...own } } : base;
   try {
     const load = scripts[`./scenes/${name}.js`];
     const script = load ? (await load().catch(() => null))?.default : undefined;
     const b = await buildShowcase({ spec, script, renderer: gl, camera, grass: QUEST ? 0.1 : 0.5 });
-    await warm(b, gl, camera, scene).catch(() => undefined);
+    warm(b, gl);
     return b;
   } catch (e) {
     console.warn('[showcase]', name, e);
@@ -81,17 +81,26 @@ async function make(name: string, gl: THREE.WebGLRenderer, camera: THREE.Camera,
   }
 }
 
-/** Places begun ahead: one named while they're still talking (the garden, the living room) is building as they walk
- *  through the gate, so it's there when they arrive instead of starting then. */
-const ahead = new Map<string, Promise<BuiltShowcase | null>>();
-/** The place being shown now (it needs no second build). */
-const showing = new Set<string>();
-
-export function prebuildShowcase(name: string, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene): void {
-  if (ahead.has(name) || showing.has(name) || !specs[`./scenes/${name}.json`]) return;
-  for (const [other, p] of ahead) { ahead.delete(other); void p.then((b) => b && dispose(b)); } // they've moved on from that one
-  ahead.set(name, make(name, gl, camera, scene));
+/** Named while they're still talking (the garden, the living room): its files start coming then, so stepping through
+ *  waits only for it to be put together, behind the white. (Not put together then: that stalls a headset for seconds,
+ *  and the conversation at the gate froze.) */
+const fetched = new Set<string>();
+export function prefetchShowcase(name: string, view: number): void {
+  const spec = specs[`./scenes/${name}.json`];
+  const key = `${name}:${view}`;
+  if (!spec || fetched.has(key)) return;
+  fetched.add(key);
+  const env = { ...spec.env, ...spec.cameras?.[view]?.env } as { hdri?: string };
+  const urls = new Set<string>();
+  if (env.hdri) urls.add(`/showcase/hdri/${env.hdri}.hdr`);
+  for (const it of [...(spec.items ?? []), ...(spec.scatter ?? [])]) if (it.m && !it.m.startsWith('@')) urls.add(`/showcase/models/${it.m}.glb`);
+  for (const u of urls) void fetch(u, { priority: 'low' } as RequestInit).catch(() => undefined);
 }
+
+/** The ground of the place being shown under a point (world x, z), near where you stand: for the people standing in
+ *  it (a beach runs down to the water). Null when there's none, or no place is shown. */
+let groundUnder: ((x: number, z: number) => number | null) | null = null;
+export const showcaseGround = (x: number, z: number): number | null => groundUnder?.(x, z) ?? null;
 
 export function Showcase({ name, camera: view = 0 }: { name: string; camera?: number }) {
   const gl = useThree((s) => s.gl);
@@ -100,22 +109,87 @@ export function Showcase({ name, camera: view = 0 }: { name: string; camera?: nu
   const spec = specs[`./scenes/${name}.json`];
   const [built, setBuilt] = useState<BuiltShowcase | null>(null);
   const drawnFrames = useRef(0);
+  const settled = useRef(0);
   useEffect(() => {
     if (!spec) return;
     let live = true;
     let made: BuiltShowcase | null = null;
     drawnFrames.current = 0;
-    showing.add(name);
-    const p = ahead.get(name) ?? make(name, gl, camera, scene);
-    ahead.delete(name);
+    settled.current = 0;
+    // a build that fails is tried once more, rather than leaving only the white
+    const p = make(name, view, gl, camera).then((b) => b ?? (live ? make(name, view, gl, camera) : null));
     void p.then((b) => {
       if (!b) return;
       if (!live) { dispose(b); return; }
       made = b;
       setBuilt(b);
     });
-    return () => { live = false; showing.delete(name); if (made) dispose(made); setBuilt(null); useMemory.setState({ showcaseReady: false }); };
-  }, [name]);
+    return () => { live = false; if (made) dispose(made); setBuilt(null); useMemory.setState({ showcaseReady: false }); };
+  }, [name, view]);
+  // In a headset, while it's here: 72 frames a second (a whole place can't be drawn at 120) and the edges of the view
+  // drawn coarser. Both put back after.
+  useEffect(() => {
+    if (!built) return;
+    type Rates = XRSession & { frameRate?: number; supportedFrameRates?: Float32Array; updateTargetFrameRate?: (rate: number) => Promise<void> };
+    let session: Rates | null = null;
+    let rate = 0, foveation = 0;
+    const apply = () => {
+      session = gl.xr.getSession() as Rates | null;
+      if (!session) return;
+      rate = session.frameRate ?? 0;
+      const lowest = Math.min(...(session.supportedFrameRates ?? []));
+      if (Number.isFinite(lowest)) void session.updateTargetFrameRate?.(lowest).catch(() => undefined);
+      foveation = gl.xr.getFoveation() ?? 0;
+      gl.xr.setFoveation(1);
+    };
+    apply();
+    gl.xr.addEventListener('sessionstart', apply);
+    return () => {
+      gl.xr.removeEventListener('sessionstart', apply);
+      if (session && gl.xr.getSession() === session) {
+        if (rate) void session.updateTargetFrameRate?.(rate).catch(() => undefined);
+        gl.xr.setFoveation(foveation);
+      }
+    };
+  }, [built]);
+  // Its sun's shadows are drawn while it settles (and while something rises into it), then kept: a place holds still,
+  // and drawing them every frame cost a headset a second pass over the whole place.
+  const shadowLights = useMemo(() => {
+    const out: THREE.DirectionalLight[] = [];
+    built?.group.traverse((o) => { const l = o as THREE.DirectionalLight; if (l.isDirectionalLight && l.castShadow) { l.shadow.autoUpdate = false; l.shadow.needsUpdate = true; out.push(l); } });
+    return out;
+  }, [built]);
+  // What it costs to draw, from a headset (diag/deviceLog), once it has settled.
+  useEffect(() => {
+    if (!built) return;
+    const t = setTimeout(() => reportDevice('showcase', { name, view, calls: gl.info.render.calls, triangles: gl.info.render.triangles, textures: gl.info.memory.textures, geometries: gl.info.memory.geometries }), 5000);
+    return () => clearTimeout(t);
+  }, [built]);
+  useEffect(() => {
+    if (!built) return;
+    let grounds: THREE.Object3D[] | null = null;
+    const ray = new THREE.Raycaster(), from = new THREE.Vector3(), down = new THREE.Vector3(0, -1, 0);
+    groundUnder = (x, z) => {
+      if (!grounds) {
+        // what's broad and low is ground (a lawn, a beach, a hillside); a tree, a table or a bench isn't
+        const box = new THREE.Box3(), size = new THREE.Vector3();
+        const found: THREE.Object3D[] = [];
+        built.group.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (!m.isMesh || (m as THREE.InstancedMesh).isInstancedMesh) return;
+          box.setFromObject(m).getSize(size);
+          const wide = Math.max(size.x, size.z);
+          if (wide > 8 && size.y < wide * 0.3) found.push(m);
+        });
+        grounds = found;
+      }
+      from.set(x, 4, z);
+      ray.set(from, down);
+      ray.far = 8;
+      return ray.intersectObjects(grounds, false)[0]?.point.y ?? null;
+    };
+    return () => { groundUnder = null; };
+  }, [built]);
   // Its sky, light and fog while it's here; the white space's own come back after.
   useEffect(() => {
     if (!built) return;
@@ -151,10 +225,18 @@ export function Showcase({ name, camera: view = 0 }: { name: string; camera?: nu
       const h = built.held.find((x) => x.index === i);
       if (!h) continue;
       placed.current.add(i);
-      void built.place(h.it).then((node) => { if (node) { rising.current.push({ node, base: node.scale.x, t: 0 }); node.scale.setScalar(node.scale.x * 0.01); } });
+      void built.place(h.it).then((node) => {
+        if (!node) return;
+        rising.current.push({ node, base: node.scale.x, t: 0 });
+        node.scale.setScalar(node.scale.x * 0.01);
+        // turn them toward it as it rises (OriginRig does the turning, behind a blink)
+        node.updateWorldMatrix(true, false);
+        const at = node.getWorldPosition(new THREE.Vector3());
+        useMemory.setState((st) => ({ face: { x: at.x, z: at.z, n: (st.face?.n ?? 0) + 1 } }));
+      });
     }
   }, [built, revealed]);
-  useEffect(() => { placed.current = new Set(); rising.current = []; useMemory.setState({ revealed: [] }); }, [name]);
+  useEffect(() => { placed.current = new Set(); rising.current = []; useMemory.setState({ revealed: [], face: null }); }, [name, view]);
   // For rehearsals and checks: say something to the place without a microphone (window.__showcaseSay('a birdbath')).
   useEffect(() => {
     const w = window as unknown as { __showcaseSay?: (text: string) => number[] };
@@ -165,6 +247,10 @@ export function Showcase({ name, camera: view = 0 }: { name: string; camera?: nu
     // Ready once it has actually been drawn a couple of times behind the white (its first frame is the slow one): only
     // then does the white step back and the companion say it's here.
     if (built && drawnFrames.current < 3 && ++drawnFrames.current === 3) useMemory.setState({ showcaseReady: true });
+    if (built) {
+      settled.current += Math.min(dt, 0.1);
+      if (settled.current < (QUEST ? 2 : 8) || rising.current.some((r) => r.t < 1.4)) for (const l of shadowLights) l.shadow.needsUpdate = true;
+    }
     if (built) for (const u of built.uniforms) u.value += Math.min(dt, 0.1);
     for (const r of rising.current) {
       if (r.t >= 1.4) continue;
