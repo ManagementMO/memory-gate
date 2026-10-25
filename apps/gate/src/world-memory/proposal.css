@@ -1,0 +1,20 @@
+/* The proposal page wears the Red Kite page's clothes (story.css); these are the few things it has of its own. */
+
+/* "World memories": the way back, dressed like the Red Kite's top buttons (it's a link: it leaves the page). */
+.proposal .pm-back {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 7px 12px; border-radius: 999px; text-decoration: none;
+  border: 1px solid #eee4ca45; background: #172d24b8; color: inherit; transition: background .18s, border-color .18s;
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+.proposal .pm-back::before { content: '←'; font-size: 13px; }
+.proposal .pm-back:hover { background: #2f493be8; border-color: #fff1caa6; }
+/* Album pictures (?shot=…) are only the place. */
+.proposal[data-ui='hidden'] > :not(.scene, .rk-vignette) { visibility: hidden; }
+
+@media (max-width: 720px) {
+  /* The way back keeps its arrow; the words step aside so the couple stays in view. */
+  .proposal .pm-back { padding: 6px 11px; }
+  .proposal .pm-back span { display: none; }
+  .proposal .pm-words .rk-source-note { display: none; }
+  .proposal .pm-words blockquote { font-size: 19px; }
+}
