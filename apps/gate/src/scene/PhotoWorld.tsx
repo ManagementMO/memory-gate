@@ -49,9 +49,10 @@ export function PhotoWorld() {
   // Red Kite page found the same), so the lighter file is for photo splats on a headset, or when asked for (?lite=1).
   const liteAsked = new URLSearchParams(location.search).get('lite');
   const lite = !local && !!splat?.liteUrl && (liteAsked === '1' || (liteAsked !== '0' && splat.source !== 'worldlabs' && /OculusBrowser|Quest/i.test(navigator.userAgent)));
-  // A world that ships with the app starts from its light copy (it arrives in seconds even over a slow link), and the
-  // full detail fades in over it once that's showing (below): never a white wait, and one download at a time.
-  const url = usable ? (local ? local.lite : fileUrl(lite ? splat!.liteUrl : splat!.url)) : null;
+  // A world that ships with the app starts from its 500k copy (the one Mo's page shows before its full detail; the 100k
+  // light copy was blurry in the headset for the half minute the full detail takes), and the full detail fades in over
+  // it once that's showing (below): never a white wait, and one download at a time. ?lite=1: the light copy only.
+  const url = usable ? (local ? (liteAsked === '1' ? local.lite : local.base) : fileUrl(lite ? splat!.liteUrl : splat!.url)) : null;
 
   // The cached meadow has forward centers beyond 267m. Keep its horizon within the projection volume,
   // restoring the prior range when this source leaves so the portal/photo presentation stays independent.
@@ -124,6 +125,18 @@ export function PhotoWorld() {
     return () => { live = false; scene.remove(m); m.dispose(); detail.current = null; };
   }, [fullUrl, splat?.id, scene, baseReady]);
 
+  // Diagnostics (?emulate=1): which copy of the world is showing, and how much of it.
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get('emulate') !== '1') return;
+    const w = window as unknown as { __photoWorld?: () => unknown };
+    w.__photoWorld = () => ({
+      url, fullUrl, baseReady: ready.current, detailReady: detailReady.current,
+      base: mesh.current ? { opacity: +mesh.current.opacity.toFixed(2), visible: mesh.current.visible } : null,
+      detail: detail.current ? { opacity: +detail.current.opacity.toFixed(2), visible: detail.current.visible } : null,
+      budget: spark.current?.lodSplatCount ?? null, active: (spark.current as unknown as { activeSplats?: number } | null)?.activeSplats ?? null,
+    });
+    return () => { delete w.__photoWorld; };
+  });
   useFrame((_, dt) => {
     const m = mesh.current;
     if (!m) return;
@@ -148,7 +161,7 @@ export function PhotoWorld() {
 /** The prepared places' worlds (the room records one when a memory steps into that place), by their World Labs id. */
 const PREPARED_WORLDS: Record<string, PlaceKey> = { [MEADOW_WORLD_ID]: 'red-kite', [COURTYARD_WORLD_ID]: 'courtyard' };
 
-type LocalWorld = { id: string; worldId: string; scale: number; floorY: number; lite: string; full: string };
+type LocalWorld = { id: string; worldId: string; scale: number; floorY: number; lite: string; base: string; full: string };
 /** Worlds that ship with the app (fixtures/worlds/*.json): their light copy and their full-resolution export, in the
  *  app's own files. The world's own floor estimate holds for what is seen: measured from the meadow's splats, its ground
  *  under the entrance, the viewpoints and every prop spot is at the floor (within a few cm; 0.2 m on the bank by the
@@ -156,17 +169,17 @@ type LocalWorld = { id: string; worldId: string; scale: number; floorY: number; 
  *  splats. */
 export const LOCAL_WORLDS: Record<string, LocalWorld> = {
   'red-kite': { id: 'local:red-kite', worldId: '0b84554c-b182-4b3e-a7bb-78f15822a49d', scale: 2.6397884, floorY: -0.5775501930381995,
-    lite: '/red-kite/meadow-lite.spz', full: '/red-kite/meadow-full.spz' }, // 100k splats (1.4 MB); 1.92M (30.8 MB)
+    lite: '/red-kite/meadow-lite.spz', base: '/red-kite/meadow-500k.spz', full: '/red-kite/meadow-full.spz' }, // 100k (1.4 MB), 500k (8 MB), 1.92M (30.8 MB)
 };
 
-/** Fetch the worlds that ship with the app into the browser's cache while a visit begins: the light copies at once,
+/** Fetch the worlds that ship with the app into the browser's cache while a visit begins: the first copies at once,
  *  the full detail after a pause (so it doesn't slow the start), each once. Saying "the hill" then shows it at once. */
 let preloaded = false;
 export function preloadWorlds(): void {
   if (preloaded) return;
   preloaded = true;
   const get = (u: string) => fetch(u, { priority: 'low' } as RequestInit).then((r) => r.arrayBuffer()).catch(() => undefined);
-  for (const w of Object.values(LOCAL_WORLDS)) void get(w.lite);
+  for (const w of Object.values(LOCAL_WORLDS)) void get(w.base);
   setTimeout(() => { for (const w of Object.values(LOCAL_WORLDS)) void get(w.full); }, 8000);
 }
 const COARSE = matchMedia('(pointer: coarse)').matches;
