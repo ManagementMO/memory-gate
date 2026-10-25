@@ -4,7 +4,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { Bloom, EffectComposer, N8AO, Noise, ToneMapping, Vignette } from '@react-three/postprocessing';
 import { XR, useXR } from '@react-three/xr';
 import { ToneMappingMode } from 'postprocessing';
-import { useEffect, useState, type ReactNode } from 'react';
+import { Suspense, useEffect, useState, type ReactNode } from 'react';
 import * as THREE from 'three';
 import { useGate } from '../state/store';
 import { World } from './World';
@@ -68,8 +68,13 @@ export function SceneCanvas({ children, effects = true }: { children?: ReactNode
       }}
     >
       <XR store={xrStore}>
-        {children ?? <World quality={quality} />}
-        {effects && <Effects quality={quality} />}
+        {/* Anything in the scene that waits (a model, a font) waits here. Without this a wait reaches the page, which
+            swaps the whole app for its fallback, so the canvas unmounts and its WebGL context is thrown away: in the
+            headset that froze the visit as a memory opened (an object's loading label waiting on its font). */}
+        <Suspense fallback={null}>
+          {children ?? <World quality={quality} />}
+          {effects && <Effects quality={quality} />}
+        </Suspense>
       </XR>
     </Canvas>
   );

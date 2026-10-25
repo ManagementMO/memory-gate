@@ -3,7 +3,7 @@ import { Environment } from '@react-three/drei';
 import { XROrigin, useXR } from '@react-three/xr';
 import { Snapshotter } from './Snapshotter';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef } from 'react';
 import { atmoLive } from './sketch/atmosphere';
 import { useGate } from '../state/store';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
@@ -178,7 +178,8 @@ export function World({ quality }: { quality: number }) {
       <CompanionRig />
       <PresenceLights />
       <SocialLayer />
-      <MemoryAddOnsScene />
+      {/* Its objects' loading labels wait on a font: kept here, a wait can't reach past the scene (see SceneCanvas). */}
+      <Suspense fallback={null}><MemoryAddOnsScene /></Suspense>
       <Snapshotter />
       <XrLayer />
     </>
