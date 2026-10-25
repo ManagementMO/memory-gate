@@ -80,5 +80,7 @@ export function Ambience({ kind }: { kind: Kind }) {
     if (pts.current) pts.current.visible = !!style && material.uniforms.uFade!.value > 0.01;
   });
   if (!style) return null;
-  return <points ref={pts} geometry={geometry} material={material} frustumCulled={false} renderOrder={26} />;
+  // Never a ray's target: a hand ray passing within a metre of any leaf would take it, and a pinch held on the ground
+  // behind them would never walk.
+  return <points ref={pts} geometry={geometry} material={material} frustumCulled={false} renderOrder={26} raycast={() => null} />;
 }

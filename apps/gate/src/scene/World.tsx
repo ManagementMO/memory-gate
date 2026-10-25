@@ -72,7 +72,7 @@ function MemoryLights() {
     const g = useGate.getState();
     const inPalace = g.world === 'palace' && !isDay;
     palace.current += ((inPalace ? 1 : 0) - palace.current) * (1 - Math.exp(-Math.min(dt, 0.05) * 3));
-    const pk = (1 - palace.current) * (useMemory.getState().showcase ? 0.15 : 1); // a showcase brings its own sun
+    const pk = (1 - palace.current) * (useMemory.getState().showcaseReady ? 0.15 : 1); // a showcase brings its own sun
     scene.environmentIntensity = 0.9 - 0.4 * k;
     if (fill.current) fill.current.intensity = 0.35 * k;
     if (sun.current) {
@@ -151,6 +151,20 @@ function PlayerOrigin() {
       (window as unknown as { __xrHead?: number[] }).__xrHead = [_hp.x, _hp.y, _hp.z, _he.setFromQuaternion(camera.getWorldQuaternion(_hq), 'YXZ').y];
     }
   });
+  // Diagnostics (scripts/pinch-check.mjs): where a named thing, or a world point, is from the eyes (tracked metres), so
+  // the emulated hand can be aimed at it and pinch it the way a wearer would.
+  const scene = useThree((s) => s.scene);
+  useEffect(() => {
+    if (!EMULATED) return;
+    const w = window as unknown as { __aim?: (at: string | number[]) => number[] | null };
+    w.__aim = (at) => {
+      const p = new THREE.Vector3();
+      if (typeof at === 'string') { const o = scene.getObjectByName(at); if (!o) return null; o.getWorldPosition(p); } else p.fromArray(at);
+      camera.updateWorldMatrix(true, false);
+      return camera.worldToLocal(p).toArray();
+    };
+    return () => { delete w.__aim; };
+  }, [scene, camera]);
   return <XROrigin ref={origin}><OriginRig /></XROrigin>;
 }
 

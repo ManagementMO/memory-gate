@@ -13,6 +13,8 @@ import { damp } from './util';
 import { environmentFarPlane } from '../../../../packages/shared/src/worldlabs';
 import { worldStatus } from './worldStatus';
 import { useMemory } from '../flow/memory';
+import { COURTYARD_WORLD_ID, MEADOW_WORLD_ID } from '../social/world';
+import type { PlaceKey } from '../../../../packages/shared/src/places';
 
 /** The eye height of a splat's camera above its floor (metres). */
 export const splatEye = (floorY: number | null, scale: number) => (floorY !== null ? -floorY * scale : 1.2);
@@ -29,11 +31,17 @@ export function PhotoWorld() {
   // place is chosen, never waiting on the backend or its storage (which still record it for everyone in the visit),
   // and those files were preloaded while the visit began (preloadWorlds).
   const place = useMemory((s) => s.place);
+  const photoUrl = useMemory((s) => s.photoUrl);
   const room = view?.splat;
-  const local = (place ? LOCAL_WORLDS[place] : undefined) ?? Object.values(LOCAL_WORLDS).find((w) => !!room?.worldId && w.worldId === room.worldId);
+  const local = place ? LOCAL_WORLDS[place] : undefined;
+  // The room keeps the last world it showed from one visit to the next, so only a world made for this memory is shown
+  // in it: a prepared place's world in a memory in that place (after the meadow, a garden is never the meadow again),
+  // a photo's world while that photo is part of this memory. A world made from the story itself shows as before.
+  const preparedFor = room?.worldId ? PREPARED_WORLDS[room.worldId] : undefined;
+  const ours = !room ? false : preparedFor ? preparedFor === place : !!room.sourceStory || !!media || !!photoUrl;
   const splat = local
     ? { id: local.id, status: 'ready' as const, source: 'worldlabs' as const, url: local.lite, liteUrl: local.lite, worldId: local.worldId, scale: local.scale, floorY: local.floorY }
-    : room;
+    : ours ? room : null;
   // Real generations from this photo always; the bundled sample splat only when the sample photo was shared.
   const isSample = !!media && /sample-photo-1938/.test(media.name);
   const usable = !!splat && splat.status === 'ready' && !!splat.url && (splat.source === 'sharp' || splat.source === 'worldlabs' || (splat.source === 'prebaked' && isSample));
@@ -136,6 +144,9 @@ export function PhotoWorld() {
   });
   return null;
 }
+
+/** The prepared places' worlds (the room records one when a memory steps into that place), by their World Labs id. */
+const PREPARED_WORLDS: Record<string, PlaceKey> = { [MEADOW_WORLD_ID]: 'red-kite', [COURTYARD_WORLD_ID]: 'courtyard' };
 
 type LocalWorld = { id: string; worldId: string; scale: number; floorY: number; lite: string; full: string };
 /** Worlds that ship with the app (fixtures/worlds/*.json): their light copy and their full-resolution export, in the

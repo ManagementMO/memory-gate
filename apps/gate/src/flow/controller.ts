@@ -2,7 +2,7 @@
 // companion says or does; the person only ever talks, shares a photo or video, or says they'd like to stop.
 //   portal → greeting → gathering (talk / photo / video / someone helps) → entering → forming → memory → leaving → album
 import { api } from '../../../../convex/_generated/api';
-import { asksToEnter, asksToGoIn, asksToLeave, perspectiveFromWords, resolveReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
+import { asksToEnter, asksToGoIn, asksToLeave, companyFromReply, mentionsCompany, perspectiveFromReply, perspectiveFromWords, resolveReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
 import { initialConversationLanguage, nextConversationLanguage, sameLanguage, type Lang, type LanguageSetting } from '../../../../packages/shared/src/language';
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
@@ -35,6 +35,7 @@ const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
 const OPENED_AS_MEADOW = new URLSearchParams(location.search).get('memory') === 'red-kite';
 const NUDGE_MS = 16_000;
 const ENTER_MS = 6200;
+const XR_ENTER_MS = 6500; // the headset's step through the palace: into light, under the dome, into the memory
 
 class Flow {
   private engine: VoiceEngine | null = null;
@@ -184,26 +185,34 @@ class Flow {
     if (g.resting || this.leaving) return;
     const text = h.transcript.trim();
     if (!text) return;
+    const beforeMemory = g.stage === 'gathering' || g.stage === 'greeting';
+    // "Yes" to "Shall we go and see it?", or "let's go" once there's somewhere to go.
+    const goNow = beforeMemory && companion.leads() && ((this.invitedToEnter && saysYes(text)) || (asksToGoIn(text) && this.somewhereToGo()));
     // Together: whose words were these? The room's companion says (the other person, heard faintly from across the
-    // room, isn't this person) before anything here acts on them, a "take me back" included.
-    if (!(await companion.claim(h, { language: this.lang, setting: useGate.getState().language }))) { useGate.getState().set({ heardLine: null }); return; }
+    // room, isn't this person) before anything here acts on them, a "take me back" included. With nobody else in the
+    // visit no one's words can be taken for theirs, so stepping through doesn't wait on that answer.
+    const claimed = companion.claim(h, { language: this.lang, setting: useGate.getState().language });
+    if (!(goNow && companion.alone()) && !(await claimed)) { useGate.getState().set({ heardLine: null }); return; }
     g.hearLine(text, false);
     this.history.push({ who: 'person', text });
     if (!companion.live()) turn('person', text);
     this.clearNudge();
     music.duck(false);
-    // Whose eyes they remember through, as soon as they say it ("with my grandmother": the child's), never a form.
-    const who = g.session?.role === 'guest' ? null : perspectiveFromWords(text);
-    if (who) { this.who.known = true; void claimPerspective(who, null); }
-    const beforeMemory = g.stage === 'gathering' || g.stage === 'greeting';
-    // "Yes" to "Shall we go and see it?", or "let's go" once there's somewhere to go: step through at once, without
-    // waiting on a model (and before the gate, "let's go" is never taken for goodbye). The host's device starts the
-    // visit; a guest's "let's go" goes to the room's companion, and they follow the host in.
-    if (beforeMemory && companion.leads() && ((this.invitedToEnter && saysYes(text)) || (asksToGoIn(text) && this.somewhereToGo()))) {
+    // Whose eyes they remember through, as soon as they say it ("with my grandmother": the child's), never a form; and
+    // once they've said who was there at all ("with my parents", "just me"), it is never asked.
+    const answering = this.who.asked && !this.who.known; // this is the answer to "Who was there with you?"
+    const host = g.session?.role !== 'guest';
+    const who = host ? perspectiveFromWords(text) : null;
+    if (who) { this.who.known = true; useMemory.setState({ company: true }); void claimPerspective(who, null); }
+    else if (host && mentionsCompany(text)) this.who.known = true;
+    // Step through at once, without waiting on a model (and before the gate, "let's go" is never taken for goodbye),
+    // saying "Come with me" on the way rather than before it. The host's device starts the visit; a guest's "let's go"
+    // goes to the room's companion, and they follow the host in.
+    if (goNow) {
       this.askSeq++; // a reply still on its way is not said over the walk
       this.thinking = false;
       this.setLang(nextConversationLanguage(this.lang, g.language, { claimed: null, text }));
-      await this.say(this.t('comeWithMe'));
+      void this.say(this.t('comeWithMe'));
       return void this.enter();
     }
     // "I'd like to leave", "take me back", "I'm done": acted on at once, without waiting on a model, so leaving always
@@ -219,7 +228,7 @@ class Flow {
     if (g.stage === 'memory' || g.stage === 'forming') return void this.heardInMemory(text, h);
     if (g.stage !== 'gathering' && g.stage !== 'greeting') return;
     // The answer to "Who was there with you?": settled (or the default kept), and straight on to the invitation.
-    if (this.who.asked && !this.who.known) {
+    if (answering) {
       this.who.known = true;
       this.turnsInPhase++;
       this.placeWords(text);
@@ -260,6 +269,11 @@ class Flow {
       default:
         // A description: start drawing the place in the background so it's ready (or nearly) when we arrive.
         memory.plan();
+        // What the companion says back ("A kite hill with your grandmother.") shows whose eyes too, even in words the
+        // reading of theirs missed: it never asks what it was just told.
+        const told = this.who.known || !host ? null : perspectiveFromReply(reply.reply);
+        if (told) { this.who.known = true; useMemory.setState({ company: true }); void claimPerspective(told, null); }
+        else if (host && companyFromReply(reply.reply)) this.who.known = true;
         // Before stepping in, once: who was there with them (their perspective), asked in words in place of the
         // invitation; the rest of the reply is still said.
         if (asksToEnter(reply.reply) && !this.who.known && !this.who.asked && g.session?.role !== 'guest') {
@@ -324,7 +338,7 @@ class Flow {
       if (d.place) { this.place = d.place; g.set({ memoryTitle: d.place }); memory.setTitle(d.place); }
       if (d.intent === 'offer_photo' || d.intent === 'offer_video' || d.intent === 'offer_invite') g.set({ offers: { photo: true, video: true, invite: d.intent === 'offer_invite' || g.offers.invite } });
       else if (d.intent !== 'enter') memory.plan();
-      this.invitedToEnter = !!d.invites;
+      this.invitedToEnter = !!d.invites || asksToEnter(d.text ?? ''); // read here too: the gateway's reading may be older
       this.scheduleNudge();
       this.postFlow();
     } else if (g.stage === 'memory' || g.stage === 'forming') {
@@ -506,7 +520,8 @@ class Flow {
     music.cue('enter');
     music.setMode('white');
     const t0 = performance.now();
-    const walkMs = useGate.getState().world === 'palace' ? PALACE_ENTER_MS : ENTER_MS; // the palace is a place you cross
+    // The palace is a place you cross. In the headset the crossing is light (it never glides), so it takes less time.
+    const walkMs = useGate.getState().world === 'palace' ? (useGate.getState().xr ? XR_ENTER_MS : PALACE_ENTER_MS) : ENTER_MS;
     await new Promise<void>((resolve) => {
       const step = () => {
         const p = Math.min(1, (performance.now() - t0) / walkMs);
@@ -563,6 +578,7 @@ class Flow {
 
   async leave(): Promise<void> {
     if (this.leaving) return;
+    if (useMemory.getState().shared) return void this.leaveShared();
     this.leaving = true;
     this.clearNudge();
     this.listen(false);
@@ -628,11 +644,35 @@ class Flow {
     this.scheduleNudge();
   }
 
+  /** The shared memories stepped through, newest last: the Golden Gate crowd, then someone's memory from it. */
+  private sharedTrail: string[] = [];
+
+  /** Back out of someone else's memory: to the crowd it was entered from, else to the San Francisco map. Nothing of it
+   *  is kept and nothing is thanked for: it was theirs. */
+  private async leaveShared(): Promise<void> {
+    this.leaving = true;
+    this.clearNudge();
+    this.listen(false);
+    this.engine?.hush();
+    this.sharedTrail.pop();
+    const back = this.sharedTrail[this.sharedTrail.length - 1];
+    if (back) { this.leaving = false; return void this.visitShared(back, 'back'); }
+    memory.reset();
+    moments.reset();
+    music.setMode('album');
+    music.cue('album');
+    useAtlas.getState().show('sf', 'world');
+    useGate.getState().set({ stage: 'album', resting: false, heardLine: null, companionLine: null, mood: 'idle', memoryTitle: null });
+    this.leaving = false;
+  }
+
   /** From the San Francisco map, or someone in the Golden Gate crowd: step into a memory someone shared publicly,
    *  through their eyes (the place, its things, the people their photo shows). The same walk in as your own. */
-  async visitShared(id: string): Promise<void> {
+  async visitShared(id: string, from: 'map' | 'crowd' | 'back' = 'map'): Promise<void> {
     const m = sfMemory(id);
     if (!m) return;
+    if (from === 'map') this.sharedTrail = [id];
+    else if (from === 'crowd') this.sharedTrail.push(id);
     if (!this.begun) await this.setup(false);
     this.leaving = false;
     this.history = [];
