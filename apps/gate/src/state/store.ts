@@ -2,6 +2,7 @@
 // React reads coarse state (stage, lines, offers); the 3D layer reads fast-changing values (level, enter progress)
 // with useGate.getState() inside useFrame, so a 60 fps value never re-renders React.
 import { create } from 'zustand';
+import { BCP47, deviceLang, LANGUAGE_SETTINGS, type Lang, type LanguageSetting } from '../../../../packages/shared/src/language';
 
 export type Stage = 'portal' | 'greeting' | 'gathering' | 'entering' | 'forming' | 'memory' | 'leaving' | 'album';
 export type CompanionKind = 'light' | 'figure';
@@ -49,6 +50,12 @@ export interface GateState {
   resting: boolean;
   /** Set while a shared photo is shown as a 3D splat (SHARP / World Labs): the memory is seen from the photo's eye. */
   photoWorld: { eye: number } | null;
+  /** The companion's language on this device: Automatic follows the person, or one pinned language (remembered). */
+  language: LanguageSetting;
+  /** The companion settings panel (the gear on the start page). */
+  settingsOpen: boolean;
+  /** The language the companion is speaking right now (captions carry it for screen readers). */
+  spoken: Lang;
 
   set: (patch: Partial<GateState>) => void;
   setStage: (stage: Stage) => void;
@@ -58,6 +65,7 @@ export interface GateState {
   speakLine: (text: string) => number;
   hearLine: (text: string, interim: boolean) => void;
   clearLines: () => void;
+  setLanguage: (setting: LanguageSetting) => void;
 }
 
 let lineSeq = 0;
@@ -70,6 +78,16 @@ function initialCompanion(): CompanionKind {
 /** Every visit begins at the palace; ?world=aurora brings back the aurora gate for testing (nothing is remembered). */
 function initialWorld(): WorldKind {
   return new URLSearchParams(location.search).get('world') === 'aurora' ? 'aurora' : 'palace';
+}
+
+const LANGUAGE_KEY = 'mg.gate.language';
+
+/** The language chosen on this device before, else Automatic (private mode simply starts in Automatic). */
+function initialLanguage(): LanguageSetting {
+  try {
+    const saved = localStorage.getItem(LANGUAGE_KEY);
+    return (LANGUAGE_SETTINGS as readonly string[]).includes(saved ?? '') ? (saved as LanguageSetting) : 'auto';
+  } catch { return 'auto'; }
 }
 
 export const useGate = create<GateState>((set, get) => ({
@@ -95,6 +113,9 @@ export const useGate = create<GateState>((set, get) => ({
   status: '',
   resting: false,
   photoWorld: null,
+  language: initialLanguage(),
+  settingsOpen: false,
+  spoken: deviceLang(navigator.language),
 
   set: (patch) => set(patch),
   setStage: (stage) => set({ stage }),
@@ -113,7 +134,17 @@ export const useGate = create<GateState>((set, get) => ({
     set({ heardLine: { id, text, interim, at: performance.now() } });
   },
   clearLines: () => set({ companionLine: null, heardLine: null }),
+  setLanguage: (setting) => {
+    set({ language: setting });
+    try { localStorage.setItem(LANGUAGE_KEY, setting); } catch { /* private mode: kept for this visit only */ }
+  },
 }));
+
+/** What the browser's own speech recognition listens for: the pinned language, or the device's in Automatic. */
+export function recognitionLang(): string {
+  const setting = useGate.getState().language;
+  return setting === 'auto' ? navigator.language || 'en-US' : BCP47[setting];
+}
 
 /** Stages in which the gate/aurora is the world (before stepping through). */
 export const NIGHT_STAGES: readonly Stage[] = ['portal', 'greeting', 'gathering', 'entering'];

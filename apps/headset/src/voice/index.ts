@@ -6,8 +6,8 @@
 //   stop()        released. Awaits start() (release-before-start is safe), sends finalize -> flush_done -> close ->
 //                 done and returns the exact is_final transcript, the clip length and, only with voice_recording
 //                 consent and a non-empty transcript, the uploaded WAV's storage id. Empty transcript in mock mode.
-//   speak(text)   a queued companion line; resolves when it has finished playing (or was cancelled). Captions-only
-//                 timing (~60 ms per character) when speech is unavailable.
+//   speak(text)   a queued companion line, with its language (optional) for Sonic; resolves when it has finished
+//                 playing (or was cancelled). Captions-only timing (~60 ms per character) when speech is unavailable.
 //   cancelSpeech, level (0..1: mic while listening, speech while speaking), mode.
 // mode: 'live' means speech-to-text works right now; 'mock' means type instead (speech output may still be live).
 // State: listening (button down) > speaking > thinking (finalizing the transcript / saving the clip) > idle.
@@ -34,6 +34,8 @@ export type VoiceOptions = {
   onError: (msg: string) => void;
   /** Optional: the words heard so far in the current turn, updated as they arrive (live captions). */
   onPartial?: (text: string) => void;
+  /** Optional: the voice to speak with instead of the room's (the Gate companion uses Ariana; the headset keeps the room's). */
+  voiceId?: string;
 };
 
 export type TurnMetrics = {
@@ -192,7 +194,7 @@ export function createVoice(opts: VoiceOptions): Voice {
   const sttUsable = () => !disposed && micOk && !!mint?.sttLive && tokenValid();
   const ttsAuth = (): TtsAuth | null =>
     !disposed && mint?.token && mint.ttsLive && tokenValid()
-      ? { token: mint.token, voiceId: mint.voiceId, model: mint.ttsModel, version: mint.cartesiaVersion }
+      ? { token: mint.token, voiceId: opts.voiceId ?? mint.voiceId, model: mint.ttsModel, version: mint.cartesiaVersion }
       : null;
   const newSession = () => new SttSession(sttUrl(mint?.token ?? '', mint?.keyterms ?? [], mint?.cartesiaVersion ?? '2026-08-14'));
 

@@ -5,6 +5,7 @@ import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
 import { LeaveIcon, MapIcon, MuteIcon, PhotosIcon, PlayIcon, RestIcon, SoundIcon } from './Icons';
 import { openObjectWorkshop } from '../memory-objects/workshop';
+import { SettingsButton } from './CompanionSettings';
 
 /** The memory map: where your memories live, and where others have shared theirs (it opens over the palace). */
 function MapButton() {
@@ -57,6 +58,7 @@ export function TopBar() {
       {inConversation && <ListeningChip />}
       <div className="right">
         {(stage === 'memory' || stage === 'forming') && <button type="button" className="icon-btn glass" aria-label="Places and objects" title="Places and objects" data-testid="places-objects" onClick={openObjectWorkshop}><PhotosIcon /></button>}
+        {stage === 'portal' && <SettingsButton />}
         {stage === 'portal' && !guest && <MapButton />}
         {stage !== 'portal' && (
           <button type="button" className="icon-btn glass" aria-label={musicOn ? 'Turn music off' : 'Turn music on'} aria-pressed={!musicOn} onClick={() => flow.setMusic(!musicOn)} data-testid="music">
