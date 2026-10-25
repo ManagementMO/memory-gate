@@ -23,6 +23,8 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
   Promise.race([p.catch(() => fallback), new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
 
+/** A visit opened as the Red Kite meadow (?memory=red-kite, backend/client.ts): its memory is that place. */
+const OPENED_AS_MEADOW = new URLSearchParams(location.search).get('memory') === 'red-kite';
 const NUDGE_MS = 16_000;
 const ENTER_MS = 6200;
 
@@ -204,11 +206,12 @@ class Flow {
 
   // ------------------------------------------------------------ prepared places from the library
   /** Words that describe a prepared place (the courtyard, the meadow) make the visit step into it; things named
-   *  come in from the library. Recognised from everything said so far, so details can arrive across turns. */
+   *  come in from the library. Recognised from everything said so far, so details can arrive across turns. A visit
+   *  opened as the meadow steps into it whatever is said first (a few misheard words never sketch a room inside it). */
   private placeWords(text: string) {
     this.said.push(text);
     if (!useMemory.getState().place) {
-      const p = placeFor(this.said.join(' '));
+      const p = placeFor(this.said.join(' ')) ?? (OPENED_AS_MEADOW ? PLACES['red-kite'] : null);
       if (!p) return;
       memory.usePlace(p, this.place);
       this.activatePlace(p.key);
@@ -396,7 +399,7 @@ class Flow {
     if (!shared.plan) return;
     const plan = validatePlan(shared.plan);
     const g = useGate.getState();
-    memory.adopt(plan, shared.id, shared.mediaUrl ? fileUrl(shared.mediaUrl) : null);
+    memory.adopt(plan, shared.id, shared.mediaUrl ? fileUrl(shared.mediaUrl) : null, shared.place ?? null);
     g.set({ memoryTitle: plan.title });
     if (g.stage === 'gathering' || g.stage === 'greeting') {
       this.clearNudge();

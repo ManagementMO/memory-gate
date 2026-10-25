@@ -4,18 +4,22 @@ Branch `social-experience`, built on the team's SpacetimeDB presence for the gat
 
 Every visit in `apps/gate` can now be seen through two perspectives:
 
-| Perspective | Eye height | Who |
-|---|---|---|
-| **Grandparent** | 1.6 m | The host by default |
-| **Grandchild** | 1.1 m | Guests by default; meant for a real grandchild |
+| Perspective | Who they are in the memory | Eye height | Who |
+|---|---|---|---|
+| **Grandparent** | A grandmother of about 75 (1.56 m) | 1.45 m | The host by default |
+| **Grandchild** | A boy of about 8 (1.31 m) | 1.21 m | Guests by default; meant for a real grandchild |
+
+Each eye height is that person's own (branch `human-models`), so what you see from matches the body the other person sees. The two are rigged MakeHuman characters (CC0) in `apps/gate/public/people/`; see [AVATARS.md](AVATARS.md).
 
 Anyone can claim one, with the name the others see. Unclaimed perspectives are still usable.
 
 - **Two people in the room.** Each perspective stands somewhere in each memory. By default they stand on opposite sides of the room, facing each other. When a story says where someone was ("a little red stool by the stove"), that perspective moves beside it: Claude reads the words (`guide.locate`), with a plain word match standing in without it. Through the grandparent's eyes you stand at the grandparent's spot and see the grandchild across the room, and the other way round. When nobody is seeing through the other perspective, a stand-in waits at its spot. Someone seeing through your own eyes shares your spot and isn't drawn inside you.
-- **Headset.** The one Quest wearer can step into either perspective: **X** cycles, **Y** opens a wrist menu, and with hands a light on the left wrist opens it. Through the grandchild's eyes the world grows around the wearer's feet until their eyes are at 1.1 m. The XR origin is scaled behind a soft blink; head tracking stays one-to-one and the floor stays under them.
-- **Phones and laptops** use the same website. They stand at their perspective's spot and see first-person at its eye height, facing the other perspective (drag to look), or switch to the overview.
+- **Headset.** The one Quest wearer can step into either perspective: **X** cycles, **Y** opens a wrist menu, and with hands a light on the left wrist opens it. Through the grandchild's eyes the world grows around the wearer's feet until their eyes are at the boy's 1.21 m. The XR origin is scaled behind a soft blink; head tracking stays one-to-one and the floor stays under them.
+- **Phones and laptops** use the same website. They start at their perspective's spot and see first-person at its eye height, facing the other perspective (drag to look), or switch to the overview.
+- **Walking about.** A laptop walks with **W A S D** or the arrow keys (Shift to hurry, **R** back to your spot), a phone with the walk pad, and the headset with the **left stick** (the right stick turns in 30° steps) as well as by really stepping about. The controls are the Red Kite page's (`red-kite/navigation.ts`, `TouchPad`). In the meadow, movement is resolved on its real ground by its collision mesh (`red-kite/traversal.ts`: slopes, steps, trees, the world's edge). Elsewhere the floor is flat and you stay in the room. People keep a little room between them: a step that would bring you within 0.6 m of someone slides past them instead. Changing perspective (or the story moving your perspective) starts you again at that spot.
 - **Switching in the headset** happens behind the blink. The XR origin is scaled to the perspective's eye height and moved and turned, so the wearer's head lands on the perspective's spot facing the other one. Head tracking stays one-to-one.
-- **Everyone in the memory appears where they really are**, at their perspective's height: as a porcelain figure in their colour, or as their own likeness (see [AVATARS.md](AVATARS.md)). Their head turns as they look; in the headset their arms reach for their hands. People still at the gate stay the soft lights beside you.
+- **Everyone in the memory appears where they really are**, as their perspective's person (the boy or the grandmother), or as their own likeness if they shared one (see [AVATARS.md](AVATARS.md)). They stand on the ground and **walk when the person walks**: the walk plays as fast as they really move, facing the way they're going (stepping back plays it backwards), and stops when they stop. Their head turns as they look; in the headset their arms reach for their hands, otherwise they swing with the walk or rest at the sides. People still at the gate stay the soft lights beside you.
+- **Prepared places are shared.** When the host's words call up a prepared place (the meadow, the courtyard), the host's device keeps it as the visit's memory (`memories.share`), with each thing brought in, so a guest (a headset waiting at the gate, say) follows into it as into any sketched memory.
 
 ## What each perspective keeps (SpacetimeDB)
 
@@ -68,7 +72,9 @@ npm --prefix apps/gate run dev           # https://localhost:5180 (Quest: the LA
 npm run test:exchange                    # includes tests/exchange/social.test.mjs
 npx vitest run --config tests/smoke/vitest.config.mjs   # includes tests/smoke/social.test.ts
 node apps/gate/scripts/multiplayer-check.mjs   # two devices; perspective checks run when presence is on SpacetimeDB
-node apps/gate/scripts/xr-check.mjs            # emulated Quest: grandchild's eyes put the wearer's eyes at 1.1 m
+node apps/gate/scripts/xr-check.mjs            # emulated Quest: grandchild's eyes put the wearer's eyes at 1.21 m
+node apps/gate/scripts/walk-check.mjs          # laptop (boy) + emulated Quest (grandmother) walking in the meadow, live
+node apps/gate/scripts/prepare-people.mjs      # rebuild public/people/ from the source characters (glTF-Transform)
 ```
 
 ## Verification status (2026-10-24, on `main` 08d1161 + this branch)

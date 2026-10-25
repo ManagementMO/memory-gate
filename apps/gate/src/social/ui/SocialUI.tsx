@@ -2,10 +2,11 @@
 // memory by typing or speaking, memories handed to you, the story behind a ghost, old photographs of the place, and
 // the likeness others see. The headset has the same things on its wrist (xr/OriginRig.tsx).
 import { useQuery } from 'convex/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../../../../../convex/_generated/api';
 import type { Id } from '../../../../../convex/_generated/dataModel';
 import { convex, uploadFile } from '../../backend/client';
+import { TouchPad } from '../../red-kite/TouchPad';
 import { useGate } from '../../state/store';
 import { CloseIcon } from '../../ui/Icons';
 import { pinArchive, searchArchive, type ArchiveResult } from '../archive';
@@ -15,6 +16,7 @@ import { socialLink } from '../link';
 import { overlayActive } from '../overlay';
 import { claimPerspective, inMemory } from '../perspectives';
 import { notify, perspectiveById, useSocial, viewingPerspective, type PerspectiveKey } from '../store';
+import { walkPad } from '../walk';
 import './social.css';
 
 const AVATAR_KEY = 'mg.gate.avatar';
@@ -297,6 +299,7 @@ export function SocialUI() {
   const [sheet, setSheet] = useState<null | 'pick' | 'compose' | 'archive' | 'avatar'>(null);
   const p = perspectives.find((x) => x.key === viewing);
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving';
+  const touch = useMemo(() => matchMedia('(pointer: coarse)').matches, []);
 
   // A new visit starts fresh; guests look through their own eyes by default, the host at the whole place.
   useEffect(() => {
@@ -345,6 +348,10 @@ export function SocialUI() {
         {live && <button type="button" className="pill glass" onClick={() => setSheet('avatar')} data-testid="open-avatar">My likeness</button>}
         {!live && session && inMemory() && <span className="social-local" title="Saving perspectives needs the team’s exchange">Kept on this device only</span>}
       </nav>
+      {/* Walking about through these eyes: the Red Kite walk pad on a phone, the keys on a laptop. */}
+      {day && view === 'first' && (touch
+        ? <div className="social-walk"><TouchPad input={walkPad} disabled={stage === 'forming'} /></div>
+        : <p className="social-walk-keys" aria-hidden="true">W A S D to walk · R back to your place</p>)}
       <Handoffs />
       <StoryCard />
       <Notice />

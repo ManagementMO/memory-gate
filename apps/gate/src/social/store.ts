@@ -44,9 +44,10 @@ export type Member = { id: string; name: string; role: string };
 /** Where a perspective stands in one memory, relative to its centre (metres). */
 export type Spot = { perspectiveId: string; memoryId: string; x: number; z: number; objectId: string; source: 'default' | 'story' | 'world'; quote: string; updatedAt: number };
 
+/** Eye heights are the two people's own (avatar/people.ts): the grandmother's 1.45 m, the boy's 1.21 m. */
 export const PERSONAS: Record<PerspectiveKey, { label: string; eyeHeight: number; color: string }> = {
-  grandparent: { label: 'Grandparent', eyeHeight: 1.6, color: '#8fb8ff' },
-  child: { label: 'Grandchild', eyeHeight: 1.1, color: '#ffb48f' },
+  grandparent: { label: 'Grandparent', eyeHeight: 1.45, color: '#8fb8ff' },
+  child: { label: 'Grandchild', eyeHeight: 1.21, color: '#ffb48f' },
 };
 const local = (key: PerspectiveKey): Perspective => ({ id: `local:${key}`, key, ...PERSONAS[key], claimedBy: '', claimedName: '', archivePlace: '', yearFrom: 1900, yearTo: 1980 });
 
