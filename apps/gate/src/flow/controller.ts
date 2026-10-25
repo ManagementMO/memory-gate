@@ -19,6 +19,7 @@ import { useMemory } from './memory';
 import { guideContext, story, turn } from '../social/attribution';
 import { overlayActive } from '../social/overlay';
 import { visitFromUrl } from '../album/prepared';
+import { useAtlas, type PlaceId } from '../map/state';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -414,6 +415,7 @@ class Flow {
     this.engine?.hush();
     music.setMode('album');
     music.cue('album');
+    useAtlas.getState().show('sf', 'mine'); // the album, where the moment just kept is
     useGate.getState().set({ stage: 'album', resting: false, heardLine: null, companionLine: null, mood: 'idle' });
   }
 
@@ -486,13 +488,15 @@ class Flow {
     this.listen(true);
   }
 
-  /** From the start page: the album of earlier visits on this device, before any conversation begins. */
-  openAlbum(): void {
+  /** From the start page: the memory map (earlier visits on this device are its San Francisco pin), before any
+   *  conversation begins; or straight onto one place's memories. */
+  openAlbum(place: PlaceId | null = null): void {
     const g = useGate.getState();
     if (g.stage !== 'portal') return;
     music.start();
     music.setEnabled(g.musicOn);
     music.setMode('album');
+    useAtlas.getState().show(place, 'mine'); // the memory map, or that place
     g.set({ stage: 'album' });
   }
 

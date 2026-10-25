@@ -12,6 +12,7 @@ import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
 import { XrAlbum } from './XrAlbum';
 import { XrControls } from './XrControls';
+import { useObjectWorkshop } from '../memory-objects/workshop';
 
 const _head = new THREE.Vector3();
 const _q = new THREE.Quaternion();
@@ -22,6 +23,7 @@ function Captions3D() {
   const said = useGate((s) => s.companionLine);
   const heard = useGate((s) => s.heardLine);
   const stage = useGate((s) => s.stage);
+  const objectSource = useObjectWorkshop((s) => s.selected);
   const thinking = useGate((s) => s.mood === 'thinking');
   const group = useRef<THREE.Group>(null);
   const camera = useThree((s) => s.camera);
@@ -39,13 +41,13 @@ function Captions3D() {
     g.position.lerp(_target, 1 - Math.exp(-dt * 1.4));
     g.lookAt(_head.x, g.position.y, _head.z);
   });
-  if (stage === 'portal' || stage === 'album') return null;
+  if (stage === 'portal' || stage === 'album' || (objectSource && (stage === 'memory' || stage === 'forming'))) return null;
   // Just the words, with a soft halo of the opposite tone so they read on sky, marble or white. The companion's
   // line grows upward from the middle and yours downward, so however long either is, they never collide.
   const ink = day ? '#1d1c2e' : '#f5f4ff';
   const halo = day ? '#ffffff' : '#0b0c1c';
   return (
-    <group ref={group}>
+    <group ref={group} name="CompanionCaptions">
       {said && (
         <Text font={fontUrl} fontSize={0.04} lineHeight={1.25} maxWidth={0.82} anchorX="center" anchorY="bottom" textAlign="center" position={[0, 0, 0]} color={ink}
           outlineWidth={0.0035} outlineBlur={0.009} outlineColor={halo} outlineOpacity={0.7} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>

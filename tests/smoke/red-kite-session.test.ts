@@ -31,3 +31,17 @@ test('a transport failure preserves the saved membership and does not silently c
   await expect(openKiteSession()).rejects.toThrow('transport');
   expect(saved.has('mg.red-kite.session.owner')).toBe(true); expect(client.mutation).not.toHaveBeenCalled();
 });
+
+test.each([false, true])('live import copy is explicit (%s) and uses a separate saved owner slot', async live => {
+  if (!live) saved.clear();
+  vi.stubGlobal('location', { search: '?story=red-kite' + (live ? '&sources=live' : '') });
+  const created = { code: 'NEWK26', token: 'new-test-token' };
+  client.mutation.mockResolvedValue(created);
+  client.query.mockResolvedValueOnce(null).mockResolvedValueOnce(view());
+  const { openKiteSession } = await import('../../apps/gate/src/red-kite/session');
+  const result = await openKiteSession();
+  expect(client.mutation.mock.calls[0]![1]).toMatchObject({ demo: true, offline: !live });
+  expect(result.code).toBe(created.code);
+  expect(JSON.parse(saved.get('mg.red-kite.session.' + (live ? 'owner-live' : 'owner'))!)).toMatchObject(created);
+  if (live) expect(JSON.parse(saved.get('mg.red-kite.session.owner')!)).toEqual(session);
+});

@@ -15,8 +15,10 @@ import { XrButton } from './XrButton';
 import { PresenceSync } from '../presence/PresenceSync';
 import { SocialUI } from '../social/ui/SocialUI';
 import { lazyRetry } from './lazyRetry';
+import { MemoryAddOnsOverlay } from '../memory-addons/MemoryAddOns';
 
-const AlbumView = lazyRetry(() => import('../album/AlbumView'));
+// The album stage: the memory map, and each place's memories (your album in San Francisco).
+const Atlas = lazyRetry(() => import('../map/Atlas'));
 
 /** If the album can't be fetched (a dropped connection), say so where it would be and offer to try again. */
 class AlbumUnavailable extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -37,7 +39,7 @@ class AlbumUnavailable extends Component<{ children: ReactNode }, { failed: bool
 export function Overlay() {
   const stage = useGate((s) => s.stage);
   // Back from a prepared memory's own page (the Red Kite) that was opened in the album: the album again.
-  useEffect(() => { if (cameBackToAlbum()) flow.openAlbum(); }, []);
+  useEffect(() => { if (cameBackToAlbum()) flow.openAlbum('sf'); }, []);
   const world = useGate((s) => s.world);
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving';
   return (
@@ -50,7 +52,7 @@ export function Overlay() {
       {stage === 'album' && (
         <AlbumUnavailable>
           <Suspense fallback={null}>
-            <AlbumView onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} onClose={() => flow.home()}
+            <Atlas onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} onClose={() => flow.home()}
               onVisitScene={(scene) => { const m = PREPARED.find((p) => p.open && 'scene' in p.open && p.open.scene === scene); void flow.visitPlace(scene as PlaceKey, m?.plan ?? null); }} />
           </Suspense>
         </AlbumUnavailable>
@@ -60,6 +62,7 @@ export function Overlay() {
       <DropZone />
       <PresenceSync />
       <SocialUI />
+      <MemoryAddOnsOverlay />
     </div>
   );
 }
