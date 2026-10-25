@@ -28,6 +28,9 @@ type MemoryState = {
   shared?: boolean;
   /** A place we already have finished (a garden, a football field...): it forms whole instead of being planned. */
   showcase?: string | null;
+  /** They said who was there with them ("with my grandmother"): the other perspective's stand-in waits in the memory
+   *  only then (or when someone else is in it), never by default. */
+  company?: boolean;
 };
 
 export const useMemory = create<MemoryState>(() => ({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null, place: null }));
@@ -224,7 +227,7 @@ class Memory {
 
   reset() {
     this.words = []; this.title = null; this.memoryId = null; this.planned = ''; this.mediaFileId = null; this.mediaKind = null;
-    useMemory.setState({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null, place: null, shared: false });
+    useMemory.setState({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null, place: null, shared: false, company: false });
   }
 }
 

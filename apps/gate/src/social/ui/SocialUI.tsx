@@ -25,6 +25,8 @@ let freshFor: string | null = null;
 const readKey = () => { try { return localStorage.getItem(AVATAR_KEY); } catch { return null; } };
 const writeKey = (k: string | null) => { try { if (k) localStorage.setItem(AVATAR_KEY, k); else localStorage.removeItem(AVATAR_KEY); } catch { /* private mode */ } };
 
+const EYES_CHIP = new URLSearchParams(location.search).get('eyes') === '1';
+
 function Sheet({ title, onClose, children, testId }: { title: string; onClose: () => void; children: React.ReactNode; testId: string }) {
   useEffect(() => {
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -400,9 +402,11 @@ export function SocialUI() {
   return (
     <>
       <nav className="social-dock" aria-label="Perspectives" data-testid="social-dock">
-        <button type="button" className="pill glass perspective-chip" style={{ '--p': p?.color ?? '#cdb4ff' } as React.CSSProperties} onClick={() => setSheet('pick')} data-testid="perspective-chip">
+        {/* Whose eyes you see through comes from what you say (or the companion asks): no chip for it in the corner.
+            ?eyes=1 brings it back, to choose by hand while testing. */}
+        {EYES_CHIP && <button type="button" className="pill glass perspective-chip" style={{ '--p': p?.color ?? '#cdb4ff' } as React.CSSProperties} onClick={() => setSheet('pick')} data-testid="perspective-chip">
           <span className="dot" aria-hidden="true" />{p ? `${p.label}’s eyes` : 'Whose eyes?'}
-        </button>
+        </button>}
         {day && (
           <div className="seg glass" role="group" aria-label="View">
             <button type="button" aria-pressed={view === 'first'} onClick={() => useSocial.getState().set({ view: 'first' })} data-testid="view-first">My view</button>

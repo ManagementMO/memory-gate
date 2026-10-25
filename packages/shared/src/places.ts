@@ -115,11 +115,18 @@ export function turned(x: number, z: number, view: number): [number, number] {
   return [x * c + z * s, -x * s + z * c];
 }
 
-/** The prepared place these words describe, if any (a call word, or two of its details). */
+/** Kinds of place none of the prepared places is. A garden has flowers, grass and a path too, but it stays a garden:
+ *  its details never call up the meadow (only "the hill", its own name, would). English, and the Spanish and French
+ *  words the English reading may keep. */
+const ELSEWHERE = /\b(gardens?|back ?yards?|front ?yards?|yards?|orchards?|vineyards?|greenhouses?|allotments?|patios?|jard[ií]n(es|s)?|huertos?|potagers?|vergers?)\b/;
+
+/** The prepared place these words describe, if any (a call word, or two of its details when they name no other kind
+ *  of place). */
 export function placeFor(words: string): PreparedPlace | null {
   const t = norm(words);
+  const elsewhere = ELSEWHERE.test(t);
   for (const p of Object.values(PLACES)) {
-    if (p.callWords.test(t) || p.detailWords.filter((w) => w.test(t)).length >= 2) return p;
+    if (p.callWords.test(t) || (!elsewhere && p.detailWords.filter((w) => w.test(t)).length >= 2)) return p;
   }
   return null;
 }

@@ -62,9 +62,12 @@ function StandIns() {
   const occupied = usePolledSet(occupiedPerspectives);
   // A memory with its own people (the parents someone mentioned, the friends in a photo) needs no stand-in waiting in it.
   const ownPeople = useMemory((s) => !!s.plan?.people?.length);
+  // Nor does one where nobody was mentioned: the stand-in comes once they say who was there ("with my grandmother"),
+  // or when someone else is in the memory with them (the perspective nobody has taken yet).
+  const company = useMemory((s) => !!s.company);
   const [, tick] = useState(0);
   useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 1000); return () => clearInterval(t); }, []); // follow things settling
-  const shown = ownPeople ? [] : perspectives.filter((p) => p.key !== viewing && !occupied.has(p.id));
+  const shown = ownPeople || !(company || occupied.size > 0) ? [] : perspectives.filter((p) => p.key !== viewing && !occupied.has(p.id));
   useEffect(() => { drawn.standIns = shown.map((p) => p.key); return () => { drawn.standIns = []; }; });
   return (
     <>
