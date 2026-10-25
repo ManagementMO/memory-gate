@@ -27,6 +27,7 @@ function ListeningChip() {
   const stage = useGate((s) => s.stage);
   const ptt = useGate((s) => s.pushToTalk);
   const held = useGate((s) => s.talkHeld);
+  const tip = useGate((s) => s.talkTip);
   const keyboard = useMemo(() => pushToTalkHere && matchMedia('(pointer: fine)').matches, []); // the website, not the Quest
   const dot = useRef<HTMLSpanElement>(null);
   useEffect(() => {
@@ -50,7 +51,7 @@ function ListeningChip() {
   return (
     <div className={`status glass${hint ? ' ptt' : ' dot-only'}`} role="status" aria-live="polite" data-tone={tone} data-held={held} data-testid="listening" title={text}>
       <span className="dot" ref={dot} aria-hidden="true" />
-      {hint && (held ? <span>Listening…</span> : <span>Hold <kbd>V</kbd> to talk</span>)}
+      {hint && (held ? <span>Listening…</span> : tip ? <span>Hold <kbd>V</kbd> while you talk</span> : <span>Hold <kbd>V</kbd> to talk</span>)}
       <span className="visually-hidden">{text}</span>
     </div>
   );

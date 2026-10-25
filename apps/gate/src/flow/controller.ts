@@ -28,6 +28,9 @@ import { useAtlas, type PlaceId, type Tab } from '../map/state';
 import { sfMemory } from '../sf/memories';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+/** Push to talk is for the website: on a computer (not the Meta Quest browser, which stays hands-free). */
+export const pushToTalkHere = !/OculusBrowser|Quest|Pacific/i.test(navigator.userAgent);
+const keyboardHere = pushToTalkHere && matchMedia('(pointer: fine)').matches;
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
   Promise.race([p.catch(() => fallback), new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
 
@@ -140,6 +143,9 @@ class Flow {
       },
     }, { recognitionLang });
     this.engine = quiet ? companion.guarded(engine) : engine;
+    // On the website (a computer), talking is push to talk from the start: hold V. Hands-free listening on laptop
+    // speakers can hear the companion's own voice. The Quest stays hands-free, as it always was.
+    if (keyboardHere) { this.engine.pushToTalk(false); useGate.getState().set({ pushToTalk: true }); }
     // Don't wait for the listening socket before saying hello: speech only needs the voice token (about a second).
     for (let i = 0; i < 30 && !this.engine.canSpeak(); i++) await sleep(100);
     const v = useGate.getState().voice;
@@ -184,11 +190,25 @@ class Flow {
    *  not while resting; the first press turns hands-free listening off for the rest of the visit. */
   pushToTalk(down: boolean): void {
     const g = useGate.getState();
-    if (!down) { if (g.talkHeld) { g.set({ talkHeld: false }); this.engine?.pushToTalk(false); } return; }
-    if (!this.engine || g.resting || g.talkHeld || !['greeting', 'gathering', 'forming', 'memory'].includes(g.stage)) return;
-    g.set({ pushToTalk: true, talkHeld: true });
+    if (!down) {
+      if (!g.talkHeld) return;
+      g.set({ talkHeld: false });
+      this.engine?.pushToTalk(false);
+      // Only a tap (too short to hear a word): say how it works, for a moment.
+      if (performance.now() - this.talkPressedAt < 600) {
+        g.set({ talkTip: true });
+        if (this.talkTipTimer) clearTimeout(this.talkTipTimer);
+        this.talkTipTimer = setTimeout(() => useGate.getState().set({ talkTip: false }), 2500);
+      }
+      return;
+    }
+    if (!this.engine || g.resting || g.talkHeld || this.leaving || !['greeting', 'gathering', 'forming', 'memory'].includes(g.stage)) return;
+    this.talkPressedAt = performance.now();
+    g.set({ pushToTalk: true, talkHeld: true, talkTip: false });
     this.engine.pushToTalk(true);
   }
+  private talkPressedAt = 0;
+  private talkTipTimer: ReturnType<typeof setTimeout> | null = null;
 
   private async heard(h: Heard): Promise<void> {
     const g = useGate.getState();
@@ -893,7 +913,6 @@ async function describeMedia(file: File): Promise<MediaItem | null> {
 export const flow = new Flow();
 // Push to talk, on the website only: hold V to speak, let go to send (never while typing in a field, never with a
 // modifier key). Not on the Meta Quest browser or inside VR, where listening stays hands-free as it always was.
-export const pushToTalkHere = !/OculusBrowser|Quest|Pacific/i.test(navigator.userAgent);
 const typing = (t: EventTarget | null) => t instanceof Element && !!t.closest('input, textarea, select, [contenteditable="true"]');
 window.addEventListener('keydown', (e) => {
   if (!pushToTalkHere || useGate.getState().xr || e.code !== 'KeyV' || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;

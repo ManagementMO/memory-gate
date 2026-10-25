@@ -42,9 +42,9 @@ export interface VoiceEngine {
   hush(): void;
   /** Open or close the hands-free microphone (closed while resting, while the companion is mid-sentence, etc.). */
   setListening(on: boolean): void;
-  /** Push to talk (hold V): held opens a turn at once (the person has the floor, so the companion stops); released
-   *  ends it and sends what was said. The first press also stops hands-free turns for the rest of the visit. Ignored
-   *  while the microphone is closed (resting). */
+  /** Push to talk (hold V): held opens a turn at once, even over the companion's greeting (the person has the floor,
+   *  so it stops); released ends it and sends what was said. Any call turns hands-free turns off for the rest of the
+   *  visit (pushToTalk(false) does only that). The flow decides when it's allowed (not while resting). */
   pushToTalk(down: boolean): void;
   /** 0..1 for the companion: the voice while it speaks, the person while they speak. */
   level(): number;
@@ -153,7 +153,7 @@ function cartesiaEngine(session: Session, ev: EngineEvents): VoiceEngine {
     const raw = voice.debug.raw();
     const db = dbOf(raw.mic);
     const now = performance.now();
-    if (!listening) { if (turnOpen) void endTurn(); detector.reset(); return; }
+    if (!listening && !held) { if (turnOpen) void endTurn(); detector.reset(); return; }
     // Push to talk: the key, not the detector, starts and ends turns (the level still counts toward this turn's SNR).
     if (ptt) { if (turnOpen && held) { snrSum += db - turnFloor; snrCount++; } return; }
     const edge = detector.step(db, now, speakingNow);
@@ -180,11 +180,11 @@ function cartesiaEngine(session: Session, ev: EngineEvents): VoiceEngine {
       try { await voice.speak(text, { language: language ?? null }); } finally { speakingNow = false; }
     },
     hush() { voice.cancelSpeech(); speakingNow = false; },
-    setListening(on) { listening = on; if (!on && turnOpen) void endTurn(); },
+    setListening(on) { listening = on; if (!on && turnOpen && !held) void endTurn(); },
     pushToTalk(down) {
       ptt = true;
       if (!down) { if (held) { held = false; void endTurn(); } return; }
-      if (held || !listening) return;
+      if (held || disposed) return;
       held = true;
       if (turnOpen) return; // a hands-free turn already under way simply becomes this one
       turnOpen = true; hearingNow = true; turnStartedAt = performance.now(); bargePending = 0;
@@ -267,7 +267,7 @@ function browserEngine(ev: EngineEvents, recognitionLang: () => string): VoiceEn
   })();
 
   const startRec = () => {
-    if (!Ctor || disposed || !listening || speakingNow || rec || (ptt && !held)) return;
+    if (!Ctor || disposed || rec || (ptt ? !held : !listening || speakingNow)) return;
     const r = new Ctor();
     r.continuous = true; r.interimResults = true; r.lang = recognitionLang(); r.maxAlternatives = 1;
     r.onspeechstart = () => {
@@ -334,11 +334,11 @@ function browserEngine(ev: EngineEvents, recognitionLang: () => string): VoiceEn
       });
     },
     hush() { window.speechSynthesis?.cancel(); speakingNow = false; },
-    setListening(on) { listening = on; if (on) startRec(); else stopRec(); },
+    setListening(on) { listening = on; if (on) startRec(); else if (!(ptt && held)) stopRec(); },
     pushToTalk(down) {
       if (!ptt) { ptt = true; stopRec(); } // hands-free recognition ends for the rest of the visit
       if (!down) { if (held) { held = false; if (rec) { try { rec.stop(); } catch { finishPtt(); } } else finishPtt(); } return; }
-      if (held || !listening || !Ctor) return;
+      if (held || disposed || !Ctor) return;
       held = true; pttText = ''; hearingNow = true; snrSum = 0; snrCount = 0;
       if (speakingNow) { window.speechSynthesis?.cancel(); speakingNow = false; } // the person has the floor
       turnId = newTurnId();
