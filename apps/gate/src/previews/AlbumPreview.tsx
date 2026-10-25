@@ -1,6 +1,7 @@
 // ?preview=album: the moments album exactly as it appears after leaving a memory: the palace behind liquid glass
 // (the aurora with ?world=aurora), filled with clearly labelled fictional sample memories. ?empty=1 shows it empty.
-// &map=1 shows the memory map instead (the album stage as opened from the start page).
+// &map=1 shows the memory map instead (the album stage as opened from the start page); &sfmap=1 with it opens World
+// memories in San Francisco on the city's own map, as the app does.
 import { Canvas, useThree } from '@react-three/fiber';
 import { Bloom, EffectComposer, Noise, ToneMapping, Vignette } from '@react-three/postprocessing';
 import { ToneMappingMode } from 'postprocessing';
@@ -53,7 +54,8 @@ export default function AlbumPreview() {
         <Backdrop />
       </Canvas>
       <div className="overlay" data-world={useGate.getState().world}>
-        {ready && <Album onBeginAnother={() => console.info('[album] visit another memory')} onRevisit={(id) => console.info('[album] visit again', id)} />}
+        {ready && <Album onBeginAnother={() => console.info('[album] visit another memory')} onRevisit={(id) => console.info('[album] visit again', id)}
+          {...(new URLSearchParams(location.search).get('sfmap') === '1' ? { onVisitShared: (id: string) => console.info('[album] step into', id) } : {})} />}
       </div>
       <GlassFilters />
     </div>

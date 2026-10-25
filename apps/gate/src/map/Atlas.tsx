@@ -12,17 +12,22 @@ import { LockedPlace } from './LockedPlace';
 import { NY_CLOUDED_COUNT, SF_SAMPLE_COUNT } from './world';
 import { WorldAlbum } from './WorldAlbum';
 import { WorldMap } from './WorldMap';
+import { SfMap } from './SfMap';
+import { useState } from 'react';
 import './map.css';
 
 const TABS: { id: Tab; label: string }[] = [{ id: 'mine', label: 'My memories' }, { id: 'world', label: 'World memories' }];
 
-export default function Atlas(props: AlbumViewProps) {
+export default function Atlas(props: AlbumViewProps & { onVisitShared?: (id: string) => void }) {
   const tab = useAtlas((s) => s.tab);
   const place = useAtlas((s) => s.place);
   const show = useAtlas((s) => s.show);
-  const back = () => show(null);
+  const [albums, setAlbums] = useState(false);
+  const back = () => { setAlbums(false); show(null); };
   if (place === 'sf' && tab === 'mine') return <AlbumView {...props} onBack={back} placeName={PLACES.sf.name} />;
-  if (place === 'sf') return <WorldAlbum onBack={back} onClose={props.onClose} />;
+  // World memories in San Francisco: on the city's own map, a pin at each place; the albums are a tap away.
+  if (place === 'sf' && (albums || !props.onVisitShared)) return <WorldAlbum onBack={() => (props.onVisitShared ? setAlbums(false) : back())} onClose={props.onClose} />;
+  if (place === 'sf') return <SfMap onBack={back} onAlbums={() => setAlbums(true)} onClose={props.onClose} onVisit={props.onVisitShared!} />;
   if (place === 'ny') return <LockedPlace onBack={back} onClose={props.onClose} />;
   return <MapScreen tab={tab} onTab={(t) => show(null, t)} onOpen={(p) => show(p)} onClose={props.onClose} />;
 }

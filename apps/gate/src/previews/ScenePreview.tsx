@@ -2,6 +2,7 @@
 //   &text=...        plan offline from words (free)
 //   &live=1          plan with Claude through the backend (spends tokens; used by the accuracy evaluation)
 //   &plan=/eval/x.json  draw a stored plan
+//   &sf=sf:gg-trail  draw a shared San Francisco memory (src/sf/memories.ts), or sf:golden-gate for the crowd
 //   &companion=none  hide the companion
 import { ConvexProvider } from 'convex/react';
 import { useEffect, useState } from 'react';
@@ -11,6 +12,7 @@ import { convex, startSession } from '../backend/client';
 import { useMemory } from '../flow/memory';
 import { SceneCanvas } from '../scene/SceneCanvas';
 import { useGate } from '../state/store';
+import { sfMemory } from '../sf/memories';
 
 (window as unknown as { __scenePreview: boolean }).__scenePreview = true;
 const params = new URLSearchParams(location.search);
@@ -23,6 +25,8 @@ async function loadPlan(): Promise<{ plan: ScenePlan; source: string }> {
     const s = await startSession({ name: 'Preview', invite: null });
     if (s) useGate.getState().set({ session: s });
   }
+  const sf = params.get('sf');
+  if (sf) { const m = sfMemory(sf); if (m) { useMemory.setState({ shared: true }); return { plan: validatePlan(m.plan), source: 'sf' }; } }
   const planUrl = params.get('plan');
   if (planUrl) return { plan: validatePlan(await (await fetch(planUrl)).json()), source: 'stored' };
   const text = params.get('text') ?? DEFAULT_TEXT;

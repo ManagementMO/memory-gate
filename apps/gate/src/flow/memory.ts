@@ -22,6 +22,9 @@ type MemoryState = {
   photoUrl: string | null;
   /** A prepared place from the library this memory is visiting (its world, with things brought in by name). */
   place: PlaceKey | null;
+  /** Someone else's memory, shared publicly (the San Francisco map): seen through their eyes, without the family's
+   *  two perspectives standing in it. */
+  shared?: boolean;
 };
 
 export const useMemory = create<MemoryState>(() => ({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null, place: null }));
@@ -205,17 +208,17 @@ class Memory {
     useMemory.setState((st) => ({ plan: next, version: st.version + 1, planning: false, source: 'claude', ...(photoUrl ? { photoUrl } : {}), ...(place ? { place } : {}) }));
   }
 
-  /** Bring back a memory exactly as it was drawn (from the album). */
-  restore(plan: ScenePlan, place: PlaceKey | null = null) {
+  /** Bring back a memory exactly as it was drawn (from the album, or a shared one from the map). */
+  restore(plan: ScenePlan, place: PlaceKey | null = null, shared = false) {
     this.reset();
     this.title = plan.title;
-    useMemory.setState({ plan, version: 1, planning: false, formed: 0, source: 'offline', place });
+    useMemory.setState({ plan, version: 1, planning: false, formed: 0, source: 'offline', place, shared });
     this.sharePlace();
   }
 
   reset() {
     this.words = []; this.title = null; this.memoryId = null; this.planned = ''; this.mediaFileId = null; this.mediaKind = null;
-    useMemory.setState({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null, place: null });
+    useMemory.setState({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null, place: null, shared: false });
   }
 }
 

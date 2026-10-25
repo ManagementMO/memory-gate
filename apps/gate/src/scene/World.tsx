@@ -158,6 +158,8 @@ const PREVIEW = !!(window as unknown as { __scenePreview?: boolean }).__scenePre
 
 export function World({ quality }: { quality: number }) {
   const world = useGate((s) => s.world);
+  // Someone else's shared memory is seen through their eyes: the family's two perspectives don't stand in it.
+  const shared = useMemory((s) => !!s.shared);
   return (
     <>
       <PlayerOrigin />
@@ -177,7 +179,7 @@ export function World({ quality }: { quality: number }) {
       <MediaCard />
       <CompanionRig />
       <PresenceLights />
-      <SocialLayer />
+      {!shared && <SocialLayer />}
       {/* Its objects' loading labels wait on a font: kept here, a wait can't reach past the scene (see SceneCanvas). */}
       <Suspense fallback={null}><MemoryAddOnsScene /></Suspense>
       <Snapshotter />

@@ -29,3 +29,7 @@ spacetimedb/dist/
 # Photoreal object library (fetched by apps/gate/scripts/fetch-models.mjs; CC0, not stored in git)
 apps/gate/public/models/
 apps/gate/.models-cache/
+
+# The San Francisco demo photographs (scripts/prepare-sf-photos.mjs; rights not ours to redistribute)
+apps/gate/public/memories/sf/
+photos/

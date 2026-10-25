@@ -15,6 +15,8 @@ import { useGate } from '../../state/store';
 import { Ambience } from './Ambience';
 import { atmoLive, stepAtmosphere, useAtmosphere } from './atmosphere';
 import { Setting } from './Setting';
+import { Landmark } from './Landmark';
+import { PlanPeople } from './PlanPeople';
 import { formation, SketchObject } from './SketchObject';
 import { memoryPlacements } from '../../social/overlay';
 import { PerspectiveLayer } from '../../social/scene/PerspectiveLayer';
@@ -82,6 +84,7 @@ export function MemoryScene() {
   const placed = useRef(new Map<string, Placement>());
   const photoWorld = useGate((s) => s.photoWorld);
   const placeKey = useMemory((s) => s.place);
+  const shared = useMemory((s) => !!s.shared);
   const place = placeKey ? PLACES[placeKey] : null;
   const coveredByPhoto = useRef(new Set<string>());
   // When the photo becomes the world, everything planned from it so far is already in the picture.
@@ -156,6 +159,8 @@ export function MemoryScene() {
   return (
     <group name="memory">
       {!photoWorld && !place && <Setting plan={plan} />}
+      {!photoWorld && plan.landmark && <Landmark landmark={plan.landmark} />}
+      {!!plan.people?.length && <PlanPeople plan={plan} />}
       {ground}
       <Ambience kind={plan.ambience} />
       {sorted.map((o, i) => {
@@ -163,7 +168,7 @@ export function MemoryScene() {
         if (!p) return null;
         return <SketchObject key={o.id} obj={o} place={p} delay={delayOf(o.id, i, o.kind)} />;
       })}
-      <PerspectiveLayer />
+      {!shared && <PerspectiveLayer />}
     </group>
   );
 }

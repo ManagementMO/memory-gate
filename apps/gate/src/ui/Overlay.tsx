@@ -52,7 +52,7 @@ export function Overlay() {
       {stage === 'album' && (
         <AlbumUnavailable>
           <Suspense fallback={null}>
-            <Atlas onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} onClose={() => flow.home()}
+            <Atlas onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} onClose={() => flow.home()} onVisitShared={(id) => void flow.visitShared(id)}
               onVisitScene={(scene) => { const m = PREPARED.find((p) => p.open && 'scene' in p.open && p.open.scene === scene); void flow.visitPlace(scene as PlaceKey, m?.plan ?? null); }} />
           </Suspense>
         </AlbumUnavailable>

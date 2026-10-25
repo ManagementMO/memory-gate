@@ -20,6 +20,7 @@ import { guideContext, story, turn } from '../social/attribution';
 import { overlayActive } from '../social/overlay';
 import { visitFromUrl } from '../album/prepared';
 import { useAtlas, type PlaceId, type Tab } from '../map/state';
+import { sfMemory } from '../sf/memories';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -453,6 +454,41 @@ class Flow {
     await this.say(shared.caption ? `I can see ${lowerFirst(shared.caption)}. Where is this place?` : 'Where is this place?');
     useGate.getState().set({ expression: 'neutral' });
     this.scheduleNudge();
+  }
+
+  /** From the San Francisco map, or someone in the Golden Gate crowd: step into a memory someone shared publicly,
+   *  through their eyes (the place, its things, the people their photo shows). The same walk in as your own. */
+  async visitShared(id: string): Promise<void> {
+    const m = sfMemory(id);
+    if (!m) return;
+    if (!this.begun) await this.setup(false);
+    this.leaving = false;
+    this.history = [];
+    this.said = [];
+    this.invitedToEnter = false;
+    this.place = m.title;
+    memory.restore(m.plan, null, true);
+    moments.reset();
+    music.setMode('white');
+    music.cue('enter');
+    const g = useGate.getState();
+    g.set({ stage: 'entering', enterProgress: 0.55, memoryTitle: m.title, media: null, offers: { photo: false, video: false, invite: false } });
+    g.clearLines();
+    const t0 = performance.now();
+    await new Promise<void>((resolve) => {
+      const step = () => {
+        const p = Math.min(1, 0.55 + (performance.now() - t0) / 3600 * 0.45);
+        useGate.getState().set({ enterProgress: p });
+        if (p < 1) nextTick(step); else resolve();
+      };
+      nextTick(step);
+    });
+    useGate.getState().set({ stage: 'forming', enterProgress: 1, expression: 'gentle' });
+    await memory.whenDrawn(16_000);
+    useGate.getState().set({ stage: 'memory', expression: 'happy' });
+    await this.say(m.plan.intro);
+    useGate.getState().set({ expression: 'neutral' });
+    this.listen(true);
   }
 
   /** From the album: walk back into a memory exactly as it was. */

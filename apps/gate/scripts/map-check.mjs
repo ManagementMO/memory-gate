@@ -170,6 +170,15 @@ const viewBoxOf = (p) => p.getAttribute('[data-testid=map-zoom-stage] svg', 'vie
   await p.click('[data-testid=open-map]');
   await p.click('[data-testid=map-tab-world]');
   await p.click('[data-testid=map-place-sf]');
+  // San Francisco opens on the city's own map: a pin at each place, the Golden Gate's holding everyone who was there.
+  await p.waitForSelector('[data-testid=sf-map]');
+  await settle(p, 1600);
+  check('San Francisco map: pins at the Golden Gate, the Palace, Alamo Square and more', (await p.locator('[data-testid^=sf-pin-]').count()) >= 8 && (await p.locator('[data-testid=sf-pin-golden_gate]').innerText()).includes('Golden Gate Bridge'));
+  await p.click('[data-testid=sf-pin-golden_gate]');
+  await p.waitForSelector('[data-testid=sf-card]');
+  check('San Francisco map: the Golden Gate card lists its memories and offers to go there', (await p.locator('[data-testid^=sf-open-]').count()) >= 10 && (await p.locator('[data-testid=sf-enter]').innerText()).includes('Go to the bridge'));
+  await p.screenshot({ path: `${prefix}-desktop-sf-map.png` });
+  await p.click('[data-testid=sf-map-albums]');
   await p.waitForSelector('[data-testid=world-album]');
   await settle(p, 2200);
   const showcase = p.locator('[data-testid=world-person]').first();
@@ -193,6 +202,8 @@ const viewBoxOf = (p) => p.getAttribute('[data-testid=map-zoom-stage] svg', 'vie
   await p.click('[data-testid=proposal-next]');
   check('showcase: Next shows Sofia\'s words', (await p.locator('[data-testid=proposal-quote]').innerText()).includes('walk'));
   await p.click('[data-testid=proposal-back]');
+  await p.waitForSelector('[data-testid=sf-map]', { timeout: 30000 });
+  await p.click('[data-testid=sf-map-albums]');
   await p.waitForSelector('[data-testid=world-album]', { timeout: 30000 });
   check('showcase: back lands on World memories → San Francisco', (await p.locator('[data-testid=world-person]').first().innerText()).includes('The proposal on the hill'));
   await p.context().close();

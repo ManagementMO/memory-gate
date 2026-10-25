@@ -29,6 +29,28 @@ export type PlanObject = {
   at?: [number, number];
 };
 
+/** A person in the memory, read from a photo: drawn as the closest ready-made person, dressed in these colours. Never
+ *  who they are: an age group, how they present, colours, a pose and where they stand. */
+export type PersonAge = 'child' | 'teen' | 'young adult' | 'adult' | 'middle-aged' | 'older';
+export type PersonPose = 'stand' | 'wait' | 'walk' | 'wave' | 'talk' | 'sit' | 'cheer' | 'photo';
+export type PlanPerson = {
+  id: string;
+  age: PersonAge;
+  gender: 'female' | 'male';
+  skin: string | null; hair: string | null; top: string | null; bottom: string | null;
+  pose: PersonPose;
+  zone: Zone;
+  /** Which way they face: 0 toward you, 180 away (looking at the view with you). */
+  facing: number;
+  /** Where they stand in metres (x, z) when known exactly (a prepared memory); else the zone decides. */
+  at?: [number, number];
+  /** A shared memory this person holds (the Golden Gate crowd): pointing at them steps into it. */
+  memory?: string;
+};
+/** A real landmark seen from the memory: drawn far off at its true angular size, softened by the memory's haze. */
+export type LandmarkId = 'golden_gate' | 'palace_of_fine_arts' | 'painted_ladies' | 'transamerica';
+export type PlanLandmark = { id: LandmarkId; /** degrees right of straight ahead */ bearing: number; /** real metres away */ distance: number; /** the landmark's own turn, degrees */ yaw: number; /** metres the viewer stands above its base (a headland over the water) */ above?: number };
+
 export type ScenePlan = {
   version: 1;
   title: string;
@@ -45,6 +67,10 @@ export type ScenePlan = {
   };
   ambience: Ambience;
   objects: PlanObject[];
+  /** The people a photo shows, standing where they stood (none for words alone). */
+  people?: PlanPerson[];
+  /** A landmark on the horizon (the Golden Gate Bridge from Crissy Field). */
+  landmark?: PlanLandmark | null;
   /** The companion's first line once the place has formed (≤ 22 words, present tense, in the speaker's words). */
   intro: string;
 };
@@ -203,6 +229,9 @@ const TIMES: readonly TimeOfDay[] = ['morning', 'midday', 'golden', 'dusk', 'nig
 const WEATHERS: readonly Weather[] = ['clear', 'soft', 'rain', 'snow', 'mist'];
 const FLOORS: readonly Floor[] = ['wood', 'tile', 'carpet', 'grass', 'sand', 'stone', 'snow', 'water'];
 const AMBIENCES: readonly Ambience[] = ['dust', 'petals', 'snow', 'fireflies', 'rain', 'leaves', 'none'];
+const PERSON_AGES: readonly PersonAge[] = ['child', 'teen', 'young adult', 'adult', 'middle-aged', 'older'];
+const PERSON_POSES: readonly PersonPose[] = ['stand', 'wait', 'walk', 'wave', 'talk', 'sit', 'cheer', 'photo'];
+export const LANDMARKS: readonly LandmarkId[] = ['golden_gate', 'palace_of_fine_arts', 'painted_ladies', 'transamerica'];
 const MATERIALS: readonly MaterialKind[] = ['wood', 'fabric', 'metal', 'ceramic', 'glass', 'paper', 'plant', 'stone', 'plastic', 'water', 'light'];
 const SAFE = /^[\p{L}\p{N}' ,.-]{1,48}$/u;
 const pick = <T extends string>(v: unknown, allowed: readonly T[], fallback: T): T => (allowed as readonly string[]).includes(v as string) ? (v as T) : fallback;
@@ -253,6 +282,23 @@ export function validatePlan(raw: unknown, fallbackTitle = 'A remembered place')
   for (const o of objects) if (o.target && !ids.has(o.target)) o.target = null;
   const palette = (Array.isArray(s.palette) ? s.palette : []).map(hex).filter((c): c is string => !!c).slice(0, 3);
   const type = clean(s.type, 32).toLowerCase() || (indoor ? 'room' : 'garden');
+  const people = (Array.isArray(r.people) ? r.people.slice(0, 12) : []).map((p, i): PlanPerson => {
+    const x = (p ?? {}) as Record<string, unknown>;
+    const at = Array.isArray(x.at) && x.at.length === 2 && x.at.every((n) => typeof n === 'number' && Number.isFinite(n)) ? [x.at[0] as number, x.at[1] as number] as [number, number] : undefined;
+    return {
+      id: clean(x.id, 24).replace(/[^a-z0-9_-]/gi, '').toLowerCase() || `person-${i}`,
+      age: pick(x.age, PERSON_AGES, 'adult'), gender: x.gender === 'male' ? 'male' : 'female',
+      skin: hex(x.skin), hair: hex(x.hair), top: hex(x.top), bottom: hex(x.bottom),
+      pose: pick(x.pose, PERSON_POSES, 'stand'), zone: pick(x.zone, ZONES, 'center'),
+      facing: typeof x.facing === 'number' && Number.isFinite(x.facing) ? ((x.facing % 360) + 360) % 360 : 0,
+      ...(at ? { at } : {}),
+      ...(typeof x.memory === 'string' && /^[a-z0-9:_-]{1,48}$/i.test(x.memory) ? { memory: x.memory } : {}),
+    };
+  });
+  const lm = (r.landmark ?? null) as Record<string, unknown> | null;
+  const landmark: PlanLandmark | null = lm && (LANDMARKS as readonly unknown[]).includes(lm.id)
+    ? { id: lm.id as LandmarkId, bearing: Number(lm.bearing) || 0, distance: Math.min(5000, Math.max(40, Number(lm.distance) || 400)), yaw: Number(lm.yaw) || 0, ...(Number(lm.above) > 0 ? { above: Math.min(400, Number(lm.above)) } : {}) }
+    : null;
   return {
     version: 1,
     title: clean(r.title, 48) || fallbackTitle,
@@ -267,6 +313,8 @@ export function validatePlan(raw: unknown, fallbackTitle = 'A remembered place')
     },
     ambience: pick(r.ambience, AMBIENCES, indoor ? 'dust' : 'leaves'),
     objects,
+    ...(people.length ? { people } : {}),
+    ...(landmark ? { landmark } : {}),
     intro: clean(r.intro, 160) || 'Here we are.',
   };
 }

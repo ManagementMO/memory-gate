@@ -102,6 +102,39 @@ writeFileSync(path.join(outDir, 'credits.html'), `<!doctype html><meta charset="
 <table><tr><th>Kind</th><th>Model</th><th>Author</th><th>License</th></tr>
 ${rows.map((r) => `<tr><td>${esc(r.kind)}</td><td>${r.url ? `<a href="${esc(r.url)}">${esc(r.title)}</a>` : esc(r.title)}</td><td>${esc(r.authors)}</td><td>${esc(r.license)}</td></tr>`).join('\n')}
 </table>`);
+// People (Microsoft Rocketbox, MIT; on the app's own Mixamo skeleton, so the boy's walk and the shared clips play on
+// everyone) and the landmarks a memory can see on its horizon. Only from the scene lab: they were rigged there.
+const labRoot = path.dirname(labModels);
+const peopleOut = path.join(outDir, 'people');
+const people = [];
+if (existsSync(labRoot)) {
+  mkdirSync(path.join(peopleOut, 'anims'), { recursive: true });
+  for (const f of (await import('node:fs')).readdirSync(path.join(labRoot, 'catalog')).filter((n) => n.startsWith('ppl_'))) {
+    const c = JSON.parse(readFileSync(path.join(labRoot, 'catalog', f), 'utf8'));
+    if (!c.person?.age || !String(c.skeleton ?? '').startsWith('mixamorig') || !existsSync(path.join(labModels, `${c.id}.glb`))) continue;
+    copyFileSync(path.join(labModels, `${c.id}.glb`), path.join(peopleOut, `${c.id}.glb`));
+    people.push({ id: c.id, file: `people/${c.id}.glb`, title: c.title, authors: [c.author], license: c.license, url: c.url, person: c.person });
+  }
+  const animDir = path.join(labRoot, 'people', 'anims');
+  if (existsSync(animDir)) for (const f of (await import('node:fs')).readdirSync(animDir).filter((n) => n.endsWith('.glb'))) copyFileSync(path.join(animDir, f), path.join(peopleOut, 'anims', f));
+  writeFileSync(path.join(peopleOut, 'people.json'), JSON.stringify({ skeleton: 'mixamorig (the app boy\'s frames)', clipHipsRest: [0, 0.708, 0.015], people }, null, 1));
+  const LANDMARKS = { golden_gate: 'land_golden_gate_bridge', palace_of_fine_arts: 'land_palace_of_fine_arts', painted_ladies: 'land_painted_ladies_row', transamerica: 'land_transamerica_pyramid' };
+  mkdirSync(path.join(outDir, 'landmarks'), { recursive: true });
+  for (const [key, id] of Object.entries(LANDMARKS)) {
+    if (!existsSync(path.join(labModels, `${id}.glb`))) continue;
+    copyFileSync(path.join(labModels, `${id}.glb`), path.join(outDir, 'landmarks', `${key}.glb`));
+    const c = JSON.parse(readFileSync(path.join(labRoot, 'catalog', `${id}.json`), 'utf8'));
+    rows.push({ kind: `landmark: ${key}`, title: c.title, authors: c.author, license: c.license, url: c.url });
+  }
+  for (const p of people) rows.push({ kind: 'person', title: p.title, authors: p.authors.join(', '), license: p.license, url: p.url });
+  writeFileSync(path.join(outDir, 'credits.html'), `<!doctype html><meta charset="utf-8"><title>Model credits</title>
+<style>body{font:14px/1.5 system-ui,sans-serif;margin:2rem auto;max-width:960px;padding:0 1rem;color:#222}td,th{padding:4px 10px;text-align:left;border-bottom:1px solid #eee}th{font-weight:600}</style>
+<h1>3D model credits</h1><p>The objects, people and landmarks in a memory are drawn with these models. Thank you to every author.</p>
+<table><tr><th>Kind</th><th>Model</th><th>Author</th><th>License</th></tr>
+${rows.map((r) => `<tr><td>${esc(r.kind)}</td><td>${r.url ? `<a href="${esc(r.url)}">${esc(r.title)}</a>` : esc(r.title)}</td><td>${esc(r.authors)}</td><td>${esc(r.license)}</td></tr>`).join('\n')}
+</table>`);
+}
+console.log(`${people.length} people, ${existsSync(path.join(outDir, 'landmarks')) ? (await import('node:fs')).readdirSync(path.join(outDir, 'landmarks')).length : 0} landmarks`);
 const bytes = [...ok].reduce((s, id) => s + statSync(path.join(libDir, `${id}.glb`)).size, 0);
 console.log(`${Object.keys(manifest.kinds).length} kinds, ${ok.size} library models (${(bytes / 1e6).toFixed(1)} MB) → ${path.relative(process.cwd(), outDir)}`);
 if (failed.length) console.log(`not fetched: ${failed.join(', ')}`);
