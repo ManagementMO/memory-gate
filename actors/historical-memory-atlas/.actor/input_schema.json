@@ -3,7 +3,8 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
-    "sourceMode": { "title": "Source", "description": "Choose historical archive references, explicit public photo posts, or a public place search.", "type": "string", "enum": ["archive", "social", "place"], "default": "archive", "editor": "select" },
+    "sourceMode": { "title": "Source", "description": "Choose historical archives, explicit public posts, a public place, or bounded educational object context.", "type": "string", "enum": ["archive", "social", "place", "object"], "default": "archive", "editor": "select" },
+    "topicKey": { "title": "Object topic", "description": "Object mode retrieves a brief attributed excerpt from fixed educational pages. No family words or caller-supplied URLs.", "type": "string", "enum": ["kite", "flowers", "trees"], "editor": "select" },
     "query": { "title": "Public place or landmark (place mode)", "description": "A public place name and town, 3–120 characters. Never include a private address or family story.", "type": "string", "editor": "textfield", "maxLength": 120 },
     "postUrls": { "title": "Public Instagram photo posts (social mode)", "description": "One to three public photo-post URLs you have permission to use. No profiles, reels or private content.", "type": "array", "items": { "type": "string" }, "editor": "stringList", "maxItems": 3 },
     "permissionConfirmed": { "title": "I have permission to use these public posts", "description": "Required in social mode before retrieving public photo posts.", "type": "boolean", "default": false },

@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 const parse = path => existsSync(path) ? Object.fromEntries(readFileSync(path, 'utf8').split(/\r?\n/).filter(l => /^[A-Z_]+=/.test(l)).map(l => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).trim().replace(/^["']|["']$/g, '')]; })) : {};
 const env = { ...parse('.env.exchange'), ...process.env, ...parse(process.env.MEMORY_GATE_ENV || process.env.MEMGATE_AUTH_FILE || 'auth/memory-gate.env') };
 const root = 'actors/historical-memory-atlas', config = JSON.parse(readFileSync(`${root}/.actor/actor.json`, 'utf8'));
-const names = ['Dockerfile', 'package.json', 'package-lock.json', 'README.md', '.actor/actor.json', '.actor/input_schema.json', '.actor/output_schema.json', 'src/main.mjs', 'src/archive.mjs', 'src/social.mjs', 'src/places.mjs'];
+const names = ['Dockerfile', 'package.json', 'package-lock.json', 'README.md', '.actor/actor.json', '.actor/input_schema.json', '.actor/output_schema.json', 'src/main.mjs', 'src/archive.mjs', 'src/social.mjs', 'src/places.mjs', 'src/knowledge.mjs'];
 const sourceFiles = names.map(name => ({ name, format: 'TEXT', content: readFileSync(`${root}/${name}`, 'utf8') }));
 const sourceHash = createHash('sha256').update(JSON.stringify(sourceFiles)).digest('hex');
 if (!process.argv.includes('--build')) { console.log(JSON.stringify({ name: config.name, version: config.version, files: names, sourceHash, note: 'Pass --build to deploy privately to your Apify account.' }, null, 2)); process.exit(0); }

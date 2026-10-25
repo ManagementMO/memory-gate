@@ -71,3 +71,7 @@ The folder is self-contained, with a Dockerfile and `.actor/` input/output schem
 To connect an explicitly enabled cloud Actor, set `ATLAS_MODE=cloud`, `ALLOW_APIFY_CLOUD=1`, `APIFY_TOKEN` and `APIFY_ACTOR_ID` in the application's ignored `.env.exchange`, then restart the gateway. Never put the token in frontend code. The adapter supplies a 150-second timeout, 256 MB memory and `maxTotalChargeUsd: 0.1`, and records the cloud run ID before waiting. These request settings are not a reconciled account-level spending guarantee. Check the existing run before retrying a failure.
 
 The application never auto-pins results, imports private content into the Actor, or changes the 3D scene on the strength of a search result. People choose a source before it appears on the shared board.
+# In-world object context (1.3)
+
+`{"sourceMode":"object","topicKey":"kite"}` retrieves a brief attributed excerpt from a fixed NASA page. Topics `flowers` (RHS common daisy as an explicitly labeled example) and `trees` (Minnesota DNR tree anatomy) work the same way. The Actor downloads and extracts the live HTML on Apify; it does not use a simulated answer. Only the topic enum is sent, with no family transcript, photo, token, or arbitrary URL. Each citation has its publisher, original URL and retrieval time. Quotations are capped at 24 words; the original page is the deeper reading. Failure remains a failure, never a fabricated explanation.
+

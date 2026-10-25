@@ -32,6 +32,8 @@ import type * as memoryObjects from "../memoryObjects.js";
 import type * as memorySources from "../memorySources.js";
 import type * as memoryUpload from "../memoryUpload.js";
 import type * as moments from "../moments.js";
+import type * as objectKnowledge from "../objectKnowledge.js";
+import type * as objectKnowledgeActions from "../objectKnowledgeActions.js";
 import type * as objects from "../objects.js";
 import type * as presence from "../presence.js";
 import type * as redKite from "../redKite.js";
@@ -74,6 +76,8 @@ declare const fullApi: ApiFromModules<{
   memorySources: typeof memorySources;
   memoryUpload: typeof memoryUpload;
   moments: typeof moments;
+  objectKnowledge: typeof objectKnowledge;
+  objectKnowledgeActions: typeof objectKnowledgeActions;
   objects: typeof objects;
   presence: typeof presence;
   redKite: typeof redKite;

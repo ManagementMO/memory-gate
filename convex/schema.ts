@@ -6,6 +6,11 @@ export const anchorV = v.object({ position: vec3, normal: v.optional(vec3), sour
 export const pointerV = v.object({ origin: vec3, direction: vec3, hit: v.union(vec3, v.null()), surfaceHit: v.optional(v.union(vec3, v.null())), source: v.string() });
 
 export default defineSchema({
+  objectKnowledge: defineTable({
+    roomId: v.id('rooms'), memberId: v.id('members'), topicKey: v.string(), status: v.string(),
+    runId: v.union(v.string(), v.null()), error: v.union(v.string(), v.null()), createdAt: v.number(),
+    references: v.array(v.object({ topicKey: v.string(), sourceUrl: v.string(), title: v.string(), attribution: v.string(), excerpt: v.string(), fetchedAt: v.number() })),
+  }).index('by_room_topic', ['roomId', 'topicKey']).index('by_topic_status', ['topicKey', 'status']).index('by_room', ['roomId']),
   memoryImports: defineTable({
     roomId: v.id('rooms'), memberId: v.id('members'), mode: v.string(), status: v.string(),
     urls: v.array(v.string()), runId: v.union(v.string(), v.null()), actorId: v.string(),
