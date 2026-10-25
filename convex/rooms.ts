@@ -159,6 +159,7 @@ export const resetDemo = mutation({
   handler: async (ctx, { code, token }) => {
     const { room, member } = await requireOwner(ctx, code, token);
     const files = new Set<Id<'_storage'>>();
+    for (const p of await ctx.db.query('redKiteTellings').withIndex('by_room', q => q.eq('roomId', room._id)).collect()) await ctx.db.delete(p._id);
     for (const o of await ctx.db.query('objects').withIndex('by_room', (q) => q.eq('roomId', room._id)).collect()) {
       if (o.glbFileId) files.add(o.glbFileId);
       if (o.storedGlbFileId) files.add(o.storedGlbFileId);

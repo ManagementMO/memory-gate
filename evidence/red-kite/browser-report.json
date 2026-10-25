@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-24T23:32:23.756Z",
+  "origin": "https://localhost:5180",
+  "fixture": "The Red Kite fictional sample",
+  "paidGenerationCalls": 0,
+  "checks": [
+    "actual cached meadow and all five GLBs load in Gate",
+    "viewer may choose Rosa locally but cannot author details",
+    "Elena can leave color unknown then choose red with her source attached",
+    "breeze and real pointer capture lift the world-space spool, then release it",
+    "Rosa keeps her unknown color and may decline or choose her orange illustration",
+    "switching preserves both source-linked illustrations and never moves the other viewer",
+    "switching while a real pointer holds the spool releases capture and docks it",
+    "the real browser speech API is invoked and a late sample event cannot revive voice after rest",
+    "rest freezes simulation and commands, and a paused reload reopens without unpausing",
+    "disconnect disables new story commands and reconnect preserves both tellings",
+    "local viewpoint survives reload, and the 100k meadow works on a narrow screen"
+  ],
+  "snapshots": {
+    "elena": {
+      "selected": "elena",
+      "phase": "idle",
+      "fade": 0,
+      "camera": [
+        0,
+        1.5246103,
+        0.25
+      ],
+      "origin": [
+        0,
+        0,
+        0.25
+      ],
+      "yaw": -0.08145204430587098,
+      "spoolScreen": [
+        -0.5351995116420152,
+        -0.9580184090745926,
+        0.8892285311289149
+      ],
+      "kite": [
+        0.16960744100765024,
+        2.3259461795282643,
+        -1.9929729053915521
+      ],
+      "propsResting": false,
+      "xr": false,
+      "frames": 334,
+      "held": false,
+      "spool": [
+        -0.55,
+        0.825,
+        -0.7
+      ],
+      "simulationTime": 5.393099999994036,
+      "breeze": 0,
+      "grabs": 0,
+      "lifts": 0,
+      "moves": [],
+      "inputSources": []
+    },
+    "rosa": {
+      "selected": "rosa",
+      "phase": "idle",
+      "fade": 0,
+      "camera": [
+        -2,
+        1.5246103,
+        -4
+      ],
+      "origin": [
+        -2,
+        0,
+        -4
+      ],
+      "yaw": -2.356194490192345,
+      "spoolScreen": [
+        0.31229040250788725,
+        -0.4385536281899247,
+        0.9691676622233297
+      ],
+      "kite": [
+        0.09793891899104569,
+        2.6634538112055863,
+        -2.1208368674629816
+      ],
+      "propsResting": false,
+      "xr": false,
+      "frames": 570,
+      "held": false,
+      "spool": [
+        -0.55,
+        0.825,
+        -0.7
+      ],
+      "simulationTime": 8.359099999964242,
+      "breeze": 0.7083600000023839,
+      "grabs": 1,
+      "lifts": 1,
+      "moves": [
+        {
+          "from": "elena",
+          "to": "rosa",
+          "opacity": 1,
+          "frame": 432
+        }
+      ],
+      "inputSources": []
+    }
+  },
+  "pageErrors": [],
+  "sampleVoice": "Native browser API invoked; one delayed callback deliberately injected as a race test. Audible quality not measured. No family recording.",
+  "physicalQuestTested": false
+}

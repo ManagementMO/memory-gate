@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { action } from './_generated/server';
 import { internal } from './_generated/api';
 import { GUIDE_INTENTS, GUIDE_SYSTEM, type GuideInput, type GuideIntent, type GuidePerspective, type GuideReply } from '../packages/shared/src/guide';
-import { structured } from './lib/claude';
+import { guideModel, structured } from './lib/claude';
 
 const Out = z.object({
   reply: z.string(),
@@ -49,7 +49,7 @@ export const respond = action({
   handler: async (ctx, { code, token, input }): Promise<GuideReply | null> => {
     const gate = await ctx.runQuery(internal.budget.gate, { code, token });
     if (!gate.ok) return null;
-    const out = await structured(ctx, { system: GUIDE_SYSTEM, content: render(input as GuideInput), schema: Out, maxTokens: 2500, effort: 'low' });
+    const out = await structured(ctx, { system: GUIDE_SYSTEM, content: render(input as GuideInput), schema: Out, maxTokens: 2500, effort: 'low', model: guideModel() });
     if (!out) return null;
     return { reply: cap(out.reply, 220), intent: out.intent, place: cap(out.place, 48) || null };
   },
@@ -65,7 +65,7 @@ export const summarize = action({
     const gate = await ctx.runQuery(internal.budget.gate, { code: a.code, token: a.token });
     if (!gate.ok || a.turns.length === 0) return null;
     const turns = a.turns.slice(-20).map((t) => `${t.who === 'companion' ? 'Companion' : 'Person'}: ${cap(t.text, 280)}`).join('\n');
-    const out = await structured(ctx, { system: SUMMARY_SYSTEM, content: `Perspective: ${cap(a.label, 30)}\nEarlier note: ${cap(a.previous, 600) || 'none'}\nTurns:\n${turns}`, schema: SummaryOut, maxTokens: 1200, effort: 'low' });
+    const out = await structured(ctx, { system: SUMMARY_SYSTEM, content: `Perspective: ${cap(a.label, 30)}\nEarlier note: ${cap(a.previous, 600) || 'none'}\nTurns:\n${turns}`, schema: SummaryOut, maxTokens: 1200, effort: 'low', model: guideModel() });
     if (!out) return null;
     return cap(out.summary, 600) || null;
   },
@@ -82,7 +82,7 @@ export const locate = action({
     const objects = a.objects.slice(0, 32);
     if (!gate.ok || objects.length === 0) return null;
     const list = objects.map((o) => `${cap(o.id, 60)}: ${cap(o.label, 40)}`).join('\n');
-    const out = await structured(ctx, { system: LOCATE_SYSTEM, content: `Perspective: ${cap(a.label, 30)}\nThings in the room:\n${list}\nWords: <words>${cap(a.words, 500)}</words>`, schema: LocateOut, maxTokens: 800, effort: 'low' });
+    const out = await structured(ctx, { system: LOCATE_SYSTEM, content: `Perspective: ${cap(a.label, 30)}\nThings in the room:\n${list}\nWords: <words>${cap(a.words, 500)}</words>`, schema: LocateOut, maxTokens: 800, effort: 'low', model: guideModel() });
     if (!out || !objects.some((o) => o.id === out.objectId)) return null;
     return { objectId: out.objectId, certain: out.certain };
   },

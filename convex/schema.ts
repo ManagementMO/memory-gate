@@ -216,6 +216,14 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index('by_room', ['roomId']),
   // Album moments: a picture of the place with the words that shaped it (and the original voice, if kept).
+  redKiteTellings: defineTable({
+    roomId: v.id('rooms'),
+    key: v.union(v.literal('elena'), v.literal('rosa')),
+    beat: v.number(), revision: v.number(),
+    sourceIds: v.array(v.id('utterances')),
+    decisions: v.array(v.object({ beat: v.number(), decision: v.union(v.literal('use'), v.literal('leave')) })),
+  }).index('by_room', ['roomId']),
+
   moments: defineTable({
     roomId: v.id('rooms'),
     memberId: v.id('members'),

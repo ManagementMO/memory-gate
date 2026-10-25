@@ -1,0 +1,201 @@
+{
+  "schema": "memory-gate.red-kite-assets/1",
+  "units": "meters",
+  "front": "+Z",
+  "blenderVersion": "5.2.2 LTS",
+  "source": "Original project-authored geometry and core glTF PBR materials",
+  "assets": [
+    {
+      "key": "kite",
+      "file": "models/kite.glb",
+      "bytes": 46332,
+      "sha256": "e1e694e635ded187fca8d8347b06f13c2ca3bbdb675dcacb93f33f1a73b59c27",
+      "triangles": 382,
+      "boundsMeters": {
+        "min": [
+          -0.3409096300601959,
+          -1.4507699012756348,
+          -0.025800000876188278
+        ],
+        "max": [
+          0.3409096300601959,
+          0.4807552993297577,
+          0.10619696974754333
+        ]
+      },
+      "librarySize": 1.9315252006053925,
+      "nodes": [
+        "KiteRoot",
+        "KiteSail",
+        "KiteFrame",
+        "VerticalSpar",
+        "BowedCrossSpar",
+        "EdgeBinding_00",
+        "EdgeBinding_01",
+        "EdgeBinding_02",
+        "EdgeBinding_03",
+        "StringAnchor",
+        "BridleAnchor",
+        "Bridle",
+        "TailRoot",
+        "Tail_00",
+        "Ribbon_00",
+        "Tail_01",
+        "Ribbon_01",
+        "Tail_02",
+        "Ribbon_02",
+        "Tail_03",
+        "Ribbon_03",
+        "Tail_04",
+        "Ribbon_04",
+        "Tail_05",
+        "Ribbon_05",
+        "Tail_06",
+        "Ribbon_06",
+        "Tail_07",
+        "Ribbon_07",
+        "Tail_08",
+        "Ribbon_08"
+      ],
+      "materialCount": 4,
+      "source": "Original Blender Python build; project-owned",
+      "clips": []
+    },
+    {
+      "key": "spool",
+      "file": "models/spool.glb",
+      "bytes": 123136,
+      "sha256": "3aa36f16d0e03f261d2918ca945d5a733d71705cd47055314dc00772b717b01e",
+      "triangles": 2792,
+      "boundsMeters": {
+        "min": [
+          -0.0860000029206276,
+          -0.05400000140070915,
+          -0.05400000140070915
+        ],
+        "max": [
+          0.0860000029206276,
+          0.05400000140070915,
+          0.05400000140070915
+        ]
+      },
+      "librarySize": 0.1720000058412552,
+      "nodes": [
+        "SpoolRoot",
+        "SpoolBody",
+        "EndCap",
+        "EndPin",
+        "EndCap.001",
+        "EndPin.001",
+        "WoundString",
+        "StringWinding",
+        "StringExit"
+      ],
+      "materialCount": 5,
+      "source": "Original Blender Python build; project-owned",
+      "clips": []
+    },
+    {
+      "key": "side-table",
+      "file": "models/side-table.glb",
+      "bytes": 84568,
+      "sha256": "02dbdc57960cf21e6050ba0860d6fb271fdc9eadf11237167abf93bab0d2be77",
+      "triangles": 796,
+      "boundsMeters": {
+        "min": [
+          -0.32499998807907104,
+          0.012225063517689705,
+          -0.22499999403953552
+        ],
+        "max": [
+          0.32499998807907104,
+          0.762499988079071,
+          0.22499999403953552
+        ]
+      },
+      "librarySize": 0.7502749245613813,
+      "nodes": [
+        "SupportRoot",
+        "TableTop",
+        "TableEdge",
+        "FoldingLeg",
+        "FoldingLeg.001",
+        "HingePin",
+        "FoldingLeg.002",
+        "FoldingLeg.003",
+        "HingePin.001",
+        "Brace",
+        "SupportTop"
+      ],
+      "materialCount": 3,
+      "source": "Original Blender Python build; project-owned",
+      "clips": []
+    },
+    {
+      "key": "keepsake-box",
+      "file": "models/keepsake-box.glb",
+      "bytes": 135384,
+      "sha256": "ed254a824ac583b201591e85b1dc9a8da6f6f332cf93fc33598d708a5a72e6e5",
+      "triangles": 1436,
+      "boundsMeters": {
+        "min": [
+          -0.13199999928474426,
+          0.0,
+          -0.09200000017881393
+        ],
+        "max": [
+          0.13199999928474426,
+          0.10100000351667404,
+          0.09200000017881393
+        ]
+      },
+      "librarySize": 0.2639999985694885,
+      "nodes": [
+        "KeepsakeRoot",
+        "BoxFloor",
+        "BoxSide",
+        "BoxSide.001",
+        "BoxEnd",
+        "BoxEnd.001",
+        "LidPivot",
+        "BoxLid",
+        "LidInset",
+        "LidHinge",
+        "LidHinge.001",
+        "StoryCardDock"
+      ],
+      "materialCount": 3,
+      "source": "Original Blender Python build; project-owned",
+      "clips": []
+    },
+    {
+      "key": "story-card",
+      "file": "models/story-card.glb",
+      "bytes": 17472,
+      "sha256": "8de422383a8234e90ee710c5e5076d0993b9e40e62147c4ee17e65d6417188b9",
+      "triangles": 206,
+      "boundsMeters": {
+        "min": [
+          -0.07500000298023224,
+          0.0,
+          -0.0010000000474974513
+        ],
+        "max": [
+          0.07500000298023224,
+          0.10000000149011612,
+          0.0027000000700354576
+        ]
+      },
+      "librarySize": 0.15000000596046448,
+      "nodes": [
+        "StoryCardRoot",
+        "StoryCard",
+        "KiteEmblem",
+        "EmblemTail"
+      ],
+      "materialCount": 3,
+      "source": "Original Blender Python build; project-owned",
+      "clips": []
+    }
+  ]
+}

@@ -4,7 +4,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { Bloom, EffectComposer, N8AO, Noise, ToneMapping, Vignette } from '@react-three/postprocessing';
 import { XR, useXR } from '@react-three/xr';
 import { ToneMappingMode } from 'postprocessing';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import * as THREE from 'three';
 import { useGate } from '../state/store';
 import { World } from './World';
@@ -52,7 +52,7 @@ function useQuality(): number {
   return q;
 }
 
-export function SceneCanvas() {
+export function SceneCanvas({ children, effects = true }: { children?: ReactNode; effects?: boolean } = {}) {
   const quality = useQuality();
   return (
     <Canvas
@@ -68,8 +68,8 @@ export function SceneCanvas() {
       }}
     >
       <XR store={xrStore}>
-        <World quality={quality} />
-        <Effects quality={quality} />
+        {children ?? <World quality={quality} />}
+        {effects && <Effects quality={quality} />}
       </XR>
     </Canvas>
   );

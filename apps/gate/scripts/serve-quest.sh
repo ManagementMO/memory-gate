@@ -4,8 +4,10 @@
 #   apps/gate/scripts/serve-quest.sh        (the Convex backend must already be running: scripts/start-all.sh or npm run dev:convex)
 set -euo pipefail
 cd "$(dirname "$0")/.."
-npx vite build > /dev/null
-if lsof -nP -iTCP:4180 -sTCP:LISTEN > /dev/null 2>&1; then echo "preview already running on :4180 (restart it to serve this build)"; else
+# Keep the previous build's files: a headset that is mid-visit still loads its own (hashed) chunks after a rebuild.
+npx vite build --emptyOutDir false > /dev/null
+# A running server picks up the new build by itself (it reads dist/ on every request): never restart it mid-visit.
+if lsof -nP -iTCP:4180 -sTCP:LISTEN > /dev/null 2>&1; then echo "preview already running on :4180: now serving this build"; else
   nohup npx vite preview --port 4180 --host 0.0.0.0 > ../../.logs/gate-preview.log 2>&1 &
   sleep 2
 fi

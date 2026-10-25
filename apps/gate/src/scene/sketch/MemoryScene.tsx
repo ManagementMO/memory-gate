@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { entryOf, layout, type Placement, type ScenePlan } from '../../../../../packages/shared/src/scene';
 import { useMemory } from '../../flow/memory';
+import { preloadRealModels, warmRealModels } from './realModels';
 import { useGate } from '../../state/store';
 import { Ambience } from './Ambience';
 import { atmoLive, stepAtmosphere, useAtmosphere } from './atmosphere';
@@ -37,6 +38,17 @@ function stablePlacements(plan: ScenePlan, previous: Map<string, Placement>): Ma
 
 export function MemoryScene() {
   const plan = useMemory((s) => s.plan);
+  const gl = useThree((s) => s.gl);
+  const camera = useThree((s) => s.camera);
+  const sceneRoot = useThree((s) => s.scene);
+  // The photoreal models this place needs start loading the moment its plan arrives (it forms a few seconds later),
+  // and are made ready to draw (shaders, textures) in the background so they appear without a stutter.
+  useEffect(() => {
+    if (!plan) return;
+    const kinds = plan.objects.map((o) => o.kind);
+    preloadRealModels(kinds);
+    void warmRealModels(gl, camera, sceneRoot, kinds);
+  }, [plan, gl, camera, sceneRoot]);
   const stage = useGate((s) => s.stage);
   const preview = !!(window as unknown as { __scenePreview?: boolean }).__scenePreview;
   const active = preview || stage === 'forming' || stage === 'memory' || stage === 'leaving';

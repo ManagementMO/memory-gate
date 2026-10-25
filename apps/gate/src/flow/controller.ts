@@ -251,6 +251,8 @@ class Flow {
     });
     useGate.getState().set({ stage: 'forming', enterProgress: 1, expression: 'gentle' });
     this.turnsInPhase = 0;
+    // Listening again as soon as the place starts forming: whatever they say while it appears is heard and answered.
+    this.listen(true);
     const ready = await memory.whenDrawn(14_000);
     if (!ready) await this.say('It’s coming back to me, little by little.');
     await memory.whenDrawn(20_000);
@@ -370,8 +372,20 @@ class Flow {
     this.listen(true);
   }
 
+  /** From the start page: the album of earlier visits on this device, before any conversation begins. */
+  openAlbum(): void {
+    const g = useGate.getState();
+    if (g.stage !== 'portal') return;
+    music.start();
+    music.setEnabled(g.musicOn);
+    music.setMode('album');
+    g.set({ stage: 'album' });
+  }
+
   /** From the album: back to the gate for another memory (the session continues). */
   again(): void {
+    // Opened from the start page: nothing has begun yet, so this is the first visit.
+    if (!this.begun) { useGate.getState().set({ stage: 'portal' }); void this.begin(); return; }
     this.leaving = false;
     this.history = [];
     this.turnsInPhase = 0;
