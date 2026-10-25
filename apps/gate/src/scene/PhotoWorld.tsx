@@ -57,6 +57,7 @@ export function PhotoWorld() {
 
   const mesh = useRef<SplatMesh | null>(null);
   const ready = useRef(false);
+  const calibrated = splat?.source === 'worldlabs' && splat.worldId ? CALIBRATED[splat.worldId] ?? null : null;
   useEffect(() => {
     if (!url || !splat) return;
     ready.current = false;
@@ -75,7 +76,7 @@ export function PhotoWorld() {
   // A world whose full-resolution export ships with the app comes in twice: the room's copy first (it arrives in
   // seconds), then the full source with Spark's level of detail, faded in over it once loaded, so what's near the
   // visitor keeps the source's own detail (the Red Kite page does the same; a uniformly reduced copy can't).
-  const fullUrl = usable && splat!.source === 'worldlabs' && splat!.worldId && liteAsked !== '1' ? FULL_SOURCE[splat!.worldId] ?? null : null;
+  const fullUrl = usable && calibrated && liteAsked !== '1' ? calibrated.full : null;
   const detail = useRef<SplatMesh | null>(null);
   const detailReady = useRef(false);
   useEffect(() => {
@@ -115,6 +116,11 @@ export function PhotoWorld() {
   return null;
 }
 
-/** Worlds whose full-resolution export is in the app (fixtures/worlds/*.json): the Red Kite meadow, 1.92M splats. */
-const FULL_SOURCE: Record<string, string> = { '0b84554c-b182-4b3e-a7bb-78f15822a49d': '/red-kite/meadow-full.spz' };
+/** Worlds whose full-resolution export is in the app (fixtures/worlds/*.json). The world's own floor estimate holds for
+ *  what is seen: measured from the meadow's splats, its ground under the entrance, the viewpoints and every prop spot is
+ *  at the floor (within a few cm; 0.2 m on the bank by the left bench). Its collision mesh sits about 1.15 m lower, so
+ *  that mesh's correction belongs to walking, never to the splats. */
+const CALIBRATED: Record<string, { full: string }> = {
+  '0b84554c-b182-4b3e-a7bb-78f15822a49d': { full: '/red-kite/meadow-full.spz' }, // the Red Kite meadow, 1.92M splats
+};
 const COARSE = matchMedia('(pointer: coarse)').matches;

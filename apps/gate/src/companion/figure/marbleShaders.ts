@@ -281,8 +281,8 @@ export function applyMarble(m: THREE.MeshPhysicalMaterial, u: MarbleUniforms, fe
       .replace('#include <color_fragment>', /* glsl */ `#include <color_fragment>
   vec2 mgV = mgVeins(vMPos) * uVein * (1.0 - mgGlowMask) * (1.0 - mgChromeMask);
   diffuseColor.rgb *= 0.965 + 0.035 * mgFbm(vMPos * 7.0 + 3.0); // soft clouding in the stone
-  diffuseColor.rgb *= 1.0 - mgShadePlate * 0.18 * (1.0 - mgGlowMask);
-  diffuseColor.rgb *= 1.0 - mgCut * 0.5; // incised lines read, softly
+  diffuseColor.rgb *= 1.0 - mgShadePlate * 0.26 * (1.0 - mgGlowMask);
+  diffuseColor.rgb *= 1.0 - mgCut * 0.65; // incised lines read
   diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.4, 0.37, 0.34), mgV.x * 0.85);
   diffuseColor.rgb = mix(diffuseColor.rgb, uGold, mgV.y * 0.65);
   diffuseColor.rgb = mix(diffuseColor.rgb, uChrome, mgChromeMask);
