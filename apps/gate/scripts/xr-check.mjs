@@ -25,7 +25,7 @@ const out = process.argv[2] ?? 'apps/gate/.shots/xr';
 const arg = (n, d) => (process.argv.includes(`--${n}`) ? process.argv[process.argv.indexOf(`--${n}`) + 1] : d);
 const world = arg('world', 'palace');
 const q = arg('q', null); // e.g. --q 0.15 renders at the headset's own quality
-const base = arg('base', 'https://localhost:5180'); // --base https://localhost:4180 checks the deployed build
+const base = arg('base', (process.env.GATE_URL ?? 'https://localhost:5180').replace(/\/$/, '')); // --base https://localhost:4180 checks the deployed build
 const yaw = arg('yaw', null); // e.g. --yaw 1.2: the emulated headset starts turned away (its forward is the last recentre)
 const memory = arg('memory', null); // --memory red-kite: the memory is the team's cached meadow (node scripts/red-kite-room.mjs first)
 mkdirSync(out, { recursive: true });

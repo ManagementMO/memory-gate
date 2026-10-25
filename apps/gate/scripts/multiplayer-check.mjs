@@ -27,7 +27,9 @@ const choose = async (page, key, name) => {
   if (!asked) return false;
   await page.fill('[data-testid=social-name]', name);
   await page.click(`[data-testid=choose-${key}]`);
-  return page.waitForFunction((k) => window.__social.store.getState().viewing === k && !document.querySelector('[data-testid=perspective-picker]'), key, { timeout: 5000 }).then(() => true, () => false);
+  // Choosing the grandchild asks whether a guardian agrees to keep their voice too: words only, here.
+  if (key === 'child') await page.click('[data-testid=child-voice-words]', { timeout: 5000 }).catch(() => undefined);
+  return page.waitForFunction((k) => window.__social.store.getState().viewing === k && !document.querySelector('[data-testid=perspective-picker]') && !document.querySelector('[data-testid=child-voice]'), key, { timeout: 5000 }).then(() => true, () => false);
 };
 const social = (page) => page.evaluate(() => {
   const s = window.__social.store.getState();
@@ -59,7 +61,8 @@ await guest.waitForFunction(() => window.__gate.store.getState().session?.role =
 await guest.waitForTimeout(6000);
 const gs = await state(guest);
 check(gs.role === 'guest', `phone joined as a guest (${gs.role})`);
-check(gs.voice === 'shared' && gs.music === false, `phone stays quiet (voice ${gs.voice}, music ${gs.music})`);
+// It talks with the companion too (one conversation with everyone), but brings no music of its own.
+check(gs.music === false && gs.voice !== 'shared', `phone joins the conversation, without music of its own (voice ${gs.voice}, music ${gs.music})`);
 await host.waitForFunction(() => (window.__presence?.getState().others.length ?? 0) >= 1, null, { timeout: 15000 }).catch(() => undefined);
 const hs = await state(host);
 check(hs.others >= 1, `host sees the phone's light (${hs.others})`);

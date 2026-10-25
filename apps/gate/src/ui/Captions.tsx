@@ -39,6 +39,7 @@ function pageStarts(words: string[], max = 10): number[] {
 export function Captions() {
   const said = useGate((s) => s.companionLine);
   const heard = useGate((s) => s.heardLine);
+  const spoken = useGate((s) => s.spoken);
   const stage = useGate((s) => s.stage);
   // Between your last word and the companion's reply: a quiet sign that it heard you and is thinking.
   const thinking = useGate((s) => s.mood === 'thinking');
@@ -51,8 +52,8 @@ export function Captions() {
   const to = starts[page + 1] ?? words.length;
   return (
     <div className="captions" data-testid="captions">
-      <p className="visually-hidden" aria-live="polite">{said?.text ?? ''}</p>
-      <p className="said" aria-hidden="true" data-testid="companion-line" data-full={said?.text ?? ''}>
+      <p className="visually-hidden" lang={spoken} aria-live="polite">{said?.text ?? ''}</p>
+      <p className="said" lang={spoken} aria-hidden="true" data-testid="companion-line" data-full={said?.text ?? ''}>
         {words.slice(from, to).map((w, j) => {
           const i = from + j;
           return <span key={`${said?.id}-${i}`} className={`w ${i < shown ? 'on' : ''}`}>{w}{i < to - 1 ? ' ' : ''}</span>;

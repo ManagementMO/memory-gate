@@ -2,6 +2,7 @@
 // A plan says what is there and roughly where, in plain terms ("the radio on the shelf by the window"); layout()
 // turns it into metres deterministically, so a phone, a laptop and a headset all draw the same place.
 // No raw transcript reaches a 3D generator: labels and colours are vetted words and hex values.
+import type { Lang } from './language';
 
 export type TimeOfDay = 'morning' | 'midday' | 'golden' | 'dusk' | 'night';
 export type Weather = 'clear' | 'soft' | 'rain' | 'snow' | 'mist';
@@ -351,7 +352,15 @@ function inferTitle(words: string, type: string): string {
   return `The ${type}`;
 }
 
-export function planOffline(text: string, title?: string | null, opts: { seeds?: boolean } = {}): ScenePlan {
+/** The companion's first words in a place drawn offline. Spanish and French use only a title someone gave:
+ *  inferTitle() names places in English ("The kitchen"). */
+function offlineIntro(indoor: boolean, title: string | null | undefined, inferred: string, language: Lang | undefined): string {
+  if (language === 'es') return indoor ? (title ? `Aquí estamos. ${title}, tal como lo describió.` : 'Aquí estamos, tal como lo describió.') : 'Aquí estamos. ¿Siente el aire?';
+  if (language === 'fr') return indoor ? (title ? `Nous y voilà. ${title}, comme vous l’avez décrit.` : 'Nous y voilà, comme vous l’avez décrit.') : 'Nous y voilà. Vous sentez l’air ?';
+  return indoor ? `Here we are. ${title ?? inferred}, just as you described it.` : `Here we are. Can you feel the air?`;
+}
+
+export function planOffline(text: string, title?: string | null, opts: { seeds?: boolean; language?: Lang } = {}): ScenePlan {
   const t = ` ${text.toLowerCase().replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ')} `;
   const setting = SETTINGS.find((s) => s.re.test(t)) ?? { type: 'room', indoor: true, floor: 'wood' as Floor, seed: ['table', 'chair', 'window'] };
   const timeOfDay = TIME_WORDS.find(([re]) => re.test(t))?.[1] ?? (setting.indoor ? 'golden' : 'golden');
@@ -415,7 +424,7 @@ export function planOffline(text: string, title?: string | null, opts: { seeds?:
     setting: { indoor: setting.indoor, type: setting.type, timeOfDay, weather, floor: setting.floor, palette, walls: setting.indoor, water: !!('water' in setting && setting.water) },
     ambience: setting.indoor ? 'dust' : weather === 'snow' ? 'snow' : timeOfDay === 'night' ? 'fireflies' : 'leaves',
     objects,
-    intro: setting.indoor ? `Here we are. ${title ?? inferTitle(text, setting.type)}, just as you described it.` : `Here we are. Can you feel the air?`,
+    intro: offlineIntro(setting.indoor, title, inferTitle(text, setting.type), opts.language),
   });
   return plan;
 }

@@ -61,3 +61,10 @@ test.each([
   ['I remember this hill where we flew a red kite.', null],
   ['There were two benches by the path.', null],
 ])('whose eyes: %s → %s', (t, who) => expect(perspectiveFromWords(t)).toBe(who));
+
+test.each([
+  ['Recuerdo este cerro con mi abuela.', 'child'],
+  ['Cuando era niña veníamos aquí.', 'child'],
+  ['Je me souviens de cette colline avec ma grand-mère.', 'child'],
+  ['Traje a mis nietos a volar la cometa.', 'grandparent'],
+])('whose eyes, in Spanish and French: %s → %s', (t, who) => expect(perspectiveFromWords(t)).toBe(who));

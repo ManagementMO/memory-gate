@@ -6,6 +6,7 @@ import type { Id } from './_generated/dataModel';
 import { internal } from './_generated/api';
 import { activeScopes, readFlags, requireMember, requireScope } from './lib/auth';
 import { pointerV } from './schema';
+import { clipsAllowed } from './voiceGuard';
 
 async function isReferenced(ctx: MutationCtx, id: Id<'_storage'>): Promise<boolean> {
   if ((await ctx.db.query('library').collect()).some((r) => r.fileId === id)) return true;
@@ -19,8 +20,9 @@ async function isReferenced(ctx: MutationCtx, id: Id<'_storage'>): Promise<boole
 export const generateAudioUploadUrl = mutation({
   args: { code: v.string(), token: v.string() },
   handler: async (ctx, { code, token }) => {
-    const { room } = await requireMember(ctx, code, token, ['storyteller', 'family']);
+    const { room, member } = await requireMember(ctx, code, token, ['storyteller', 'family']);
     await requireScope(ctx, room._id, 'voice_recording');
+    if (!(await clipsAllowed(ctx, room._id, member._id))) throw new ConvexError({ code: 'NO_CLIPS', message: 'The grandchild’s voice is kept as words only until a parent or guardian agrees.' });
     return ctx.storage.generateUploadUrl();
   },
 });

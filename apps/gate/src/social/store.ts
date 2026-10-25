@@ -51,9 +51,12 @@ export const PERSONAS: Record<PerspectiveKey, { label: string; eyeHeight: number
 };
 const local = (key: PerspectiveKey): Perspective => ({ id: `local:${key}`, key, ...PERSONAS[key], claimedBy: '', claimedName: '', archivePlace: '', yearFrom: 1900, yearTo: 1980 });
 
+/** A line of the one conversation the companion holds with everyone in the visit (services/exchange/conversation.mjs). */
+export type ConversationTurn = { id: string; who: 'person' | 'companion'; memberId: string; speakerName: string; perspectiveId: string; text: string; intent: string; createdAt: number };
 export type SocialSnapshot = {
   perspectives: Perspective[]; stories: Story[]; objects: PerspectiveObject[]; turns: Turn[]; summaries: Summary[];
   handoffs: Handoff[]; pins: Pin[]; avatars: Avatar[]; spots: Spot[];
+  conversation?: ConversationTurn[]; conversationSummary?: string | null;
 };
 
 type SocialState = SocialSnapshot & {
@@ -82,7 +85,7 @@ type SocialState = SocialSnapshot & {
 
 export const useSocial = create<SocialState>((set) => ({
   perspectives: [local('grandparent'), local('child')],
-  stories: [], objects: [], turns: [], summaries: [], handoffs: [], pins: [], avatars: [], spots: [],
+  stories: [], objects: [], turns: [], summaries: [], handoffs: [], pins: [], avatars: [], spots: [], conversation: [], conversationSummary: null,
   status: 'local',
   memberId: null,
   members: [],
@@ -109,7 +112,7 @@ export const notify = (text: string) => useSocial.getState().set({ notice: { tex
 
 export function applySnapshot(s: SocialSnapshot): void {
   const perspectives = s.perspectives.length ? s.perspectives.map((p) => ({ ...p, key: (p.key === 'child' ? 'child' : 'grandparent') as PerspectiveKey })) : useSocial.getState().perspectives;
-  useSocial.setState({ ...s, spots: s.spots ?? [], perspectives, status: 'live' });
+  useSocial.setState({ ...s, spots: s.spots ?? [], conversation: s.conversation ?? [], conversationSummary: s.conversationSummary ?? null, perspectives, status: 'live' });
 }
 
 // For automated checks (like window.__gate and window.__presence).
