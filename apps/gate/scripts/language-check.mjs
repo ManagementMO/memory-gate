@@ -143,6 +143,21 @@ try {
     check('Automatic: French words get a French reply', /Je le vois presque|Ça a l’air|Dites-moi|J’aimerais/.test(reply), reply);
     await ctx.close();
   }
+
+  // ---------------------------------------------------------------- Automatic: leaving in another language is answered in it
+  {
+    const { ctx, page } = await device();
+    await recordLines(page);
+    await page.getByTestId('begin').click();
+    await waitLine(page, /Hello/);
+    await waitStage(page, 'gathering');
+    const n = (await lines(page)).length;
+    await hear(page, 'Me quiero ir a casa, estoy cansada');
+    await waitStage(page, 'album', 30_000);
+    const said = (await lines(page)).slice(n);
+    check('Automatic: a goodbye in Spanish is answered in Spanish', said.includes('Por supuesto. Gracias por pasar este rato conmigo.'), said.join(' | '));
+    await ctx.close();
+  }
 } catch (e) {
   check('the checks ran to the end', false, String(e?.message ?? e).split('\n')[0].slice(0, 200));
 }

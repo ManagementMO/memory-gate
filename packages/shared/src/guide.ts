@@ -69,7 +69,7 @@ const MEDICAL_ES_FR = anyOf([
   'cura(r|rse|ci[oó]n|do|da)?', 'sana(r|ci[oó]n)', 'tratamientos?', 'terapias?', 'terap[eé]utic\\p{L}*', 'diagn[oó]stic\\p{L}*',
   'demencias?', 'alzh[eé]imer\\p{L}*', 'p[eé]rdida de (la )?memoria', 'medicaci[oó]n(es)?', 'm[eé]dicament\\p{L}*', 's[ií]ntomas?',
   'mejorar (su |la )?memoria', 'gu[eé]ri\\p{L}*', 'traitements?', 'th[eé]rapi\\p{L}*', 'd[eé]mences?', 'perte de m[eé]moire',
-  'sympt[oô]mes?', 'am[eé]liorer (votre |la |sa )?m[eé]moire',
+  'sympt[oô]mes?', 'am[eé]lior\\p{L}* (votre |la |sa |ta )?m[eé]moire', 'mejor(a|ar|ará|e|en) (su |la |tu )?memoria', 'soign\\p{L}*',
 ].join('|'));
 const QUIZ_ES_FR = anyOf([
   '(se acuerda|te acuerdas|recuerda|recuerdas) (de )?(qu[eé]|qui[eé]n|cu[aá]ndo|cu[aá]l|el a[nñ]o|la fecha)',
@@ -77,7 +77,8 @@ const QUIZ_ES_FR = anyOf([
   'eso no es (as[ií]|correcto|verdad|cierto)', 'qu[eé] (a[nñ]o|d[ií]a|fecha) (es|era)',
   "(vous vous souvenez|tu te souviens|souvenez-vous|vous rappelez-vous|tu te rappelles) (de |du |des )?(quoi|qui|quand|quel|quelle|l['’]ann[eé]e|la date)",
   'essayez de vous (souvenir|rappeler)', "vous vous trompez|tu te trompes|ce n['’]est pas (vrai|correct|exact)",
-  "quel (jour|an) (est|[eé]tait)|quelle (ann[eé]e|date) (est|[eé]tait)",
+  "quel (jour|an) (est|[eé]tait)|quelle (ann[eé]e|date) (est|[eé]tait)", "quel(le)? (jour|an|ann[eé]e|date) (sommes[- ]nous|est[- ]ce|est[- ]on)",
+  "on est quel jour", "(vous avez|tu as) tort", '(en )?qu[eé] a[nñ]o (fue|era|es|estamos)',
 ].join('|'));
 
 const unsafe = (s: string) => MEDICAL.test(s) || QUIZ.test(s) || MEDICAL_ES_FR.test(s) || QUIZ_ES_FR.test(s);
@@ -130,13 +131,20 @@ export function asksToLeave(transcript: string): boolean {
 }
 
 // The same three shapes in Spanish and French, on norm()'s text (lowercase; hyphens become spaces, apostrophes stay).
-// "Ir" and "salir" only count with "a casa", "ya" or "de aquí": "podemos ir al parque" is a memory, not a wish to leave.
+// Going and ending only count at the end of what was said: "volver a la casa de mi abuela", "on peut y aller",
+// "rentrer dans la cuisine" and "basta con cerrar los ojos" ask to visit or remember; "quiero volver a casa",
+// "je voudrais rentrer" and "basta por hoy" ask to stop. Bare "ir" never counts ("sí, quiero ir" answers "¿vamos?").
 const LEAVE_ES_FR: readonly RegExp[] = [
-  new RegExp(`${B}(quiero|quisiera|me gustar[ií]a|necesito|podemos|podr[ií]amos|me quiero|ya me quiero) (irme|irnos|ir(me|nos)? a casa|ir(me|nos)? ya|ir ahora|salir de aqu[ií]|parar|terminar|acabar|volver|regresar|despedirme)${E}`, 'u'),
-  new RegExp(`^(adi[oó]s|chao|chau|me voy|nos vamos|v[aá]monos|ya est[aá]|ya termin[eé]|basta|eso es todo)${E}`, 'u'),
+  new RegExp(`${B}(quiero|quisiera|me gustar[ií]a|necesito|podemos|podr[ií]amos|me quiero|ya me quiero) ((irme|irnos)( ya| ahora| a casa)?|ir (a casa|ya|ahora)|(volver|regresar)( a casa)?( ya| ahora)?|(parar|terminar|acabar)( ya| aqu[ií]| por hoy)?)$`, 'u'),
+  new RegExp(`${B}(quiero|quisiera|me gustar[ií]a|necesito|podemos|podr[ií]amos) (salir de aqu[ií]|despedirme)${E}`, 'u'),
+  new RegExp(`^(adi[oó]s|chao|chau)${E}`, 'u'),
+  new RegExp(`^((ya )?(me quiero ir|nos queremos ir)|me voy|nos vamos|v[aá]monos)( ya| ahora| a casa)?$`, 'u'),
+  new RegExp(`^(ya est[aá]|ya termin[eé]|basta|eso es todo)( por hoy)?$`, 'u'),
   new RegExp(`${B}(ll[eé]vame (a casa|de vuelta)|s[aá]came de aqu[ií]|estoy (muy )?cansad[oa]|por hoy basta)${E}`, 'u'),
-  new RegExp(`${B}(je voudrais|je veux|je dois|j'aimerais|on peut|on pourrait|pouvons nous|il est temps de) (partir|y aller|arr[eê]ter|sortir|finir|terminer|rentrer|m'en aller|s'en aller|nous en aller|dire au revoir)${E}`, 'u'),
-  new RegExp(`^(au revoir|c'est fini|j'ai fini|on a fini|[cç]a suffit|c'est tout|arr[eê]tons)${E}`, 'u'),
+  new RegExp(`${B}(je voudrais|je veux|je dois|j'aimerais|on peut|on pourrait|pouvons nous|il est temps de) ((partir|sortir)( d'ici| maintenant)?|rentrer( à la maison| chez moi| maintenant)?|(arr[eê]ter|finir|terminer)( maintenant| pour aujourd'hui)?|(m'en|s'en|nous en) aller( d'ici| maintenant)?)$`, 'u'),
+  new RegExp(`${B}(je voudrais|je veux|je dois|j'aimerais|on peut|on pourrait|il est temps de) dire au revoir${E}`, 'u'),
+  new RegExp(`^au revoir${E}`, 'u'),
+  new RegExp(`^(c'est fini|j'ai fini|on a fini|[cç]a suffit|c'est tout|arr[eê]tons)( pour aujourd'hui| merci)?$`, 'u'),
   new RegExp(`${B}(ramenez moi|je suis (tr[eè]s )?fatigu[eé]e?|[cç]a suffit pour (aujourd'hui|maintenant))${E}`, 'u'),
 ];
 
@@ -144,7 +152,7 @@ const LEAVE_ES_FR: readonly RegExp[] = [
 type Keys = { rest: RegExp; video: RegExp; photo: RegExp; unsure: RegExp; yes: RegExp; notYet: RegExp };
 const KEYS: Record<Exclude<Lang, 'en'>, Keys> = {
   es: {
-    rest: anyOf('descansar|descansemos|una pausa|un momento|espere|esp[eé]reme'),
+    rest: anyOf('descansar|descansemos|una pausa|un momento( por favor)?$|espere|esp[eé]reme|d[eé]me un momento'),
     video: anyOf('v[ií]deos?|grabaci[oó]n|pel[ií]cula'),
     photo: anyOf('fotos?|fotograf[ií]as?|imagen|im[aá]genes|[aá]lbum|retratos?'),
     unsure: anyOf('no s[eé]|no estoy segur[oa]|no me acuerdo|no recuerdo|ni idea'),
@@ -152,7 +160,7 @@ const KEYS: Record<Exclude<Lang, 'en'>, Keys> = {
     notYet: new RegExp(`^(no|todav[ií]a no|a[uú]n no|espere|espera)${E}`, 'u'),
   },
   fr: {
-    rest: anyOf('repos|reposer|reposons|une pause|un moment|attendez'),
+    rest: anyOf("repos|reposer|reposons|une pause|un moment( s'il vous pla[iî]t)?$|un instant$|attendez"),
     video: anyOf('vid[eé]os?|enregistrement|film'),
     photo: anyOf('photos?|photographies?|images?|album'),
     unsure: anyOf('je ne sais pas|je sais pas|pas s[uû]re?|je ne me souviens pas|aucune id[eé]e|euh+'),
@@ -246,7 +254,7 @@ export const asksToEnter = (reply: string) => /\b(shall we|should we|would you l
 export function languageLines(i: Pick<GuideInput, 'language' | 'setting'>): string {
   const setting = i.setting ?? 'auto';
   const rule = setting === 'auto'
-    ? `Language: reply in the language of their latest words (if you can't tell, ${LANGUAGE_NAME[i.language ?? 'en']}).`
+    ? `Language: The conversation is in ${LANGUAGE_NAME[i.language ?? 'en']}. Reply in ${LANGUAGE_NAME[i.language ?? 'en']} unless the language of their latest words is clearly another; a few words ("ok", "mm", a name) don't change it.`
     : `Language: always reply in ${LANGUAGE_NAME[setting]}, whatever language they use.`;
   return `${rule} In Spanish address them as "usted", in French as "vous".\nAlso return language (the ISO 639-1 code of their latest words), english (a faithful English translation of their latest words, "" if they spoke English) and reply_english (a faithful English translation of your reply, "" if your reply is in English).`;
 }

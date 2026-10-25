@@ -148,3 +148,38 @@ describe('the companion’s fixed lines', () => {
     for (const k of ['courtyard', 'red-kite'] as const) { expect(PLACE_INTROS[k]?.es).toBeTruthy(); expect(PLACE_INTROS[k]?.fr).toBeTruthy(); }
   });
 });
+
+describe('final review: visits are never mistaken for leaving or resting', () => {
+  test('French: answering the invitation, or asking to go into a place, does not end the visit', () => {
+    for (const t of ['Oui, on peut y aller', 'Je veux bien y aller', 'Je voudrais y aller', 'J’aimerais rentrer dans la cuisine de ma grand-mère', 'Je voudrais sortir dans le jardin'])
+      expect(asksToLeave(t), t).toBe(false);
+  });
+  test('Spanish: asking to go back to a place, or remembering going, does not end the visit', () => {
+    for (const t of ['Me gustaría volver a la casa de mi abuela', 'Quiero regresar a la casa de mi infancia', 'Quiero volver a ver la cocina de mi abuela',
+      'Me voy a acordar siempre de esa cocina', 'Nos vamos a la playa cada verano']) expect(asksToLeave(t), t).toBe(false);
+  });
+  test('memories that only begin like an ending do not end the visit', () => {
+    for (const t of ['Basta con cerrar los ojos para verla', 'Ya está la mesa puesta, decía mi madre', 'Podemos terminar la historia después',
+      'J’ai fini l’école à quatorze ans', 'C’est tout ce que je me rappelle']) expect(asksToLeave(t), t).toBe(false);
+  });
+  test('clear wishes to leave still end it, "me quiero ir" included', () => {
+    for (const t of ['Me quiero ir', 'Ya me quiero ir', 'Quiero volver a casa', 'Nos vamos ya', 'Me voy', 'Basta por hoy', 'Ya está',
+      'J’ai fini', 'C’est tout', 'Je voudrais rentrer', 'Je voudrais rentrer à la maison', 'Je veux sortir']) expect(asksToLeave(t), t).toBe(true);
+  });
+  test('"un momento" with something to tell is a memory, not a rest', () => {
+    expect(guideOffline({ ...base, language: 'es', transcript: 'Un momento con mi abuela' }).intent).not.toBe('rest');
+    expect(guideOffline({ ...base, language: 'es', transcript: 'Un momento muy bonito en la cocina' }).intent).not.toBe('rest');
+    expect(guideOffline({ ...base, language: 'fr', transcript: 'Un moment avec ma grand-mère' }).intent).not.toBe('rest');
+    for (const [language, t] of [['es', 'Un momento, por favor'], ['es', 'Un momento'], ['fr', 'Un moment'], ['fr', 'Un instant']] as const)
+      expect(guideOffline({ ...base, language, transcript: t }).intent, t).toBe('rest');
+  });
+  test('the safety filter catches the Spanish and French forms English already catches', () => {
+    for (const t of ['Esto mejora la memoria.', 'Cela améliore la mémoire.', 'Cela peut soigner votre mémoire.', 'Vous avez tort, c’était en 1962.',
+      'Quel jour sommes-nous ?', 'Quelle année sommes-nous ?', '¿En qué año fue?']) expect(safeReply(t, 'fb'), t).toBe('fb');
+  });
+  test('the prompt tells Claude that a few words never change the conversation language', () => {
+    const auto = languageLines({ setting: 'auto', language: 'es' });
+    expect(auto).toContain('The conversation is in Spanish');
+    expect(auto).toContain('a few words');
+  });
+});

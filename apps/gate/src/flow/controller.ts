@@ -3,7 +3,7 @@
 //   portal → greeting → gathering (talk / photo / video / someone helps) → entering → forming → memory → leaving → album
 import { api } from '../../../../convex/_generated/api';
 import { asksToEnter, asksToLeave, resolveReply, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
-import { initialConversationLanguage, sameLanguage, type Lang, type LanguageSetting } from '../../../../packages/shared/src/language';
+import { initialConversationLanguage, nextConversationLanguage, sameLanguage, type Lang, type LanguageSetting } from '../../../../packages/shared/src/language';
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
 import { recognitionLang, useGate, type MediaItem } from '../state/store';
@@ -162,6 +162,8 @@ class Flow {
     // "I'd like to leave", "take me back", "I'm done": acted on at once, without waiting on a model, so leaving always
     // works (even offline, even on a slow connection).
     if (asksToLeave(text) && ['memory', 'forming', 'gathering', 'greeting'].includes(g.stage)) {
+      // The goodbye is said in the language of the wish (in Automatic), by the same free rule any turn uses.
+      this.setLang(nextConversationLanguage(this.lang, g.language, { claimed: null, text }));
       if (g.stage === 'memory' || g.stage === 'forming') return void this.leave();
       await this.say(this.t('goodbyeGate'));
       return void this.finish();
