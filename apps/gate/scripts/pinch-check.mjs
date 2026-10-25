@@ -55,7 +55,7 @@ const head = () => page.evaluate(() => window.__xrHead);
 
 try {
   await page.goto(`${base}/?emulate=1&voice=off&lite=1&q=0.15${online ? '' : '&mode=offline'}`, { waitUntil: 'load' });
-  await page.waitForTimeout(3000);
+  await page.waitForFunction(() => !!window.__social?.emulator?.(), null, { timeout: 60000 }); // IWER installs a moment after load
   await page.evaluate(() => {
     const dev = window.__social.emulator();
     if (dev.devui) { dev.devui.devUIContainer.style.display = 'none'; dev.devui.devUICanvas.style.display = 'none'; dev.devui.render = () => undefined; }
@@ -105,9 +105,18 @@ try {
   { const a = await head(); await aim([a[0] - Math.sin(a[3]) * 2, 0, a[2] - Math.cos(a[3]) * 2]); await pinch(120); await page.waitForTimeout(700); const b = await head();
     check(Math.hypot(b[0] - a[0], b[2] - a[2]) < 0.05, 'a quick pinch on the ground does not walk'); }
 
-  // The dock: Rest, then Resume, then Leave, each with one quick pinch. After walking it comes round to where you are
-  // (a moment), then holds still under the hand.
+  // The buttons hang under the dialogue. A pinch HELD on one walks to the ground behind it, never pressing it.
   await page.waitForTimeout(1500);
+  {
+    const a = await head();
+    await aim('xr-rest');
+    await pinch(750);
+    await page.waitForTimeout(900);
+    const b = await head(), s1 = await st();
+    check(!s1.resting && Math.hypot(b[0] - a[0], b[2] - a[2]) > 1, `a pinch held on Rest walks to the ground behind it (moved ${Math.hypot(b[0] - a[0], b[2] - a[2]).toFixed(2)} m, resting: ${s1.resting})`);
+    await page.waitForTimeout(1500);
+  }
+  // Then Rest, Resume and Leave, each with one quick pinch.
   for (const [id, want] of [['xr-rest', (s) => s.resting], ['xr-resume', (s) => !s.resting], ['xr-leave', (s) => s.stage === 'leaving' || s.stage === 'album']]) {
     await page.waitForFunction((n) => !!window.__aim(n), id, { timeout: 8000 }).catch(() => undefined);
     const at = await aim(id);
