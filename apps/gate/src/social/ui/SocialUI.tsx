@@ -308,6 +308,15 @@ export function SocialUI() {
   const roomView = useQuery(api.rooms.get, session ? { code: session.code, token: session.token } : 'skip');
   const worldId = roomView?.splat?.status === 'ready' && roomView.splat.source === 'worldlabs' ? roomView.splat.worldId ?? null : null;
   useEffect(() => { useSocial.getState().set({ worldId }); }, [worldId]);
+  // Someone who joins takes the perspective nobody has claimed yet (a laptop already seeing through the grandchild's
+  // eyes leaves the grandparent's for the headset that joins), until they choose for themselves.
+  const memberId = useSocial((s) => s.memberId);
+  useEffect(() => {
+    if (chosen || !live) return;
+    const mine = perspectives.find((x) => x.key === viewing);
+    const free = perspectives.find((x) => x.key !== viewing && !x.claimedBy);
+    if (mine?.claimedBy && mine.claimedBy !== memberId && free) useSocial.getState().set({ viewing: free.key });
+  }, [chosen, live, perspectives, viewing, memberId]);
   // Ask once whose eyes this person sees through, when they're settled (not over the greeting).
   useEffect(() => { if (session && !chosen && !xr && (stage === 'gathering' || stage === 'memory')) setSheet((s) => s ?? 'pick'); }, [session, chosen, xr, stage]);
   // Wear a likeness this device shared before (or one handed over as ?avatar=KEY) once the visit is live.

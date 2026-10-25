@@ -117,7 +117,7 @@ if (hs.backend === 'spacetime') {
   await host.waitForFunction(() => window.__social.spot('child').source !== 'default', null, { timeout: 15000 }).catch(() => undefined);
   const childSpot = await host.evaluate(() => window.__social.spot('child'));
   // In a prepared world (the Red Kite meadow) everyone stays at that world's checked viewpoints instead.
-  check(childSpot.source === 'story' || childSpot.source === 'world', childSpot.source === 'world' ? 'in the meadow the grandchild stays at its checked viewpoint beside the oak' : `the grandchild now stands where the story put her (${childSpot.objectId})`);
+  check(childSpot.source === 'story' || childSpot.source === 'world', childSpot.source === 'world' ? 'in the meadow the grandchild stays at its checked viewpoint on the path, with the kite' : `the grandchild now stands where the story put her (${childSpot.objectId})`);
   await host.waitForFunction((at) => [...window.__social.poses.values()].some((p) => p.inScene && Math.hypot(p.head[0] - at.x, p.head[2] - at.z) < 0.05), childSpot.world, { timeout: 8000 }).catch(() => undefined);
   const lilyThere = (await social(host)).poses.some((p) => p.inScene && Math.abs(p.y - 1.1) < 0.02);
   check(lilyThere && (await host.evaluate(() => window.__socialDrawn.figures.length)) >= 1, 'through the grandparent’s eyes, the host sees Lily across the room at her spot');

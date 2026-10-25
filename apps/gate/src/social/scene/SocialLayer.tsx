@@ -13,7 +13,8 @@ import { fileUrl } from '../../backend/client';
 import { attachFirstPersonLook, firstPersonPose } from '../firstPerson';
 import { socialLink } from '../link';
 import { facingOther, keepDefaultSpots, worldSpot } from '../spots';
-import { worldViewpoints } from '../world';
+import { inMeadow, worldViewpoints } from '../world';
+import { MeadowKite } from './MeadowKite';
 import { poses, useSocial, viewingPerspective } from '../store';
 import { handAnchors } from '../xr/OriginRig';
 import { Avatar, StandIn } from '../avatar/Avatar';
@@ -137,6 +138,9 @@ export function SocialLayer() {
   // Once the memory has formed, the host keeps where the two perspectives start, so every device agrees.
   useEffect(() => { if (stage !== 'memory' || !live) return; const t = setTimeout(keepDefaultSpots, 1200); return () => clearTimeout(t); }, [stage, live, plan]);
   const placed = (stage === 'memory' || stage === 'leaving') && !!plan;
+  const worldId = useSocial((s) => s.worldId);
+  const photoWorld = useGate((s) => s.photoWorld);
+  const meadow = !!worldId && !!photoWorld && inMeadow();
   useEffect(() => { drawn.figures = [...ids]; }, [ids]);
   return (
     <group name="social" userData={{ noPoint: true }}>
@@ -146,6 +150,7 @@ export function SocialLayer() {
           would otherwise reach the page's boundary and briefly unmount everything, presence included. */}
       {stage !== 'album' && [...ids].map((id) => <Suspense key={id} fallback={null}><Avatar memberId={id} /></Suspense>)}
       {placed && <StandIns />}
+      {placed && meadow && <Suspense fallback={null}><MeadowKite /></Suspense>}
     </group>
   );
 }
