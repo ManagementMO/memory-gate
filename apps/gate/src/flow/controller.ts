@@ -13,6 +13,9 @@ import { memory } from './memory';
 import { moments, useMoments } from './moments';
 import type { SharedMemory } from './sync';
 import { PALACE_ENTER_MS } from '../scene/palace/plan';
+import { placeFor, placePlan, PLACES, type PlaceKey } from '../../../../packages/shared/src/places';
+import type { ScenePlan } from '../../../../packages/shared/src/scene';
+import { useMemory } from './memory';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -35,6 +38,8 @@ class Flow {
   private mediaCaption: string | null = null;
   private place: string | null = null;
   private leaving = false;
+  /** Everything said while gathering (a prepared place is recognised from all of it together). */
+  private said: string[] = [];
 
   constructor() {
     const invite = readInvite();
@@ -45,6 +50,21 @@ class Flow {
   async begin(): Promise<void> {
     // Back at the start page after a visit (the album's ×): Begin starts the next visit in the same session.
     if (this.begun) { if (useGate.getState().stage === 'portal') this.again(); return; }
+    const { invite, session } = await this.setup(true);
+    await sleep(500);
+    if (invite) {
+      await this.say(`Welcome. You’re joining ${invite.host}. Whatever you share, they’ll see it too.`);
+    } else {
+      await this.say('Hello. I’m so glad you’re here.');
+    }
+    await this.say('Is there a moment you’d like to visit today? You can tell me about it, or show me a photo.');
+    useGate.getState().set({ stage: 'gathering', offers: { photo: true, video: true, invite: !!session && !invite }, expression: 'neutral' });
+    this.listen(true);
+    this.scheduleNudge();
+  }
+
+  /** What every visit needs before anyone speaks: sound (the tap that got here is the gesture), the session, the voice. */
+  private async setup(greeting: boolean) {
     this.begun = true;
     const g = useGate.getState();
     // Joining a visit in the same room: this device stays quiet (no music, no voice of its own); the main device
@@ -55,7 +75,7 @@ class Flow {
     music.setEnabled(quiet ? false : g.musicOn);
     music.cue('wake');
     void requestTiltPermission();
-    g.set({ stage: 'greeting', expression: 'happy', voice: 'starting', status: '' });
+    g.set(greeting ? { stage: 'greeting', expression: 'happy', voice: 'starting', status: '' } : { voice: 'starting', status: '' });
     this.loop();
     const invite = g.invite;
     const session = await startSession({ name: invite ? 'Family' : 'You', invite: invite ? { code: invite.code, key: invite.key } : null });
@@ -77,16 +97,7 @@ class Flow {
     for (let i = 0; i < 30 && !this.engine.canSpeak(); i++) await sleep(100);
     const v = useGate.getState().voice;
     if (v === 'starting') useGate.getState().set({ voice: quiet ? 'shared' : this.engine.kind === 'cartesia' ? 'cartesia' : this.engine.kind === 'browser' ? 'browser' : 'unsupported' });
-    await sleep(500);
-    if (invite) {
-      await this.say(`Welcome. You’re joining ${invite.host}. Whatever you share, they’ll see it too.`);
-    } else {
-      await this.say('Hello. I’m so glad you’re here.');
-    }
-    await this.say('Is there a moment you’d like to visit today? You can tell me about it, or show me a photo.');
-    useGate.getState().set({ stage: 'gathering', offers: { photo: true, video: true, invite: !!session && !invite }, expression: 'neutral' });
-    this.listen(true);
-    this.scheduleNudge();
+    return { quiet, invite, session };
   }
 
   // ------------------------------------------------------------ talking
@@ -134,6 +145,7 @@ class Flow {
     if (g.stage === 'memory' || g.stage === 'forming') return void this.heardInMemory(text, h);
     if (g.stage !== 'gathering' && g.stage !== 'greeting') return;
     this.turnsInPhase++;
+    this.placeWords(text);
     this.thinking = true;
     const reply = await this.ask({ phase: 'gathering', transcript: text });
     this.thinking = false;
@@ -165,16 +177,74 @@ class Flow {
   }
 
   private async heardInMemory(text: string, h: Heard): Promise<void> {
+    // In a prepared place, naming a thing brings it in at once (from the library, to its spot in that world).
+    const brought = memory.bringIn(text);
+    if (brought) setTimeout(() => void moments.mark(text, h.audioFileId), 1800); // the picture once it has formed
     this.thinking = true;
     const reply = await this.ask({ phase: 'memory', transcript: text });
     this.thinking = false;
     if (reply.intent === 'leave') { await this.say(reply.reply); return void this.leave(); }
     if (reply.intent === 'rest') return void this.rest(reply.reply);
-    if (reply.intent === 'add_detail') {
+    if (reply.intent === 'add_detail' && !brought) {
       memory.addDetail(text, h.audioFileId);
       moments.mark(text, h.audioFileId);
     }
     await this.say(reply.reply);
+  }
+
+  // ------------------------------------------------------------ prepared places from the library
+  /** Words that describe a prepared place (the courtyard, the meadow) make the visit step into it; things named
+   *  come in from the library. Recognised from everything said so far, so details can arrive across turns. */
+  private placeWords(text: string) {
+    this.said.push(text);
+    if (!useMemory.getState().place) {
+      const p = placeFor(this.said.join(' '));
+      if (!p) return;
+      memory.usePlace(p, this.place);
+      this.activatePlace(p.key);
+      for (const earlier of this.said.slice(0, -1)) memory.bringIn(earlier);
+    }
+    memory.bringIn(text);
+  }
+
+  /** The room's place becomes the prepared world (the host's device asks; everyone in the visit sees it). */
+  private activatePlace(key: PlaceKey) {
+    const s = useGate.getState().session;
+    if (!s || s.role !== 'host') return;
+    void (async () => {
+      for (let i = 0; i < 3; i++) {
+        try { await convex.mutation(api.splats.usePreparedPlace, { code: s.code, token: s.token, place: key }); return; }
+        catch (e) { console.warn('[place] world', e); await sleep(800 * (i + 1)); }
+      }
+    })();
+  }
+
+  /** Resolves true once the prepared world is showing (it fades in over a couple of seconds), false on timeout. */
+  private worldShown(ms: number): Promise<boolean> {
+    return new Promise((resolve) => {
+      const t0 = performance.now();
+      const check = () => {
+        if (useGate.getState().photoWorld) return void setTimeout(() => resolve(true), 2600);
+        if (performance.now() - t0 > ms) return resolve(false);
+        setTimeout(check, 150);
+      };
+      check();
+    });
+  }
+
+  /** From the album: step straight into a prepared place, with the things its memory holds. */
+  async visitPlace(key: PlaceKey, plan: ScenePlan | null = null): Promise<void> {
+    if (!this.begun) await this.setup(false);
+    this.leaving = false;
+    this.history = [];
+    this.said = [];
+    this.invitedToEnter = false;
+    this.place = plan?.title ?? PLACES[key].title;
+    memory.restore(plan ?? placePlan(PLACES[key]), key);
+    moments.reset();
+    this.activatePlace(key);
+    useGate.getState().set({ memoryTitle: this.place, media: null, offers: { photo: false, video: false, invite: false } });
+    await this.enter();
   }
 
   /** Ask the companion's brain: Claude through the backend, else the offline rules. Never longer than ~7 s. */
@@ -249,8 +319,15 @@ class Flow {
     this.turnsInPhase = 0;
     // Listening again as soon as the place starts forming: whatever they say while it appears is heard and answered.
     this.listen(true);
-    const ready = await memory.whenDrawn(14_000);
+    // A prepared place is ready when its world is showing; a sketched one when most of it has formed.
+    const prepared = !!useMemory.getState().place;
+    const ready = prepared ? await this.worldShown(14_000) : await memory.whenDrawn(14_000);
     if (!ready) await this.say('It’s coming back to me, little by little.');
+    if (prepared && !ready && !(await this.worldShown(16_000))) {
+      // The world didn't come (no backend, or it was never loaded): draw the place from the words instead.
+      memory.leavePlace();
+      memory.plan();
+    }
     await memory.whenDrawn(20_000);
     useGate.getState().set({ stage: 'memory', expression: 'happy' });
     const intro = memory.introLine() ?? 'Here we are.';
@@ -344,7 +421,8 @@ class Flow {
     this.history = [];
     this.invitedToEnter = false;
     this.place = m.title;
-    memory.restore(m.plan);
+    memory.restore(m.plan, m.place ?? null);
+    if (m.place) this.activatePlace(m.place);
     moments.resume(memoryId);
     music.setMode('white');
     music.cue('enter');
@@ -386,6 +464,7 @@ class Flow {
     this.invitedToEnter = false;
     this.mediaCaption = null;
     this.place = null;
+    this.said = [];
     this.clearNudge();
     this.listen(false);
     memory.reset();
@@ -404,6 +483,7 @@ class Flow {
     this.invitedToEnter = false;
     this.mediaCaption = null;
     this.place = null;
+    this.said = [];
     memory.reset();
     moments.reset();
     music.setMode('gate');

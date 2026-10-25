@@ -25,6 +25,7 @@ export function sourcePhrase(m: Pick<AlbumMemory, 'source'>): string {
 }
 
 export function memoryLine(m: AlbumMemory, now = Date.now()): string {
+  if (m.about) return m.about;
   return `${whenPhrase(m.at, now)}, ${sourcePhrase(m)}.`;
 }
 
@@ -49,6 +50,7 @@ export function summaryLine(memories: AlbumMemory[]): string {
 
 /** What a moment was, in the album's voice. */
 export function momentLabel(m: AlbumMoment): string {
+  if (m.who) return m.who;
   if (m.kind === 'arrival') return 'Arriving';
   if (m.kind === 'final') return 'Before leaving';
   return m.speaker === 'you' ? 'You remembered' : 'Your companion';

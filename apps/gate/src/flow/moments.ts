@@ -30,7 +30,8 @@ class Moments {
     let m = st.memories.find((x) => x.id === this.currentId);
     if (!m) {
       this.currentId = `mem-${++memorySeq}-${newId()}`;
-      m = { id: this.currentId, title: plan?.title ?? g.memoryTitle ?? 'A remembered place', at: Date.now(), source: g.media?.kind ?? 'words', palette: plan?.setting.palette ?? [], moments: [], ...(plan ? { plan } : {}) };
+      const place = useMemory.getState().place;
+      m = { id: this.currentId, title: plan?.title ?? g.memoryTitle ?? 'A remembered place', at: Date.now(), source: g.media?.kind ?? 'words', palette: plan?.setting.palette ?? [], moments: [], ...(plan ? { plan } : {}), ...(place ? { place } : {}) };
       useMoments.setState({ memories: [m, ...st.memories] });
     }
     return m;

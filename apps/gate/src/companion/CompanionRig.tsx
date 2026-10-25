@@ -10,6 +10,8 @@ import { LightCompanion } from './light/LightCompanion';
 import { FigureCompanion } from './figure/FigureCompanion';
 import { ContactShadow } from '../scene/ContactShadow';
 import { SPOT, XR_MOVE_AT, walkCompanion } from '../scene/palace/plan';
+import { turned, viewOf } from '../../../../packages/shared/src/places';
+import { useMemory } from '../flow/memory';
 
 const _target = new THREE.Vector3();
 const _settle = new THREE.Vector3(0, 0.12, 0); // settles gently down into place as the memory forms
@@ -66,7 +68,8 @@ export function CompanionRig() {
       targetScale = 1.1 - p * 0.3;
       rate = 5;
     } else if (day && s.photoWorld) {
-      _target.set(-0.85, s.photoWorld.eye - 0.22, -1.35); // beside you, inside the photograph
+      const [x, z] = turned(-0.85, -1.35, viewOf(useMemory.getState().place)); // beside you, inside the photograph
+      _target.set(x, s.photoWorld.eye - 0.22, z);
       targetScale = s.companion === 'light' ? 1.1 : 0.85;
     } else if (day) {
       _target.copy(COMPANION_SPOT.memory);

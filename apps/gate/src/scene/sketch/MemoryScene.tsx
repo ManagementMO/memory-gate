@@ -6,6 +6,8 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { entryOf, layout, type Placement, type ScenePlan } from '../../../../../packages/shared/src/scene';
+import { PLACES, spotOf, type PreparedPlace } from '../../../../../packages/shared/src/places';
+import { MEMORY_CENTER } from '../layout';
 import { useMemory } from '../../flow/memory';
 import { preloadRealModels, warmRealModels } from './realModels';
 import { useGate } from '../../state/store';
@@ -15,6 +17,23 @@ import { Setting } from './Setting';
 import { formation, SketchObject } from './SketchObject';
 
 const ORDER: Record<string, number> = { 'floor-under': 0, wall: 1, backdrop: 1, water: 1, edge: 2, floor: 3, 'wall-mounted': 4, surface: 5 };
+
+/** In a prepared place every thing has its spot in that world (things on the table sit on its top). */
+function placeSpots(place: PreparedPlace, plan: ScenePlan): Map<string, Placement> {
+  const out = new Map<string, Placement>();
+  for (const o of plan.objects) {
+    const spot = spotOf(place, plan, o);
+    if (!spot) continue;
+    const host = spot.on ? plan.objects.find((h) => h.kind === spot.on || (spot.on === 'table' && h.kind === 'round_table')) : undefined;
+    const he = host ? entryOf(host.kind) : null;
+    const y = host && he ? (he.surface ?? he.h) * host.scale : spot.y ?? 0;
+    // Spots are measured from the visitor; placements from the memory's centre.
+    const x = spot.x - MEMORY_CENTER.x, z = spot.z - MEMORY_CENTER.z;
+    const yaw = spot.yaw ?? Math.atan2(-spot.x, -spot.z); // facing the visitor unless the spot says otherwise
+    out.set(o.id, { id: o.id, x, y: spot.on && !host ? 0.76 : y, z, yaw, scale: o.scale, on: host?.id ?? null });
+  }
+  return out;
+}
 
 /** Keep earlier placements; place new things where layout puts them, nudged off anything already there. */
 function stablePlacements(plan: ScenePlan, previous: Map<string, Placement>): Map<string, Placement> {
@@ -53,17 +72,20 @@ export function MemoryScene() {
   const scene = useThree((s) => s.scene);
   const placed = useRef(new Map<string, Placement>());
   const photoWorld = useGate((s) => s.photoWorld);
+  const placeKey = useMemory((s) => s.place);
+  const place = placeKey ? PLACES[placeKey] : null;
   const coveredByPhoto = useRef(new Set<string>());
   // When the photo becomes the world, everything planned from it so far is already in the picture.
-  useEffect(() => { if (photoWorld && plan && coveredByPhoto.current.size === 0) coveredByPhoto.current = new Set(plan.objects.map((o) => o.id)); if (!photoWorld) coveredByPhoto.current = new Set(); }, [photoWorld, plan]);
+  // (A prepared place's world is generic: everything named in it is brought in, nothing is assumed to be there.)
+  useEffect(() => { if (photoWorld && plan && !place && coveredByPhoto.current.size === 0) coveredByPhoto.current = new Set(plan.objects.map((o) => o.id)); if (!photoWorld || place) coveredByPhoto.current = new Set(); }, [photoWorld, plan, place]);
   const delays = useRef(new Map<string, number>());
   const firstShown = useRef<number | null>(null);
 
   const placements = useMemo(() => {
     if (!plan) { placed.current = new Map(); return placed.current; }
-    placed.current = stablePlacements(plan, placed.current);
+    placed.current = place ? placeSpots(place, plan) : stablePlacements(plan, placed.current);
     return placed.current;
-  }, [plan]);
+  }, [plan, place]);
 
   // A calm order of appearance; anything that arrives later forms right away.
   const delayOf = (id: string, index: number, kind: string): number => {
@@ -112,7 +134,7 @@ export function MemoryScene() {
   const sorted = [...shown].sort((a, b) => (ORDER[entryOf(a.kind).place] ?? 3) - (ORDER[entryOf(b.kind).place] ?? 3));
   return (
     <group name="memory">
-      {!photoWorld && <Setting plan={plan} />}
+      {!photoWorld && !place && <Setting plan={plan} />}
       <Ambience kind={plan.ambience} />
       {sorted.map((o, i) => {
         const p = placements.get(o.id);

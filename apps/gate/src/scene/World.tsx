@@ -31,6 +31,8 @@ function pointInHeadset(e: ThreeEvent<MouseEvent>) {
   pointBus.send([e.point.x, e.point.y, e.point.z]);
 }
 import { XrLayer } from './XrLayer';
+import { viewOf } from '../../../../packages/shared/src/places';
+import { useMemory } from '../flow/memory';
 
 /** A soft studio environment for glossy surfaces (the figure's shell, sketch objects). Generated, no download. */
 function StudioEnvironment() {
@@ -96,6 +98,9 @@ function PlayerOrigin() {
     const s = useGate.getState();
     const atShore = s.world === 'palace' && (s.stage === 'portal' || s.stage === 'greeting' || s.stage === 'gathering' || (s.stage === 'entering' && s.enterProgress < XR_MOVE_AT));
     origin.current?.position.set(0, 0, atShore ? SHORE.z : 0);
+    // In a prepared place the wearer faces its best side (turned while the world is white, never in view).
+    const inMemory = s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving';
+    if (origin.current) origin.current.rotation.y = inMemory ? viewOf(useMemory.getState().place) : 0;
   });
   return <XROrigin ref={origin} />;
 }

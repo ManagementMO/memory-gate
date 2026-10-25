@@ -9,6 +9,7 @@ import { MEMORY_CENTER } from './layout';
 import { damp, dampVec3, easeInOutCubic } from './util';
 import { useMemory } from '../flow/memory';
 import { EYE, LOOK_Y, SHORE, albumView, walkView } from './palace/plan';
+import { PLACES, turned, viewOf } from '../../../../packages/shared/src/places';
 
 const useMemoryWater = () => !!useMemory.getState().plan?.setting.water;
 
@@ -91,8 +92,14 @@ export function CameraRig() {
     } else if (s.photoWorld && (s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving')) {
       // A living photograph only looks right from where it was taken: stand there, with a breath of parallax.
       const eye = s.photoWorld.eye;
-      _pos.set(px * 0.18 + tilt.current.x * 0.1, eye + py * 0.06, 0.05);
-      _look.set(px * 0.6, eye - 0.08 + py * 0.25, -3);
+      // A prepared place may face another way than its world's camera (the courtyard opens behind it).
+      const placeKey = useMemory.getState().place;
+      const view = viewOf(placeKey);
+      const flat = placeKey ? PLACES[placeKey].flat : undefined;
+      const [cx, cz] = turned(px * 0.18 + tilt.current.x * 0.1, 0.05 + (flat?.back ?? 0), view);
+      const [lx, lz] = turned(px * 0.6, -3, view);
+      _pos.set(cx, eye + py * 0.06, cz);
+      _look.set(lx, eye - 0.08 - (flat?.down ?? 0) + py * 0.25, lz);
       fov = 58;
       rate = 1.6;
     } else if (s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving') {
@@ -128,7 +135,8 @@ export function CameraRig() {
     }
     // Changing world (or coming back from the album) puts the view far away: arrive there, don't fly across.
     if (pos.current.distanceTo(_pos) > 12) { pos.current.copy(_pos); look.current.copy(_look); }
-    if (PIN) { _pos.set(PIN[0]!, PIN[1]!, PIN[2]!); _look.set(PIN[3]!, PIN[4]!, PIN[5]!); pos.current.copy(_pos); look.current.copy(_look); }
+    const pin = PIN ?? (window as unknown as { __cam?: number[] }).__cam; // diagnostics: also settable from a test
+    if (pin) { _pos.set(pin[0]!, pin[1]!, pin[2]!); _look.set(pin[3]!, pin[4]!, pin[5]!); pos.current.copy(_pos); look.current.copy(_look); }
     dampVec3(pos.current, _pos, rate, dt);
     dampVec3(look.current, _look, rate, dt);
     camera.position.copy(pos.current);

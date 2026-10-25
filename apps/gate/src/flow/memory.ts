@@ -6,6 +6,7 @@ import { create } from 'zustand';
 import { api } from '../../../../convex/_generated/api';
 import type { Id } from '../../../../convex/_generated/dataModel';
 import { planOffline, validatePlan, type ScenePlan } from '../../../../packages/shared/src/scene';
+import { bringIn, placePlan, PLACES, type PlaceKey, type PreparedPlace } from '../../../../packages/shared/src/places';
 import { convex, uploadFile } from '../backend/client';
 import type { MediaItem, Session } from '../state/store';
 
@@ -18,9 +19,11 @@ type MemoryState = {
   formed: number;
   source: 'claude' | 'offline' | null;
   photoUrl: string | null;
+  /** A prepared place from the library this memory is visiting (its world, with things brought in by name). */
+  place: PlaceKey | null;
 };
 
-export const useMemory = create<MemoryState>(() => ({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null }));
+export const useMemory = create<MemoryState>(() => ({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null, place: null }));
 
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
   Promise.race([p.catch((e) => { console.warn('[memory]', e); return fallback; }), new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
@@ -36,11 +39,38 @@ class Memory {
   private mediaKind: 'photo' | 'video' | null = null;
 
   attach(session: Session) { this.session = session; }
-  setTitle(t: string) { this.title = t; }
+  setTitle(t: string) {
+    this.title = t;
+    // A prepared place keeps its plan; only its name follows the conversation.
+    if (useMemory.getState().place) useMemory.setState((st) => (st.plan ? { plan: { ...st.plan, title: t } } : {}));
+  }
+
+  /** Step into a prepared place: its plan is its world (nothing sketched); things come in as they're named. */
+  usePlace(p: PreparedPlace, title?: string | null) {
+    this.planned = this.words.join(' ').trim();
+    useMemory.setState((st) => ({ plan: placePlan(p, title ?? this.title), version: st.version + 1, planning: false, formed: 0, source: 'offline', place: p.key }));
+  }
+
+  /** The prepared place couldn't be shown: plan the place from the words instead, as any visit would. */
+  leavePlace() {
+    this.planned = '';
+    useMemory.setState({ place: null });
+  }
+
+  /** Things these words name, brought into the prepared place (true when something came). */
+  bringIn(text: string): boolean {
+    const st = useMemory.getState();
+    if (!st.place || !st.plan) return false;
+    const next = bringIn(PLACES[st.place], st.plan, text);
+    if (!next) return false;
+    useMemory.setState((s) => ({ plan: next, version: s.version + 1 }));
+    return true;
+  }
   addWords(text: string, _audio: string | null) { this.words.push(text); }
 
   /** Plan (or re-plan when new words arrived). Safe to call often; only one request runs at a time. */
   plan(): void {
+    if (useMemory.getState().place) return; // a prepared place is never re-planned
     const text = this.words.join(' ').trim();
     if (!text && !this.mediaFileId) return;
     if (text === this.planned && useMemory.getState().plan) return;
@@ -98,6 +128,7 @@ class Memory {
   /** "There was a cat on the chair": add to the place that's already there. */
   addDetail(text: string, _audio: string | null): void {
     this.words.push(text);
+    if (useMemory.getState().place) return; // in a prepared place, things come in by name (bringIn)
     const current = useMemory.getState().plan;
     const s = this.session;
     void (async () => {
@@ -152,15 +183,15 @@ class Memory {
   }
 
   /** Bring back a memory exactly as it was drawn (from the album). */
-  restore(plan: ScenePlan) {
+  restore(plan: ScenePlan, place: PlaceKey | null = null) {
     this.reset();
     this.title = plan.title;
-    useMemory.setState({ plan, version: 1, planning: false, formed: 0, source: 'offline' });
+    useMemory.setState({ plan, version: 1, planning: false, formed: 0, source: 'offline', place });
   }
 
   reset() {
     this.words = []; this.title = null; this.memoryId = null; this.planned = ''; this.mediaFileId = null; this.mediaKind = null;
-    useMemory.setState({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null });
+    useMemory.setState({ plan: null, version: 0, planning: false, formed: 0, source: null, photoUrl: null, place: null });
   }
 }
 
