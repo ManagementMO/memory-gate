@@ -400,9 +400,12 @@ export function SocialUI() {
   return (
     <>
       <nav className="social-dock" aria-label="Perspectives" data-testid="social-dock">
-        <button type="button" className="pill glass perspective-chip" style={{ '--p': p?.color ?? '#cdb4ff' } as React.CSSProperties} onClick={() => setSheet('pick')} data-testid="perspective-chip">
-          <span className="dot" aria-hidden="true" />{p ? `${p.label}’s eyes` : 'Whose eyes?'}
-        </button>
+        {/* Whose eyes: only inside the memory, where the grandparent and the grandchild are (not at the gate). */}
+        {day && (
+          <button type="button" className="pill glass perspective-chip" style={{ '--p': p?.color ?? '#cdb4ff' } as React.CSSProperties} onClick={() => setSheet('pick')} data-testid="perspective-chip">
+            <span className="dot" aria-hidden="true" />{p ? `${p.label}’s eyes` : 'Whose eyes?'}
+          </button>
+        )}
         {day && (
           <div className="seg glass" role="group" aria-label="View">
             <button type="button" aria-pressed={view === 'first'} onClick={() => useSocial.getState().set({ view: 'first' })} data-testid="view-first">My view</button>
