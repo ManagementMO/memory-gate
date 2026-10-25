@@ -7,7 +7,7 @@ import { DbConnection } from '../../services/exchange/bindings/index.ts';
 test('real SpacetimeDB: private tables reject anonymous reads and direct reducer calls', { timeout: 15000 }, async t => {
   let connection;
   await new Promise((resolve, reject) => {
-    connection = DbConnection.builder().withUri('ws://127.0.0.1:3000').withDatabaseName('heirloom-exchange').onConnect(resolve).onConnectError((_ctx, e) => reject(e)).build();
+    connection = DbConnection.builder().withUri('ws://127.0.0.1:3000').withDatabaseName(process.env.SPACETIME_DATABASE ?? 'heirloom-exchange').onConnect(resolve).onConnectError((_ctx, e) => reject(e)).build();
   });
   t.after(() => connection.disconnect());
   const denied = await new Promise(resolve => {
@@ -21,7 +21,7 @@ test('real SpacetimeDB: board is persistent and only its contributor can remove 
   const token = process.env.SPACETIME_TOKEN ?? readFileSync('.spacetime/config/cli.toml', 'utf8').match(/^spacetimedb_token\s*=\s*"([^"]+)"/m)?.[1];
   let connection;
   await new Promise((resolve, reject) => {
-    connection = DbConnection.builder().withUri('ws://127.0.0.1:3000').withDatabaseName('heirloom-exchange').withToken(token)
+    connection = DbConnection.builder().withUri('ws://127.0.0.1:3000').withDatabaseName(process.env.SPACETIME_DATABASE ?? 'heirloom-exchange').withToken(token)
       .onConnect(c => c.subscriptionBuilder().onApplied(resolve).onError((_ctx, e) => reject(e)).subscribe('SELECT * FROM reference')).onConnectError((_ctx, e) => reject(e)).build();
   });
   t.after(() => connection.disconnect());

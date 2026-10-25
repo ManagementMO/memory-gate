@@ -6,12 +6,15 @@
 import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
+import AddConversationTurnReducer from "../add_conversation_turn_reducer";
 import AddObjectReducer from "../add_object_reducer";
 import AddStoryReducer from "../add_story_reducer";
 import AddTurnReducer from "../add_turn_reducer";
+import AddUtteranceReducer from "../add_utterance_reducer";
 import BeHereReducer from "../be_here_reducer";
 import ClaimPerspectiveReducer from "../claim_perspective_reducer";
 import ClearAvatarReducer from "../clear_avatar_reducer";
+import ClearSpeakerAudioReducer from "../clear_speaker_audio_reducer";
 import DropPoseReducer from "../drop_pose_reducer";
 import EnsurePerspectivesReducer from "../ensure_perspectives_reducer";
 import LeaveVisitReducer from "../leave_visit_reducer";
@@ -27,6 +30,7 @@ import RemoveStoryReducer from "../remove_story_reducer";
 import RespondHandoffReducer from "../respond_handoff_reducer";
 import RespondMemoryReducer from "../respond_memory_reducer";
 import SetAvatarReducer from "../set_avatar_reducer";
+import SetConversationSummaryReducer from "../set_conversation_summary_reducer";
 import SetSpotReducer from "../set_spot_reducer";
 import SetSummaryReducer from "../set_summary_reducer";
 import UnpinFromPerspectiveReducer from "../unpin_from_perspective_reducer";
@@ -34,12 +38,15 @@ import UnpinReferenceReducer from "../unpin_reference_reducer";
 import UpdatePerspectiveReducer from "../update_perspective_reducer";
 import UpdatePoseReducer from "../update_pose_reducer";
 
+export type AddConversationTurnParams = __Infer<typeof AddConversationTurnReducer>;
 export type AddObjectParams = __Infer<typeof AddObjectReducer>;
 export type AddStoryParams = __Infer<typeof AddStoryReducer>;
 export type AddTurnParams = __Infer<typeof AddTurnReducer>;
+export type AddUtteranceParams = __Infer<typeof AddUtteranceReducer>;
 export type BeHereParams = __Infer<typeof BeHereReducer>;
 export type ClaimPerspectiveParams = __Infer<typeof ClaimPerspectiveReducer>;
 export type ClearAvatarParams = __Infer<typeof ClearAvatarReducer>;
+export type ClearSpeakerAudioParams = __Infer<typeof ClearSpeakerAudioReducer>;
 export type DropPoseParams = __Infer<typeof DropPoseReducer>;
 export type EnsurePerspectivesParams = __Infer<typeof EnsurePerspectivesReducer>;
 export type LeaveVisitParams = __Infer<typeof LeaveVisitReducer>;
@@ -55,6 +62,7 @@ export type RemoveStoryParams = __Infer<typeof RemoveStoryReducer>;
 export type RespondHandoffParams = __Infer<typeof RespondHandoffReducer>;
 export type RespondMemoryParams = __Infer<typeof RespondMemoryReducer>;
 export type SetAvatarParams = __Infer<typeof SetAvatarReducer>;
+export type SetConversationSummaryParams = __Infer<typeof SetConversationSummaryReducer>;
 export type SetSpotParams = __Infer<typeof SetSpotReducer>;
 export type SetSummaryParams = __Infer<typeof SetSummaryReducer>;
 export type UnpinFromPerspectiveParams = __Infer<typeof UnpinFromPerspectiveReducer>;

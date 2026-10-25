@@ -5,7 +5,8 @@
 
 export type GuidePhase = 'gathering' | 'memory';
 export type GuideIntent = 'describe' | 'offer_photo' | 'offer_video' | 'offer_invite' | 'enter' | 'add_detail' | 'rest' | 'leave' | 'chat';
-export type GuideTurn = { who: 'companion' | 'person'; text: string };
+/** `name`/`perspective`: who spoke, when two people are talking with the companion together. */
+export type GuideTurn = { who: 'companion' | 'person'; text: string; name?: string; perspective?: string | null };
 export type GuideInput = {
   phase: GuidePhase;
   transcript: string;
@@ -19,7 +20,11 @@ export type GuideInput = {
   turnsInPhase: number;
   /** Whose eyes the memory is seen through right now (the social layer), and what that perspective has kept. */
   perspective?: GuidePerspective;
+  /** Two (or more) people talking with the companion and each other at once: one conversation, `history` named. */
+  together?: { people: GuidePerson[]; summary: string | null };
 };
+/** Someone in a shared conversation. `child`: sees through the grandchild's eyes (simple, playful words). */
+export type GuidePerson = { name: string; perspective: string | null; role: 'host' | 'guest'; child: boolean; stories: string[] };
 export type GuidePerspective = {
   /** "Grandchild", "Grandparent". */
   label: string;
@@ -35,7 +40,9 @@ export type GuidePerspective = {
   /** What the other perspective remembers about this place. */
   elsewhere: { label: string; text: string }[];
 };
-export type GuideReply = { reply: string; intent: GuideIntent; place: string | null };
+/** `listen`: they're talking to each other and don't need the companion right now (say nothing). `detailFor`: in a
+ *  shared conversation, the name of the person whose words added the detail. */
+export type GuideReply = { reply: string; intent: GuideIntent; place: string | null; listen?: boolean; detailFor?: string | null };
 
 export const GUIDE_INTENTS: readonly GuideIntent[] = ['describe', 'offer_photo', 'offer_video', 'offer_invite', 'enter', 'add_detail', 'rest', 'leave', 'chat'];
 
@@ -121,6 +128,16 @@ export function guideOffline(input: GuideInput): GuideReply {
   return { reply: pick(['That sounds lovely. What do you see when you picture it?', 'Mm. Tell me what it looks like there.', 'I’d love to see it. What’s around you?'], seed), intent: 'describe', place };
 }
 
+/** Offline, with two people: answer the one who spoke last, by name now and then. */
+export function guideTogether(input: GuideInput): GuideReply {
+  const last = [...input.history].reverse().find((t) => t.who === 'person');
+  const r = guideOffline(input);
+  const name = last?.name;
+  if (!name || r.intent === 'enter' || hash(input.transcript) % 2) return { ...r, detailFor: r.intent === 'add_detail' ? name ?? null : null };
+  const rest = /^I\b/.test(r.reply) ? r.reply : `${r.reply.charAt(0).toLowerCase()}${r.reply.slice(1)}`; // "I" stays "I"
+  return { ...r, reply: `${name}, ${rest}`, detailFor: r.intent === 'add_detail' ? name : null };
+}
+
 /** True when a companion line invites stepping through the gate (so the next "yes" means go). */
 export const asksToEnter = (reply: string) => /\b(shall we|should we|would you like to|want to) (go|step|walk|visit)\b/i.test(reply);
 
@@ -142,4 +159,6 @@ Choose intent:
 
 place: a short name for the place when known (e.g. "Grandma's kitchen", "The lake at dusk"), else null.
 
-Perspectives: when a perspective is given, the family is seeing the place through that person's eyes (a grandchild's lower eye line, or a grandparent's). Speak to whoever is seeing from it, by name if given; in the grandchild's view use simple, playful words a child understands. You may gently mention what the other perspective remembers ("Grandpa remembers the radio being here too"), never as a correction. Archive photographs are public history of the place and time, never evidence of this family's own life; mention them only as "a photo from that time".`;
+Perspectives: when a perspective is given, the family is seeing the place through that person's eyes (a grandchild's lower eye line, or a grandparent's). Speak to whoever is seeing from it, by name if given; in the grandchild's view use simple, playful words a child understands. Archive photographs are public history of the place and time, never evidence of this family's own life; mention them only as "a photo from that time".
+
+Together: when "Together" lists people, they are in the same room, each hearing you, talking with you and with each other, and the conversation shows who said what. Keep one conversation with all of them. Reply once to what was just said, to one or both, by name when it helps; guide each in their own experience (the grandchild in simple, playful words; the grandparent at their own pace). Never treat one person's memory as a correction of the other's; both can stay. If they are talking to each other and don't need you, set listen to true and leave reply empty; when one of them asks you something, always answer. At most two short sentences. For add_detail, set detailFor to the name of the person whose words added it.`;

@@ -29,12 +29,12 @@ export function connectSpacetimePresence(session: Session, onUpdate: (u: Presenc
   return new Promise((resolve) => {
     let settled = false, memberId = '', seq = 0;
     // Perspectives share this socket (social/link.ts): actions wait for the gateway's ack or error, poses don't.
-    const pending = new Map<string, { resolve: () => void; reject: (e: Error) => void; timer: number }>();
+    const pending = new Map<string, { resolve: (result: unknown) => void; reject: (e: Error) => void; timer: number }>();
     const socket = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/exchange`);
     const give = (v: SpacetimePresence | null) => { if (!settled) { settled = true; resolve(v); } };
     const timer = setTimeout(() => { give(null); socket.close(); }, 3500);
     const sendMsg = (m: Record<string, unknown>) => { if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ ...m, requestId: `p${++seq}` })); };
-    const request = (m: Record<string, unknown>, timeoutMs = 20_000) => new Promise<void>((resolve, reject) => {
+    const request = (m: Record<string, unknown>, timeoutMs = 20_000) => new Promise<unknown>((resolve, reject) => {
       if (socket.readyState !== WebSocket.OPEN) { reject(new Error('The exchange is reconnecting.')); return; }
       const requestId = `s${++seq}`;
       const timer = window.setTimeout(() => { pending.delete(requestId); reject(new Error('The exchange did not answer.')); }, timeoutMs);
@@ -51,7 +51,7 @@ export function connectSpacetimePresence(session: Session, onUpdate: (u: Presenc
     };
     socket.onopen = () => sendMsg({ type: 'join', code: session.code, token: session.token });
     socket.onmessage = (event) => {
-      let d: { type?: string; context?: { memberId: string; roomId: string; members?: Member[] }; presence?: Row[]; now?: number; requestId?: string; message?: string };
+      let d: { type?: string; context?: { memberId: string; roomId: string; members?: Member[] }; presence?: Row[]; now?: number; requestId?: string; message?: string; result?: unknown };
       try { d = JSON.parse(String(event.data)); } catch { return; }
       if (d.type === 'snapshot' && d.context) {
         if (!memberId) socialLink.attach(wire, d.context.memberId, d.context.members ?? [], d.context.roomId);
@@ -60,7 +60,7 @@ export function connectSpacetimePresence(session: Session, onUpdate: (u: Presenc
       }
       if ((d.type === 'ack' || d.type === 'error') && d.requestId && pending.has(d.requestId)) {
         const p = pending.get(d.requestId)!; pending.delete(d.requestId); window.clearTimeout(p.timer);
-        if (d.type === 'ack') p.resolve(); else p.reject(new Error(d.message ?? 'That could not be saved.'));
+        if (d.type === 'ack') p.resolve(d.result); else p.reject(new Error(d.message ?? 'That could not be saved.'));
       }
       socialLink.receive(d as Parameters<typeof socialLink.receive>[0]);
       if ((d.type === 'snapshot' || d.type === 'presence') && memberId && d.presence) onUpdate(toUpdate(d.presence, d.now ?? Date.now(), memberId));

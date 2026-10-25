@@ -3,18 +3,28 @@
 //   cartesia  the shared Memory Gate voice module (Cartesia ink-2 STT, Sonic TTS, original clips kept with consent);
 //             this file only decides when a turn starts and ends.
 //   browser   the browser's own speech recognition and synthesis: a free fallback when no voice token is available.
-// Both report: interim words (live caption), a finished utterance, levels for the companion to breathe with.
+// Both report: interim words (live caption), a finished utterance, levels for the companion to breathe with. Each
+// utterance carries a turn id and how far above the room's noise it was spoken (SNR), so when two devices share a
+// room the exchange can tell this person's own words from the other person heard faintly across it.
 import type { ConvexReactClient } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { createVoice, type Voice } from '../../../headset/src/voice';
 
-export type Heard = { transcript: string; audioFileId: string | null; durationMs: number };
+/** `turnId`: this turn's id (also sent when it began). `snrDb`: its mean level above this mic's noise floor. */
+export type Heard = { transcript: string; audioFileId: string | null; durationMs: number; turnId: string; snrDb: number };
 export type EngineKind = 'cartesia' | 'browser' | 'none';
 export type EngineEvents = {
   onPartial: (text: string) => void;
   onUtterance: (heard: Heard) => void;
   onSpeechStart: () => void;
   onProblem: (message: string, kind: 'blocked' | 'unsupported' | 'soft') => void;
+  /** A turn began (before its words are known) / ended with nothing heard. */
+  onTurnStart?: (turnId: string) => void;
+  onTurnEnd?: (turnId: string) => void;
+  /** In a shared conversation, speech while the companion talks doesn't cut it off at once (it may be the other
+   *  person, heard faintly): only once it's clearly this person's own voice (onBargeIn). */
+  deferBargeIn?: () => boolean;
+  onBargeIn?: () => void;
 };
 
 export interface VoiceEngine {
@@ -45,7 +55,11 @@ export const VAD = {
   maxTurnMs: 40_000,
   bargeInExtraDb: 9,   // while the companion speaks, only clearly louder speech interrupts it
   absoluteFloorDb: -58,
+  bargeInConfirmMs: 400, // shared conversation: speech this long, and this far above the floor, is this person's own
+  bargeInSnrDb: 16,
 };
+
+const newTurnId = () => (crypto.randomUUID ? crypto.randomUUID() : '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) => (Number(c) ^ (Math.random() * 16) >> (Number(c) / 4)).toString(16)));
 
 type Session = { client: ConvexReactClient; code: string; token: string };
 
@@ -96,6 +110,9 @@ function cartesiaEngine(session: Session, ev: EngineEvents): VoiceEngine {
   let turnOpen = false;
   let turnStartedAt = 0;
   let disposed = false;
+  let turnId = '';
+  let snrSum = 0, snrCount = 0, turnFloor = -62;
+  let bargePending = 0; // when speech began over the companion, still to be confirmed as this person's own
   const detector = new TurnDetector();
   const voice: Voice = createVoice({
     client: session.client, api, code: session.code, token: session.token,
@@ -108,11 +125,15 @@ function cartesiaEngine(session: Session, ev: EngineEvents): VoiceEngine {
     if (!turnOpen) return;
     turnOpen = false;
     hearingNow = false;
+    bargePending = 0;
+    const id = turnId, snrDb = snrCount ? snrSum / snrCount : 0;
     const long = performance.now() - turnStartedAt >= VAD.minTurnMs;
+    let heard = false;
     try {
       const r = await voice.stop();
-      if (long && r.transcript.trim()) ev.onUtterance({ transcript: r.transcript.trim(), audioFileId: r.audioFileId, durationMs: r.durationMs });
+      if (long && r.transcript.trim()) { heard = true; ev.onUtterance({ transcript: r.transcript.trim(), audioFileId: r.audioFileId, durationMs: r.durationMs, turnId: id, snrDb }); }
     } catch { /* a dropped turn is simply not heard */ }
+    if (!heard) ev.onTurnEnd?.(id);
   };
 
   const timer = setInterval(() => {
@@ -124,10 +145,17 @@ function cartesiaEngine(session: Session, ev: EngineEvents): VoiceEngine {
     const edge = detector.step(db, now, speakingNow);
     if (edge === 'start' && !turnOpen) {
       turnOpen = true; hearingNow = true; turnStartedAt = now;
-      speakingNow = false; // start() cuts the companion off: the person always has the floor
+      turnId = newTurnId(); snrSum = 0; snrCount = 0; turnFloor = detector.floor;
+      ev.onTurnStart?.(turnId);
       ev.onSpeechStart();
-      void voice.start();
+      if (speakingNow && ev.deferBargeIn?.()) { bargePending = now; void voice.start({ interrupt: false }); }
+      else { speakingNow = false; void voice.start(); } // start() cuts the companion off: the person always has the floor
     } else if (edge === 'end') void endTurn();
+    if (turnOpen && detector.state === 'speech') { snrSum += db - turnFloor; snrCount++; }
+    // Over the companion, and still going strong: this person's own voice, so the companion stops (everywhere).
+    if (bargePending && now - bargePending >= VAD.bargeInConfirmMs && snrCount && snrSum / snrCount >= VAD.bargeInSnrDb) {
+      bargePending = 0; voice.cancelSpeech(); speakingNow = false; ev.onBargeIn?.();
+    }
   }, VAD.frameMs);
 
   return {
@@ -177,10 +205,13 @@ function browserEngine(ev: EngineEvents): VoiceEngine {
   let disposed = false;
   let restartTimer: ReturnType<typeof setTimeout> | null = null;
   let speakT0 = 0;
+  let turnId = '';
+  let floorDb = -60, snrSum = 0, snrCount = 0;
   // A separate analyser only for the companion's breathing (recognition has no level API).
   let analyser: AnalyserNode | null = null;
   const buf = new Float32Array(1024);
   let actx: AudioContext | null = null;
+  let meter: ReturnType<typeof setInterval> | null = null;
   const micReady = (async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
@@ -188,6 +219,14 @@ function browserEngine(ev: EngineEvents): VoiceEngine {
       analyser = actx.createAnalyser();
       analyser.fftSize = 1024;
       actx.createMediaStreamSource(stream).connect(analyser);
+      // The level above the room's noise while someone is talking (recognition has no level of its own).
+      meter = setInterval(() => {
+        if (!analyser) return;
+        analyser.getFloatTimeDomainData(buf);
+        let s = 0; for (let i = 0; i < buf.length; i++) s += buf[i]! * buf[i]!;
+        const db = dbOf(Math.sqrt(s / buf.length));
+        if (hearingNow) { snrSum += db - floorDb; snrCount++; } else floorDb += (db - floorDb) * (db < floorDb ? 0.25 : 0.02);
+      }, 50);
     } catch (e) {
       const name = (e as { name?: string }).name;
       ev.onProblem('The microphone is blocked. Allow it for this page to talk with the companion.', name === 'NotAllowedError' || name === 'SecurityError' ? 'blocked' : 'unsupported');
@@ -198,19 +237,32 @@ function browserEngine(ev: EngineEvents): VoiceEngine {
     if (!Ctor || disposed || !listening || speakingNow || rec) return;
     const r = new Ctor();
     r.continuous = true; r.interimResults = true; r.lang = navigator.language || 'en-US'; r.maxAlternatives = 1;
-    r.onspeechstart = () => { hearingNow = true; ev.onSpeechStart(); };
+    r.onspeechstart = () => {
+      hearingNow = true; snrSum = 0; snrCount = 0;
+      if (!turnId) { turnId = newTurnId(); ev.onTurnStart?.(turnId); }
+      ev.onSpeechStart();
+    };
     r.onresult = (e) => {
       let interim = '';
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const res = e.results[i]!;
         const text = res[0].transcript;
-        if (res.isFinal) { hearingNow = false; if (text.trim()) ev.onUtterance({ transcript: text.trim(), audioFileId: null, durationMs: 0 }); }
+        if (res.isFinal) {
+          hearingNow = false;
+          const id = turnId || newTurnId(); turnId = '';
+          if (text.trim()) ev.onUtterance({ transcript: text.trim(), audioFileId: null, durationMs: 0, turnId: id, snrDb: snrCount ? snrSum / snrCount : 20 });
+          else ev.onTurnEnd?.(id);
+        }
         else interim += text;
       }
       if (interim.trim()) ev.onPartial(interim.trim());
     };
     r.onerror = (e) => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') ev.onProblem('The microphone is blocked. Allow it for this page to talk with the companion.', 'blocked'); };
-    r.onend = () => { rec = null; hearingNow = false; if (listening && !speakingNow && !disposed) restartTimer = setTimeout(startRec, 250); };
+    r.onend = () => {
+      rec = null; hearingNow = false;
+      if (turnId) { ev.onTurnEnd?.(turnId); turnId = ''; }
+      if (listening && !speakingNow && !disposed) restartTimer = setTimeout(startRec, 250);
+    };
     rec = r;
     try { r.start(); } catch { rec = null; }
   };
@@ -251,7 +303,7 @@ function browserEngine(ev: EngineEvents): VoiceEngine {
     speaking: () => speakingNow,
     hearing: () => hearingNow,
     canSpeak: () => true,
-    dispose() { disposed = true; stopRec(); window.speechSynthesis?.cancel(); void actx?.close().catch(() => undefined); },
+    dispose() { disposed = true; stopRec(); if (meter) clearInterval(meter); window.speechSynthesis?.cancel(); void actx?.close().catch(() => undefined); },
   };
 }
 

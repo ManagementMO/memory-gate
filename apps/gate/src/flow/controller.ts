@@ -6,7 +6,7 @@ import { asksToEnter, asksToLeave, guideOffline, safeReply, type GuideInput, typ
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
 import { useGate, type MediaItem } from '../state/store';
-import { createEngine, silentEngine, type Heard, type VoiceEngine } from '../voice/engine';
+import { createEngine, type Heard, type VoiceEngine } from '../voice/engine';
 import { validatePlan } from '../../../../packages/shared/src/scene';
 import { fileUrl } from '../backend/client';
 import { memory } from './memory';
@@ -18,6 +18,7 @@ import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { useMemory } from './memory';
 import { guideContext, story, turn } from '../social/attribution';
 import { overlayActive } from '../social/overlay';
+import { companion, type CompanionLine, type RoomVoice } from './companion';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -44,10 +45,15 @@ class Flow {
   private leaving = false;
   /** Everything said while gathering (a prepared place is recognised from all of it together). */
   private said: string[] = [];
+  /** A guest waiting at the gate for the host to step through first. */
+  private following = false;
 
   constructor() {
     const invite = readInvite();
     if (invite) useGate.getState().set({ invite });
+    // Together (flow/companion.ts): the room's companion speaks to everyone, and hears how the visit is going.
+    companion.onVoice((d) => void this.roomVoice(d));
+    useGate.subscribe((s, p) => { if (s.stage !== p.stage || s.media !== p.media || s.memoryTitle !== p.memoryTitle) this.postFlow(); });
   }
 
   // ------------------------------------------------------------ the beginning
@@ -57,6 +63,7 @@ class Flow {
     const { invite, session } = await this.setup(true);
     await sleep(500);
     if (invite) {
+      await companion.whenLive(2500); // together, the room's companion welcomes them instead
       await this.say(`Welcome. You’re joining ${invite.host}. Whatever you share, they’ll see it too.`);
     } else {
       await this.say('Hello. I’m so glad you’re here.');
@@ -71,8 +78,8 @@ class Flow {
   private async setup(greeting: boolean) {
     this.begun = true;
     const g = useGate.getState();
-    // Joining a visit in the same room: this device stays quiet (no music, no voice of its own); the main device
-    // listens and speaks for everyone, and this one shows the words and the place.
+    // Joining a visit in the same room: no music of its own. While the room's companion (the exchange) is here it
+    // listens and speaks too, one conversation with everyone; without it, it stays quiet and the main device speaks.
     const quiet = !!g.invite;
     if (quiet) g.set({ musicOn: false });
     music.start();
@@ -85,10 +92,14 @@ class Flow {
     const session = await startSession({ name: invite ? 'Family' : 'You', invite: invite ? { code: invite.code, key: invite.key } : null });
     useGate.getState().set({ session });
     if (session) memory.attach(session);
-    this.engine = quiet ? silentEngine() : await createEngine(session ? { client: convex, code: session.code, token: session.token } : null, {
+    const engine = await createEngine(session ? { client: convex, code: session.code, token: session.token } : null, {
       onPartial: (text) => { if (!useGate.getState().resting) useGate.getState().hearLine(text, true); },
       onUtterance: (h) => void this.heard(h),
       onSpeechStart: () => { this.clearNudge(); music.duck(true); },
+      onTurnStart: (id) => companion.hearing(id),
+      onTurnEnd: (id) => companion.hearing(id, true),
+      deferBargeIn: () => companion.live(),
+      onBargeIn: () => companion.hush(),
       onProblem: (message, kind) => {
         if (kind === 'blocked') useGate.getState().set({ voice: 'blocked' });
         else if (kind === 'unsupported') useGate.getState().set({ voice: 'unsupported' });
@@ -97,22 +108,27 @@ class Flow {
         if (/dropped|wasn.t heard|couldn.t be saved/i.test(message) && !useGate.getState().resting) void this.say('I’m sorry, I missed that. Could you say it again?');
       },
     });
+    this.engine = quiet ? companion.guarded(engine) : engine;
     // Don't wait for the listening socket before saying hello: speech only needs the voice token (about a second).
     for (let i = 0; i < 30 && !this.engine.canSpeak(); i++) await sleep(100);
     const v = useGate.getState().voice;
-    if (v === 'starting') useGate.getState().set({ voice: quiet ? 'shared' : this.engine.kind === 'cartesia' ? 'cartesia' : this.engine.kind === 'browser' ? 'browser' : 'unsupported' });
+    if (v === 'starting') useGate.getState().set({ voice: this.engine.kind === 'cartesia' ? 'cartesia' : this.engine.kind === 'browser' ? 'browser' : 'unsupported' });
     return { quiet, invite, session };
   }
 
   // ------------------------------------------------------------ talking
-  /** Say a line: caption, voice, companion animation, music ducked underneath. */
-  say(text: string): Promise<void> {
+  /** Say a line: caption, voice, companion animation, music ducked underneath. `fromRoom`: a line of the room's
+   *  conversation (the companion's answer, or the host's own line) arriving here. */
+  say(text: string, opts: { fromRoom?: boolean } = {}): Promise<void> {
+    // Together, a joined device says only the room's lines; its own scripted ones would be a second voice.
+    if (!opts.fromRoom && companion.isGuest() && companion.live()) return Promise.resolve();
     const line = this.speakingLine.then(async () => {
       const g = useGate.getState();
       if (g.resting && !/rest|ready/i.test(text)) return;
       g.speakLine(text);
       this.history.push({ who: 'companion', text });
-      turn('companion', text); // inside a memory: into the viewing perspective's thread
+      if (!companion.live()) turn('companion', text); // inside a memory: into the viewing perspective's thread
+      else if (!opts.fromRoom) companion.postLine(text); // the host's own line, heard on every device
       music.duck(true);
       const words = text.split(/\s+/).length;
       try {
@@ -136,9 +152,12 @@ class Flow {
     if (g.resting || this.leaving) return;
     const text = h.transcript.trim();
     if (!text) return;
+    // Together: whose words were these? The room's companion says (the other person, heard faintly from across the
+    // room, isn't this person) before anything here acts on them, a "take me back" included.
+    if (!(await companion.claim(h))) { useGate.getState().set({ heardLine: null }); return; }
     g.hearLine(text, false);
     this.history.push({ who: 'person', text });
-    turn('person', text);
+    if (!companion.live()) turn('person', text);
     this.clearNudge();
     music.duck(false);
     // "I'd like to leave", "take me back", "I'm done": acted on at once, without waiting on a model, so leaving always
@@ -148,6 +167,7 @@ class Flow {
       await this.say('Of course. Thank you for spending this time with me.');
       return void this.finish();
     }
+    if (companion.live()) return void this.heardTogether(text, h);
     if (g.stage === 'memory' || g.stage === 'forming') return void this.heardInMemory(text, h);
     if (g.stage !== 'gathering' && g.stage !== 'greeting') return;
     this.turnsInPhase++;
@@ -180,6 +200,66 @@ class Flow {
         this.invitedToEnter = asksToEnter(reply.reply);
     }
     this.scheduleNudge();
+  }
+
+  /** Together, the room's companion answers everyone at the next lull. Here, only what can't wait: the host's own
+   *  words start shaping the place at once (a guest's arrive with the companion's answer, roomVoice). */
+  private heardTogether(text: string, h: Heard) {
+    const g = useGate.getState();
+    if (!companion.leads()) return;
+    if (g.stage === 'gathering' || g.stage === 'greeting') { this.turnsInPhase++; this.placeWords(text); this.postFlow(); }
+    else if (g.stage === 'memory' || g.stage === 'forming') { if (memory.bringIn(text)) setTimeout(() => void moments.mark(text, h.audioFileId), 1800); }
+  }
+
+  /** A line of the room's conversation, on every device: the companion's answer to what everyone just said, the host's
+   *  own lines, or "stop" (someone spoke over it). The host shapes the visit from everyone's words; each person's own
+   *  device keeps their details and stories, and acts on what was theirs (resting, leaving). */
+  private async roomVoice(d: RoomVoice): Promise<void> {
+    if (d.type === 'hush') { this.engine?.hush(); return; }
+    const g = useGate.getState();
+    if (g.stage === 'portal' || g.stage === 'album' || this.leaving) return;
+    const me = companion.me();
+    const mine = (d.heard ?? []).filter((x) => x.memberId === me);
+    if (companion.leads() && !d.scripted) this.leadFrom(d);
+    const inside = g.stage === 'memory' || g.stage === 'forming';
+    if (inside && d.intent === 'add_detail' && d.detailFor === me && mine.length) {
+      const words = mine.map((x) => x.text).join(' ');
+      if (overlayActive()) void story(words, { addsThings: true }); else if (companion.leads()) memory.addDetail(words, null);
+      moments.mark(words, null);
+    } else if (inside && d.intent === 'chat') {
+      for (const x of mine) if (x.text.split(/\s+/).length >= 5) void story(x.text);
+    }
+    await this.say(d.text, { fromRoom: true });
+    if (d.intentFor === me && d.intent === 'leave') return void (inside ? this.leave() : this.finish());
+    if (d.intentFor === me && d.intent === 'rest') return void this.rest(null);
+    if (companion.leads() && d.intent === 'enter' && (g.stage === 'gathering' || g.stage === 'greeting')) return void this.enter();
+  }
+
+  /** The host: what everyone just said shapes the place (both people's words, at the gate), and what was offered. */
+  private leadFrom(d: CompanionLine) {
+    const g = useGate.getState();
+    const me = companion.me();
+    if (g.stage === 'gathering' || g.stage === 'greeting') {
+      for (const x of d.heard ?? []) {
+        if (x.memberId !== me) { this.turnsInPhase++; this.placeWords(x.text); } // the host's own were taken at once
+        if (d.intent === 'describe' || (d.intent === 'chat' && x.text.split(/\s+/).length >= 5)) memory.addWords(x.text, null);
+      }
+      if (d.place) { this.place = d.place; g.set({ memoryTitle: d.place }); memory.setTitle(d.place); }
+      if (d.intent === 'offer_photo' || d.intent === 'offer_video' || d.intent === 'offer_invite') g.set({ offers: { photo: true, video: true, invite: d.intent === 'offer_invite' || g.offers.invite } });
+      else if (d.intent !== 'enter') memory.plan();
+      this.invitedToEnter = !!d.invites;
+      this.scheduleNudge();
+      this.postFlow();
+    } else if (g.stage === 'memory' || g.stage === 'forming') {
+      for (const x of d.heard ?? []) if (x.memberId !== me && memory.bringIn(x.text)) setTimeout(() => void moments.mark(x.text, null), 1800);
+    }
+  }
+
+  /** The host's view of the visit, for the room's companion. */
+  private postFlow() {
+    if (!companion.leads()) return;
+    const g = useGate.getState();
+    companion.postFlow({ stage: g.stage, turnsInPhase: this.turnsInPhase, invitedToEnter: this.invitedToEnter, place: this.place, media: g.media?.kind ?? null, mediaCaption: this.mediaCaption });
   }
 
   private async heardInMemory(text: string, h: Heard): Promise<void> {
@@ -356,9 +436,9 @@ class Flow {
   }
 
   // ------------------------------------------------------------ resting, leaving
-  async rest(line = 'Of course. Let’s rest here for a moment.'): Promise<void> {
+  async rest(line: string | null = 'Of course. Let’s rest here for a moment.'): Promise<void> {
     this.clearNudge();
-    await this.say(line);
+    if (line) await this.say(line);
     this.listen(false);
     this.engine?.hush();
     useGate.getState().set({ resting: true, expression: 'sleepy' });
@@ -403,6 +483,14 @@ class Flow {
     g.set({ memoryTitle: plan.title });
     if (g.stage === 'gathering' || g.stage === 'greeting') {
       this.clearNudge();
+      if (!companion.live()) await companion.whenLive(4000); // a moment's reconnect isn't "no companion"
+      if (companion.live()) {
+        // Together: step through once the host actually has, not when a plan is saved while they're still talking.
+        if (this.following) return;
+        this.following = true;
+        try { if (await companion.whenHostInside(180_000)) await this.enter(); } finally { this.following = false; }
+        return;
+      }
       await this.say(`${shared.byName && shared.byName !== 'You' ? shared.byName : 'Your family'} is visiting ${plan.title}. Let’s go with them.`);
       await this.enter();
     }
@@ -522,6 +610,7 @@ class Flow {
   private async nudge() {
     const g = useGate.getState();
     if (g.stage !== 'gathering' || g.resting || this.engine?.hearing()) return;
+    if (companion.isGuest() && companion.live()) return; // together, the host's nudges reach everyone
     this.nudges++;
     if (this.nudges === 1) {
       g.set({ offers: { photo: true, video: true, invite: !!g.session && !g.invite } });
@@ -556,8 +645,10 @@ class Flow {
   }
 
   // ------------------------------------------------------------ test hooks (Playwright / dogfood loop)
-  /** Simulate a finished utterance (tests can't speak into a microphone). */
-  testHear(text: string) { return this.heard({ transcript: text, audioFileId: null, durationMs: 0 }); }
+  /** Simulate a finished utterance (tests can't speak into a microphone). `snrDb`: how loud this mic heard it. */
+  testHear(text: string, o: { snrDb?: number; turnId?: string; durationMs?: number } = {}) {
+    return this.heard({ transcript: text, audioFileId: null, durationMs: o.durationMs ?? 0, turnId: o.turnId ?? crypto.randomUUID(), snrDb: o.snrDb ?? 24 });
+  }
 }
 
 /** About 60 times a second, everywhere. Window animation frames can pause in a headset during an immersive session

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
+import { useSocial } from '../social/store';
 import { LeaveIcon, MuteIcon, PhotosIcon, PlayIcon, RestIcon, SoundIcon } from './Icons';
 import { useAlbum } from '../album/useAlbum';
 import { openObjectWorkshop } from '../memory-objects/workshop';
@@ -20,6 +21,8 @@ function MomentsButton() {
 
 function ListeningChip() {
   const voice = useGate((s) => s.voice);
+  const joined = useGate((s) => !!s.invite);
+  const together = useSocial((s) => s.status === 'live');
   const mood = useGate((s) => s.mood);
   const resting = useGate((s) => s.resting);
   const stage = useGate((s) => s.stage);
@@ -35,8 +38,10 @@ function ListeningChip() {
     return () => cancelAnimationFrame(raf);
   }, []);
   if (stage === 'portal' || stage === 'album') return null;
-  const live = voice === 'cartesia' || voice === 'browser' || voice === 'shared';
-  const text = resting ? 'Resting' : voice === 'shared' ? 'Listening on the main device' : voice === 'blocked' ? 'Microphone is off' : voice === 'unsupported' ? 'Voice isn’t available here' : voice === 'starting' ? 'Getting ready' : mood === 'speaking' ? 'Speaking' : mood === 'thinking' ? 'Thinking' : 'Listening';
+  // A joined device listens itself while the room's companion is here (one conversation); otherwise the main one does.
+  const shared = voice === 'shared' || (joined && !together && voice !== 'blocked' && voice !== 'starting');
+  const live = voice === 'cartesia' || voice === 'browser' || shared;
+  const text = resting ? 'Resting' : shared ? 'Listening on the main device' : voice === 'blocked' ? 'Microphone is off' : voice === 'unsupported' ? 'Voice isn’t available here' : voice === 'starting' ? 'Getting ready' : mood === 'speaking' ? 'Speaking' : mood === 'thinking' ? 'Thinking' : 'Listening';
   const tone = resting ? 'rest' : live ? 'on' : 'off';
   return (
     <div className="status glass dot-only" role="status" aria-live="polite" data-tone={tone} data-testid="listening" title={text}>

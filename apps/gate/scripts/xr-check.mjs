@@ -38,7 +38,7 @@ const t0 = Date.now();
 const note = (s) => console.log(`${((Date.now() - t0) / 1000).toFixed(1)}s  ${s}`);
 const st = () => page.evaluate(() => { const g = window.__gate.store.getState(); return { stage: g.stage, xr: g.xr, said: g.companionLine?.text ?? null }; });
 try {
-  await page.goto(`https://localhost:5180/?emulate=1&mode=offline&voice=off&world=${world}${q ? `&q=${q}` : ''}${memory ? `&memory=${memory}` : ''}`, { waitUntil: 'load' });
+  await page.goto(`${process.env.GATE_URL ?? 'https://localhost:5180/'}?emulate=1&mode=offline&voice=off&world=${world}${q ? `&q=${q}` : ''}${memory ? `&memory=${memory}` : ''}`, { waitUntil: 'load' });
   await page.waitForTimeout(4000);
   const enter = page.getByTestId('enter-vr');
   note(`enter button visible: ${await enter.isVisible().catch(() => false)}`);
