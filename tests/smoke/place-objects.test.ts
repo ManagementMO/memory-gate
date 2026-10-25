@@ -61,10 +61,13 @@ test('offline generation is blocked and removing a place removes its dependent o
   expect((await t.query(api.memoryObjects.list, owner)).objects).toHaveLength(0);
 });
 
-function tinyGlb() {
-  const json = JSON.stringify({ asset: { version: '2.0' }, meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }], accessors: [{ count: 3 }] });
-  const padded = json.padEnd(Math.ceil(json.length / 4) * 4), bytes = new Uint8Array(20 + padded.length), data = new DataView(bytes.buffer);
-  data.setUint32(0, 0x46546c67, true); data.setUint32(4, 2, true); data.setUint32(8, bytes.length, true); data.setUint32(12, padded.length, true); data.setUint32(16, 0x4e4f534a, true); bytes.set(new TextEncoder().encode(padded), 20); return bytes;
+function tinyGlb(external = false) {
+  const json = JSON.stringify({ asset: { version: '2.0' }, scene: 0, scenes: [{ nodes: [0] }], nodes: [{ mesh: 0 }],
+    meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }], buffers: [{ byteLength: 36, ...(external ? { uri: 'https://example.com/private.bin' } : {}) }],
+    bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 36 }], accessors: [{ bufferView: 0, componentType: 5126, type: 'VEC3', count: 3, min: [0, 0, 0], max: [1, 1, 0] }] });
+  const padded = json.padEnd(Math.ceil(json.length / 4) * 4), bin = 20 + padded.length, bytes = new Uint8Array(bin + 8 + 36), data = new DataView(bytes.buffer);
+  data.setUint32(0, 0x46546c67, true); data.setUint32(4, 2, true); data.setUint32(8, bytes.length, true); data.setUint32(12, padded.length, true); data.setUint32(16, 0x4e4f534a, true); bytes.set(new TextEncoder().encode(padded), 20);
+  data.setUint32(bin, 36, true); data.setUint32(bin + 4, 0x004e4942, true); bytes.set(new Uint8Array(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer), bin + 8); return bytes;
 }
 test('generated shapes are saved against one task, reviewed, and deleted with their source', async () => {
   const { t, owner } = await setup(false); vi.stubEnv('TRIPO_API_KEY', 'secret');
@@ -90,4 +93,38 @@ test('model validation rejects external resources and excessive geometry', () =>
   expect(validateMemoryGlb(tinyGlb()).triangles).toBe(1);
   const invalid = tinyGlb(); new DataView(invalid.buffer).setUint32(4, 1, true); expect(() => validateMemoryGlb(invalid)).toThrow('GLB 2');
   expect(() => validateMemoryGlb(new Uint8Array(12_000_001))).toThrow('12 MB');
+  expect(() => validateMemoryGlb(tinyGlb(true))).toThrow('External');
+});
+
+test('direct uploads require permission, stay private, deduplicate and preserve the draft photo on a paused approval', async () => {
+  const { t, owner, viewer } = await setup();
+  const bytes = new Uint8Array(64); bytes.set([255, 216, 255]);
+  const args = { ...owner, bytes: bytes.buffer, caption: 'Our family photo', permission: true, commandId: crypto.randomUUID() };
+  await expect(t.action(api.memoryUpload.photo, { ...args, permission: false })).rejects.toThrow('permission');
+  await expect(t.action(api.memoryUpload.photo, { ...args, ...viewer })).rejects.toThrow();
+  await t.action(api.memoryUpload.photo, args); await t.action(api.memoryUpload.photo, args);
+  const list = await t.query(api.memorySources.list, owner); expect(list.sources).toHaveLength(1);
+  const source = list.sources[0]!; expect(source).toMatchObject({ execution: 'family-upload', owner: 'Family', approved: false });
+  expect((await t.query(api.memorySources.list, viewer)).sources).toHaveLength(0);
+  expect(await t.run(ctx => ctx.db.system.query('_storage').collect())).toHaveLength(1);
+  await t.mutation(api.rooms.setPaused, { ...owner, paused: true, commandId: crypto.randomUUID() });
+  await expect(t.action(api.memoryImport.attach, { ...owner, id: source._id, objectKey: 'landmark', perspective: 'grandparent', note: '' })).rejects.toThrow();
+  expect(await fileExists(t, source.fileId!)).toBe(true);
+  await t.mutation(api.rooms.setPaused, { ...owner, paused: false, commandId: crypto.randomUUID() });
+  await t.action(api.memoryImport.attach, { ...owner, id: source._id, objectKey: 'landmark', perspective: 'grandparent', note: 'A detail to talk about.' });
+  expect((await t.query(api.memorySources.list, viewer)).sources).toHaveLength(1);
+  await t.mutation(api.memorySources.remove, { ...owner, id: source._id }); expect(await fileExists(t, source.fileId!)).toBe(false);
+});
+
+test('objects stay in their chosen memory and shared slots do not consume another memory’s slots', async () => {
+  const { t, owner, place } = await setup(); await t.mutation(api.memoryObjects.approvePlace, { ...owner, id: place._id });
+  for (const memoryKey of ['memory-one', 'memory-two']) {
+    for (let i = 0; i < 3; i++) {
+      const id = await t.action(api.memoryModels.create, { ...owner, ...candidate(place._id), perspective: 'grandparent', memoryKey });
+      await t.mutation(api.memoryObjects.place, { ...owner, id });
+    }
+  }
+  const objects = (await t.query(api.memoryObjects.list, owner)).objects;
+  expect(objects.filter(o => o.memoryKey === 'memory-one')).toHaveLength(3); expect(objects.filter(o => o.memoryKey === 'memory-two')).toHaveLength(3);
+  await expect(t.mutation(api.memoryObjects.resize, { ...owner, id: objects[0]!._id, size: 999, yaw: 0 })).rejects.toThrow('25 cm');
 });

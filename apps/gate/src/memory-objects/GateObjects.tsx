@@ -11,7 +11,8 @@ import { SourceLibrary, useImportProgress } from '../red-kite/SourceLibrary';
 import { NativeSources } from '../red-kite/StoryScene';
 import { PlaceLibrary, useModelProgress } from './PlaceLibrary';
 import { OptionalObjects } from './OptionalObjects';
-import { modelSource, type ModelId, type ObjectLibrary, type RoomAuth } from './types';
+import { modelSource, type ModelId, type RoomAuth } from './types';
+import { sourceError } from './errors';
 import { useObjectWorkshop } from './workshop';
 import './objects.css';
 
@@ -37,9 +38,17 @@ export function GateObjectsUI() {
   }, [scope, c.viewing]);
   const active = c.stage === 'memory' || c.stage === 'forming';
   const selected = c.objects?.objects.find(o => o._id === w.selected && (o.memoryKey ?? 'red-kite') === c.currentMemory && (o.perspective === c.viewing || o.perspective === 'shared'));
+  const resolvedSelection = useRef<ModelId | null>(null);
+  useEffect(() => {
+    // A source can be removed on the family phone while its card is open in VR.
+    // Wait for a newly created candidate's first query update before treating it as removed.
+    if (selected) resolvedSelection.current = selected._id;
+    else if (c.objects && w.selected && resolvedSelection.current === w.selected) w.set({ selected: null, preview: null });
+    else if (!w.selected) resolvedSelection.current = null;
+  }, [c.objects, w.selected, selected, w.set]);
   const preview = (id: ModelId, perspective: string) => { w.set({ open: false, photos: false, selected: id, preview: id, previewPerspective: perspective }); if (perspective === 'grandparent' || perspective === 'child') setViewing(perspective); };
   if (!c.auth || !active || c.xr) return null;
-  async function write(fn: () => Promise<unknown>) { setError(''); try { await fn(); } catch (e) { setError(e instanceof Error ? e.message.slice(0, 220) : 'Could not change this object.'); } }
+  async function write(fn: () => Promise<unknown>) { setError(''); try { await fn(); } catch (e) { setError(sourceError(e)); } }
   const source = selected && c.objects ? modelSource(selected, c.objects, c.sources) : null;
   return <>
     {w.open && <PlaceLibrary auth={c.auth} objects={c.objects} sources={c.sources} perspectives={perspectives} perspective={c.viewing} memoryKey={c.currentMemory} paused={c.resting} initialSourceId={w.source} onClose={() => w.set({ open: false })} onPhotos={() => w.set({ open: false, photos: true })} onPreview={preview} />}
@@ -53,15 +62,14 @@ export function GateObjectsLayer() {
   const select = (id: ModelId) => useObjectWorkshop.getState().set({ selected: id });
   if (!c.auth || !c.objects || !['forming', 'memory'].includes(c.stage)) return null;
   const selected = c.objects.objects.find(o => o._id === selectedId && (o.memoryKey ?? 'red-kite') === c.currentMemory && (o.perspective === c.viewing || o.perspective === 'shared'));
-  return <><OptionalObjects objects={c.objects.objects} perspective={c.viewing} memoryKey={c.currentMemory} previewId={preview} paused={c.resting} onSelect={select} />{c.xr && selected && <FollowingSource auth={c.auth} objects={c.objects} source={modelSource(selected, c.objects, c.sources)} objectId={selected._id} ready={selected.status === 'ready' && c.objects.canAuthor} paused={c.resting} />}</>;
+  return <><OptionalObjects objects={c.objects.objects} perspective={c.viewing} memoryKey={c.currentMemory} previewId={preview} paused={c.resting} onSelect={select} />{c.xr && selected && <FollowingSource auth={c.auth} source={modelSource(selected, c.objects, c.sources)} objectId={selected._id} ready={selected.status === 'ready' && c.objects.canAuthor} paused={c.resting} />}</>;
 }
-function FollowingSource({ auth, objects, source, objectId, ready, paused }: { auth: RoomAuth; objects: ObjectLibrary; source: ReturnType<typeof modelSource>; objectId: ModelId; ready: boolean; paused: boolean }) {
+function FollowingSource({ auth, source, objectId, ready, paused }: { auth: RoomAuth; source: ReturnType<typeof modelSource>; objectId: ModelId; ready: boolean; paused: boolean }) {
   const group = useRef<THREE.Group>(null), camera = useThree(s => s.camera), place = useMutation(api.memoryObjects.place);
   const position = useRef(new THREE.Vector3()), rotation = useRef(new THREE.Quaternion()), target = useRef(new THREE.Quaternion()), euler = useRef(new THREE.Euler(0, 0, 0, 'YXZ'));
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   useFrame((_, dt) => { if (!group.current) return; camera.getWorldPosition(position.current); camera.getWorldQuaternion(rotation.current); euler.current.setFromQuaternion(rotation.current, 'YXZ'); target.current.setFromEuler(new THREE.Euler(0, euler.current.y, 0)); group.current.position.lerp(position.current, 1 - Math.exp(-dt * 5)); group.current.quaternion.slerp(target.current, 1 - Math.exp(-dt * 5)); });
   const publish = async () => { if (!ready || paused || busy) return; setBusy(true); try { await place({ ...auth, id: objectId }); useObjectWorkshop.getState().set({ preview: null }); } catch { setError('The object could not be placed. Review it on the family screen.'); } finally { setBusy(false); } };
-  void objects;
   return <group ref={group}><NativeSources anchor={[0, -.34, -1.65]} controls={{ photo: error ? { ...source, note: error } : source, paused, locked: paused || busy, sourceIndex: 0, sourceCount: 1, sourceActionLabel: ready ? 'Place this object' : undefined,
     onSourceNext: () => void publish(), onSourcesClose: () => useObjectWorkshop.getState().set({ selected: null, preview: null }), onRest: () => paused ? flow.resume() : flow.rest() }} /></group>;
 }

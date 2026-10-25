@@ -2,7 +2,22 @@
 
 An Apify Actor for finding public historical context around a place and period. It searches the Library of Congress photo catalog, visits a bounded number of item records, and returns source-linked references with dates, rights and uncertainty. It never takes family recordings or private transcripts as input.
 
-Version 1.1 also turns selected public Instagram photo posts into reviewable source cards for VR objects. The existing Actor name stays stable so archive deployments keep working. [Application setup and demonstration](../../docs/APIFY_MEMORY_SOURCES.md).
+Version 1.2 adds bounded Google Maps place discovery alongside selected public Instagram photo posts and the original archive search. The Actor name stays stable so archive deployments keep working. [Photo setup](../../docs/APIFY_MEMORY_SOURCES.md) · [Places and optional 3D objects](../../docs/PLACE_OBJECTS.md).
+
+## Place source mode
+
+```json
+{
+  "sourceMode": "place",
+  "query": "Golden Gate Park, San Francisco"
+}
+```
+
+The query is a public place or landmark name, 3–120 characters. The Actor starts the official [`compass/crawler-google-places`](https://apify.com/compass/crawler-google-places/api), saves its child run ID before waiting and emits at most three normalized references. Each has a title, address, allowlisted Maps link and coordinates when supplied. It requests no images, reviews, contact enrichment or directories. Unknown coordinates stay null. The child request has a 150-second timeout and `maxTotalChargeUsd: 0.10`; this is not a combined parent/child or account spending guarantee.
+
+Place mode requires an Apify token even locally. It finds references, not GLB meshes. In Memory Gate, the family reviews a reference, chooses an existing original model or a separately approved family photo for image-to-3D, previews the model privately and explicitly places it in a selected memory and POV. The Actor never receives that family photo, note or member token. Search results alone cannot alter the shared scene. Application removal and Apify dataset retention are separate.
+
+Without a published custom Actor ID, the application can call the official Maps Actor directly. With `APIFY_MEMORY_ACTOR_ID` configured, it runs this Actor in place or social mode. Cloud publication and live place/social runs remain unverified because this checkout has no Apify token.
 
 ## Social source mode
 

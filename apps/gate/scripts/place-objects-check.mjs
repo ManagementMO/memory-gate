@@ -30,6 +30,8 @@ try {
     await page.getByTestId('create-object').click(); await expect(page.getByTestId('model-preview')).toContainText('Private preview');
     await page.waitForFunction(() => window.__memoryObjectScene?.snapshot().some(o => o.loaded && o.preview));
     modelId = (await snap(page))[0].id; assert.equal((await snap(viewer)).length, 0);
+    const frame = await page.evaluate(() => window.__redKite3D.snapshot().frames);
+    await page.waitForFunction(frame => window.__redKite3D.snapshot().frames > frame + 30, frame);
     await page.screenshot({ path: `${out}/private-bridge.png` });
   });
   await check('explicit placement shares the real model and switching POV preserves the other viewer', async () => {

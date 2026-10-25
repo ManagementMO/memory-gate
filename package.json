@@ -10,6 +10,8 @@
     "test:exchange:browser": "playwright test --config tests/exchange/playwright.config.mjs",
     "test:atlas": "npm --prefix actors/historical-memory-atlas test",
     "test:memory-sources": "node apps/gate/scripts/memory-sources-check.mjs",
+    "test:place-objects": "node apps/gate/scripts/place-objects-check.mjs && node apps/gate/scripts/gate-objects-check.mjs",
+    "assets:memory-objects": "node tools/memory-objects/build-assets.mjs",
     "test:exchange": "node --import tsx --test tests/exchange/*.test.mjs",
     "dev:convex": "CONVEX_AGENT_MODE=anonymous convex dev --tail-logs disable",
     "typecheck": "tsc -p tsconfig.json --noEmit",

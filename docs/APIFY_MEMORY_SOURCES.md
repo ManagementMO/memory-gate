@@ -1,6 +1,6 @@
 # Apify memory sources
 
-The family can import selected public Instagram photo posts, review individual carousel photos, add their own note and attach a photo to an object and perspective. The Red Kite is the first integration. A native VR card shows the photo, author and family note; the original telling and its illustration choices stay separate.
+The family can import selected public Instagram photo posts, review individual carousel photos, add their own note and attach a photo to an object and perspective. A direct family-photo upload is also available without an Apify token. A native VR card shows the photo, author and family note; the original telling and its illustration choices stay separate. The [place and optional 3D object workflow](PLACE_OBJECTS.md) now uses these reviewed photos in both the general Gate experience and the separate Red Kite example.
 
 ```mermaid
 flowchart LR
@@ -54,9 +54,9 @@ The application saves the parent run ID immediately and resumes that run after r
 
 ## Other memory objects and 3D use
 
-The same source-card record and review flow accept **flower** and **landmark** attachments. They appear in the source library and the native photo browser for that perspective. Selecting the kite filters directly to its own cards. A flower photo can carry a family note about a garden; a landmark post can carry a note about a familiar park or trip. Additional scene meshes can call the same object-source interaction when those objects are added. This branch does not add a physical flower/landmark model to the kite meadow or access a Quest passthrough camera.
+The same source-card record and review flow accept **flower** and **landmark** attachments. They appear in the source library and the native photo browser for that perspective. Selecting the kite filters directly to its own cards. A flower photo can carry a family note about a garden; a landmark post can carry a note about a familiar park or trip. **Make optional 3D object** opens the new workshop. Original bridge, bench and flower-planter models, the existing kite and the room's library models are available. No Quest passthrough camera access is used.
 
-Apify supplies photos, captions and provenance. Caption-derived object suggestions help a person choose the relevant object; they do not identify a flower species, prove that an event happened, or generate a GLB. The existing Three/R3F scene renders the approved source and existing kite geometry. A later image-to-3D service can consume a selected, approved image through a separate generation/review step; this integration does not automatically submit photos to World Labs or Tripo.
+Apify supplies photos, captions, place metadata and provenance. Caption-derived object suggestions help a person choose the relevant object; they do not identify a flower species, prove that an event happened, or generate a GLB. The existing Three/R3F scene renders the approved source and model. Separately consented, reviewed family photos can use Tripo v3 image-to-3D; generated models stay private until another explicit placement approval. Map photos are linked at their source and are not automatically downloaded or submitted to a model service. No World Labs generation is added by this workflow. See the [complete contract and limits](PLACE_OBJECTS.md).
 
 For the demo story: a family photo becomes a gentle cue beside the kite, then the person chooses whether to tell more. A new volunteered detail can be preserved in their own words using the product's existing recording flow. Do not claim that retrieved photos establish a forgotten detail or that the prototype restores memory.
 
@@ -65,13 +65,15 @@ For the demo story: a family photo becomes a gentle cue beside the kite, then th
 ```sh
 npm test
 npm run test:atlas
+npm run test:exchange
 npm --prefix apps/gate run typecheck
 npm --prefix apps/gate run build
 node apps/gate/scripts/memory-sources-check.mjs
+npm run test:place-objects
 npm run test:red-kite
 ```
 
-Verified on this branch: 105 backend/contract tests, nine Actor tests, production build, root/Gate typechecks, four new browser-to-Convex-to-XR flow checks, 11 existing Red Kite browser checks and eight existing native XR emulator checks. The new flow verifies permission, private previews, family approval, persistence after reload, viewer updates, the actual XR photo texture, rest, POV switching and removal. Storage tests verify caching and cleanup when a pause arrives during download; session tests verify that a live source copy preserves the offline sample's identity. The custom Actor also retrieved two real Library of Congress references locally through Apify SDK 3.7.0; that local archive run needed no cloud token.
+Verified on this branch: 117 backend/contract tests, 12 Actor tests, seven actual SpacetimeDB/gateway integration checks, production build, root/Gate typechecks, four photo-source browser-to-Convex-to-XR checks, eight optional-object checks across the main and kite routes, 11 existing Red Kite browser checks and eight existing native XR emulator checks. The photo flow verifies permission, private previews, family approval, persistence after reload, viewer updates, the actual XR photo texture, rest, POV switching and removal. Storage tests verify caching and cleanup when a pause arrives during download; session tests verify that a live source copy preserves the offline sample's identity. The custom Actor also retrieved two real Library of Congress references locally through Apify SDK 3.7.0; that local archive run needed no cloud token. The [current object verification](../evidence/place-objects/verification.json) records the added coverage and unverified provider/hardware paths.
 
 Browser evidence is written under ignored `.logs/apify-evidence/` with no member tokens; a compact [verification report](../evidence/apify/verification.json) and [stereo source-card view](../evidence/apify/native-photo.jpg) are committed. Physical Quest comfort, reach and sustained frame rate still need the existing hardware acceptance pass. A live Instagram Apify run needs the missing token.
 

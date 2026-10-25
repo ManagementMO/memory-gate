@@ -2,8 +2,8 @@
   "actorSpecification": 1,
   "name": "heirloom-historical-memory-atlas",
   "title": "Memory Gate Source Atlas",
-  "description": "Public archives and consented Instagram photo posts become attributed, reviewable memory source cards with object suggestions. Never sends family recordings.",
-  "version": "1.1",
+  "description": "Public archives, consented Instagram posts and bounded map searches become attributed memory references for family-reviewed VR objects. Never sends family recordings.",
+  "version": "1.2",
   "dockerfile": "../Dockerfile",
   "input": "./input_schema.json",
   "output": "./output_schema.json"
