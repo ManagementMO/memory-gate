@@ -22,8 +22,8 @@ function useAsset(key: string) {
   return clone;
 }
 
-export function MemoryProps({ look, proposed, paused, motion, onKeepsake, onReady }: {
-  look: KiteLook; proposed: boolean; paused: RefObject<boolean>; motion: RefObject<MotionState>; onKeepsake: () => void; onReady: () => void;
+export function MemoryProps({ look, proposed, paused, reduced, motion, onKeepsake, onReady }: {
+  look: KiteLook; proposed: boolean; paused: RefObject<boolean>; reduced: RefObject<boolean>; motion: RefObject<MotionState>; onKeepsake: () => void; onReady: () => void;
 }) {
   const kite = useAsset('kite'), spool = useAsset('spool'), table = useAsset('side-table');
   const box = useAsset('keepsake-box'), card = useAsset('story-card');
@@ -70,10 +70,10 @@ export function MemoryProps({ look, proposed, paused, motion, onKeepsake, onRead
   useFrame((_, dt) => {
     if (spoolGroup.current) spoolGroup.current.userData.resting = paused.current;
     if (paused.current && captured.current) dropCapture();
-    motion.current = stepMotion(motion.current, dt, paused.current);
-    const s = motion.current, t = s.time, strength = s.breeze + (s.held ? .55 : 0);
+    motion.current = stepMotion(motion.current, dt, paused.current, reduced.current);
+    const s = motion.current, t = s.time, strength = reduced.current ? 0 : s.breeze;
     if (kiteGroup.current) {
-      kiteGroup.current.position.set(.2 + Math.sin(t * .63) * .12, 2.35 + strength * .42 + Math.sin(t * 1.1) * .07, -2.05 + Math.sin(t * .47) * .1);
+      kiteGroup.current.position.set(.2 + Math.sin(t * .63) * .12, 2.35 + s.kiteLift + Math.sin(t * 1.1) * .07, -2.05 + Math.sin(t * .47) * .1);
       kiteGroup.current.rotation.set(.1 + Math.sin(t * .8) * .07, Math.sin(t * .44) * .23, -.08 + Math.sin(t * .7) * .12);
       for (let i = 0; i < tail.length; i++) { const node = tail[i]; if (node) node.rotation.z = Math.sin(t * (2.2 + strength) - i * .65) * (.1 + strength * .1); }
       kiteGroup.current.updateWorldMatrix(true, true);
