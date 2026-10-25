@@ -2,7 +2,7 @@
 // Gate Bridge, the Palace of Fine Arts, Alamo Square...), showing its photograph. A pin opens a card with the photos
 // and the words; Enter steps into the memory through its owner's eyes. At the Golden Gate Bridge, Enter takes you
 // there as yourself, among everyone who kept a memory of it. The samples are fictional and say so.
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { GOLDEN_GATE_CROWD, SF_MEMORIES, SF_PLACES, type SfMemory } from '../sf/memories';
 import { PROPOSAL } from '../world-memory/story';
 import { openPrepared } from '../album/prepared';
@@ -15,7 +15,24 @@ const proj = (lat: number, lng: number): [number, number] => [(lng - SF_BOX.west
 const [VX0, VY0] = proj(37.8345, -122.515);
 const [VX1, VY1] = proj(37.7535, -122.392);
 const VIEW = { x: VX0, y: VY0, w: VX1 - VX0, h: VY1 - VY0 };
-const pct = (lat: number, lng: number) => { const [x, y] = proj(lat, lng); return { left: `${((x - VIEW.x) / VIEW.w) * 100}%`, top: `${((y - VIEW.y) / VIEW.h) * 100}%` }; };
+/** The frame's size, so pins can be placed exactly where the map is drawn (the whole region fits, centred). */
+function useFit(): [React.RefObject<HTMLDivElement | null>, (lat: number, lng: number) => { left: number; top: number }] {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [size, setSize] = useState({ w: 1, h: 1 });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setSize({ w: el.clientWidth, h: el.clientHeight }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const at = useMemo(() => {
+    const s = Math.min(size.w / VIEW.w, size.h / VIEW.h);
+    const ox = (size.w - VIEW.w * s) / 2, oy = (size.h - VIEW.h * s) / 2;
+    return (lat: number, lng: number) => { const [x, y] = proj(lat, lng); return { left: ox + (x - VIEW.x) * s, top: oy + (y - VIEW.y) * s }; };
+  }, [size.w, size.h]);
+  return [ref, at];
+}
 const thumb = (photo: string) => photo.replace('/memories/sf/', '/memories/sf/thumbs/').replace(/\.\w+$/, '.jpg');
 
 type Spot = { id: string; name: string; lat: number; lng: number; memories: SfMemory[]; crowd: boolean; story?: true };
@@ -46,6 +63,23 @@ export function SfMap({ onBack, onAlbums, onClose, onVisit }: { onBack: () => vo
     return () => removeEventListener('keydown', key);
   });
   const [b0, b1] = SF_BRIDGE;
+  const [frame, at] = useFit();
+  // Places a few blocks apart (Telegraph Hill, North Beach, Chinatown) would pile up: push their pins apart a little,
+  // each keeping a dot at its true spot.
+  const kitePlace = { id: 'proposal', lat: 37.7586, lng: -122.4405 };
+  const placed = useMemo(() => {
+    const pts = [...spots, kitePlace].map((s) => ({ id: s.id, ...at(s.lat, s.lng) }));
+    const true0 = pts.map((p) => ({ ...p }));
+    const min = 68;
+    for (let it = 0; it < 24; it++) for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+      const a = pts[i]!, b = pts[j]!;
+      const dx = b.left - a.left, dy = b.top - a.top, d = Math.hypot(dx, dy) || 0.01;
+      if (d >= min) continue;
+      const push = (min - d) / 2, ux = dx / d, uy = dy / d;
+      a.left -= ux * push; a.top -= uy * push; b.left += ux * push; b.top += uy * push;
+    }
+    return new Map(pts.map((p, i) => [p.id, { pin: { left: p.left, top: p.top }, dot: { left: true0[i]!.left, top: true0[i]!.top } }]));
+  }, [spots, at]);
   const kite = { lat: 37.7586, lng: -122.4405 };
   return (
     <section className="album atlas sfmap" aria-labelledby="sfmap-h" data-testid="sf-map">
@@ -59,16 +93,17 @@ export function SfMap({ onBack, onAlbums, onClose, onVisit }: { onBack: () => vo
         <button type="button" className="pill glass" onClick={onAlbums} data-testid="sf-map-albums">Albums</button>
         {onClose && <button type="button" className="icon-btn glass" aria-label="Back to the start" onClick={onClose}><CloseIcon /></button>}
       </div>
-      <div className="sfmap-frame">
-        <svg className="sfmap-svg" viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <div className="sfmap-frame" ref={frame}>
+        <svg className="sfmap-svg" viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`} preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <rect x={VIEW.x - 50} y={VIEW.y - 50} width={VIEW.w + 100} height={VIEW.h + 100} className="sfmap-water" />
           <g className="sfmap-land">{SF_LAND.map((d, i) => <path key={i} d={d} />)}</g>
           <g className="sfmap-parks">{SF_PARKS.map((d, i) => <path key={i} d={d} />)}</g>
           <line className="sfmap-bridge" x1={b0[0]} y1={b0[1]} x2={b1[0]} y2={b1[1]} />
           {SF_MEMORIES.filter((m) => m.crowd).map((m) => { const [x, y] = proj(m.lat, m.lng); return <circle key={m.id} className="sfmap-dot" cx={x} cy={y} r={2.2} />; })}
         </svg>
+        {[...placed].map(([id, p]) => <span key={`dot-${id}`} className="sfmap-true" style={p.dot} aria-hidden="true" />)}
         {spots.map((s) => (
-          <button key={s.id} type="button" className={`sfmap-pin${s.crowd ? ' crowd' : ''}${open?.id === s.id ? ' on' : ''}`} style={pct(s.lat, s.lng)}
+          <button key={s.id} type="button" className={`sfmap-pin${s.crowd ? ' crowd' : ''}${open?.id === s.id ? ' on' : ''}`} style={placed.get(s.id)!.pin}
             onClick={() => { setOpen(s); setPick(0); }} aria-label={`${s.name}: ${s.memories.length} ${s.memories.length === 1 ? 'memory' : 'memories'}`} data-testid={`sf-pin-${s.id}`}>
             <span className="sfmap-stack">
               {s.memories.slice(0, s.crowd ? 3 : 2).map((m, i) => <img key={m.id} src={thumb(m.photo)} alt="" style={{ '--i': i } as React.CSSProperties} />)}
@@ -76,7 +111,7 @@ export function SfMap({ onBack, onAlbums, onClose, onVisit }: { onBack: () => vo
             <span className="sfmap-label">{s.name}{s.memories.length > 1 ? ` · ${s.memories.length}` : ''}</span>
           </button>
         ))}
-        <button type="button" className={`sfmap-pin${open?.story ? ' on' : ''}`} style={pct(kite.lat, kite.lng)} data-testid="sf-pin-proposal"
+        <button type="button" className={`sfmap-pin${open?.story ? ' on' : ''}`} style={placed.get('proposal')!.pin} data-testid="sf-pin-proposal"
           onClick={() => setOpen({ id: 'proposal', name: 'Kite Hill', lat: kite.lat, lng: kite.lng, memories: [], crowd: false, story: true })} aria-label={`${PROPOSAL.title}, ${PROPOSAL.owners}`}>
           <span className="sfmap-stack"><img src={PROPOSAL.words[0]!.image} alt="" /></span>
           <span className="sfmap-label">{PROPOSAL.title}</span>

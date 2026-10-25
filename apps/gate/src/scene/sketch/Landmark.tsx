@@ -26,6 +26,7 @@ function build(id: LandmarkId, src: THREE.Object3D): THREE.Object3D {
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;
       if (o.name.includes('Landscape') || o.name.includes('Cube_2__4')) { o.visible = false; return; }
+      if (!m.geometry.attributes.normal) m.geometry.computeVertexNormals(); // the light model's girders are plain boxes
       m.material = orange;
     });
     const SX = 5.87, SY = 4.23, SZ = 2.9, BY = 60.8;

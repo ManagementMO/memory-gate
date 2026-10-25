@@ -14,6 +14,7 @@ const ANCHOR: Record<Zone, [number, number]> = {
   center: [0, 0.1], back: [0, -1.55], left: [-2.2, -0.2], right: [2.2, -0.2],
   'back-left': [-1.9, -1.4], 'back-right': [1.9, -1.4], 'front-left': [-1.8, 0.75], 'front-right': [1.8, 0.75],
 };
+const QUEST = /OculusBrowser|Quest/i.test(navigator.userAgent);
 const hash = (s: string) => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return (h >>> 0) / 4294967296; };
 
 /** Where each person stands: their own spot, else their zone, side by side with anyone sharing it. */
@@ -29,8 +30,9 @@ function spots(people: PlanPerson[]): Map<string, [number, number]> {
   return out;
 }
 
-function photoCard(url: string): THREE.Mesh {
-  const tex = new THREE.TextureLoader().load(url);
+function photoCard(photo: string): THREE.Mesh {
+  // the small copy: a crowd of full-size photographs is too much for a headset
+  const tex = new THREE.TextureLoader().load(photo.replace('/memories/sf/', '/memories/sf/thumbs/').replace(/\.\w+$/, '.jpg'));
   tex.colorSpace = THREE.SRGBColorSpace;
   const card = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.58), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false, transparent: true, opacity: 0.95, fog: false }));
   const frame = new THREE.Mesh(new THREE.PlaneGeometry(0.52, 0.64), new THREE.MeshBasicMaterial({ color: '#fbf8f1', toneMapped: false, transparent: true, opacity: 0.92, fog: false }));
@@ -55,6 +57,7 @@ function Person({ p, at, delay, onStep }: { p: PlanPerson; at: [number, number];
       taken.add(entry.id);
       const obj = await personCopy(entry);
       dressPerson(obj, p, entry.person.skin);
+      if (p.memory || QUEST) obj.traverse((o) => { o.castShadow = false; }); // a crowd's shadows cost a headset more than they give
       const mixer = await posePerson(obj, p.pose, p.gender, hash(p.id) * 20);
       obj.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) for (const mat of [m.material].flat()) { mat.transparent = true; mat.opacity = 0; } });
       if (live) setBody({ obj, mixer, height: entry.person.height });
@@ -76,6 +79,8 @@ function Person({ p, at, delay, onStep }: { p: PlanPerson; at: [number, number];
     <group position={[MEMORY_CENTER.x + at[0], 0, MEMORY_CENTER.z + at[1]]} rotation-y={(p.facing * Math.PI) / 180} onClick={click}
       onPointerOver={click ? () => { document.body.style.cursor = 'pointer'; } : undefined} onPointerOut={click ? () => { document.body.style.cursor = ''; } : undefined}>
       <primitive object={body.obj} />
+      {/* an easy target for a pinch or a click: an animated body is hard to hit with a ray */}
+      {click && <mesh position={[0, body.height / 2, 0]} onClick={click}><boxGeometry args={[0.7, body.height + 0.2, 0.6]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} /></mesh>}
       {card && <primitive object={card} position={[0, body.height + 0.5, 0]} onClick={click} />}
     </group>
   );

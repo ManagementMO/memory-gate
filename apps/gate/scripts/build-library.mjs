@@ -121,8 +121,10 @@ if (existsSync(labRoot)) {
   const LANDMARKS = { golden_gate: 'land_golden_gate_bridge', palace_of_fine_arts: 'land_palace_of_fine_arts', painted_ladies: 'land_painted_ladies_row', transamerica: 'land_transamerica_pyramid' };
   mkdirSync(path.join(outDir, 'landmarks'), { recursive: true });
   for (const [key, id] of Object.entries(LANDMARKS)) {
-    if (!existsSync(path.join(labModels, `${id}.glb`))) continue;
-    copyFileSync(path.join(labModels, `${id}.glb`), path.join(outDir, 'landmarks', `${key}.glb`));
+    // the light copy when there is one (a landmark is always far off: the bridge's girders as boxes, scans simplified)
+    const file = [`${id}_lite.glb`, `${id}.glb`].map((f) => path.join(labModels, f)).find((f) => existsSync(f));
+    if (!file) continue;
+    copyFileSync(file, path.join(outDir, 'landmarks', `${key}.glb`));
     const c = JSON.parse(readFileSync(path.join(labRoot, 'catalog', `${id}.json`), 'utf8'));
     rows.push({ kind: `landmark: ${key}`, title: c.title, authors: c.author, license: c.license, url: c.url });
   }

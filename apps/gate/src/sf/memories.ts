@@ -272,13 +272,15 @@ export const SF_MEMORIES: SfMemory[] = [
 
 /** The Golden Gate as a place of its own: you, as yourself, among everyone who kept a memory there, each holding
  *  their picture. Pointing at someone steps into their memory. */
+/** Who stands at the bridge (six: enough to feel like a crowd, light enough for a headset). */
+const CROWD = ['sf:gg-trail', 'sf:gg-crissy-family', 'sf:baker-scarf', 'sf:gg-graduation', 'sf:gg-hawk-hill', 'sf:gg-sundays'];
 export const GOLDEN_GATE_CROWD: SfMemory = (() => {
-  const here = SF_MEMORIES.filter((m) => m.crowd);
+  const here = CROWD.map((id) => SF_MEMORIES.find((m) => m.id === id)!);
   // An open arc in front of you, each person a few metres off and turned toward the middle of it.
   const people = here.map((m, i): PlanPerson => {
     const first = m.plan.people?.[0];
-    const a = -1.0 + (2.0 * i) / Math.max(1, here.length - 1);
-    const r = 2.7 + (i % 2) * 0.6;
+    const a = -0.9 + (1.8 * i) / Math.max(1, here.length - 1);
+    const r = 2.6 + (i % 2) * 0.5;
     return {
       age: first?.age ?? 'adult', gender: first?.gender ?? 'female', skin: first?.skin ?? null, hair: first?.hair ?? null, top: first?.top ?? null, bottom: first?.bottom ?? null,
       id: `crowd-${i}`, pose: (['wave', 'stand', 'wait'] as const)[i % 3]!, zone: 'center', facing: ((-a * 180) / Math.PI) * 0.5,
@@ -294,7 +296,7 @@ export const GOLDEN_GATE_CROWD: SfMemory = (() => {
   return {
     id: 'sf:golden-gate', place: 'golden_gate', lat: 37.8199, lng: -122.4783, owner: 'Everyone who was here', when: '', crowd: false,
     title: 'The Golden Gate Bridge', photo: '/memories/sf/IMG_3679.JPG',
-    words: [`${here.length} people kept a memory here. Walk among them, and point at anyone to step into theirs.`],
+    words: [`People who kept a memory here. Walk among them, and point at anyone to step into theirs.`],
     plan: { ...p, people },
   };
 })();
