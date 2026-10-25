@@ -6,6 +6,7 @@ import { create } from 'zustand';
 import { api } from '../../../../convex/_generated/api';
 import type { Id } from '../../../../convex/_generated/dataModel';
 import { planOffline, validatePlan, type ScenePlan } from '../../../../packages/shared/src/scene';
+import type { Lang } from '../../../../packages/shared/src/language';
 import { bringIn, placePlan, PLACES, type PlaceKey, type PreparedPlace } from '../../../../packages/shared/src/places';
 import { serverNow, usePresence } from '../presence/presence';
 import { convex, uploadFile } from '../backend/client';
@@ -38,9 +39,12 @@ class Memory {
   private inflight: Promise<void> | null = null;
   private mediaFileId: string | null = null;
   private mediaKind: 'photo' | 'video' | null = null;
+  /** The conversation's language: Claude writes the place's first words, captions and titles in it. */
+  private language: Lang = 'en';
   private sharing: Promise<void> = Promise.resolve();
 
   attach(session: Session) { this.session = session; }
+  setLanguage(lang: Lang) { this.language = lang; }
   setTitle(t: string) {
     this.title = t;
     // A prepared place keeps its plan; only its name follows the conversation.
@@ -103,12 +107,12 @@ class Memory {
       const s = this.session;
       if (s) {
         const r = await withTimeout(
-          convex.action(api.sketch.plan, { code: s.code, token: s.token, words: this.words.slice(-12), title: this.title ?? undefined, ...(this.memoryId ? { memoryId: this.memoryId } : {}), ...(this.mediaFileId ? { mediaFileId: this.mediaFileId as Id<'_storage'> } : {}) }),
+          convex.action(api.sketch.plan, { code: s.code, token: s.token, words: this.words.slice(-12), title: this.title ?? undefined, language: this.language, ...(this.memoryId ? { memoryId: this.memoryId } : {}), ...(this.mediaFileId ? { mediaFileId: this.mediaFileId as Id<'_storage'> } : {}) }),
           22_000, null,
         );
         if (r?.plan) { plan = validatePlan(r.plan, this.title ?? undefined); source = r.source === 'claude' ? 'claude' : 'offline'; this.memoryId = r.memoryId; }
       }
-      if (!plan) plan = planOffline(text || 'a quiet room with a window', this.title);
+      if (!plan) plan = planOffline(text || 'a quiet room with a window', this.title, { language: this.language });
       if (this.title && plan.title !== this.title) plan = { ...plan, title: this.title };
       plan = keepIdentities(useMemory.getState().plan, plan);
       useMemory.setState((st) => ({ plan, version: st.version + 1, planning: false, source }));
@@ -129,7 +133,7 @@ class Memory {
       // Ask for the photo in 3D too (SHARP on the GPU worker when it's deployed); it appears when it's ready.
       void convex.mutation(api.splats.addPhoto, { code: s.code, token: s.token, fileId: fileId as Id<'_storage'>, width: media.width, height: media.height, tone: 'muted', credit: 'Shared in the session', builder: 'auto' }).catch((e) => console.warn('[memory] photo to 3D', e));
       // A quick look first (the companion can say what it sees), then the full plan in the background.
-      const r = await convex.action(api.sketch.caption, { code: s.code, token: s.token, fileId: fileId as Id<'_storage'>, kind: media.kind });
+      const r = await convex.action(api.sketch.caption, { code: s.code, token: s.token, fileId: fileId as Id<'_storage'>, kind: media.kind, language: this.language });
       if (r?.title) this.title = r.title;
       this.planFromPhoto();
       return { caption: r?.caption ?? null, title: r?.title ?? null };
@@ -154,7 +158,7 @@ class Memory {
     void (async () => {
       let next: ScenePlan | null = null;
       if (s && current) {
-        const ask = () => convex.action(api.sketch.detail, { code: s.code, token: s.token, plan: current, words: text, ...(this.memoryId ? { memoryId: this.memoryId } : {}) });
+        const ask = () => convex.action(api.sketch.detail, { code: s.code, token: s.token, plan: current, words: text, language: this.language, ...(this.memoryId ? { memoryId: this.memoryId } : {}) });
         // A dropped connection (Wi-Fi blip, the server restarting) gets one more try once it's back.
         const r = await withTimeout(ask().catch(async (e) => { if (!/connection lost/i.test(String(e))) throw e; await new Promise((ok) => setTimeout(ok, 1500)); return ask(); }), 18_000, null);
         if (r?.plan) next = validatePlan(r.plan, current.title);

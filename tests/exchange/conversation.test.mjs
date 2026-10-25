@@ -79,6 +79,20 @@ test('an overlapping turn still being finished is waited for, so the louder mic 
   assert.equal((await say(lily, 'I want to fly it again', 25, { audioFileId: 'kg2abcdefabcdefabcdefabcdefabcd' })).result.audioFileId, null);
 });
 
+test('the companion answers in the language of whoever spoke, each device keeping its own', { timeout: 40000 }, async t => {
+  const { host, lily } = await together(t);
+  await say(lily, 'Mi abuela tenía una cocina amarilla con flores en la ventana', 26, { language: 'en', setting: 'auto' });
+  const es = await waitFor(() => answers(host)[0], 15000);
+  assert.equal(es.language, 'es');
+  assert.equal(es.speakIn, 'es');
+  assert.equal(es.heard.at(-1).name, 'Lily');
+  assert.equal(es.intentFor, es.heard.at(-1).memberId); // Lily's device takes the conversation's language up
+  await say(host, 'Can you tell me about the garden?', 27, { language: 'en', setting: 'en' });
+  const en = await waitFor(() => answers(lily)[1], 15000);
+  assert.equal(en.language, 'en');
+  assert.notEqual(en.text, es.text);
+});
+
 test('the conversation is summarised as it grows and erased with the room', { timeout: 60000 }, async t => {
   const { room, host, lily } = await together(t);
   // Questions put to the companion are answered at each lull: a dozen turns brings a summary (offline here).

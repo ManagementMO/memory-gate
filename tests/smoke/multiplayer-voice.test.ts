@@ -83,6 +83,22 @@ test('the companion is told who said what, by name and the eyes they see through
   expect(offlineSummary([{ who: 'person', text: 'the oak', name: 'Rosa' }, { who: 'person', text: 'red kite', name: 'Lily' }])).toBe('Rosa and Lily talked about: the oak; red kite');
 });
 
+test('on their own, or under a placeholder name, nobody is addressed by name', () => {
+  const flow = { stage: 'gathering', invitedToEnter: false, turnsInPhase: 0, place: null, media: null, mediaCaption: null };
+  const alone = buildInput({
+    turns: [{ who: 'person', text: 'My grandmother had a yellow kitchen', speakerName: 'You', perspectiveId: 'r:child' }],
+    batch: [{ memberId: 'm1', name: 'You', text: 'My grandmother had a yellow kitchen' }],
+    people: [{ memberId: 'm1', name: 'You', perspective: 'Grandchild', role: 'host', child: true, stories: [] }],
+    summary: null, flow, labelOf: () => 'Grandchild',
+  }) as GuideInput;
+  expect(alone.together).toBeUndefined(); // an ordinary turn, as in a visit alone
+  expect(render(alone)).not.toMatch(/Together|You \(Grandchild\)/);
+  for (let i = 0; i < 6; i++) expect(guideTogether({ ...alone, transcript: `${alone.transcript} ${i}` }).reply).not.toMatch(/^You,/);
+  const placeholder = { ...alone, history: [{ who: 'person' as const, text: 'a yellow kitchen', name: 'Family' }],
+    together: { people: [{ name: 'Family', perspective: null, role: 'guest' as const, child: false, stories: [] }, { name: 'Rosa', perspective: null, role: 'host' as const, child: false, stories: [] }], summary: null } };
+  for (let i = 0; i < 6; i++) expect(guideTogether({ ...placeholder, transcript: `a yellow kitchen ${i}` }).reply).not.toMatch(/^Family,/);
+});
+
 test('the grandchild’s voice is kept only once a parent or guardian agrees, and revoking deletes it', async () => {
   vi.stubEnv('WORKER_SECRET', 'test-secret');
   const t = newT();

@@ -21,6 +21,7 @@ It is the same companion as always: the same brain (`guide.respond`), voice and 
 | **At the gate** | Both people's words shape the place. The visit starts on the host's device, and the guest follows once the host is actually inside, not when a plan is saved mid-conversation. |
 | **Inside** | A detail someone adds is theirs: their device adds it to their perspective, as a story and things in the place. Resting and leaving belong to the person who asked. |
 | **Interrupting** | Speech while the companion talks doesn't cut it off at once, since it may be the other person, heard faintly. After about 0.4 s of this person's own voice, the line stops on every device. |
+| **Languages** | Each device keeps its own person's conversation language and setting (Automatic, English, Español, Français; [COMPANION_LANGUAGES.md](COMPANION_LANGUAGES.md)), sent with their words. The companion answers in the language of whoever spoke last, the same line on both devices, and that person's device follows them into it. Its own lines (the welcome when someone joins, the host's scripted lines) are said in each device's language. With one person in the room, it's an ordinary one-person turn: no names, no "Together". |
 | **The grandchild's voice** | Whoever claims the grandchild's eyes has their words kept as text. Audio clips (album replays) are kept only after a parent or guardian agrees on that device; choosing "Grandchild" in the picker asks. Taking the agreement back deletes their clips (`convex/voiceGuard.ts`). |
 
 The room's conversation is kept in SpacetimeDB:
@@ -34,10 +35,10 @@ All three are erased with the room.
 
 ```
 device ─ `hearing` {turnId} at voice onset (fast lane) ───────► gateway: services/exchange/conversation.mjs
-device ─ `utterance` {turnId, text, snrDb, durationMs, clip?} ─► whose words? (crosstalk.ts) → SpacetimeDB
+device ─ `utterance` {turnId, text, snrDb, durationMs, language, setting, clip?} ─► whose words? (crosstalk.ts) → SpacetimeDB
 host   ─ `flow` (stage, place, invitation) · `line` (its own scripted lines)
                                           lull → guide:respond as the last speaker (budget + membership as ever)
-every device ◄─ `companion` {text, intent, heard[], detailFor, intentFor} · `hush`
+every device ◄─ `companion` {text, intent, language, speakIn, english, heard[], detailFor, intentFor} · `hush`
 ```
 
 | Area | Files |
@@ -58,7 +59,8 @@ Fixes found on the way:
 ```sh
 npm test                                               # includes tests/smoke/multiplayer-voice.test.ts
 npm run test:exchange                                  # includes tests/exchange/conversation.test.mjs
-node apps/gate/scripts/two-voices-check.mjs            # laptop (grandchild) + emulated Quest (grandparent), testHear-driven
+node apps/gate/scripts/two-voices-check.mjs            # laptop (grandchild) + emulated Quest (grandparent), testHear-driven, a Spanish turn too
+node apps/gate/scripts/language-check.mjs --base <url> # one person in English, Spanish, French, Automatic
 node apps/gate/scripts/multiplayer-check.mjs           # unchanged flow, now through the shared conversation
 ```
 
@@ -66,7 +68,6 @@ Every check takes `GATE_URL` (`RED_KITE_ORIGIN` for the Red Kite ones). The exch
 
 ## Not yet
 
-- **Language:** each person's own language, which Cartesia ink-2 can't detect. A teammate's change is coming; replies follow the person's language only as far as the prompt asks.
 - **Untested setups:**
   - a physical Quest;
   - two Cartesia speech sockets at once;

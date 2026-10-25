@@ -15,13 +15,19 @@ import type { Heard, VoiceEngine } from '../voice/engine';
  *  `intentFor`: whose device adds the detail / acts on a personal intent (resting, leaving). */
 export type CompanionLine = {
   type: 'companion'; id: string; text: string; intent: string; place?: string | null; invites?: boolean; scripted?: boolean;
+  /** The conversation language after this turn, and the language the line is voiced in (they differ for a pinned one). */
+  language?: string | null; speakIn?: string | null;
+  /** The English reading of Spanish or French words just said (prepared places know English words). */
+  english?: string | null;
+  /** A line of the companion's own (flow/lines.ts) each device says in its own language, with `name` filled in. */
+  line?: 'joinedToo' | 'allHere'; name?: string | null;
   detailFor?: string | null; intentFor?: string; heard?: { memberId: string; name: string; text: string }[];
 };
 export type RoomVoice = CompanionLine | { type: 'hush' };
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 /** The room's lines this device received (for the automated checks, like window.__people). */
-const received: { id: string; text: string; intent: string; heard: string[] }[] = [];
+const received: { id: string; text: string; intent: string; language: string | null; heard: string[] }[] = [];
 (window as unknown as { __roomLines?: typeof received }).__roomLines = received;
 const isGuest = () => !!useGate.getState().invite;
 const uuid = () => crypto.randomUUID();
@@ -36,13 +42,13 @@ export const companion = {
 
   /** Were these this person's own words? While the companion isn't here, only the host's are. (The link drops for
    *  a moment when the page reconnects, entering VR say: a guest waits for it rather than losing the words.) */
-  async claim(h: Heard): Promise<boolean> {
+  async claim(h: Heard, lang: { language: string; setting: string } = { language: 'en', setting: 'auto' }): Promise<boolean> {
     if (!socialLink.ready && isGuest()) await companion.whenLive(2500);
     if (!socialLink.ready) return !isGuest();
     try {
       const r = (await socialLink.call({
         type: 'utterance', turnId: h.turnId, text: h.transcript.slice(0, 600), snrDb: Math.round(h.snrDb * 10) / 10, durationMs: Math.max(0, Math.round(h.durationMs)),
-        device: deviceKind(useGate.getState().xr), ...(h.audioFileId ? { audioFileId: h.audioFileId } : {}),
+        device: deviceKind(useGate.getState().xr), language: lang.language, setting: lang.setting, ...(h.audioFileId ? { audioFileId: h.audioFileId } : {}),
       }, 6000)) as { own?: boolean } | undefined;
       return r?.own !== false;
     } catch {
@@ -56,12 +62,12 @@ export const companion = {
     if (socialLink.ready && !isGuest()) void socialLink.call({ type: 'flow', ...state }).catch(() => undefined);
   },
   /** One of the host's own lines (a welcome, "Here we are", a nudge): heard on the other devices too. */
-  postLine(text: string) { if (socialLink.ready) void socialLink.call({ type: 'line', commandId: uuid(), text: text.slice(0, 300) }).catch(() => undefined); },
+  postLine(text: string, language: string | null = null) { if (socialLink.ready) void socialLink.call({ type: 'line', commandId: uuid(), text: text.slice(0, 300), ...(language ? { language } : {}) }).catch(() => undefined); },
   /** This person spoke over the companion: it stops everywhere. */
   hush() { if (socialLink.ready) void socialLink.call({ type: 'hush' }).catch(() => undefined); },
   onVoice(fn: (d: RoomVoice) => void) {
     socialLink.onVoice(((d: RoomVoice) => {
-      if (d.type === 'companion') { received.push({ id: d.id, text: d.text, intent: d.intent, heard: (d.heard ?? []).map((h) => h.name) }); if (received.length > 60) received.shift(); }
+      if (d.type === 'companion') { received.push({ id: d.id, text: d.text, intent: d.intent, language: d.language ?? null, heard: (d.heard ?? []).map((h) => h.name) }); if (received.length > 60) received.shift(); }
       fn(d);
     }) as (d: { type: string }) => void);
   },
@@ -89,7 +95,7 @@ export const companion = {
     return {
       get kind() { return engine.kind; },
       ready: engine.ready,
-      say: (text) => (socialLink.ready ? engine.say(text) : sleep(700 + text.split(/\s+/).length * 260)),
+      say: (text, language) => (socialLink.ready ? engine.say(text, language) : sleep(700 + text.split(/\s+/).length * 260)),
       hush: () => engine.hush(),
       setListening: (on) => { wanted = on; apply(); },
       level: () => engine.level(),

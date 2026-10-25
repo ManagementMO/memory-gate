@@ -29,3 +29,6 @@ spacetimedb/dist/
 # Photoreal object library (fetched by apps/gate/scripts/fetch-models.mjs; CC0, not stored in git)
 apps/gate/public/models/
 apps/gate/.models-cache/
+
+# Brainstorming mockups (superpowers visual companion)
+.superpowers/

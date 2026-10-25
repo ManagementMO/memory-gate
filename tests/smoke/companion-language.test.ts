@@ -1,0 +1,230 @@
+// The companion in English, Spanish and French: which language the conversation is in, pure and offline.
+import { describe, expect, test } from 'vitest';
+import { asksToEnter, asksToGoIn, asksToLeave, guideOffline, languageLines, resolveReply, safeReply, saysYes, type GuideInput } from '../../packages/shared/src/guide';
+import { planOffline } from '../../packages/shared/src/scene';
+import { LINES, PLACE_INTROS, line } from '../../apps/gate/src/flow/lines';
+import { generationConfig } from '../../apps/headset/src/voice/tts';
+import { asLang, detectLanguage, deviceLang, initialConversationLanguage, LANGS, nextConversationLanguage, sameLanguage } from '../../packages/shared/src/language';
+
+const base: GuideInput = { phase: 'gathering', transcript: '', history: [], media: null, mediaCaption: null, place: null, invitedToEnter: false, turnsInPhase: 0 };
+
+describe('language basics', () => {
+  test('detects English, Spanish and French sentences', () => {
+    expect(detectLanguage('La cometa era roja y mi abuela la hizo con papel de seda')).toBe('es');
+    expect(detectLanguage('Le cerf-volant était rouge et ma grand-mère l’avait fait avec du papier')).toBe('fr');
+    expect(detectLanguage('The kite was red and my grandmother made it with tissue paper')).toBe('en');
+  });
+  test('is unsure about short or neutral words', () => {
+    for (const t of ['ok', 'mm', 'Rosa', '']) expect(detectLanguage(t), t).toBeNull();
+  });
+  test('reads codes and device tags', () => {
+    expect(asLang('es-MX')).toBe('es'); expect(asLang('FR')).toBe('fr'); expect(asLang('pt')).toBeNull(); expect(asLang(null)).toBeNull();
+    expect(deviceLang('fr-CA')).toBe('fr'); expect(deviceLang('de-DE')).toBe('en'); expect(deviceLang(undefined)).toBe('en');
+    expect(initialConversationLanguage('auto', 'es-ES')).toBe('es'); expect(initialConversationLanguage('fr', 'en-US')).toBe('fr');
+  });
+  test('a pinned language always wins', () => {
+    expect(nextConversationLanguage('en', 'es', { claimed: 'en', text: 'I want to go home now please' })).toBe('es');
+  });
+  test('Automatic follows what Claude heard, from three words up', () => {
+    expect(nextConversationLanguage('en', 'auto', { claimed: 'fr', text: 'La maison de ma grand-mère' })).toBe('fr');
+    expect(nextConversationLanguage('es', 'auto', { claimed: 'en', text: 'ok' })).toBe('es');
+    expect(nextConversationLanguage('en', 'auto', { claimed: 'es', text: 'Sí, vamos' })).toBe('en');
+  });
+  test('a language outside the three never changes the conversation language', () => {
+    expect(nextConversationLanguage('es', 'auto', { claimed: 'hi', text: 'मेरी दादी का घर बहुत सुंदर था' })).toBe('es');
+  });
+  test('without a claim the detector decides, else nothing changes', () => {
+    expect(nextConversationLanguage('en', 'auto', { claimed: null, text: 'La cometa era roja y mi abuela la hizo' })).toBe('es');
+    expect(nextConversationLanguage('fr', 'auto', { claimed: null, text: 'Rosa Maria Lopez Garcia' })).toBe('fr');
+  });
+  test('sameLanguage is false only for text confidently in another language', () => {
+    expect(sameLanguage('Aquí estamos.', 'es')).toBe(true);
+    expect(sameLanguage('Here we are. The little path, and the old oak at the bend.', 'es')).toBe(false);
+    expect(sameLanguage('Mm.', 'fr')).toBe(true);
+  });
+});
+
+describe('the guide in three languages', () => {
+  test('leaving is understood in Spanish and French, accents included', () => {
+    for (const t of ['Quiero irme', 'Me quiero ir a casa', 'Ya terminé', 'Estoy cansada', 'Adiós', 'Llévame a casa',
+      'Je voudrais partir', 'Je suis fatiguée', 'Au revoir', 'On peut s’en aller ?', 'Ramenez-moi à la maison']) expect(asksToLeave(t), t).toBe(true);
+  });
+  test('memories that mention leaving are not a wish to leave', () => {
+    for (const t of ['Dejábamos la puerta abierta cuando nos íbamos', 'Mi abuelo quería irse a México',
+      'On partait le dimanche après la messe', 'Il voulait partir en Espagne']) expect(asksToLeave(t), t).toBe(false);
+  });
+  test('invitations to step through are recognised in each language', () => {
+    for (const t of ['¿Vamos allí juntos?', 'On y va ensemble ?', 'Shall we go there together?']) expect(asksToEnter(t), t).toBe(true);
+    for (const t of ['Vamos a ver qué más había', 'Aquí estamos.']) expect(asksToEnter(t), t).toBe(false);
+  });
+  test('the safety filter holds in Spanish and French, and through the English reading', () => {
+    for (const t of ['Esto puede curar la demencia.', 'Ce traitement aide la mémoire.', '¿Se acuerda de qué año era?', 'Vous vous souvenez de quelle année c’était ?'])
+      expect(safeReply(t, 'fb'), t).toBe('fb');
+    expect(safeReply('Qué cortinas tan bonitas.', 'fb')).toBe('Qué cortinas tan bonitas.');
+    expect(safeReply('भगवान आपका भला करे', 'fb', 'This medicine will cure your memory loss')).toBe('fb');
+    expect(safeReply('Qué bonito.', 'fb', 'How lovely.')).toBe('Qué bonito.');
+  });
+  test('offline replies come in the conversation language', () => {
+    expect(guideOffline({ ...base, language: 'es', transcript: 'Quiero irme', phase: 'memory' })).toMatchObject({ intent: 'leave', reply: 'Gracias por traerme aquí. Guardaré este momento para usted.', language: 'es' });
+    expect(guideOffline({ ...base, language: 'es', transcript: 'Descansemos un momento' })).toMatchObject({ intent: 'rest', reply: 'Por supuesto. Descansemos aquí un momento.' });
+    expect(guideOffline({ ...base, language: 'fr', transcript: 'J’ai une photo de la maison' })).toMatchObject({ intent: 'offer_photo' });
+    expect(guideOffline({ ...base, language: 'es', transcript: 'No sé' }).intent).toBe('offer_invite');
+    expect(guideOffline({ ...base, language: 'es', invitedToEnter: true, transcript: 'Sí, vamos' })).toMatchObject({ intent: 'enter', reply: 'Venga conmigo.' });
+    expect(guideOffline({ ...base, language: 'fr', invitedToEnter: true, transcript: 'Pas encore' })).toMatchObject({ intent: 'chat', reply: 'Bien sûr. Racontez-m’en plus quand vous voulez.' });
+    const long = 'La casa de mi abuela tenía una cocina grande con cortinas amarillas y una mesa de madera';
+    expect(guideOffline({ ...base, language: 'es', transcript: long })).toMatchObject({ intent: 'describe', reply: 'Ya casi puedo verlo. ¿Vamos allí juntos?' });
+    expect(guideOffline({ ...base, language: 'es', phase: 'memory', transcript: 'Mm' }).reply).toMatch(/^(Mm\. Aquí estoy\.|Tómese su tiempo\.|Estoy escuchando\.)$/);
+  });
+  test('English offline replies are unchanged', () => {
+    const r = guideOffline({ ...base, transcript: 'My grandmother’s kitchen in the morning, with yellow curtains, a round wooden table and her radio on the counter' });
+    expect(r).toMatchObject({ intent: 'describe', language: 'en', english: null, replyEnglish: null });
+    expect(r.reply).toMatch(/^I can almost see .*Shall we go there together\?$/);
+  });
+  test('resolveReply: a language outside the three is spoken as is and changes nothing else', () => {
+    const r = resolveReply({ ...base, language: 'es', setting: 'auto', transcript: 'मेरी दादी का घर बहुत सुंदर था' },
+      { reply: 'कितना सुंदर घर था।', intent: 'chat', place: null, language: 'hi', english: 'My grandmother’s house was very beautiful', replyEnglish: 'What a beautiful house.' });
+    expect(r).toMatchObject({ language: 'es', speakIn: 'hi' });
+    expect(r.reply.reply).toBe('कितना सुंदर घर था।');
+  });
+  test('resolveReply: an unsafe reply falls back in the language just heard', () => {
+    const r = resolveReply({ ...base, language: 'en', setting: 'auto', transcript: 'La casa de mi abuela tenía una cocina grande' },
+      { reply: 'Esto puede curar la demencia.', intent: 'describe', place: null, language: 'es', english: 'My grandmother’s house had a big kitchen', replyEnglish: 'This can cure dementia.' });
+    expect(r).toMatchObject({ language: 'es', speakIn: 'es' });
+    expect(r.reply.reply).not.toMatch(/curar/);
+    expect(sameLanguage(r.reply.reply, 'es')).toBe(true);
+  });
+  test('resolveReply: a pinned language is what Sonic speaks; no reply means offline in the guessed language', () => {
+    expect(resolveReply({ ...base, language: 'fr', setting: 'fr', transcript: 'I loved the garden behind the house' },
+      { reply: 'Le jardin derrière la maison, comme c’est joli.', intent: 'describe', place: null, language: 'en', english: '', replyEnglish: 'The garden behind the house, how lovely.' }).speakIn).toBe('fr');
+    const off = resolveReply({ ...base, language: 'en', setting: 'auto', transcript: 'La cometa era roja y mi abuela la hizo' }, null);
+    expect(off).toMatchObject({ language: 'es', speakIn: 'es' });
+    expect(off.reply.language).toBe('es');
+  });
+  test('the prompt names the language rule for each setting', () => {
+    expect(languageLines({ setting: 'es' })).toContain('always reply in Spanish');
+    const auto = languageLines({ setting: 'auto', language: 'fr' });
+    expect(auto).toContain('language of their latest words');
+    expect(auto).toContain('French');
+    for (const s of [languageLines({ setting: 'en' }), auto]) expect(s).toContain('reply_english');
+  });
+});
+
+describe('offline introductions follow the language', () => {
+  test('Spanish and French intros, English unchanged', () => {
+    expect(planOffline('a kitchen with a table', 'La cocina de la abuela', { language: 'es' }).intro).toBe('Aquí estamos. La cocina de la abuela, tal como lo describió.');
+    expect(planOffline('a kitchen with a table', null, { language: 'fr' }).intro).toBe('Nous y voilà, comme vous l’avez décrit.');
+    expect(planOffline('a beach by the sea', null, { language: 'es' }).intro).toBe('Aquí estamos. ¿Siente el aire?');
+    expect(planOffline('a beach by the sea', null, { language: 'fr' }).intro).toBe('Nous y voilà. Vous sentez l’air ?');
+    expect(planOffline('a kitchen with a table', 'Grandma’s kitchen').intro).toBe('Here we are. Grandma’s kitchen, just as you described it.');
+  });
+});
+
+test('emotion is sent only with English lines', () => {
+  expect(generationConfig('en')).toEqual({ speed: 0.95, emotion: 'calm' });
+  expect(generationConfig(null)).toEqual({ speed: 0.95, emotion: 'calm' });
+  expect(generationConfig('es')).toEqual({ speed: 0.95 });
+  expect(generationConfig('fr')).toEqual({ speed: 0.95 });
+});
+
+describe('the companion’s fixed lines', () => {
+  const holes = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+  test('every line exists in all three languages with the same placeholders', () => {
+    for (const [key, v] of Object.entries(LINES)) for (const l of LANGS) {
+      expect(v[l], `${key}.${l}`).toBeTruthy();
+      expect(holes(v[l]), `${key}.${l}`).toEqual(holes(v.en));
+    }
+  });
+  test('no Spanish or French line was left in English', () => {
+    for (const [key, v] of Object.entries(LINES)) { expect(sameLanguage(v.es, 'es'), key).toBe(true); expect(sameLanguage(v.fr, 'fr'), key).toBe(true); }
+  });
+  test('English lines are word for word as today', () => {
+    expect(LINES.hello.en).toBe('Hello. I’m so glad you’re here.');
+    expect(LINES.tellMeMore.en).toBe('Tell me what else was here, or anything you notice. Say when you’d like to leave.');
+  });
+  test('placeholders are filled', () => {
+    expect(line('seeCaption', 'es', { caption: 'una cocina soleada' })).toBe('Veo una cocina soleada. ¿Dónde queda este lugar?');
+  });
+  test('both prepared places have Spanish and French introductions', () => {
+    for (const k of ['courtyard', 'red-kite'] as const) { expect(PLACE_INTROS[k]?.es).toBeTruthy(); expect(PLACE_INTROS[k]?.fr).toBeTruthy(); }
+  });
+});
+
+describe('final review: visits are never mistaken for leaving or resting', () => {
+  test('French: answering the invitation, or asking to go into a place, does not end the visit', () => {
+    for (const t of ['Oui, on peut y aller', 'Je veux bien y aller', 'Je voudrais y aller', 'J’aimerais rentrer dans la cuisine de ma grand-mère', 'Je voudrais sortir dans le jardin'])
+      expect(asksToLeave(t), t).toBe(false);
+  });
+  test('Spanish: asking to go back to a place, or remembering going, does not end the visit', () => {
+    for (const t of ['Me gustaría volver a la casa de mi abuela', 'Quiero regresar a la casa de mi infancia', 'Quiero volver a ver la cocina de mi abuela',
+      'Me voy a acordar siempre de esa cocina', 'Nos vamos a la playa cada verano']) expect(asksToLeave(t), t).toBe(false);
+  });
+  test('memories that only begin like an ending do not end the visit', () => {
+    for (const t of ['Basta con cerrar los ojos para verla', 'Ya está la mesa puesta, decía mi madre', 'Podemos terminar la historia después',
+      'J’ai fini l’école à quatorze ans', 'C’est tout ce que je me rappelle']) expect(asksToLeave(t), t).toBe(false);
+  });
+  test('clear wishes to leave still end it, "me quiero ir" included', () => {
+    for (const t of ['Me quiero ir', 'Ya me quiero ir', 'Quiero volver a casa', 'Nos vamos ya', 'Me voy', 'Basta por hoy', 'Ya está',
+      'J’ai fini', 'C’est tout', 'Je voudrais rentrer', 'Je voudrais rentrer à la maison', 'Je veux sortir']) expect(asksToLeave(t), t).toBe(true);
+  });
+  test('"un momento" with something to tell is a memory, not a rest', () => {
+    expect(guideOffline({ ...base, language: 'es', transcript: 'Un momento con mi abuela' }).intent).not.toBe('rest');
+    expect(guideOffline({ ...base, language: 'es', transcript: 'Un momento muy bonito en la cocina' }).intent).not.toBe('rest');
+    expect(guideOffline({ ...base, language: 'fr', transcript: 'Un moment avec ma grand-mère' }).intent).not.toBe('rest');
+    for (const [language, t] of [['es', 'Un momento, por favor'], ['es', 'Un momento'], ['fr', 'Un moment'], ['fr', 'Un instant']] as const)
+      expect(guideOffline({ ...base, language, transcript: t }).intent, t).toBe('rest');
+  });
+  test('the safety filter catches the Spanish and French forms English already catches', () => {
+    for (const t of ['Esto mejora la memoria.', 'Cela améliore la mémoire.', 'Cela peut soigner votre mémoire.', 'Vous avez tort, c’était en 1962.',
+      'Quel jour sommes-nous ?', 'Quelle année sommes-nous ?', '¿En qué año fue?']) expect(safeReply(t, 'fb'), t).toBe('fb');
+  });
+  test('the prompt tells Claude that a few words never change the conversation language', () => {
+    const auto = languageLines({ setting: 'auto', language: 'es' });
+    expect(auto).toContain('The conversation is in Spanish');
+    expect(auto).toContain('a few words');
+  });
+});
+
+describe('deferred review items, fixed', () => {
+  test('warm Spanish and French lines are no longer mistaken for medicine or a memory quiz', () => {
+    for (const r of ['Eso me recuerda que usted cocinaba los domingos.', 'El cura del pueblo venía a cenar, ¿verdad?', 'Y jamón curado en la mesa.', 'Un guéridon près de la fenêtre.'])
+      expect(safeReply(r, 'FALLBACK'), r).toBe(r);
+    for (const r of ['Esto cura la memoria.', 'Hay una cura para eso.', '¿Recuerda qué año era?', 'Ça va vous guérir.', 'La guérison viendra.'])
+      expect(safeReply(r, 'FALLBACK'), r).toBe('FALLBACK');
+  });
+  test('English: going back somewhere, or "that\'s all I remember", does not end the visit', () => {
+    for (const t of ['I want to go back to my grandmother\'s house', 'That\'s all I remember', 'That\'s all I remember about the kitchen', 'Can we go back to the summer of 1978?'])
+      expect(asksToLeave(t), t).toBe(false);
+    for (const t of ['I want to go back', 'Can we go back now?', 'I\'d like to go back home', 'Let\'s go back to the gate', 'That\'s all', 'That\'s all for today, thanks', 'Go back', 'I want to go home', 'Take me home'])
+      expect(asksToLeave(t), t).toBe(true);
+  });
+  const invited: GuideInput = { phase: 'gathering', transcript: '', history: [], media: null, mediaCaption: null, place: 'La cocina', invitedToEnter: true, turnsInPhase: 2, language: 'es' };
+  test('Spanish: a sentence that starts with "si" is not a yes; "sí" and "si, vamos" are', () => {
+    expect(guideOffline({ ...invited, transcript: 'Si no me equivoco, había un patio' }).intent).not.toBe('enter');
+    for (const t of ['Sí', 'Si', 'Sí, vamos', 'Si, vamos', 'Claro']) expect(guideOffline({ ...invited, transcript: t }).intent, t).toBe('enter');
+  });
+  test('Spanish: describing a portrait does not offer the photo picker', () => {
+    expect(guideOffline({ ...invited, invitedToEnter: false, transcript: 'En la pared había un retrato de mi abuelo' }).intent).not.toBe('offer_photo');
+  });
+});
+
+describe('main\'s "yes steps in at once", in all three languages', () => {
+  test('a yes to the invitation, in English, Spanish or French; not "not yet" or "let\'s go home"', () => {
+    for (const t of ['Yes', 'Okay, let\'s go', 'Sí', 'Sí, vamos', 'Claro', 'Oui', 'D\'accord', 'Oui, allons-y']) expect(saysYes(t), t).toBe(true);
+    for (const t of ['Not yet', 'Let\'s go home', 'Sí, pero todavía no', 'Vamos a casa', 'Oui, mais pas encore', 'Si no me equivoco']) expect(saysYes(t), t).toBe(false);
+  });
+  test('"let\'s go" before the gate means going in, in each language; going home stays a goodbye', () => {
+    for (const t of ['Let\'s go', 'Take me there', 'Vamos allá', 'Vámonos', 'Lléveme allí', 'Allons-y', 'Emmenez-moi là-bas']) expect(asksToGoIn(t), t).toBe(true);
+    for (const t of ['Let\'s go home', 'Vámonos a casa', 'Quiero volver a casa', 'Je voudrais rentrer']) expect(asksToGoIn(t), t).toBe(false);
+  });
+  test('offline: going in is answered in the conversation\'s language', () => {
+    const at: GuideInput = { phase: 'gathering', transcript: 'Vamos allá', history: [], media: null, mediaCaption: null, place: null, invitedToEnter: false, turnsInPhase: 0, language: 'es' };
+    expect(guideOffline(at)).toMatchObject({ intent: 'chat', reply: 'Con mucho gusto. Cuénteme de algún lugar que le gustaría visitar.' });
+    expect(guideOffline({ ...at, turnsInPhase: 2 })).toMatchObject({ intent: 'enter', reply: 'Venga conmigo.' });
+    expect(guideOffline({ ...at, transcript: 'Oui, allons-y', invitedToEnter: true, language: 'fr' })).toMatchObject({ intent: 'enter', reply: 'Venez avec moi.' });
+  });
+  test('Spanish and French invitations still count as invitations', () => {
+    expect(asksToEnter('Ya casi puedo verlo. ¿Vamos allí juntos?')).toBe(true);
+    expect(asksToEnter('Je le vois presque. On y va ensemble ?')).toBe(true);
+    expect(asksToEnter('Shall I take you there?')).toBe(true);
+  });
+});

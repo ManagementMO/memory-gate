@@ -2,14 +2,16 @@
 // companion says or does; the person only ever talks, shares a photo or video, or says they'd like to stop.
 //   portal → greeting → gathering (talk / photo / video / someone helps) → entering → forming → memory → leaving → album
 import { api } from '../../../../convex/_generated/api';
-import { asksToEnter, asksToGoIn, asksToLeave, guideOffline, safeReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
+import { asksToEnter, asksToGoIn, asksToLeave, resolveReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
+import { initialConversationLanguage, nextConversationLanguage, sameLanguage, type Lang, type LanguageSetting } from '../../../../packages/shared/src/language';
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
-import { useGate, type MediaItem } from '../state/store';
+import { recognitionLang, useGate, type MediaItem } from '../state/store';
 import { createEngine, type Heard, type VoiceEngine } from '../voice/engine';
 import { validatePlan } from '../../../../packages/shared/src/scene';
 import { fileUrl } from '../backend/client';
 import { memory } from './memory';
+import { line, PLACE_INTROS, type LineKey } from './lines';
 import { moments, useMoments } from './moments';
 import type { SharedMemory } from './sync';
 import { PALACE_ENTER_MS } from '../scene/palace/plan';
@@ -51,14 +53,28 @@ class Flow {
   private said: string[] = [];
   /** A guest waiting at the gate for the host to step through first. */
   private following = false;
+  /** The conversation language: every fixed line is said in it, and Claude is asked to answer in it (flow/lines.ts). */
+  private lang: Lang = 'en';
 
   constructor() {
     const invite = readInvite();
     if (invite) useGate.getState().set({ invite });
+    this.setLang(initialConversationLanguage(useGate.getState().language, navigator.language));
+    // A new choice in the companion's settings (on the start page) is the language of the next visit.
+    useGate.subscribe((s, before) => { if (s.language !== before.language) this.setLang(initialConversationLanguage(s.language, navigator.language)); });
     // Together (flow/companion.ts): the room's companion speaks to everyone, and hears how the visit is going.
     companion.onVoice((d) => void this.roomVoice(d));
     useGate.subscribe((s, p) => { if (s.stage !== p.stage || s.media !== p.media || s.memoryTitle !== p.memoryTitle) this.postFlow(); });
   }
+
+  private setLang(lang: Lang) {
+    this.lang = lang;
+    memory.setLanguage(lang);
+    useGate.getState().set({ spoken: lang });
+  }
+
+  /** A fixed line in the conversation's language. */
+  private t(key: LineKey, vars?: Record<string, string>): string { return line(key, this.lang, vars); }
 
   // ------------------------------------------------------------ the beginning
   async begin(): Promise<void> {
@@ -71,11 +87,12 @@ class Flow {
     await sleep(500);
     if (invite) {
       await companion.whenLive(2500); // together, the room's companion welcomes them instead
-      await this.say(`Welcome. You’re joining ${invite.host}. Whatever you share, they’ll see it too.`);
+      // An invitation without a host name says "your family" (readInvite): that one is said in the visit's language.
+      await this.say(this.t('welcomeGuest', { host: invite.host === 'your family' ? this.t('yourFamily').toLowerCase() : invite.host }));
     } else {
-      await this.say('Hello. I’m so glad you’re here.');
+      await this.say(this.t('hello'));
     }
-    await this.say('Is there a moment you’d like to visit today? You can tell me about it, or show me a photo.');
+    await this.say(this.t('askMoment'));
     useGate.getState().set({ stage: 'gathering', offers: { photo: true, video: true, invite: !!session && !invite }, expression: 'neutral' });
     this.listen(true);
     this.scheduleNudge();
@@ -85,6 +102,7 @@ class Flow {
   private async setup(greeting: boolean) {
     this.begun = true;
     const g = useGate.getState();
+    this.setLang(initialConversationLanguage(g.language, navigator.language));
     // Joining a visit in the same room: no music of its own. While the room's companion (the exchange) is here it
     // listens and speaks too, one conversation with everyone; without it, it stays quiet and the main device speaks.
     const quiet = !!g.invite;
@@ -112,9 +130,9 @@ class Flow {
         else if (kind === 'unsupported') useGate.getState().set({ voice: 'unsupported' });
         console.warn('[voice]', message);
         // A turn lost to the network: say so kindly and ask again, rather than leaving a silence.
-        if (/dropped|wasn.t heard|couldn.t be saved/i.test(message) && !useGate.getState().resting) void this.say('I’m sorry, I missed that. Could you say it again?');
+        if (/dropped|wasn.t heard|couldn.t be saved/i.test(message) && !useGate.getState().resting) void this.say(this.t('missed'));
       },
-    });
+    }, { recognitionLang });
     this.engine = quiet ? companion.guarded(engine) : engine;
     // Don't wait for the listening socket before saying hello: speech only needs the voice token (about a second).
     for (let i = 0; i < 30 && !this.engine.canSpeak(); i++) await sleep(100);
@@ -124,30 +142,32 @@ class Flow {
   }
 
   // ------------------------------------------------------------ talking
-  /** Say a line: caption, voice, companion animation, music ducked underneath. `fromRoom`: a line of the room's
+  /** Say a line: caption, voice (in the line's language: the conversation's unless given), companion animation, music
+   *  ducked underneath. While resting, only the rest and resume lines are said. `fromRoom`: a line of the room's
    *  conversation (the companion's answer, or the host's own line) arriving here. */
-  say(text: string, opts: { fromRoom?: boolean } = {}): Promise<void> {
+  say(text: string, opts: { language?: string | null; whileResting?: boolean; fromRoom?: boolean } = {}): Promise<void> {
     // Together, a joined device says only the room's lines; its own scripted ones would be a second voice.
     if (!opts.fromRoom && companion.isGuest() && companion.live()) return Promise.resolve();
-    const line = this.speakingLine.then(async () => {
+    const language = opts.language ?? this.lang;
+    const next = this.speakingLine.then(async () => {
       const g = useGate.getState();
-      if (g.resting && !/rest|ready/i.test(text)) return;
+      if (g.resting && !opts.whileResting) return;
       g.speakLine(text);
       this.history.push({ who: 'companion', text });
       if (!companion.live()) turn('companion', text); // inside a memory: into the viewing perspective's thread
-      else if (!opts.fromRoom) companion.postLine(text); // the host's own line, heard on every device
+      else if (!opts.fromRoom) companion.postLine(text, language); // the host's own line, heard on every device
       music.duck(true);
       const words = text.split(/\s+/).length;
       try {
-        if (this.engine) await withTimeout(this.engine.say(text), 4000 + words * 650, undefined);
+        if (this.engine) await withTimeout(this.engine.say(text, language), 4000 + words * 650, undefined);
         else await sleep(900 + words * 330);
       } finally {
         music.duck(false);
       }
       await sleep(240);
     });
-    this.speakingLine = line.catch(() => undefined);
-    return line;
+    this.speakingLine = next.catch(() => undefined);
+    return next;
   }
 
   private listen(on: boolean) {
@@ -161,7 +181,7 @@ class Flow {
     if (!text) return;
     // Together: whose words were these? The room's companion says (the other person, heard faintly from across the
     // room, isn't this person) before anything here acts on them, a "take me back" included.
-    if (!(await companion.claim(h))) { useGate.getState().set({ heardLine: null }); return; }
+    if (!(await companion.claim(h, { language: this.lang, setting: useGate.getState().language }))) { useGate.getState().set({ heardLine: null }); return; }
     g.hearLine(text, false);
     this.history.push({ who: 'person', text });
     if (!companion.live()) turn('person', text);
@@ -174,14 +194,17 @@ class Flow {
     if (beforeMemory && companion.leads() && ((this.invitedToEnter && saysYes(text)) || (asksToGoIn(text) && this.somewhereToGo()))) {
       this.askSeq++; // a reply still on its way is not said over the walk
       this.thinking = false;
-      await this.say('Come with me.');
+      this.setLang(nextConversationLanguage(this.lang, g.language, { claimed: null, text }));
+      await this.say(this.t('comeWithMe'));
       return void this.enter();
     }
     // "I'd like to leave", "take me back", "I'm done": acted on at once, without waiting on a model, so leaving always
     // works (even offline, even on a slow connection).
     if (asksToLeave(text) && !(beforeMemory && asksToGoIn(text)) && ['memory', 'forming', 'gathering', 'greeting'].includes(g.stage)) {
+      // The goodbye is said in the language of the wish (in Automatic), by the same free rule any turn uses.
+      this.setLang(nextConversationLanguage(this.lang, g.language, { claimed: null, text }));
       if (g.stage === 'memory' || g.stage === 'forming') return void this.leave();
-      await this.say('Of course. Thank you for spending this time with me.');
+      await this.say(this.t('goodbyeGate'));
       return void this.finish();
     }
     if (companion.live()) return void this.heardTogether(text, h);
@@ -193,6 +216,8 @@ class Flow {
     const mine = ++this.askSeq;
     const reply = await this.ask({ phase: 'gathering', transcript: text });
     if (mine === this.askSeq) this.thinking = false;
+    // Spanish or French words: prepared places and the library know English words, so the English reading is matched too.
+    if (reply.english) this.placeWords(reply.english);
     // Only words that describe the place feed the drawing ("yes, let's go" doesn't).
     if (reply.intent === 'describe' || (reply.intent === 'chat' && text.split(/\s+/).length >= 5)) memory.addWords(text, h.audioFileId);
     if (reply.place) { this.place = reply.place; useGate.getState().set({ memoryTitle: reply.place }); memory.setTitle(reply.place); }
@@ -200,23 +225,23 @@ class Flow {
     if (mine !== this.askSeq || !['gathering', 'greeting'].includes(useGate.getState().stage)) return;
     switch (reply.intent) {
       case 'enter':
-        await this.say(reply.reply);
+        await this.say(reply.reply, { language: reply.speakIn });
         return void this.enter();
       case 'offer_photo':
       case 'offer_video':
       case 'offer_invite':
         useGate.getState().set({ offers: { photo: true, video: true, invite: reply.intent === 'offer_invite' || useGate.getState().offers.invite } });
-        await this.say(reply.reply);
+        await this.say(reply.reply, { language: reply.speakIn });
         break;
       case 'leave':
-        await this.say(reply.reply);
+        await this.say(reply.reply, { language: reply.speakIn });
         return void this.finish();
       case 'rest':
-        return void this.rest(reply.reply);
+        return void this.rest(reply.reply, reply.speakIn);
       default:
         // A description: start drawing the place in the background so it's ready (or nearly) when we arrive.
         memory.plan();
-        await this.say(reply.reply);
+        await this.say(reply.reply, { language: reply.speakIn });
         this.invitedToEnter = asksToEnter(reply.reply);
     }
     this.scheduleNudge();
@@ -249,7 +274,10 @@ class Flow {
     } else if (inside && d.intent === 'chat') {
       for (const x of mine) if (x.text.split(/\s+/).length >= 5) void story(x.text);
     }
-    await this.say(d.text, { fromRoom: true });
+    // The conversation's language follows whoever spoke (resolveReply, in the gateway); each line is voiced in its own.
+    if (d.intentFor === me && d.language && ['en', 'es', 'fr'].includes(d.language)) this.setLang(d.language as Lang);
+    if (d.line) await this.say(this.t(d.line, { name: d.name ?? '' }), { fromRoom: true });
+    else await this.say(d.text, { fromRoom: true, language: d.speakIn ?? d.language ?? null });
     if (d.intentFor === me && d.intent === 'leave') return void (inside ? this.leave() : this.finish());
     if (d.intentFor === me && d.intent === 'rest') return void this.rest(null);
     if (companion.leads() && d.intent === 'enter' && (g.stage === 'gathering' || g.stage === 'greeting')) return void this.enter();
@@ -264,6 +292,7 @@ class Flow {
         if (x.memberId !== me) { this.turnsInPhase++; this.placeWords(x.text); } // the host's own were taken at once
         if (d.intent === 'describe' || (d.intent === 'chat' && x.text.split(/\s+/).length >= 5)) memory.addWords(x.text, null);
       }
+      if (d.english) this.placeWords(d.english);
       if (d.place) { this.place = d.place; g.set({ memoryTitle: d.place }); memory.setTitle(d.place); }
       if (d.intent === 'offer_photo' || d.intent === 'offer_video' || d.intent === 'offer_invite') g.set({ offers: { photo: true, video: true, invite: d.intent === 'offer_invite' || g.offers.invite } });
       else if (d.intent !== 'enter') memory.plan();
@@ -284,13 +313,18 @@ class Flow {
 
   private async heardInMemory(text: string, h: Heard): Promise<void> {
     // In a prepared place, naming a thing brings it in at once (from the library, to its spot in that world).
-    const brought = memory.bringIn(text);
+    let brought = memory.bringIn(text);
     if (brought) setTimeout(() => void moments.mark(text, h.audioFileId), 1800); // the picture once it has formed
     this.thinking = true;
     const reply = await this.ask({ phase: 'memory', transcript: text });
     this.thinking = false;
-    if (reply.intent === 'leave') { await this.say(reply.reply); return void this.leave(); }
-    if (reply.intent === 'rest') return void this.rest(reply.reply);
+    // Spanish or French words: the library knows English names, so what they named comes in from the English reading.
+    if (!brought && reply.english && memory.bringIn(reply.english)) {
+      brought = true;
+      setTimeout(() => void moments.mark(text, h.audioFileId), 1800);
+    }
+    if (reply.intent === 'leave') { await this.say(reply.reply, { language: reply.speakIn }); return void this.leave(); }
+    if (reply.intent === 'rest') return void this.rest(reply.reply, reply.speakIn);
     if (reply.intent === 'add_detail' && !brought) {
       // Seeing through someone's eyes (and the exchange is keeping perspectives): it becomes that perspective's own
       // story and things in the place. Otherwise the shared memory grows, as always. (In a prepared place, named
@@ -301,7 +335,7 @@ class Flow {
     } else if (reply.intent === 'chat' && text.split(/\s+/).length >= 5) {
       void story(text, { audioFileId: h.audioFileId });
     }
-    await this.say(reply.reply);
+    await this.say(reply.reply, { language: reply.speakIn });
   }
 
   // ------------------------------------------------------------ prepared places from the library
@@ -366,12 +400,13 @@ class Flow {
     await this.enter();
   }
 
-  /** Ask the companion's brain: Claude through the backend, else the offline rules. Never longer than ~7 s. */
-  private async ask(partial: Pick<GuideInput, 'phase' | 'transcript'>): Promise<GuideReply> {
+  /** Ask the companion's brain: Claude through the backend, else the offline rules. Never longer than ~7 s. The answer
+   *  also settles the conversation language, and the language Sonic says the reply in (resolveReply). */
+  private async ask(partial: Pick<GuideInput, 'phase' | 'transcript'>): Promise<GuideReply & { speakIn: string }> {
     const g = useGate.getState();
     // Inside a memory, the companion speaks to whoever's eyes the place is seen through, with that perspective's thread.
     const seen = guideContext();
-    const input: GuideInput = {
+    const input: GuideInput & { language: Lang; setting: LanguageSetting } = {
       ...partial,
       history: seen && seen.history.length >= 2 ? seen.history : this.history.slice(-8),
       ...(seen ? { perspective: seen.perspective } : {}),
@@ -380,15 +415,30 @@ class Flow {
       place: this.place,
       invitedToEnter: this.invitedToEnter,
       turnsInPhase: this.turnsInPhase,
+      language: this.lang,
+      setting: g.language,
     };
-    const offline = guideOffline(input);
-    if (!g.session) return offline;
-    const online = await withTimeout(
-      convex.action(api.guide.respond, { code: g.session.code, token: g.session.token, input }) as Promise<GuideReply | null>,
-      7000, null,
-    );
-    if (!online) return offline;
-    return { ...online, reply: safeReply(online.reply, offline.reply) };
+    const online = g.session
+      ? await withTimeout(convex.action(api.guide.respond, { code: g.session.code, token: g.session.token, input }) as Promise<GuideReply | null>, 7000, null)
+      : null;
+    const r = resolveReply(input, online);
+    this.setLang(r.language);
+    return { ...r.reply, speakIn: r.speakIn };
+  }
+
+  /** "I can see a sunny kitchen. Where is this place?", or only the question when the caption is in another language. */
+  private seeLine(caption: string | null): string {
+    return caption && sameLanguage(caption, this.lang) ? this.t('seeCaption', { caption: lowerFirst(caption) }) : this.t('wherePlace');
+  }
+
+  /** The companion's first words in the place: a prepared place's own, or the plan's (written in the conversation's
+   *  language), or simply "Here we are" when what's there was written in another language. */
+  private introLine(): string {
+    const key = useMemory.getState().place;
+    const lang = this.lang;
+    if (key && lang !== 'en') return PLACE_INTROS[key]?.[lang] ?? this.t('hereWeAre');
+    const planned = memory.introLine();
+    return planned && sameLanguage(planned, lang) ? planned : this.t('hereWeAre');
   }
 
   // ------------------------------------------------------------ photos and videos
@@ -397,20 +447,19 @@ class Flow {
     if (!['portal', 'greeting', 'gathering'].includes(g.stage)) return;
     const kind = file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : null;
     if (!kind) return;
-    if (file.size > (kind === 'video' ? 250 : 30) * 1024 * 1024) { await this.say('That one is a little too large for me. A smaller copy would be perfect.'); return; }
+    if (file.size > (kind === 'video' ? 250 : 30) * 1024 * 1024) { await this.say(this.t('tooLarge')); return; }
     if (g.stage === 'portal') await this.begin();
     const media = await describeMedia(file);
-    if (!media) { await this.say('I couldn’t open that one. Could you try another?'); return; }
+    if (!media) { await this.say(this.t('cantOpen')); return; }
     useGate.getState().set({ media, offers: { photo: false, video: false, invite: false }, expression: 'curious' });
     this.clearNudge();
     this.turnsInPhase = Math.max(this.turnsInPhase, 1);
     const seen = memory.fromMedia(media);
-    await this.say(media.kind === 'video' ? 'Oh, I love this.' : 'Oh, look at this.');
+    await this.say(this.t(media.kind === 'video' ? 'loveVideo' : 'lookPhoto'));
     const caption = await withTimeout(seen, 9000, null);
     this.mediaCaption = caption?.caption ?? null;
     if (caption?.title) { this.place = caption.title; useGate.getState().set({ memoryTitle: caption.title }); }
-    const ask = caption?.caption ? `I can see ${lowerFirst(caption.caption)}. Where is this place?` : 'Where is this place?';
-    await this.say(ask);
+    await this.say(this.seeLine(caption?.caption ?? null));
     useGate.getState().set({ expression: 'neutral' });
     this.scheduleNudge();
   }
@@ -444,7 +493,7 @@ class Flow {
     // A prepared place is ready when its world is showing; a sketched one when most of it has formed.
     const prepared = !!useMemory.getState().place;
     const ready = prepared ? await this.worldShown(14_000) : await memory.whenDrawn(14_000);
-    if (!ready) await this.say('It’s coming back to me, little by little.');
+    if (!ready) await this.say(this.t('comingBack'));
     if (prepared && !ready && !(await this.worldShown(16_000))) {
       // The world didn't come (no backend, or it was never loaded): draw the place from the words instead.
       memory.leavePlace();
@@ -452,18 +501,18 @@ class Flow {
     }
     await memory.whenDrawn(20_000);
     useGate.getState().set({ stage: 'memory', expression: 'happy' });
-    const intro = memory.introLine() ?? 'Here we are.';
+    const intro = this.introLine();
     await this.say(intro);
     moments.mark(intro, null, true);
     useGate.getState().set({ expression: 'neutral' });
-    await this.say('Tell me what else was here, or anything you notice. Say when you’d like to leave.');
+    await this.say(this.t('tellMeMore'));
     this.listen(true);
   }
 
   // ------------------------------------------------------------ resting, leaving
-  async rest(line: string | null = 'Of course. Let’s rest here for a moment.'): Promise<void> {
+  async rest(text: string | null = this.t('restDefault'), language?: string): Promise<void> {
     this.clearNudge();
-    if (line) await this.say(line);
+    if (text) await this.say(text, { language, whileResting: true });
     this.listen(false);
     this.engine?.hush();
     useGate.getState().set({ resting: true, expression: 'sleepy' });
@@ -473,7 +522,7 @@ class Flow {
   async resume(): Promise<void> {
     useGate.getState().set({ resting: false, expression: 'neutral' });
     music.duck(false);
-    await this.say('I’m here whenever you’re ready.');
+    await this.say(this.t('resume'), { whileResting: true });
     this.listen(true);
   }
 
@@ -485,8 +534,8 @@ class Flow {
     const g = useGate.getState();
     if (g.stage === 'memory' || g.stage === 'forming') {
       g.set({ stage: 'leaving', resting: false });
-      await moments.captureFinal(this.place);
-      await this.say('Thank you for taking me there. I’ve kept this moment for you.');
+      await moments.captureFinal(this.place, this.t('ourVisit'), this.lang === 'en' ? undefined : this.introLine());
+      await this.say(this.t('thanksLeaving'));
     }
     await this.finish();
   }
@@ -517,7 +566,7 @@ class Flow {
         try { if (await companion.whenHostInside(180_000)) await this.enter(); } finally { this.following = false; }
         return;
       }
-      await this.say(`${shared.byName && shared.byName !== 'You' ? shared.byName : 'Your family'} is visiting ${plan.title}. Let’s go with them.`);
+      await this.say(this.t('familyVisiting', { name: shared.byName && shared.byName !== 'You' ? shared.byName : this.t('yourFamily'), place: plan.title }));
       await this.enter();
     }
   }
@@ -538,8 +587,8 @@ class Flow {
     this.turnsInPhase = Math.max(this.turnsInPhase, 1);
     if (shared.title) { this.place = shared.title; g.set({ memoryTitle: shared.title }); }
     this.mediaCaption = shared.caption ?? null;
-    await this.say(`${shared.byName ?? 'Someone'} sent a photo. Oh, look at this.`);
-    await this.say(shared.caption ? `I can see ${lowerFirst(shared.caption)}. Where is this place?` : 'Where is this place?');
+    await this.say(this.t('sentPhoto', { name: shared.byName ?? this.t('someone') }));
+    await this.say(this.seeLine(shared.caption ?? null));
     useGate.getState().set({ expression: 'neutral' });
     this.scheduleNudge();
   }
@@ -572,7 +621,7 @@ class Flow {
     useGate.getState().set({ stage: 'forming', enterProgress: 1, expression: 'gentle' });
     await memory.whenDrawn(16_000);
     useGate.getState().set({ stage: 'memory', expression: 'happy' });
-    await this.say('Here we are again.');
+    await this.say(this.t('hereAgain'));
     useGate.getState().set({ expression: 'neutral' });
     this.listen(true);
   }
@@ -621,7 +670,7 @@ class Flow {
     moments.reset();
     music.setMode('gate');
     useGate.getState().set({ stage: 'gathering', media: null, memoryTitle: null, offers: { photo: true, video: true, invite: !!useGate.getState().session }, enterProgress: 0 });
-    void this.say('Where would you like to go next?').then(() => { this.listen(true); this.scheduleNudge(); });
+    void this.say(this.t('whereNext')).then(() => { this.listen(true); this.scheduleNudge(); });
   }
 
   setMusic(on: boolean): void {
@@ -642,13 +691,13 @@ class Flow {
     this.nudges++;
     if (this.nudges === 1) {
       g.set({ offers: { photo: true, video: true, invite: !!g.session && !g.invite } });
-      await this.say(g.media ? 'Take your time. Whenever you’re ready, we can step inside.' : 'Take your time. If it’s easier, a photo can help us find the way.');
+      await this.say(this.t(g.media ? 'nudgeMedia' : 'nudgePhoto'));
       if (g.media) this.invitedToEnter = true;
     } else if (this.nudges === 2 && g.media) {
-      await this.say('Shall we go and see it?');
+      await this.say(this.t('shallWeSee'));
       this.invitedToEnter = true;
     } else if (this.nudges <= 3) {
-      await this.say('There’s no hurry. I’m right here.');
+      await this.say(this.t('noHurry'));
     }
     if (this.nudges < 4) this.scheduleNudge();
   }

@@ -65,6 +65,16 @@ try {
   check(ribbon?.length === 1 && ribbon[0].speakerName === 'Lily', `the same words from both mics are kept once, as Lily's (${ribbon?.map((c) => c.speakerName).join(', ') || 'none'})`);
   await waitFor(async () => (await answers(laptop)).length >= 2, 12000);
 
+  // Rosa speaks Spanish (both devices on Automatic): the answer is Spanish, the same line on both; her device's
+  // conversation follows her into Spanish, while the laptop's stays in Lily's English.
+  const spoken = (p) => p.evaluate(() => window.__gate.store.getState().spoken);
+  const nAnswers = (await answers(laptop)).length;
+  await hear(quest, 'Mi abuela y yo volábamos la cometa junto al río', 26);
+  const es = await waitFor(async () => (await answers(laptop))[nAnswers]);
+  const esSame = es && (await waitFor(async () => (await answers(quest)).find((l) => l.id === es.id)));
+  check(es?.language === 'es' && esSame?.text === es.text, `Rosa's Spanish is answered in Spanish, the same line on both devices ("${es?.text ?? 'none'}")`);
+  check(!!(await waitFor(async () => (await spoken(quest)) === 'es', 5000)) && (await spoken(laptop)) === 'en', `her device follows her into Spanish, the laptop stays in English (${await spoken(quest)}, ${await spoken(laptop)})`);
+
   // A guest's "let's go" doesn't take them through alone; the host's does, and the guest follows once the host is in.
   await hear(quest, 'Let’s go there', 26);
   await quest.waitForTimeout(4000);

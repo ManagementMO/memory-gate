@@ -1,6 +1,8 @@
 'use node';
 // The companion's turn: Claude proposes a short reply and an intent; the client applies the shared safety filter
 // and falls back to the offline rules whenever this returns null (no key, ai.live off, budget reached, refusal).
+// The same answer says which language it heard and carries English readings (of the words, for the scene; of the
+// reply, for the safety filter), so a Spanish or French turn costs no extra call.
 import { v } from 'convex/values';
 import { z } from 'zod';
 import { action } from './_generated/server';
@@ -13,9 +15,12 @@ const Out = z.object({
   reply: z.string(),
   intent: z.enum(GUIDE_INTENTS as unknown as [GuideIntent, ...GuideIntent[]]),
   place: z.string(),
-  /** Two people talking together: true when they don't need the companion right now. */
+  language: z.string(),
+  english: z.string(),
+  reply_english: z.string(),
+  /** Several people talking together: true when they don't need the companion right now. */
   listen: z.boolean(),
-  /** Two people talking together: whose words added a detail ("" otherwise). */
+  /** Several people talking together: whose words added a detail ("" otherwise). */
   detailFor: z.string(),
 });
 
@@ -26,8 +31,13 @@ export const respond = action({
     if (!gate.ok) return null;
     const out = await structured(ctx, { system: GUIDE_SYSTEM, content: render(input as GuideInput), schema: Out, maxTokens: 2500, effort: 'low', model: guideModel() });
     if (!out) return null;
+    const heard = out.language.trim().toLowerCase();
     const together = !!(input as GuideInput).together;
-    return { reply: cap(out.reply, 220), intent: out.intent, place: cap(out.place, 48) || null, listen: together && out.listen && out.intent === 'chat', detailFor: together ? cap(out.detailFor, 40) || null : null };
+    return {
+      reply: cap(out.reply, 220), intent: out.intent, place: cap(out.place, 48) || null,
+      language: /^[a-z]{2}$/.test(heard) ? heard : null, english: cap(out.english, 600) || null, replyEnglish: cap(out.reply_english, 260) || null,
+      listen: together && out.listen && out.intent === 'chat', detailFor: together ? cap(out.detailFor, 40) || null : null,
+    };
   },
 });
 
