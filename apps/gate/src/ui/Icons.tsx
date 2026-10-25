@@ -29,6 +29,9 @@ export const LeaveIcon = ({ size }: P) => (
 export const HeadsetIcon = ({ size }: P) => (
   <svg {...base(size)}><path d="M3.5 10.5a3 3 0 013-3h11a3 3 0 013 3v3.6a3 3 0 01-3 3h-2.6l-1.6-2.2a1.6 1.6 0 00-2.6 0l-1.6 2.2H6.5a3 3 0 01-3-3z" /></svg>
 );
+export const PhotosIcon = ({ size }: P) => (
+  <svg {...base(size)}><rect x="3.5" y="6.5" width="13" height="11" rx="2.2" /><path d="M7.5 4.5h10.8a2.2 2.2 0 012.2 2.2v8.3" /><path d="M5 15.5l3.2-3.4 2.6 2.4 2-1.8 2.7 2.8" /><circle cx="12.8" cy="9.6" r="1.2" /></svg>
+);
 export const CloseIcon = ({ size }: P) => (
   <svg {...base(size)}><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" /></svg>
 );

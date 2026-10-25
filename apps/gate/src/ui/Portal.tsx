@@ -35,7 +35,6 @@ export function Portal() {
       </button>
       <p className="fine">It listens while you talk and keeps your words, voice and photos with your memories. Rest or stop any time.</p>
       {!guestOf && <a className="quiet-link" href="/?story=red-kite" data-testid="open-red-kite">Explore The Red Kite · two tellings</a>}
-      {!guestOf && <button type="button" className="quiet-link" onClick={() => flow.openAlbum()} data-testid="open-album">Your moments</button>}
     </section>
   );
 }
