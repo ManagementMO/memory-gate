@@ -87,7 +87,7 @@ export function MemoryScene() {
   const placeKey = useMemory((s) => s.place);
   const shared = useMemory((s) => !!s.shared);
   // A garden, a football field, a classroom we already have finished: it forms whole, nothing to plan or draw.
-  const showcase = useMemo(() => (!shared && !photoWorld && !placeKey ? showcaseFor(plan) : null), [plan, shared, photoWorld, placeKey]);
+  const showcase = useMemo(() => (plan?.showcase?.name ?? (!shared && !photoWorld && !placeKey ? showcaseFor(plan) : null)), [plan, shared, photoWorld, placeKey]);
   useEffect(() => { useMemory.setState({ showcase }); return () => { useMemory.setState({ showcase: null }); }; }, [showcase]);
   const place = placeKey ? PLACES[placeKey] : null;
   const coveredByPhoto = useRef(new Set<string>());
@@ -163,7 +163,7 @@ export function MemoryScene() {
   const sorted = [...shown].sort((a, b) => (ORDER[entryOf(a.kind).place] ?? 3) - (ORDER[entryOf(b.kind).place] ?? 3));
   return (
     <group name="memory">
-      {showcase && <Showcase name={showcase} />}
+      {showcase && <Showcase name={showcase} camera={plan.showcase?.camera ?? 0} />}
       {!photoWorld && !place && !showcase && <Setting plan={plan} />}
       {!photoWorld && !showcase && plan.landmark && <Landmark landmark={plan.landmark} />}
       {!!plan.people?.length && <PlanPeople plan={plan} />}

@@ -72,6 +72,8 @@ export type ScenePlan = {
   people?: PlanPerson[];
   /** A landmark on the horizon (the Golden Gate Bridge from Crissy Field). */
   landmark?: PlanLandmark | null;
+  /** A finished place this memory is (src/showcase/scenes/<name>), seen from one of its cameras: it forms whole. */
+  showcase?: { name: string; camera?: number } | null;
   /** The companion's first line once the place has formed (≤ 22 words, present tense, in the speaker's words). */
   intro: string;
 };
@@ -300,6 +302,8 @@ export function validatePlan(raw: unknown, fallbackTitle = 'A remembered place')
   const landmark: PlanLandmark | null = lm && (LANDMARKS as readonly unknown[]).includes(lm.id)
     ? { id: lm.id as LandmarkId, bearing: Number(lm.bearing) || 0, distance: Math.min(5000, Math.max(40, Number(lm.distance) || 400)), yaw: Number(lm.yaw) || 0, ...(Number(lm.above) > 0 ? { above: Math.min(400, Number(lm.above)) } : {}) }
     : null;
+  const sc = (r.showcase ?? null) as Record<string, unknown> | null;
+  const showcase = sc && typeof sc.name === 'string' && /^[a-z0-9-]{1,40}$/.test(sc.name) ? { name: sc.name, ...(Number.isInteger(sc.camera) ? { camera: sc.camera as number } : {}) } : null;
   return {
     version: 1,
     title: clean(r.title, 48) || fallbackTitle,
@@ -316,6 +320,7 @@ export function validatePlan(raw: unknown, fallbackTitle = 'A remembered place')
     objects,
     ...(people.length ? { people } : {}),
     ...(landmark ? { landmark } : {}),
+    ...(showcase ? { showcase } : {}),
     intro: clean(r.intro, 160) || 'Here we are.',
   };
 }

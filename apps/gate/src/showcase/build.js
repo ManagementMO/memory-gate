@@ -331,6 +331,7 @@ export async function buildShowcase({ spec, script, renderer, camera, grass: gra
   await Promise.all(waits);
   if (script) {
     try {
+      spec.grassScale = grassScale;
       await script({ THREE, scene, camera, renderer, spec, rng, loadModel, normalized, placeItem, placeScatter, placeGrass, texSet, surfaceMaterial });
     } catch (e) { console.warn('[showcase] script', e); }
   }
