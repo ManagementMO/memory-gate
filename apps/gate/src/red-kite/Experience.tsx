@@ -37,9 +37,9 @@ function Experience() {
   const reducedMotion = motionOverride ?? systemReducedMotion;
   const recenter = useRef(0), navigationBlocked = useRef(true);
   const traversal = useRef<MeadowTraversal | null>(null), touch = useRef({ right: 0, forward: 0 }), debugTerrain = useRef(false);
-  const [terrainReady, setTerrainReady] = useState(false), [verticalShift, setVerticalShift] = useState(0), [showCollider, setShowCollider] = useState(false);
+  const [terrainReady, setTerrainReady] = useState(false), [showCollider, setShowCollider] = useState(false);
   const onTerrainReady = useCallback((world: MeadowTraversal | null) => {
-    traversal.current = world; setTerrainReady(!!world); if (world) { setVerticalShift(world.verticalShift); setTerrainError(''); }
+    traversal.current = world; setTerrainReady(!!world); if (world) setTerrainError('');
   }, []);
   useLayoutEffect(() => { debugTerrain.current = showCollider; }, [showCollider]);
   const connected = useConvexConnectionState().isWebSocketConnected && online;
@@ -93,7 +93,8 @@ function Experience() {
   // DOM and Canvas have separate React roots. A frame reads these guards directly, so rest cannot
   // keep animating while an expensive Canvas commit is still catching up with the visible controls.
   useLayoutEffect(() => { simulationPaused.current = quiet; viewPaused.current = paused || !connected; reduced.current = reducedMotion; }, [quiet, paused, connected, reducedMotion]);
-  useLayoutEffect(() => { navigationBlocked.current = quiet || (compare && !xr) || !ready; }, [quiet, compare, ready, xr]);
+  // Walking is local: a dropped connection quiets the story, not the visitor's feet.
+  useLayoutEffect(() => { navigationBlocked.current = paused || switching || (compare && !xr) || !ready; }, [paused, switching, compare, ready, xr]);
   useEffect(() => { if (quiet) { stopSpeech(); motion.current = releaseSpool(motion.current); } }, [quiet, stopSpeech]);
   useEffect(() => {
     if (paused || !connected) { transition.current = cancelSwitch(transition.current); setSwitching(false); }
@@ -179,7 +180,11 @@ function Experience() {
   return <main className={`red-kite app${xr ? ' rk-in-xr' : ''}`} data-testid="red-kite-experience" data-perspective={perspective} data-paused={String(paused)} data-speaking={String(speaking)} data-world-ready={String(ready)} data-motion-mode={reducedMotion ? 'reduced' : 'full'} data-ui={panelsVisible ? 'visible' : 'hidden'}>
     {source?.url && <SceneCanvas effects={false}>
       <StoryView transition={transition} motion={motion} eye={source.floorY === null ? 1.5246 : -source.floorY * source.scale} paused={viewPaused} navigationBlocked={navigationBlocked} recenter={recenter} reduced={reduced} traversal={traversal} touch={touch} controls={controls} onPerspective={selected} onXR={onXR} />
-      <Meadow source={source} lite={lite} detailed={quality === 'detail'} verticalShift={verticalShift} onReady={onReady} onError={onWorldError} />
+      {/* The meadow stays where its own floor estimate puts it: measured from its splats, the visible ground under the
+          entrance, both viewpoints and the props is at y = 0. The collider sits ~1.15 m lower in the same frame, so its
+          correction (traversal.verticalShift) moves only the walking surface; moving the splats too put the ground at
+          eye level in the headset. */}
+      <Meadow source={source} lite={lite} detailed={quality === 'detail'} onReady={onReady} onError={onWorldError} />
       <Suspense fallback={null}><Terrain source={source} debug={debugTerrain} onReady={onTerrainReady} onError={onTerrainError} /><MemoryProps look={look} proposed={proposal} paused={simulationPaused} reduced={reduced} motion={motion} onKeepsake={onKeepsake} onReady={onPropsReady} /></Suspense>
     </SceneCanvas>}
     <div className="rk-vignette" aria-hidden="true" />
