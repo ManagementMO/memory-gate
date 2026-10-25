@@ -19,6 +19,7 @@ import { xrStore } from '../scene/xr';
 import { convex } from '../backend/client';
 import { closeObjectInfo, infoButtons, useObjectInfo, type InfoTarget } from './state';
 import './object-info.css';
+const enabled = new URLSearchParams(location.search).get('objectInfo') !== 'off';
 
 /** An unavailable optional backend/asset must never take down the memory or the companion. */
 class InfoBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -57,7 +58,7 @@ function infoText(job: ReturnType<typeof useInfoContext>['job'], busy: boolean, 
 }
 
 /** Only a topic lookup runs when a person selects a marker. Merely seeing an object makes no cloud calls. */
-export function ObjectInfoHUD() { return <InfoBoundary><InfoHUD /></InfoBoundary>; }
+export function ObjectInfoHUD() { return enabled ? <InfoBoundary><InfoHUD /></InfoBoundary> : null; }
 function InfoHUD() {
   const c = useInfoContext(), busy = useObjectInfo(s => s.busy), error = useObjectInfo(s => s.error), more = useObjectInfo(s => s.more);
   const targets = useObjectInfo(s => s.targets), selectedId = useObjectInfo(s => s.selected), refresh = useAction(api.objectKnowledgeActions.refresh);
@@ -125,7 +126,7 @@ function useTargets() {
 }
 const point = new THREE.Vector3(), eye = new THREE.Vector3(), projected = new THREE.Vector3();
 function isVisible(node: THREE.Object3D) { for (let p: THREE.Object3D | null = node; p; p = p.parent) if (!p.visible) return false; return true; }
-export function ObjectInfoLayer() { return <InfoBoundary><InfoLayer /></InfoBoundary>; }
+export function ObjectInfoLayer() { return enabled ? <InfoBoundary><InfoLayer /></InfoBoundary> : null; }
 function InfoLayer() {
   const targets = useTargets(), c = useInfoContext(), scene = useThree(s => s.scene), camera = useThree(s => s.camera), gl = useThree(s => s.gl);
   const markers = useRef(new Map<string, THREE.Group>()), last = useRef(0);

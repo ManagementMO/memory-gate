@@ -94,5 +94,11 @@
   "gateTypecheck": "passed",
   "gateProductionBuild": "passed",
   "actorBuildId": "A2d6gKeLbOWKetN4U",
-  "runtimeNote": "Local SpacetimeDB module updated to current main without destructive migration or configuration changes."
+  "runtimeNote": "Local SpacetimeDB module updated to current main without destructive migration or configuration changes.",
+  "broaderWalkingCheck": {
+    "status": "failed",
+    "passed": 17,
+    "failed": 3,
+    "evidence": "walking-check.json"
+  }
 }
