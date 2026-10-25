@@ -313,9 +313,21 @@ export function perspectiveFromWords(transcript: string): 'child' | 'grandparent
   const mine = "(my|our|mi|mis|nuestra|nuestro|ma|mon|mes|notre|nos)";
   if (/\b(i (was|am) (the |a |his |her |their )?(grandmother|grandfather|grandma|grandpa|granny|nana|grandparent)|yo era (la |el )?(abuela|abuelo)|j'étais (la |le )?grand ?(mère|père))\b/.test(t)) return 'grandparent';
   if (new RegExp(`\\b${mine} (grand ?(son|daughter|child|children|kids?|baby|babies)|grandkids?|nietos?|nietas?|petits? ?(fils|fille|enfants?))\\b`).test(t)) return 'grandparent';
-  if (new RegExp(`\\b${mine} (grand ?(mother|father|ma|pa|mom|mum|dad|parents?)|granny|gran|nana|nan|nanna|abuel[ao]s?|abuelit[ao]s?|lola|lolo|oma|opa|bubbe|zayde|grand ?(mère|père)|grands? ?parents|mamie|mamy|papi|papy)\\b`).test(t)) return 'child';
+  // Their grandparent: "my grandma", "with grandma", "grandma and me", or just "Grandma." when asked, in the spellings
+  // a transcript gives too (granma, gramma, grampa).
+  const elder = "(grand ?(mother|father|ma|pa|mom|mum|dad|mama|papa|parents?)|gran ?(ny|nie|ma|pa)|gram ?(ma|mie|my|pa|ps)|grandad|granddad|gran|nana|nan|nanna|nonn[ao]|mee ?maw|memaw|abuel[ao]s?|abuelit[ao]s?|lola|lolo|oma|opa|bubbe|zayde|grand ?(mère|père)|grands? ?parents|mamie|mamy|papi|papy)";
+  if (new RegExp(`\\b(${mine}|with|con|avec|and|y|et) ${elder}\\b|\\b${elder} (and|y|et) (i|me|yo|moi)\\b|^${elder}$`).test(t)) return 'child';
   if (/\b(when i was|as) (a |an )?(little |small |young )?(kid|child|boy|girl|little one|toddler)\b|\bwhen i was (little|small|young|a kid)\b|\bcuando (yo )?era (niñ[ao]|chic[ao]|pequeñ[ao])\b|\bquand j'étais (petit|petite|enfant)\b/.test(t)) return 'child';
   return null;
+}
+
+/** Whose eyes, from what the companion just said back ("A kite hill with your grandmother."): what it heard, even in
+ *  words the person's own reading missed. Its questions ("your grandmother, perhaps?") are not what it heard. */
+export function perspectiveFromReply(reply: string): 'child' | 'grandparent' | null {
+  const told = reply.split(/(?<=[.!?¿¡])\s+/).filter((x) => !/[?¿]/.test(x)).join(' ');
+  const mine = told.replace(/\byour\b/gi, 'my').replace(/\b(tu|su)\b/gi, 'mi').replace(/\b(tus|sus)\b/gi, 'mis')
+    .replace(/\b(ta|votre)\b/gi, 'ma').replace(/\bton\b/gi, 'mon').replace(/\b(tes|vos)\b/gi, 'mes');
+  return mine === told ? null : perspectiveFromWords(mine);
 }
 
 /** "Let's go", "take me there", "step inside" (and "vamos allá", "allons-y"): asking to go into the place they've been

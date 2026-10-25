@@ -2,7 +2,7 @@
 // companion says or does; the person only ever talks, shares a photo or video, or says they'd like to stop.
 //   portal → greeting → gathering (talk / photo / video / someone helps) → entering → forming → memory → leaving → album
 import { api } from '../../../../convex/_generated/api';
-import { asksToEnter, asksToGoIn, asksToLeave, perspectiveFromWords, resolveReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
+import { asksToEnter, asksToGoIn, asksToLeave, perspectiveFromReply, perspectiveFromWords, resolveReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
 import { initialConversationLanguage, nextConversationLanguage, sameLanguage, type Lang, type LanguageSetting } from '../../../../packages/shared/src/language';
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
@@ -265,6 +265,10 @@ class Flow {
       default:
         // A description: start drawing the place in the background so it's ready (or nearly) when we arrive.
         memory.plan();
+        // What the companion says back ("A kite hill with your grandmother.") shows whose eyes too, even in words the
+        // reading of theirs missed: it never asks what it was just told.
+        const told = this.who.known || g.session?.role === 'guest' ? null : perspectiveFromReply(reply.reply);
+        if (told) { this.who.known = true; useMemory.setState({ company: true }); void claimPerspective(told, null); }
         // Before stepping in, once: who was there with them (their perspective), asked in words in place of the
         // invitation; the rest of the reply is still said.
         if (asksToEnter(reply.reply) && !this.who.known && !this.who.asked && g.session?.role !== 'guest') {
