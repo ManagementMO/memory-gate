@@ -5,7 +5,6 @@ import { flow } from '../flow/controller';
 import { usePresence } from '../presence/presence';
 import { useGate } from '../state/store';
 import { useRef, useState } from 'react';
-import { exploreMeadow, MemoryAddOnsWelcome } from '../memory-addons/MemoryAddOnsWelcome';
 
 export function Portal() {
   const guestOf = useGate((s) => s.invite?.host ?? null);
@@ -22,13 +21,13 @@ export function Portal() {
     catch { setProblem('This visit couldn’t open just now. Please try again.'); }
     finally { pending.current = false; setOpening(null); }
   };
-  const examples = <>
-    <MemoryAddOnsWelcome disabled={!!opening} opening={opening === 'meadow'} onExplore={() => void start('meadow', exploreMeadow)} />
-    <div className="portal-links">
-      <a className="quiet-link" href="/?story=red-kite" data-testid="open-red-kite">The Red Kite · two tellings</a>
-      <a className="quiet-link" href="/?story=red-kite&objects=1" data-testid="open-object-workshop">Try a place-to-object example</a>
-    </div>
-  </>;
+  // The start page is just Begin for now. The examples that sat under it are hidden, still reachable by address
+  // (/?story=red-kite, /?story=red-kite&objects=1). To bring them back, render this under Begin again:
+  //   <MemoryAddOnsWelcome disabled={!!opening} opening={opening === 'meadow'} onExplore={() => void start('meadow', exploreMeadow)} />
+  //   <div className="portal-links">
+  //     <a className="quiet-link" href="/?story=red-kite" data-testid="open-red-kite">The Red Kite · two tellings</a>
+  //     <a className="quiet-link" href="/?story=red-kite&objects=1" data-testid="open-object-workshop">Try a place-to-object example</a>
+  //   </div>
   const join = () => {
     if (!nearby) return;
     useGate.getState().set({ invite: { code: nearby.code, key: nearby.key, host: 'the visit' } });
@@ -43,7 +42,6 @@ export function Portal() {
           Join
         </button>
         <button type="button" className="quiet-link" onClick={() => void start('visit', () => flow.begin())} disabled={!!opening} data-testid="begin">Start a new visit</button>
-        {examples}
         {problem && <p className="portal-problem" role="alert">{problem}</p>}
       </section>
     );
@@ -56,7 +54,6 @@ export function Portal() {
         {guestOf ? 'Join' : 'Begin'}
       </button>
       <p className="fine">It listens while you talk and keeps your words, voice and photos with your memories. Rest or stop any time.</p>
-      {!guestOf && examples}
       {problem && <p className="portal-problem" role="alert">{problem}</p>}
     </section>
   );
