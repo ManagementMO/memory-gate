@@ -47,18 +47,25 @@ async function loadSurface(s: { collider: string; scale: number; floorY: number 
 /** What walking needs of a surface: the meadow's traversal, or the flat floor below. */
 type Surface = Pick<MeadowTraversal, 'feet' | 'place' | 'step' | 'groundAt'>;
 
-/** A memory without a walking surface (a sketched room or clearing, a photo, the courtyard): the floor is flat, and
- *  every step stays inside the place, as walking on a screen does. */
+/** A showcase that says where its floor is (its scene's `walk`: [x0, z0, x1, z1] in its own metres: the living room
+ *  inside its walls, the football field and its sidelines): steps stay on it. Null elsewhere. */
+let placeBounds: ((x: number, z: number) => { x: number; z: number } | null) | null = null;
+const SHOWCASES = import.meta.glob('../showcase/scenes/*.json', { eager: true, import: 'default' }) as Record<string, { walk?: [number, number, number, number] }>;
+const inside = (x: number, z: number) => placeBounds?.(x, z) ?? keepInside(x, z);
+
+/** A memory without a walking surface (a sketched room or clearing, a photo, the courtyard, a showcase): the floor is
+ *  flat, and every step stays inside the place, as walking on a screen does. */
 function flatSurface(): Surface {
   let at = { x: 0, z: 0 };
   return {
     get feet(): [number, number, number] { return [at.x, 0, at.z]; },
-    place(p) { at = keepInside(p[0], p[2]); },
-    step(d) { at = keepInside(at.x + d[0], at.z + d[1]); return [at.x, 0, at.z]; },
+    place(p) { at = inside(p[0], p[2]); },
+    step(d) { at = inside(at.x + d[0], at.z + d[1]); return [at.x, 0, at.z]; },
     groundAt: () => 0,
   };
 }
 const flat = flatSurface();
+const _inv = new THREE.Matrix4(), _p = new THREE.Vector3();
 
 const SPEED = 1.2; // metres a second
 const TURN = Math.PI / 6;
@@ -67,17 +74,19 @@ const HOLD_S = 0.45; // a pinch held this long on the ground is a step there, no
 /** The ground catcher (MemoryScene) hands its pointer events here; a hold becomes a step, a tap stays a point. */
 export const walkPointer = {
   active: false,
-  held: null as null | { id: number; t0: number; point: THREE.Vector3 },
+  held: null as null | { id: number; t0: number; point: THREE.Vector3; away?: number },
   movedAt: -1e9,
   downs: 0, // diagnostics (scripts): ground presses seen
   down(e: ThreeEvent<PointerEvent>) { walkPointer.downs++; if (walkPointer.active) walkPointer.held = { id: e.pointerId, t0: performance.now(), point: e.point.clone() }; },
-  move(e: ThreeEvent<PointerEvent>) { const h = walkPointer.held; if (h && h.id === e.pointerId) h.point.copy(e.point); },
+  move(e: ThreeEvent<PointerEvent>) { const h = walkPointer.held; if (h && h.id === e.pointerId) { h.point.copy(e.point); h.away = undefined; } },
   up(e: ThreeEvent<PointerEvent>) {
     const h = walkPointer.held;
     walkPointer.held = null;
     if (h && h.id === e.pointerId && performance.now() - h.t0 >= HOLD_S * 1000) walkPointer.request = h.point.clone();
   },
-  leave(e: ThreeEvent<PointerEvent>) { if (walkPointer.held?.id === e.pointerId) walkPointer.held = null; },
+  // Off the ground mid-hold: it ends a moment later, unless the ray comes back to the ground or onto one of the dialogue's
+  // buttons (they hang in front and follow the head, so one can pass under a held ray), where the hold carries on.
+  leave(e: ThreeEvent<PointerEvent>) { const h = walkPointer.held; if (h && h.id === e.pointerId) h.away = performance.now(); },
   request: null as THREE.Vector3 | null,
   /** True just after a hold became a step (its click is not a "here"). */
   justMoved: () => performance.now() - walkPointer.movedAt < 600,
@@ -99,6 +108,24 @@ export function Walk() {
   // The backup surface: only if Keira's hasn't arrived a few seconds after the place is chosen.
   const surfaceDef = place ? SURFACES[place] : undefined;
   const [own, setOwn] = useState<MeadowTraversal | null>(null);
+  // A showcase's own floor: its scene (the group Showcase stands where you are) maps its metres to the world's.
+  const showcase = useMemory((s) => s.showcase);
+  const scene = useThree((s) => s.scene);
+  useEffect(() => {
+    const area = showcase ? SHOWCASES[`../showcase/scenes/${showcase}.json`]?.walk : undefined;
+    if (!area) { placeBounds = null; return; }
+    placeBounds = (x, z) => {
+      const frame = scene.getObjectByName('showcase')?.children[0];
+      if (!frame) return null; // not built yet: as any memory
+      frame.updateWorldMatrix(true, false);
+      _p.set(x, 0, z).applyMatrix4(_inv.copy(frame.matrixWorld).invert());
+      _p.x = THREE.MathUtils.clamp(_p.x, area[0], area[2]);
+      _p.z = THREE.MathUtils.clamp(_p.z, area[1], area[3]);
+      _p.applyMatrix4(frame.matrixWorld);
+      return { x: _p.x, z: _p.z };
+    };
+    return () => { placeBounds = null; };
+  }, [showcase, scene]);
   useEffect(() => {
     if (!surfaceDef) return;
     let live = true, made: MeadowTraversal | null = null;
@@ -180,7 +207,8 @@ export function Walk() {
       setWalk(v.x + hx(before) - hx(after), v.y, v.z + hz(before) - hz(after), v.yaw + (after - before));
     }
 
-    // A pinch or trigger held on the ground: the ring fills; letting go steps there.
+    // A pinch or trigger held on the ground: the ring fills; letting go steps there. Off the ground for a moment: it ends.
+    if (walkPointer.held?.away !== undefined && performance.now() - walkPointer.held.away > 150) walkPointer.held = null;
     const held = walkPointer.held;
     if (ring.current) {
       ring.current.visible = !!held;
@@ -198,7 +226,7 @@ export function Walk() {
       walkPointer.movedAt = performance.now();
       const f = surface.feet;
       // Land the head (not the play space's middle) on the chosen spot (on a flat floor, the nearest one inside the place).
-      const to = surface === flat ? keepInside(target.x, target.z) : { x: target.x, z: target.z };
+      const to = surface === flat ? inside(target.x, target.z) : { x: target.x, z: target.z };
       const dx = to.x - _head.x, dz = to.z - _head.z;
       startBlink(() => {
         if (anchoredNow) {

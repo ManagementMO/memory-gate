@@ -192,7 +192,12 @@
     1.35,
     0
    ],
-   "ry": 90
+   "ry": 90,
+   "say": [
+    "clock",
+    "mantel clock",
+    "mantle clock"
+   ]
   },
   {
    "m": "obj_photo_frame_black",
@@ -272,7 +277,14 @@
     0,
     1.75
    ],
-   "ry": 140
+   "ry": 140,
+   "say": [
+    "armchair",
+    "arm chair",
+    "easy chair",
+    "reading chair",
+    "green chair"
+   ]
   },
   {
    "m": "furn_rocking_chair",
@@ -304,7 +316,12 @@
     1.82
    ],
    "ry": -120,
-   "w": 0.24
+   "w": 0.24,
+   "say": [
+    "phone",
+    "telephone",
+    "rotary phone"
+   ]
   },
   {
    "m": "furn_floor_lamp_drum",
@@ -398,7 +415,14 @@
     0.48,
     0.2
    ],
-   "h": 0.17
+   "h": 0.17,
+   "say": [
+    "tea",
+    "tea set",
+    "teapot",
+    "teacup",
+    "tea cup"
+   ]
   },
   {
    "m": "obj_tea_set",
@@ -410,6 +434,13 @@
     0.62,
     0.48,
     0.52
+   ],
+   "say": [
+    "tea",
+    "tea set",
+    "teapot",
+    "teacup",
+    "tea cup"
    ]
   },
   {
@@ -486,7 +517,11 @@
     2.72
    ],
    "ry": 160,
-   "w": 0.3
+   "w": 0.3,
+   "say": [
+    "hat",
+    "fedora"
+   ]
   },
   {
    "m": "furn_antique_ceramic_vase_01",
@@ -586,7 +621,13 @@
     0.66,
     2.78
    ],
-   "h": 0.42
+   "h": 0.42,
+   "say": [
+    "flowers",
+    "vase of flowers",
+    "roses",
+    "bouquet"
+   ]
   },
   {
    "m": "obj_vase_copper",
@@ -614,7 +655,13 @@
     1.75
    ],
    "ry": 200,
-   "h": 0.22
+   "h": 0.22,
+   "say": [
+    "robot",
+    "toy robot",
+    "tin robot",
+    "toy"
+   ]
   },
   {
    "m": "obj_mug_white",
@@ -695,5 +742,11 @@
    ],
    "fov": 70
   }
+ ],
+ "walk": [
+  -1.7,
+  -2.3,
+  1.7,
+  2.3
  ]
 }

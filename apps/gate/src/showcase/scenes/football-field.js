@@ -149,7 +149,9 @@ export default async ({ THREE, scene, renderer, loadModel, normalized, placeItem
   // 1. The infield: one big canvas (painted turf) on a stadium-shaped surface inside the track.
   // =====================================================================================
   const CX = TS + R0, CZ = R0; // canvas covers x in [-CX, CX], z in [-CZ, CZ]
-  const W = 8192, H = Math.round((W * CZ) / CX); // ~1.9 cm per pixel
+  // A headset paints the turf at half the pixels (the full canvas alone was ~120 MB of the Quest's memory).
+  const QUEST = /OculusBrowser|Quest/i.test(navigator.userAgent);
+  const W = QUEST ? 4096 : 8192, H = Math.round((W * CZ) / CX); // ~1.9 cm per pixel (3.8 on a headset)
   const PX = W / (2 * CX); // pixels per metre
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
@@ -918,8 +920,9 @@ export default async ({ THREE, scene, renderer, loadModel, normalized, placeItem
       for (let i = 0; i < n; i++) out.push([-19 + (38 * i) / n + (rpl() - 0.5) * 1.2, zLine + (rpl() - 0.5) * 1.6 * Math.sign(zLine), facing + (rpl() - 0.5) * 0.8]);
       return out.filter(([x, z]) => !(z < 0 && x > -12 && x < -3.5)); // room for the sideline camera
     };
-    await team([...hud, ...sideline(-27.0, 22, 0)], homeKit);
-    await team([...def, ...sideline(27.2, 16, Math.PI)], awayKit);
+    // on a headset, half as many waiting along each sideline (the eleven on the field are the game)
+    await team([...hud, ...sideline(-27.0, QUEST ? 11 : 22, 0)], homeKit);
+    await team([...def, ...sideline(27.2, QUEST ? 8 : 16, Math.PI)], awayKit);
     // the ball, spotted between the huddle and the defence
     try {
       const fb = normalized(await loadModel('sport_football'), { len: 0.28 });
@@ -1099,9 +1102,11 @@ export default async ({ THREE, scene, renderer, loadModel, normalized, placeItem
     const pts = ring.filter(([x, z]) => !(z > 120 && z < 165 && x > -100 && x < 120));
     const kinds = ['nat_maple_tree', 'nat_oak_tree'];
     for (let k = 0; k < kinds.length; k++) {
-      const mine = pts.filter((_, i) => i % kinds.length === k);
+      // 115-185 m away: their far copies (scripts/slim-scenes.mjs, a sixth of the triangles), and half as many on a
+      // headset (the ring of full trees was 2 M triangles a frame there)
+      const mine = pts.filter((_, i) => i % kinds.length === k && (!QUEST || i % 4 < 2));
       try {
-        const src = await loadModel(kinds[k]);
+        const src = await loadModel(`${kinds[k]}_far`).catch(() => loadModel(kinds[k]));
         const base = normalized(src, { h: k === 1 ? 10 : 13 });
         base.updateMatrixWorld(true);
         const meshes = [];

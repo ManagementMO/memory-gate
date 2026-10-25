@@ -156,15 +156,44 @@ function PlayerOrigin() {
   const scene = useThree((s) => s.scene);
   useEffect(() => {
     if (!EMULATED) return;
-    const w = window as unknown as { __aim?: (at: string | number[]) => number[] | null };
+    const w = window as unknown as { __aim?: (at: string | number[]) => number[] | null; __glInfo?: () => Record<string, number> };
+    // What the last frame cost to draw, and the heaviest meshes in the scene (scripts/showcase-check.mjs).
+    w.__glInfo = () => ({ calls: gl.info.render.calls, triangles: gl.info.render.triangles, textures: gl.info.memory.textures, geometries: gl.info.memory.geometries });
+    (w as unknown as { __heaviest?: (n: number) => unknown[] }).__heaviest = (n) => {
+      const rows: { name: string; tris: number; count: number }[] = [];
+      scene.traverseVisible((o) => {
+        const m = o as THREE.Mesh & { count?: number; isInstancedMesh?: boolean };
+        if (!m.isMesh || !m.geometry) return;
+        const g = m.geometry, per = (g.index ? g.index.count : g.getAttribute('position')?.count ?? 0) / 3, count = m.isInstancedMesh ? m.count ?? 1 : 1;
+        let who = m.name || '', p: THREE.Object3D | null = m.parent;
+        for (let i = 0; i < 4 && p && !who; i++, p = p.parent) who = p.name;
+        rows.push({ name: who || m.type, tris: Math.round(per * count), count });
+      });
+      const by = new Map<string, { tris: number; meshes: number }>();
+      for (const r of rows) { const b = by.get(r.name) ?? { tris: 0, meshes: 0 }; b.tris += r.tris; b.meshes++; by.set(r.name, b); }
+      return [...by.entries()].sort((a, b) => b[1].tris - a[1].tris).slice(0, n).map(([name, b]) => ({ name, ...b }));
+    };
+    // The heaviest single meshes, described (for script-built places, whose meshes have no names).
+    (w as unknown as { __heaviestMeshes?: (n: number) => unknown[] }).__heaviestMeshes = (n) => {
+      const rows: { what: string; tris: number }[] = [];
+      scene.traverseVisible((o) => {
+        const m = o as THREE.Mesh & { count?: number; isInstancedMesh?: boolean };
+        if (!m.isMesh || !m.geometry) return;
+        const g = m.geometry, per = (g.index ? g.index.count : g.getAttribute('position')?.count ?? 0) / 3, count = m.isInstancedMesh ? m.count ?? 1 : 1;
+        const mat = [m.material].flat()[0] as THREE.MeshStandardMaterial | undefined;
+        const box = new THREE.Box3().setFromObject(m), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
+        rows.push({ what: `${m.name || g.type} ×${count} (${Math.round(per)} each) ${mat?.name || mat?.type || ''} ${mat?.color ? '#' + mat.color.getHexString() : ''} size ${size.toArray().map((v) => v.toFixed(0)).join('x')} at ${c.toArray().map((v) => v.toFixed(0)).join(',')}`, tris: Math.round(per * count) });
+      });
+      return rows.sort((a, b) => b.tris - a.tris).slice(0, n);
+    };
     w.__aim = (at) => {
       const p = new THREE.Vector3();
       if (typeof at === 'string') { const o = scene.getObjectByName(at); if (!o) return null; o.getWorldPosition(p); } else p.fromArray(at);
       camera.updateWorldMatrix(true, false);
       return camera.worldToLocal(p).toArray();
     };
-    return () => { delete w.__aim; };
-  }, [scene, camera]);
+    return () => { delete w.__aim; delete w.__glInfo; };
+  }, [scene, camera, gl]);
   return <XROrigin ref={origin}><OriginRig /></XROrigin>;
 }
 

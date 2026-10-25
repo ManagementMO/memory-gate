@@ -55,7 +55,7 @@ function Button({ label, x, y = 0, width = 0.17, onPress, day, testId }: { label
   const aim = (v: boolean) => { if (on.current !== v) { on.current = v; aimed.n = Math.max(0, aimed.n + (v ? 1 : -1)); } setHover(v); };
   useEffect(() => () => { if (on.current) aimed.n = Math.max(0, aimed.n - 1); }, []);
   return (
-    <group position={[x, y, 0]} name={testId} onClick={press} onPointerEnter={() => aim(true)} onPointerLeave={() => aim(false)} {...walkThrough}>
+    <group position={[x, y, 0]} name={testId} onClick={press} onPointerEnter={() => aim(true)} onPointerLeave={(e) => { aim(false); walkPointer.leave(e); }} {...walkThrough}>
       {/* A hit area a little larger than the pill (hand rays waver); a hit on any part of the button is the button's:
           the handlers sit on the group, so aiming at its words (in front of the pill) presses it too. */}
       <mesh position={[0, 0, -0.001]}><planeGeometry args={[width + 0.06, 0.11]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} /></mesh>

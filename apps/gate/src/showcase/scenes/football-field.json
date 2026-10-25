@@ -34,7 +34,13 @@
     -33.4
    ],
    "ry": 30,
-   "h": 0.62
+   "h": 0.62,
+   "say": [
+    "cooler",
+    "water cooler",
+    "gatorade",
+    "water jug"
+   ]
   },
   {
    "m": "sport_water_cooler",
@@ -44,7 +50,13 @@
     -33.9
    ],
    "ry": -20,
-   "h": 0.62
+   "h": 0.62,
+   "say": [
+    "cooler",
+    "water cooler",
+    "gatorade",
+    "water jug"
+   ]
   },
   {
    "m": "sport_football_helmet",
@@ -54,7 +66,11 @@
     -33.98
    ],
    "ry": 80,
-   "h": 0.27
+   "h": 0.27,
+   "say": [
+    "helmet",
+    "football helmet"
+   ]
   },
   {
    "m": "sport_football_helmet",
@@ -64,7 +80,11 @@
     -33.98
    ],
    "ry": 110,
-   "h": 0.27
+   "h": 0.27,
+   "say": [
+    "helmet",
+    "football helmet"
+   ]
   },
   {
    "m": "sport_football_helmet",
@@ -74,7 +94,11 @@
     -33.98
    ],
    "ry": 60,
-   "h": 0.27
+   "h": 0.27,
+   "say": [
+    "helmet",
+    "football helmet"
+   ]
   },
   {
    "m": "sport_football_helmet",
@@ -84,7 +108,11 @@
     -33.98
    ],
    "ry": 95,
-   "h": 0.27
+   "h": 0.27,
+   "say": [
+    "helmet",
+    "football helmet"
+   ]
   },
   {
    "m": "sport_football_helmet",
@@ -94,7 +122,11 @@
     -33.3
    ],
    "ry": 160,
-   "h": 0.27
+   "h": 0.27,
+   "say": [
+    "helmet",
+    "football helmet"
+   ]
   },
   {
    "m": "sport_megaphone",
@@ -104,7 +136,12 @@
     -33.98
    ],
    "ry": 20,
-   "len": 0.37
+   "len": 0.37,
+   "say": [
+    "megaphone",
+    "bullhorn",
+    "cheerleading"
+   ]
   },
   {
    "m": "sport_clipboard",
@@ -114,7 +151,11 @@
     -33.98
    ],
    "ry": 75,
-   "len": 0.34
+   "len": 0.34,
+   "say": [
+    "clipboard",
+    "playbook"
+   ]
   },
   {
    "m": "sport_football",
@@ -124,7 +165,12 @@
     -29.2
    ],
    "ry": 35,
-   "len": 0.28
+   "len": 0.28,
+   "say": [
+    "football",
+    "ball",
+    "pigskin"
+   ]
   },
   {
    "m": "sport_football",
@@ -134,7 +180,12 @@
     -29.6
    ],
    "ry": 120,
-   "len": 0.28
+   "len": 0.28,
+   "say": [
+    "football",
+    "ball",
+    "pigskin"
+   ]
   },
   {
    "m": "sport_chain_set",
@@ -174,7 +225,13 @@
     72
    ],
    "ry": 0,
-   "h": 3.0
+   "h": 3.0,
+   "say": [
+    "bus",
+    "buses",
+    "school bus",
+    "team bus"
+   ]
   },
   {
    "m": "sport_school_bus",
@@ -184,7 +241,13 @@
     77
    ],
    "ry": 0,
-   "h": 3.0
+   "h": 3.0,
+   "say": [
+    "bus",
+    "buses",
+    "school bus",
+    "team bus"
+   ]
   }
  ],
  "cameras": [
@@ -231,5 +294,11 @@
    "fov": 55
   }
  ],
- "script": "football-field.js"
+ "script": "football-field.js",
+ "walk": [
+  -59,
+  -36,
+  59,
+  30
+ ]
 }
