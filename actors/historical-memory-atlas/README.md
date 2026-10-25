@@ -13,11 +13,11 @@ Version 1.2 adds bounded Google Maps place discovery alongside selected public I
 }
 ```
 
-The query is a public place or landmark name, 3–120 characters. The Actor starts the official [`compass/crawler-google-places`](https://apify.com/compass/crawler-google-places/api), saves its child run ID before waiting and emits at most three normalized references. Each has a title, address, allowlisted Maps link and coordinates when supplied. It requests no images, reviews, contact enrichment or directories. Unknown coordinates stay null. The child request has a 150-second timeout and `maxTotalChargeUsd: 0.10`; this is not a combined parent/child or account spending guarantee.
+The query is a public place or landmark name, 3–120 characters. The Actor starts the official [`compass/crawler-google-places`](https://apify.com/compass/crawler-google-places/api), saves its child run ID before waiting and emits at most three normalized references. Each has a title, address, allowlisted Maps link and coordinates when supplied. It requests no images, reviews, contact enrichment or directories. Unknown coordinates stay null. The child request has a 150-second timeout and `maxTotalChargeUsd: 0.50`; this is not a combined parent/child or account spending guarantee.
 
 Place mode requires an Apify token even locally. It finds references, not GLB meshes. In Memory Gate, the family reviews a reference, chooses an existing original model or a separately approved family photo for image-to-3D, previews the model privately and explicitly places it in a selected memory and POV. The Actor never receives that family photo, note or member token. Search results alone cannot alter the shared scene. Application removal and Apify dataset retention are separate.
 
-Without a published custom Actor ID, the application can call the official Maps Actor directly. With `APIFY_MEMORY_ACTOR_ID` configured, it runs this Actor in place or social mode. Cloud publication and live place/social runs remain unverified because this checkout has no Apify token.
+Without a custom Actor ID, the application can call the official Maps Actor directly. With `APIFY_MEMORY_ACTOR_ID` configured, it runs this Actor in place or social mode. Source Atlas 1.2 is now deployed privately in the operator's account with limited permissions. A real place run and its Maps child succeeded, and the app rendered the reviewed source in stereo VR. [Live verification](../../evidence/apify-live/verification.json). Instagram still needs an explicitly approved public family-post URL for a live check.
 
 ## Social source mode
 
@@ -31,7 +31,7 @@ Without a published custom Actor ID, the application can call the official Maps 
 
 Supply one to three explicit public photo-post URLs you have permission to use. Profiles, reels, private login/cookies and discovery of someone's account are outside this contract. The custom Actor starts the official `apify/instagram-scraper`, saves its ID in `CHILD_RUN` before waiting, reads at most 12 post rows, and emits up to eight photo cards. Carousel images keep the parent caption, author, post URL and date. Videos are excluded. Caption words suggest `kite`, `flower` or `landmark`; these suggestions are **not image recognition**. Unknown dates stay null. Run status and the child's ID stay in the output manifest.
 
-Social mode requires an Apify token even when running the Actor locally because its Instagram extraction runs on Apify. The archive mode below can run locally without a token. The child request uses a 120-second timeout and `maxTotalChargeUsd: 0.05`. This is a per-request setting, not a combined guarantee for parent/child compute or account spend. Inspect an existing run before retrying a failure.
+Social mode requires an Apify token even when running the Actor locally because its Instagram extraction runs on Apify. The archive mode below can run locally without a token. The child request uses a 120-second timeout and `maxTotalChargeUsd: 0.50`. This is a per-request setting, not a combined guarantee for parent/child compute or account spend. Inspect an existing run before retrying a failure.
 
 Only public URLs and the permission flag enter this Actor. Family notes, member tokens, diagnoses and recordings remain in the application. An imported photo stays a private preview until the family explicitly attaches it. Apify's dataset retention is separate from removal of a source inside Memory Gate.
 
@@ -66,7 +66,7 @@ Install Node 24 and dependencies with `npm ci` in this directory. `npm test` run
 
 ## Deploy to Apify
 
-The folder is self-contained, with a Dockerfile and `.actor/` input/output schemas. Using the [official deployment workflow](https://docs.apify.com/actors/development/deployment), log in with the Apify CLI, enter this folder, and run `apify push`. Save the resulting Actor ID. This branch has **not** been cloud-deployed: no Apify credential was found in the supplied attachments.
+The folder is self-contained, with a Dockerfile and `.actor/` input/output schemas. From the repository root, `npm run deploy:atlas` reads the existing private token, uploads only the explicit Actor source allowlist, creates or updates the private Actor, builds version 1.2 and saves its ID as `APIFY_MEMORY_ACTOR_ID` in ignored `.env.exchange`. Then run `npm run env:push`. The deployment script does not copy environment files or local datasets. It saves the build ID before waiting; inspect a failed/ambiguous build rather than repeatedly submitting it. `node scripts/apify-deploy.mjs` previews the source manifest without a cloud mutation. The [official Apify CLI workflow](https://docs.apify.com/actors/development/deployment) (`apify login`, then `apify push` inside this folder) is also supported.
 
 To connect an explicitly enabled cloud Actor, set `ATLAS_MODE=cloud`, `ALLOW_APIFY_CLOUD=1`, `APIFY_TOKEN` and `APIFY_ACTOR_ID` in the application's ignored `.env.exchange`, then restart the gateway. Never put the token in frontend code. The adapter supplies a 150-second timeout, 256 MB memory and `maxTotalChargeUsd: 0.1`, and records the cloud run ID before waiting. These request settings are not a reconciled account-level spending guarantee. Check the existing run before retrying a failure.
 

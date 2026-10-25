@@ -16,9 +16,9 @@ test('map references retain only bounded public context, deduplicate, and reject
 });
 test('custom place Actor records its child run and emits normalized map references', async () => {
   const calls = [];
-  const client = { actor: id => ({ start: async input => { calls.push([id, input]); return { id: 'mapsChild' }; } }),
+  const client = { actor: id => ({ start: async (input, options) => { calls.push([id, input, options]); return { id: 'mapsChild' }; } }),
     run: () => ({ waitForFinish: async () => ({ status: 'SUCCEEDED', defaultDatasetId: 'mapData' }) }),
     dataset: () => ({ listItems: async () => ({ items: [{ title: 'Park', url: 'https://www.google.com/maps/place/Park/' }] }) }) };
   const result = await collectPlaces({ query: 'Park in town' }, client, async id => calls.push(['saved', id]));
-  assert.equal(calls[0][0], 'compass/crawler-google-places'); assert.equal(calls[1][0], 'saved'); assert.equal(result.references.length, 1);
+  assert.equal(calls[0][0], 'compass/crawler-google-places'); assert.equal(calls[0][2].maxTotalChargeUsd, .50); assert.equal(calls[1][0], 'saved'); assert.equal(result.references.length, 1);
 });

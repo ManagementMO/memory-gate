@@ -47,7 +47,7 @@ This is meaningful retrieval and provenance for the object's source, not a claim
 
 ## Enable live retrieval and image-to-3D
 
-There is **no Apify token available** in this checkout. The cloud adapters and custom Actor are implemented, but live Maps/Instagram runs and custom Actor cloud publication have not been verified.
+The operator's Apify token is configured privately and Source Atlas 1.2 is deployed in that account. A real Golden Gate Park search passed through the app, custom cloud Actor, official Maps child, source approval, original bridge placement and stereo VR source card. Both cloud runs succeeded with one normalized place. [Live evidence and run IDs](../evidence/apify-live/verification.json). Credentials stay in ignored configuration and local Convex, so another machine needs its own setup. Instagram still needs an approved public family-post URL for a live check.
 
 Use the existing ignored private provider file (`auth/memory-gate.env`, the `MEMORY_GATE_ENV` override, or supported `MEMGATE_AUTH_FILE` override) or `.env.exchange`:
 
@@ -62,11 +62,13 @@ TRIPO_API_KEY=your-private-token
 
 Run `npm run env:push` against the existing local Convex backend. Keep secrets server-side. `APIFY_MEMORY_ACTOR_ID` selects the place/social custom Actor; existing `APIFY_ACTOR_ID` continues to select the archive gateway's Actor. Without the new custom ID, the app calls the respective official scraper directly. The private provider file takes precedence over process/exchange defaults. No frontend `VITE_` secret is needed.
 
+`npm run deploy:atlas` deploys the custom Actor privately and saves its ID to ignored `.env.exchange`; run `env:push` afterward. Only the Actor's source allowlist is uploaded. `npm run test:apify:live` explicitly submits one live public-place search, saves its attempt/run ID and verifies the complete app-to-XR flow. Rerunning resumes the saved run. After inspecting a confirmed failed run and fixing its cause, `node apps/gate/scripts/apify-live-check.mjs --run-place --retry-failed` explicitly retries it; normal polling does not create a replacement. This check consumes Apify usage, while ordinary test suites remain offline.
+
 Live model generation additionally requires the existing `objects.live` service flag and an explicit live room. This feature does not switch flags on. Do not enable unrelated paid voice or world-generation services just to try the workshop. Pick a reviewed family photo, select **Generate from this photo**, confirm the separate vendor consent and create the candidate. The action sends only the approved cached photo URL, not notes, diagnoses or recordings.
 
 The adapter uses the official [Tripo v3 image-to-model API](https://developers.tripo3d.ai/en/docs/generation-image-to-model/standard), requests 6,000 faces, smart low poly and no textures/PBR, persists the task ID and polls that task. The downloaded static GLB is cached only after validating its host, bytes, embedded resources and geometry budget. A completed generation is still private; placement requires a separate approval. The existing per-room limit of three model submissions and one active generation applies. An ambiguous start is never automatically submitted again; inspect the provider dashboard first. **Live Tripo generation has not been run for this change.** Controlled provider responses verify the contract without consuming a paid task.
 
-Place parent requests set a 210-second timeout and `maxTotalChargeUsd: 0.15`; custom child place requests set 150 seconds and `0.10`. Social requests retain their separate lower settings. These are request settings, not a guarantee about combined parent/child or account spending. One active import and the existing room cooldown apply.
+Place parent requests set a 210-second timeout; custom child place requests set 150 seconds. Place and social requests use `maxTotalChargeUsd: 0.50`. The live Maps API rejected smaller limits; $0.50 is a minimum allowed cap, not a minimum charge. These are request settings, not a guarantee about combined parent/child or account spending. One active import and the existing room cooldown apply.
 
 ## Shared state, provenance and cleanup
 
@@ -94,4 +96,4 @@ npm run test:red-kite
 
 The browser scripts use actual Convex, original GLBs, live local SpacetimeDB for the main journey and the IWER Quest 3 emulator. Their rooms force paid provider calls off. The source-card checks enter an actual stereo immersive session and use real controller rays in the kite flow. Coverage includes private drafts, explicit approval, a second viewer, per-memory and per-POV scope, hide/cascade removal, direct photo upload, native source rendering and the existing story controls. Main companion captions step aside while a source is open so they cannot draw over it.
 
-See [the compact report](../evidence/place-objects/verification.json) and [stereo main view](../evidence/place-objects/main-vr-source.jpg). Live Apify/Tripo, custom Actor publication and a physical Quest comfort, reach and sustained-frame-rate acceptance pass remain unverified. Passing the emulator does not establish physical headset performance.
+See [the offline/regression report](../evidence/place-objects/verification.json), [stereo main view](../evidence/place-objects/main-vr-source.jpg), and later [live Apify verification](../evidence/apify-live/verification.json). The custom Actor is privately deployed and Maps retrieval is live-verified. Live Instagram needs an approved public post URL. Live Tripo and a physical Quest comfort, reach and sustained-frame-rate acceptance pass remain unverified. Passing the emulator does not establish physical headset performance.

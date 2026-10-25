@@ -21,7 +21,7 @@ export const start = action({ args: { ...auth, mode: v.union(v.literal('fixture'
   try {
     const body = actorId === 'apify~instagram-scraper' || actorId === 'apify/instagram-scraper'
       ? scraperInput(a.urls) : { sourceMode: 'social', postUrls: scraperInput(a.urls).directUrls, permissionConfirmed: true };
-    const { data } = await apify(`actors/${encodeURIComponent(actorId.replace('/', '~'))}/runs?timeout=180&maxTotalChargeUsd=0.10`, { method: 'POST', body: JSON.stringify(body) });
+    const { data } = await apify(`actors/${encodeURIComponent(actorId.replace('/', '~'))}/runs?timeout=180&maxTotalChargeUsd=0.50`, { method: 'POST', body: JSON.stringify(body) });
     if (!data?.id || !/^[A-Za-z0-9]+$/.test(data.id)) throw new Error('Apify did not return a run ID.');
     await ctx.runMutation(internal.memorySources.recordRun, { id, runId: data.id });
     return id;
@@ -35,7 +35,7 @@ export const refresh = action({ args: { ...auth, id: v.id('memoryImports') }, ha
   if (job.status !== 'running' || !job.runId) return;
   const { data } = await apify(`actor-runs/${job.runId}`);
   if (['FAILED', 'TIMED-OUT', 'ABORTED'].includes(data.status)) {
-    await ctx.runMutation(internal.memorySources.fail, { id: job._id, message: `Apify run ${job.runId} ended without photos (${data.status}). No scene details changed.` }); return;
+    await ctx.runMutation(internal.memorySources.fail, { id: job._id, message: `Apify run ${job.runId} ended without ${job.kind === 'place' ? 'place references' : 'photos'} (${data.status}). No scene details changed.` }); return;
   }
   if (data.status !== 'SUCCEEDED') return;
   if (!/^[A-Za-z0-9]+$/.test(data.defaultDatasetId ?? '')) throw new ConvexError('The completed Apify run has no dataset.');
@@ -53,7 +53,7 @@ export const findPlace = action({ args: { ...auth, query: v.string(), mode: v.un
   if (a.mode === 'fixture') { await ctx.runMutation(internal.memorySources.fixturePlace, { id }); return id; }
   try {
     const body = ['compass~crawler-google-places', 'compass/crawler-google-places'].includes(actorId) ? placeInput(query) : { sourceMode: 'place', query };
-    const { data } = await apify(`actors/${encodeURIComponent(actorId.replace('/', '~'))}/runs?timeout=210&maxTotalChargeUsd=0.15`, { method: 'POST', body: JSON.stringify(body) });
+    const { data } = await apify(`actors/${encodeURIComponent(actorId.replace('/', '~'))}/runs?timeout=210&maxTotalChargeUsd=0.50`, { method: 'POST', body: JSON.stringify(body) });
     if (!/^[A-Za-z0-9]+$/.test(data?.id ?? '')) throw new Error('No run ID.');
     await ctx.runMutation(internal.memorySources.recordRun, { id, runId: data.id }); return id;
   } catch {

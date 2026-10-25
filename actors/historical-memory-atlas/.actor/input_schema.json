@@ -1,17 +1,17 @@
 {
-  "title": "Reviewable memory sources from public archives or family posts",
+  "title": "Reviewable memory sources from archives, family posts or places",
   "type": "object",
   "schemaVersion": 1,
   "properties": {
-    "sourceMode": { "title": "Source", "type": "string", "enum": ["archive", "social", "place"], "default": "archive", "editor": "select" },
-    "query": { "title": "Public place or landmark (place mode)", "type": "string", "editor": "textfield", "maxLength": 120 },
-    "postUrls": { "title": "Public Instagram photo posts (social mode)", "type": "array", "items": { "type": "string" }, "editor": "stringList", "maxItems": 3 },
-    "permissionConfirmed": { "title": "I have permission to use these public posts", "type": "boolean", "default": false },
+    "sourceMode": { "title": "Source", "description": "Choose historical archive references, explicit public photo posts, or a public place search.", "type": "string", "enum": ["archive", "social", "place"], "default": "archive", "editor": "select" },
+    "query": { "title": "Public place or landmark (place mode)", "description": "A public place name and town, 3–120 characters. Never include a private address or family story.", "type": "string", "editor": "textfield", "maxLength": 120 },
+    "postUrls": { "title": "Public Instagram photo posts (social mode)", "description": "One to three public photo-post URLs you have permission to use. No profiles, reels or private content.", "type": "array", "items": { "type": "string" }, "editor": "stringList", "maxItems": 3 },
+    "permissionConfirmed": { "title": "I have permission to use these public posts", "description": "Required in social mode before retrieving public photo posts.", "type": "boolean", "default": false },
     "place": { "title": "Public place name", "type": "string", "description": "A city, neighborhood or public landmark. Do not send private family stories or addresses.", "editor": "textfield", "prefill": "San Francisco" },
-    "yearFrom": { "title": "From year", "type": "integer", "minimum": 1000, "maximum": 2100, "default": 1900 },
-    "yearTo": { "title": "To year", "type": "integer", "minimum": 1000, "maximum": 2100, "default": 1980 },
-    "terms": { "title": "Optional public search terms", "type": "string", "editor": "textfield", "default": "street" },
-    "maxItems": { "title": "Maximum references", "type": "integer", "minimum": 1, "maximum": 8, "default": 4 }
+    "yearFrom": { "title": "From year", "description": "Earliest year for archive results; not used in social or place mode.", "type": "integer", "minimum": 1000, "maximum": 2100, "default": 1900 },
+    "yearTo": { "title": "To year", "description": "Latest year for archive results; must not precede the earliest year.", "type": "integer", "minimum": 1000, "maximum": 2100, "default": 1980 },
+    "terms": { "title": "Optional public search terms", "description": "Short public archive search terms, without private family information.", "type": "string", "editor": "textfield", "default": "street" },
+    "maxItems": { "title": "Maximum references", "description": "Maximum archive references to retrieve, from one to eight.", "type": "integer", "minimum": 1, "maximum": 8, "default": 4 }
   },
   "required": []
 }

@@ -49,7 +49,7 @@ export function scraperInput(urls) { return { directUrls: postUrls(urls), result
 export async function collectSocial(input, client, onRun = async () => {}) {
   const urls = postUrls(input.postUrls);
   if (input.permissionConfirmed !== true) throw new Error('Confirm permission to use these public posts.');
-  const run = await client.actor('apify/instagram-scraper').start(scraperInput(urls), { timeout: 120, maxTotalChargeUsd: .05 });
+  const run = await client.actor('apify/instagram-scraper').start(scraperInput(urls), { timeout: 120, maxTotalChargeUsd: .50 });
   await onRun(run.id); // Keep the child run ID before waiting; never silently start a replacement.
   const done = await client.run(run.id).waitForFinish({ waitSecs: 130 });
   if (done.status !== 'SUCCEEDED') throw new Error('The Instagram source run did not complete. Inspect the saved child run before retrying.');

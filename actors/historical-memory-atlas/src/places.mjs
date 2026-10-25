@@ -24,7 +24,8 @@ export function normalizePlaces(rows) {
 }
 export async function collectPlaces(input, client, onRun = async () => {}) {
   const query = placeQuery(input.query);
-  const run = await client.actor('compass/crawler-google-places').start(placeInput(query), { timeout: 150, maxTotalChargeUsd: .10 });
+  // Verified live: the official Maps Actor rejects a maximum charge below $0.50.
+  const run = await client.actor('compass/crawler-google-places').start(placeInput(query), { timeout: 150, maxTotalChargeUsd: .50 });
   await onRun(run.id);
   const done = await client.run(run.id).waitForFinish({ waitSecs: 160 });
   if (done.status !== 'SUCCEEDED') throw new Error('The map search did not finish. Inspect the saved child run before retrying.');
