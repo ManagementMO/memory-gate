@@ -79,7 +79,8 @@ try {
   await page.waitForFunction(() => window.__gate.store.getState().stage === 'memory', null, { timeout: 120000 });
   note(`   "yes" to inside the memory: ${((Date.now() - yesAt) / 1000).toFixed(1)} s`);
   await page.waitForFunction(() => window.__walk?.active === true, null, { timeout: 30000 }).catch(() => undefined);
-  const where = await page.evaluate(() => { const m = window.__gate.memoryStore.getState(); return { place: m.place, showcase: m.showcase ?? null, photoWorld: !!window.__gate.store.getState().photoWorld, standIns: window.__socialDrawn?.standIns ?? [] }; });
+  await page.waitForTimeout(4000); // the people in the place load their models
+  const where = await page.evaluate(() => { const m = window.__gate.memoryStore.getState(); return { place: m.place, showcase: m.showcase ?? null, photoWorld: !!window.__gate.store.getState().photoWorld, standIns: window.__socialDrawn?.standIns ?? [], people: [...(window.__people?.values() ?? [])].map((p) => p.model), cast: window.__social?.store?.getState().cast ?? null }; });
   note(`   in the memory: ${JSON.stringify(where)}`);
   check(await page.evaluate(() => window.__walk?.active === true), `walking is on in the memory (${where.place ?? where.showcase ?? 'a sketch'})`);
   await page.waitForTimeout(2500);

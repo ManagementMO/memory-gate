@@ -27,10 +27,12 @@ export const WORLD_VIEWPOINTS: Record<string, Record<PerspectiveKey, Feet>> = {
 
 export const inMeadow = () => useSocial.getState().worldId === MEADOW_WORLD_ID && !!useGate.getState().photoWorld;
 
-// The meadow is the grandmother's childhood: inside it the two perspectives are her as a girl and her friend
-// (store.ts). At the gate they are still the family as they are now, even while the meadow is being prepared.
+// With ?cast=meadow the meadow is the grandmother's childhood: inside it the two perspectives are her as a girl and her
+// friend (store.ts). Otherwise (the demo) the meadow is visited by the family as they are now, the grandmother and the
+// grandchild, as everywhere else. At the gate they are always the family, even while the meadow is being prepared.
+export const MEADOW_CHILDHOOD = new URLSearchParams(location.search).get('cast') === 'meadow';
 const inside = () => ['forming', 'memory', 'leaving'].includes(useGate.getState().stage);
-const syncCast = () => useSocial.getState().setCast(inMeadow() && inside() ? 'meadow' : 'family');
+const syncCast = () => useSocial.getState().setCast(MEADOW_CHILDHOOD && inMeadow() && inside() ? 'meadow' : 'family');
 useSocial.subscribe((s, before) => { if (s.worldId !== before.worldId) syncCast(); });
 useGate.subscribe((s, before) => { if (s.photoWorld !== before.photoWorld || s.stage !== before.stage) syncCast(); });
 

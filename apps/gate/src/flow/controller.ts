@@ -20,6 +20,7 @@ import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { useMemory } from './memory';
 import { guideContext, story, turn } from '../social/attribution';
 import { overlayActive } from '../social/overlay';
+import { MEADOW_CHILDHOOD } from '../social/world';
 import { claimPerspective, POV_FROM_LINK, setViewing } from '../social/perspectives';
 import { useSocial, type PerspectiveKey } from '../social/store';
 import { similarity } from '../../../../packages/shared/src/crosstalk';
@@ -354,6 +355,7 @@ class Flow {
    *  "when I was little" is her, as a girl, and the friend she flew the kite with comes too. Someone speaking of their
    *  grandmother ("with my grandma") is still the grandchild (perspectiveFromWords). */
   private friendInMeadow(text: string): PerspectiveKey | null {
+    if (!MEADOW_CHILDHOOD) return null; // the family visits the meadow: "when I was little" is the grandchild's eyes
     const meadow = OPENED_AS_MEADOW || useMemory.getState().place === 'red-kite' || placeFor([...this.said, text].join(' '))?.key === 'red-kite';
     if (!meadow || /\b(grand ?(ma|pa|mother|father|mom|dad)|granny|nana|abuel[ao]s?|grand-?(mère|père)|mamie|papi)\b/i.test(text)) return null;
     const friend = /\b(my|our|a|with|con|avec|mi|mis|mon|ma)\s+(best\s+|little\s+)?(friends?|buddy|pal|amig[oa]s?|amie?s?|copains?|copines?)\b/i.test(text);
