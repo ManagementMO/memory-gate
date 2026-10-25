@@ -1,13 +1,14 @@
 // The memory map (apps/gate/src/map): pins land where the places are, only San Francisco opens from here, a
 // public/private choice made just after a visit survives the reload, New York's clouded memories carry no words, and
 // zoom mode zooms toward your fingers without ever losing the world off the edge.
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { expect, test } from 'vitest';
 import type { AlbumMemory } from '../../apps/gate/src/album/types';
 import { LAND, MAP } from '../../apps/gate/src/map/land';
 import { toMap, toMapUnits } from '../../apps/gate/src/map/project';
 import { HERE, isOpen, PLACES, visibilityKey } from '../../apps/gate/src/map/state';
-import { clouded, publicMine, sampleAlbums, SF_SAMPLE_COUNT } from '../../apps/gate/src/map/world';
+import { clouded, publicMine, sampleAlbums, SF_SAMPLE_COUNT, showcaseAlbum } from '../../apps/gate/src/map/world';
+import { PROPOSAL } from '../../apps/gate/src/world-memory/story';
 import { clampView, MAX_ZOOM, panBy, toScreen, toUnits, viewBox, WORLD, zoomAt } from '../../apps/gate/src/map/view';
 
 const memory = (id: string, title: string, captions: string[] = ['There was a bench by the wall.']): AlbumMemory => ({
@@ -51,7 +52,7 @@ test('World memories shows only what was made public, under "You"', () => {
 
 test('the fictional San Francisco albums are labelled samples, each owned by someone', () => {
   const samples = ['sample-lake', 'sample-kitchen', 'sample-garden'].map((id) => memory(id, id));
-  const albums = sampleAlbums(samples);
+  const albums = [showcaseAlbum(), ...sampleAlbums(samples)];
   expect(albums).toHaveLength(SF_SAMPLE_COUNT);
   for (const a of albums) {
     expect(a.sample).toBe(true);
@@ -100,4 +101,34 @@ test('zoom mode stays between the whole world and the closest zoom, and never pa
   expect(other.x + other.w).toBeCloseTo(MAP.width, 6);
   expect(other.y + other.h).toBeCloseTo(MAP.height, 6);
   expect(panBy(clampView(WORLD, s), s, 300, 0)).toEqual(clampView(WORLD, s)); // the whole world doesn't slide around
+});
+
+test('the showcase in San Francisco is Daniel & Sofia\'s proposal: a labelled sample you can step into', () => {
+  const a = showcaseAlbum();
+  expect(a.owner).toBe(PROPOSAL.owners);
+  expect(a.sample).toBe(true);
+  const [m] = a.memories;
+  expect(m?.sample).toBe(true);
+  expect(m?.open).toEqual({ href: '/?story=proposal' });
+  expect(m?.moments.map((x) => x.caption)).toEqual(PROPOSAL.words.map((w) => w.quote));
+  expect(m?.moments.map((x) => x.kind)).toEqual(['arrival', 'detail', 'final']);
+  for (const w of PROPOSAL.words) expect(statSync(new URL(`../../apps/gate/public${w.image}`, import.meta.url)).size).toBeGreaterThan(50_000);
+});
+
+test('the proposal couple is light enough for a headset, two people with their breathing loop', () => {
+  const file = new URL('../../apps/gate/public/memories/proposal/proposal.glb', import.meta.url);
+  expect(statSync(file).size).toBeLessThan(5_000_000);
+  const b = readFileSync(file);
+  expect(b.readUInt32LE(0)).toBe(0x46546c67); // glTF binary
+  const gltf = JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString()) as { nodes: { name?: string }[]; animations?: unknown[]; skins?: unknown[] };
+  const names = gltf.nodes.map((n) => n.name);
+  for (const n of ['Man', 'Woman', 'RingBox']) expect(names).toContain(n);
+  expect(gltf.animations?.length).toBe(1);
+  expect(gltf.skins?.length).toBeGreaterThan(0);
+});
+
+test('the proposal page is a copy: it changes nothing of the Red Kite page', () => {
+  const page = readFileSync(new URL('../../apps/gate/src/world-memory/ProposalExperience.tsx', import.meta.url), 'utf8');
+  expect(page).not.toMatch(/from '\.\.\/red-kite\/(Experience|StoryScene|props|session)'/); // its own view, no kite story or room
+  expect(page).toMatch(/verticalShift=\{0\}/); // the meadow at its own floor, so the couple stands on it
 });

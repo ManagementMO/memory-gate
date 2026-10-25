@@ -38,8 +38,8 @@ class AlbumUnavailable extends Component<{ children: ReactNode }, { failed: bool
 
 export function Overlay() {
   const stage = useGate((s) => s.stage);
-  // Back from a prepared memory's own page (the Red Kite) that was opened in the album: the album again.
-  useEffect(() => { if (cameBackToAlbum()) flow.openAlbum('sf'); }, []);
+  // Back from a prepared memory's own page (the Red Kite, the proposal) that was opened in the album: that album again.
+  useEffect(() => { const tab = cameBackToAlbum(); if (tab) flow.openAlbum('sf', tab); }, []);
   const world = useGate((s) => s.world);
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving';
   return (

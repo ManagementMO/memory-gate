@@ -49,7 +49,7 @@ for (const [label, viewport] of [['desktop', { width: 1440, height: 900 }], ['ph
   await p.waitForSelector('[data-testid=world-album]');
   await settle(p, 2200);
   await p.screenshot({ path: `${prefix}-${label}-world-sf.png` });
-  check(`${label}: World San Francisco shows three people's albums`, (await p.locator('[data-testid=world-person]').count()) === 3);
+  check(`${label}: World San Francisco shows the proposal first, then three people's albums`, (await p.locator('[data-testid=world-person]').count()) === 4 && (await p.locator('[data-testid=world-person]').first().innerText()).includes('The proposal on the hill'));
   await p.click('[data-testid=album-back]');
 
   await p.click('[data-testid=map-tab-mine]');
@@ -67,16 +67,16 @@ for (const [label, viewport] of [['desktop', { width: 1440, height: 900 }], ['ph
     await p.screenshot({ path: `${prefix}-${label}-visibility.png` });
     await p.click('[data-testid=album-back]');
     await p.click('[data-testid=map-tab-world]');
-    check('desktop: the SF pin counts your public memory', (await p.locator('[data-testid=map-place-sf]').innerText()).includes('4 memories'));
+    check('desktop: the SF pin counts your public memory', (await p.locator('[data-testid=map-place-sf]').innerText()).includes('5 memories'));
     await p.click('[data-testid=map-place-sf]');
     await p.waitForSelector('[data-testid=world-album]');
-    check('desktop: your public memory appears under "You"', (await p.locator('[data-testid=world-person]').count()) === 4 && (await p.locator('[data-testid=world-person]').first().innerText()).includes('Your public memories'));
+    check('desktop: your public memory appears under "You", after the showcase', (await p.locator('[data-testid=world-person]').count()) === 5 && (await p.locator('[data-testid=world-person]').nth(1).innerText()).includes('Your public memories'));
     await p.reload({ waitUntil: 'load' });
     await p.waitForSelector('[data-testid=map]', { timeout: 30000 });
     await p.click('[data-testid=map-tab-world]');
     await p.click('[data-testid=map-place-sf]');
     await p.waitForSelector('[data-testid=world-album]');
-    check('desktop: still public after a reload', (await p.locator('[data-testid=world-person]').first().innerText()).includes('Your public memories'));
+    check('desktop: still public after a reload', (await p.locator('[data-testid=world-person]').nth(1).innerText()).includes('Your public memories'));
   }
   await p.context().close();
 }
@@ -161,7 +161,53 @@ const viewBoxOf = (p) => p.getAttribute('[data-testid=map-zoom-stage] svg', 'vie
   await p.context().close();
 }
 
-// 3. The real start page: the map button replaces the album button, opens the map, and × comes back.
+// 3. The showcase: World memories → San Francisco → the proposal → Step into it → the meadow with the couple, walking
+//    around them, and the way back lands on World memories → San Francisco again. Then the page on a phone.
+{
+  const p = await page({ width: 1440, height: 900 });
+  await p.goto(`${base}/?mode=offline`, { waitUntil: 'load' });
+  await p.waitForSelector('[data-testid=open-map]', { timeout: 30000 });
+  await p.click('[data-testid=open-map]');
+  await p.click('[data-testid=map-tab-world]');
+  await p.click('[data-testid=map-place-sf]');
+  await p.waitForSelector('[data-testid=world-album]');
+  await settle(p, 2200);
+  const showcase = p.locator('[data-testid=world-person]').first();
+  await showcase.locator('.pane-hit').first().click();
+  await p.waitForSelector('[data-testid=moment-revisit]');
+  check('showcase: the proposal offers Step into it', (await p.locator('[data-testid=moment-revisit]').first().innerText()).includes('Step into it'));
+  await p.screenshot({ path: `${prefix}-desktop-showcase.png` });
+  await p.locator('[data-testid=moment-revisit]').first().click();
+  await p.waitForURL(/story=proposal/);
+  await p.waitForFunction(() => window.__proposal?.ready(), null, { timeout: 120000 });
+  await p.waitForTimeout(2500);
+  const couple = await p.evaluate(() => window.__proposal.couple());
+  check('showcase: the couple stands in the clearing, on the ground', !!couple && Math.abs(couple[1]) < 0.3 && couple[2] < -2);
+  check('showcase: their words are there', (await p.locator('[data-testid=proposal-quote]').innerText()).includes('ring'));
+  await p.screenshot({ path: `${prefix}-desktop-proposal.png` });
+  const before = await p.evaluate(() => window.__proposal.camera());
+  await p.locator('canvas').first().click({ position: { x: 700, y: 300 } });
+  await p.keyboard.down('KeyW'); await p.waitForTimeout(1200); await p.keyboard.up('KeyW');
+  const after = await p.evaluate(() => window.__proposal.camera());
+  check('showcase: you can walk toward them', Math.hypot(after[0] - before[0], after[2] - before[2]) > 0.8);
+  await p.click('[data-testid=proposal-next]');
+  check('showcase: Next shows Sofia\'s words', (await p.locator('[data-testid=proposal-quote]').innerText()).includes('walk'));
+  await p.click('[data-testid=proposal-back]');
+  await p.waitForSelector('[data-testid=world-album]', { timeout: 30000 });
+  check('showcase: back lands on World memories → San Francisco', (await p.locator('[data-testid=world-person]').first().innerText()).includes('The proposal on the hill'));
+  await p.context().close();
+
+  const phone = await (await browser.newContext({ viewport: { width: 375, height: 812 }, ignoreHTTPSErrors: true, hasTouch: true, isMobile: true })).newPage();
+  phone.on('pageerror', (e) => errors.push(String(e)));
+  await phone.goto(`${base}/?story=proposal`, { waitUntil: 'load' });
+  await phone.waitForFunction(() => window.__proposal?.ready(), null, { timeout: 120000 });
+  await phone.waitForTimeout(2500);
+  check('showcase phone: opens, no horizontal scroll', await phone.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await phone.screenshot({ path: `${prefix}-phone-proposal.png` });
+  await phone.context().close();
+}
+
+// 4. The real start page: the map button replaces the album button, opens the map, and × comes back.
 {
   const p = await page({ width: 1440, height: 900 });
   await p.goto(`${base}/?mode=offline`, { waitUntil: 'load' });

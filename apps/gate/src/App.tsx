@@ -8,10 +8,13 @@ import { useSessionSync } from './flow/sync';
 import { lazy, Suspense } from 'react';
 
 const RedKiteExperience = lazy(() => import('./red-kite/Experience'));
+const ProposalExperience = lazy(() => import('./world-memory/ProposalExperience'));
 
 function Sync() { useSessionSync(); return null; }
 
 export default function App() {
+  // The world memory showcased in San Francisco: static files only, so no backend connection is needed.
+  if (new URLSearchParams(location.search).get('story') === 'proposal') return <Suspense fallback={null}><ProposalExperience /></Suspense>;
   if (new URLSearchParams(location.search).get('story') === 'red-kite') return <ConvexProvider client={convex}><Suspense fallback={null}><RedKiteExperience /></Suspense></ConvexProvider>;
   return (
     <ConvexProvider client={convex}>
