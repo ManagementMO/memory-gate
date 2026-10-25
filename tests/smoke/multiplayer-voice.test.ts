@@ -8,6 +8,7 @@ import { judge, similarity, type HeardTurn } from '../../packages/shared/src/cro
 import { addressesCompanion, shouldSpeak, untilLull, LULL } from '../../packages/shared/src/lull';
 import { guideTogether, type GuideInput } from '../../packages/shared/src/guide';
 import { render } from '../../convex/lib/guideRender';
+// @ts-expect-error the exchange service is plain JavaScript (no type declarations); vitest runs it as is
 import { buildInput, offlineSummary } from '../../services/exchange/conversation.mjs';
 import { newT, setupRoom, storeBlob, fileExists } from './helpers';
 
