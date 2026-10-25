@@ -60,8 +60,9 @@ function StandIns() {
   const avatars = useSocial((s) => s.avatars);
   useSocial((s) => s.spots); // a story moving a perspective moves its stand-in
   const occupied = usePolledSet(occupiedPerspectives);
-  // A memory with its own people (the parents someone mentioned, the friends in a photo) needs no stand-in waiting in it.
-  const ownPeople = useMemory((s) => !!s.plan?.people?.length);
+  // The stand-in waits only in the family's prepared places (the meadow, the courtyard): a memory of your own (a garden,
+  // a football field, the people you mention) has no Red Kite grandchild in it.
+  const ownPeople = useMemory((s) => !s.place || !!s.plan?.people?.length);
   const [, tick] = useState(0);
   useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 1000); return () => clearInterval(t); }, []); // follow things settling
   const shown = ownPeople ? [] : perspectives.filter((p) => p.key !== viewing && !occupied.has(p.id));
