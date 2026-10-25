@@ -69,11 +69,16 @@ async function make(name: string, view: number, gl: THREE.WebGLRenderer, camera:
   // a view can wear its own light: the same bridge in the late sun, at dusk, at noon
   const own = base.cameras?.[view]?.env;
   const spec = own ? { ...base, env: { ...base.env, ...own } } : base;
+  // Put together after "yes", behind the white. (Its files fetched ahead at low priority while they talked made a
+  // headset take them one at a time over the tunnel: the garden took 40 s, then didn't come at all.)
+  const t0 = performance.now();
+  reportDevice('showcase-start', { name, view });
   try {
     const load = scripts[`./scenes/${name}.js`];
     const script = load ? (await load().catch(() => null))?.default : undefined;
     const b = await buildShowcase({ spec, script, renderer: gl, camera, grass: QUEST ? 0.1 : 0.5 });
     warm(b, gl);
+    reportDevice('showcase-built', { name, view, ms: Math.round(performance.now() - t0) });
     return b;
   } catch (e) {
     console.warn('[showcase]', name, e);
@@ -81,21 +86,6 @@ async function make(name: string, view: number, gl: THREE.WebGLRenderer, camera:
   }
 }
 
-/** Named while they're still talking (the garden, the living room): its files start coming then, so stepping through
- *  waits only for it to be put together, behind the white. (Not put together then: that stalls a headset for seconds,
- *  and the conversation at the gate froze.) */
-const fetched = new Set<string>();
-export function prefetchShowcase(name: string, view: number): void {
-  const spec = specs[`./scenes/${name}.json`];
-  const key = `${name}:${view}`;
-  if (!spec || fetched.has(key)) return;
-  fetched.add(key);
-  const env = { ...spec.env, ...spec.cameras?.[view]?.env } as { hdri?: string };
-  const urls = new Set<string>();
-  if (env.hdri) urls.add(`/showcase/hdri/${env.hdri}.hdr`);
-  for (const it of [...(spec.items ?? []), ...(spec.scatter ?? [])]) if (it.m && !it.m.startsWith('@')) urls.add(`/showcase/models/${it.m}.glb`);
-  for (const u of urls) void fetch(u, { priority: 'low' } as RequestInit).catch(() => undefined);
-}
 
 /** The ground of the place being shown under a point (world x, z), near where you stand: for the people standing in
  *  it (a beach runs down to the water). Null when there's none, or no place is shown. */
