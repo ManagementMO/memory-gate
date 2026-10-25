@@ -8,6 +8,7 @@ import { useGate } from '../state/store';
 import { Captions } from './Captions';
 import { DropZone } from './DropZone';
 import { InviteSheet } from './InviteSheet';
+import { CompanionSettings } from './CompanionSettings';
 import { Offers } from './Offers';
 import { Portal } from './Portal';
 import { TopBar } from './TopBar';
@@ -57,6 +58,7 @@ export function Overlay() {
       )}
       <XrButton />
       <InviteSheet />
+      <CompanionSettings />
       <DropZone />
       <PresenceSync />
       <SocialUI />

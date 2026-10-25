@@ -5,6 +5,7 @@ import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
 import { LeaveIcon, MuteIcon, PhotosIcon, PlayIcon, RestIcon, SoundIcon } from './Icons';
 import { useAlbum } from '../album/useAlbum';
+import { SettingsButton } from './CompanionSettings';
 
 /** "Your moments": a round window onto the album, showing the latest picture kept (the album opens over the palace). */
 function MomentsButton() {
@@ -58,6 +59,7 @@ export function TopBar() {
       {day && title ? <h1 className="memory-title" data-testid="memory-title">{title}</h1> : <div className="wordmark">Memory Gate</div>}
       {inConversation && <ListeningChip />}
       <div className="right">
+        {stage === 'portal' && <SettingsButton />}
         {stage === 'portal' && !guest && <MomentsButton />}
         {stage !== 'portal' && (
           <button type="button" className="icon-btn glass" aria-label={musicOn ? 'Turn music off' : 'Turn music on'} aria-pressed={!musicOn} onClick={() => flow.setMusic(!musicOn)} data-testid="music">

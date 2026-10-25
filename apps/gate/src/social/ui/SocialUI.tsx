@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../../../../../convex/_generated/api';
 import type { Id } from '../../../../../convex/_generated/dataModel';
 import { convex, uploadFile } from '../../backend/client';
-import { useGate } from '../../state/store';
+import { recognitionLang, useGate } from '../../state/store';
 import { CloseIcon } from '../../ui/Icons';
 import { pinArchive, searchArchive, type ArchiveResult } from '../archive';
 import { story } from '../attribution';
@@ -82,7 +82,7 @@ function Composer({ onClose }: { onClose: () => void }) {
   const hold = () => {
     if (!Speech || rec.current) return;
     const r = new Speech();
-    r.interimResults = false; r.continuous = true; r.lang = navigator.language || 'en-US';
+    r.interimResults = false; r.continuous = true; r.lang = recognitionLang();
     r.onresult = (e) => { const said = Array.from(e.results).map((x) => x[0]?.transcript ?? '').join(' ').trim(); if (said) setText((t) => (t ? `${t} ${said}` : said)); };
     r.onend = () => { rec.current = null; setHearing(false); };
     try { r.start(); rec.current = r; setHearing(true); } catch { setHearing(false); }
