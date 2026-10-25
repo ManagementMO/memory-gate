@@ -352,8 +352,9 @@ export function createMarbleFigure(): FigureRig {
       U.uDiaBright.value = cur.dia * fade;
       // Night: a violet aurora rim; on the white page a quieter rim and a little more form shading.
       U.uRimAmt.value = THREE.MathUtils.lerp(0.3, 0.1, o.onLight);
-      U.uOcclusion.value = THREE.MathUtils.lerp(0.26, 0.24, o.onLight);
-      U.uExposure.value = THREE.MathUtils.lerp(0.78, 1.0, o.onLight); // a little shade on the stone so its lights read
+      U.uOcclusion.value = THREE.MathUtils.lerp(0.42, 0.36, o.onLight);
+      U.uExposure.value = THREE.MathUtils.lerp(0.8, 0.98, o.onLight); // a little shade on the stone so its lights read
+      U.uContour.value = THREE.MathUtils.lerp(0.4, 0.45, o.onLight); // on the white page the outline matters most
       // (glowBlending is additive: brightness rides on the colour, not opacity)
       const gk = fade * THREE.MathUtils.lerp(0.5, 0.07, o.onLight); // on the white page additive glow only tints the stone
       for (const g of eyeGlows) g.mat.color.set('#ffe6c4').multiplyScalar(cur.bright * gk * (1 - Math.max(cur.lineL, cur.lineR) * 0.8));

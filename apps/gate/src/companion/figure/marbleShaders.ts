@@ -22,6 +22,7 @@ export type MarbleUniforms = {
   uGlowCore: { value: THREE.Color };
   uGlowEdge: { value: THREE.Color };
   uDiaBright: { value: number };     // the brow star, the chest diamond and the wing windows
+  uContour: { value: number };       // a soft darker edge round the silhouette (white stone on a bright page)
 };
 
 export type MarbleFaceUniforms = {
@@ -54,6 +55,7 @@ export function marbleUniforms(): MarbleUniforms {
     uGlowCore: { value: new THREE.Color('#fff1cc') },
     uGlowEdge: { value: new THREE.Color('#ffaa45') },
     uDiaBright: { value: 0.6 },
+    uContour: { value: 0.3 },
   };
 }
 
@@ -76,7 +78,7 @@ varying vec3 vMPos;
 varying vec3 vMNor;
 uniform vec3 uRim; uniform float uRimAmt; uniform float uOcclusion; uniform float uExposure;
 uniform vec3 uWarm; uniform vec3 uGold; uniform vec3 uChrome; uniform float uVein;
-uniform vec3 uGlowCore; uniform vec3 uGlowEdge; uniform float uDiaBright;
+uniform vec3 uGlowCore; uniform vec3 uGlowEdge; uniform float uDiaBright; uniform float uContour;
 float mgHash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float mgNoise(vec3 x) {
   vec3 i = floor(x); vec3 f = fract(x); f = f * f * (3.0 - 2.0 * f);
@@ -96,14 +98,14 @@ float mgRhombus(vec2 p, vec2 b) {
 vec2 mgVeins(vec3 p) {
   float t = dot(p, vec3(17.0, 25.0, 9.0)) + mgFbm(p * 15.0) * 3.6;
   float fw = fwidth(t);
-  float grey = (1.0 - smoothstep(0.0, 0.15 + fw * 2.5, abs(sin(t * 3.14159)))) * (1.0 - smoothstep(0.3, 0.7, fw)) * smoothstep(0.3, 0.68, mgNoise(p * 7.0 + 2.0));
+  float grey = (1.0 - smoothstep(0.0, 0.2 + fw * 2.5, abs(sin(t * 3.14159)))) * (1.0 - smoothstep(0.3, 0.7, fw)) * smoothstep(0.22, 0.6, mgNoise(p * 7.0 + 2.0));
   float t3 = dot(p, vec3(-23.0, 9.0, 31.0)) + mgFbm(p * 26.0 + 11.0) * 4.2;
   float fw3 = fwidth(t3);
   float hair = (1.0 - smoothstep(0.0, 0.06 + fw3 * 2.5, abs(sin(t3 * 3.14159)))) * (1.0 - smoothstep(0.22, 0.5, fw3)) * smoothstep(0.42, 0.74, mgNoise(p * 9.0 + 5.0));
   float t2 = dot(p, vec3(-11.0, 19.0, 13.0)) + mgFbm(p * 12.0 + 4.0) * 2.8;
   float fw2 = fwidth(t2);
   float gold = (1.0 - smoothstep(0.0, 0.065 + fw2 * 2.5, abs(sin(t2 * 3.14159)))) * (1.0 - smoothstep(0.25, 0.6, fw2)) * smoothstep(0.56, 0.8, mgNoise(p * 5.0 + 9.0));
-  return vec2(max(grey, hair * 0.55), gold);
+  return vec2(max(grey, hair * 0.7), gold);
 }
 // Carving: bend the surface normal along a height field (a cut, a bevel, a raised frame) using screen-space
 // derivatives, so no tangents or textures are needed (Mikkelsen's surface-gradient bump).
@@ -165,7 +167,8 @@ function featureBlock(feature: MarbleFeature): string {
   // halo widens with distance so it always spans a few pixels and stays visible.
   float mgPx = length(fwidth(vMPos));
   float mgNear = 1.0 - smoothstep(0.0012, 0.004, mgPx);
-  float mgHaloW = max(0.0024, mgPx * 4.5);`;
+  float mgHaloW = max(0.0024, mgPx * 4.5);
+  float mgLine = mgPx * 0.75; // the least half-width a line keeps: it reads from across a room, not only up close`;
   if (feature === 'face') {
     return base + /* glsl */ `
   // The brow star, inside the top of the oval.
@@ -183,13 +186,13 @@ function featureBlock(feature: MarbleFeature): string {
   float mgC = (mgOl - 1.0) * mgOl / max(length(mgOq / vec2(${f(FACE.ovalA * FACE.ovalA)}, ${f(FACE.ovalB * FACE.ovalB)})), 1e-5);
   float mgRc = abs(mgC);
   float mgRw = max(fwidth(mgRc), 1e-5);
-  float mgRing = (1.0 - smoothstep(0.0004 - mgRw, 0.0004 + mgRw, mgRc)) * mgFront;
-  mgCut = (1.0 - smoothstep(0.0009 - mgRw, 0.0009 + mgRw, mgRc)) * mgFront;
+  float mgRing = (1.0 - smoothstep(max(0.0004, mgLine) - mgRw, max(0.0004, mgLine) + mgRw, mgRc)) * mgFront;
+  mgCut = (1.0 - smoothstep(max(0.0009, mgLine * 1.4) - mgRw, max(0.0009, mgLine * 1.4) + mgRw, mgRc)) * mgFront;
   float mgPlate = (1.0 - smoothstep(-0.0016, 0.0, mgC)) * mgFront;
   mgShadePlate = mgPlate;
   // The seam: from the crown down through the star, fading out between the eyes.
   float mgXw = max(fwidth(mgP.x), 1e-5);
-  float mgSeamLine = (1.0 - smoothstep(0.0004 - mgXw, 0.0004 + mgXw, abs(mgP.x))) * step(0.0, vMPos.z);
+  float mgSeamLine = (1.0 - smoothstep(max(0.0004, mgLine) - mgXw, max(0.0004, mgLine) + mgXw, abs(mgP.x))) * step(0.0, vMPos.z);
   float mgSeamFade = smoothstep(-0.012, 0.012, mgP.y);
   float mgSeam = mgSeamLine * mgSeamFade * step(0.0015, mgSf);
   // The eyes.
@@ -200,9 +203,10 @@ function featureBlock(feature: MarbleFeature): string {
   float mgEx = min(abs(mgP.x - uEyeL.x), abs(mgP.x - uEyeR.x)) / 0.0235;
   float mgArc = 1.0 - smoothstep(0.1, 1.0, mgEx);
   // A hard gold outline round each eye, like the rims of the wing windows; the glow starts beyond it.
-  float mgEyeRim = (smoothstep(-mgW, mgW, mgD) - smoothstep(0.0014 - mgW, 0.0014 + mgW, mgD)) * mgFront;
+  float mgEyeRimW = max(0.0014, mgLine * 1.6);
+  float mgEyeRim = (smoothstep(-mgW, mgW, mgD) - smoothstep(mgEyeRimW - mgW, mgEyeRimW + mgW, mgD)) * mgFront;
   mgDarkRim = mgEyeRim;
-  float mgHalo = exp(-max(mgD - 0.0014, 0.0) / mgHaloW) * (1.0 - mgEye) * (1.0 - mgEyeRim) * mgFront;
+  float mgHalo = exp(-max(mgD - mgEyeRimW, 0.0) / mgHaloW) * (1.0 - mgEye) * (1.0 - mgEyeRim) * mgFront;
   mgGlowMask = max(mgEye, mgDia);
   mgGoldMask = max(mgSeam * 0.85, mgEyeRim);
   // Carving: the plate sits a little lower than the head; the seam is a fine V-cut; the eyes and star are set in.
@@ -219,9 +223,10 @@ function featureBlock(feature: MarbleFeature): string {
   float mgDw = max(fwidth(mgDd), 1e-5);
   float mgOnFront = step(0.0, vMPos.z) * mgFront;
   float mgDia = (1.0 - smoothstep(-mgDw, mgDw, mgDd)) * mgOnFront;
-  float mgFrame = (smoothstep(-mgDw, mgDw, mgDd) - smoothstep(0.0021 - mgDw, 0.0021 + mgDw, mgDd)) * mgOnFront;
+  float mgFrameW = max(0.0021, mgLine * 1.6);
+  float mgFrame = (smoothstep(-mgDw, mgDw, mgDd) - smoothstep(mgFrameW - mgDw, mgFrameW + mgDw, mgDd)) * mgOnFront;
   float mgDiaCore = smoothstep(0.0, -0.0042, mgDd);
-  float mgDiaHalo = exp(-max(mgDd - 0.0021, 0.0) / mgHaloW) * (1.0 - mgDia - mgFrame) * mgOnFront;
+  float mgDiaHalo = exp(-max(mgDd - mgFrameW, 0.0) / mgHaloW) * (1.0 - mgDia - mgFrame) * mgOnFront;
   mgGlowMask = mgDia;
   mgGoldMask = mgFrame;
   mgH = (0.0006 * mgFrame - 0.001 * mgDia) * mgOnFront;
@@ -242,7 +247,7 @@ function featureBlock(feature: MarbleFeature): string {
   float mgSeamX = mgBy - 0.0025 + 0.0045 * sin(vMPos.y * 21.0 + 0.6);
   float mgSx = abs(vMPos.x - mgSeamX);
   float mgSxw = max(fwidth(vMPos.x), 1e-5);
-  float mgSeam = (1.0 - smoothstep(0.00035 - mgSxw, 0.00035 + mgSxw, mgSx)) * smoothstep(0.1, 0.4, mgN.z) * smoothstep(-0.03, -0.05, vMPos.y) * smoothstep(-0.2, -0.17, vMPos.y);
+  float mgSeam = (1.0 - smoothstep(max(0.00035, mgLine) - mgSxw, max(0.00035, mgLine) + mgSxw, mgSx)) * smoothstep(0.1, 0.4, mgN.z) * smoothstep(-0.03, -0.05, vMPos.y) * smoothstep(-0.2, -0.17, vMPos.y);
   // A lit window low on the outer face.
   vec2 mgWq = vec2((vMPos.x - (mgBy - 0.0072)) / 0.0058, (vMPos.y - ${f(WING.windowY)}) / 0.021);
   float mgWl = length(mgWq) - 1.0;
@@ -274,9 +279,9 @@ export function applyMarble(m: THREE.MeshPhysicalMaterial, u: MarbleUniforms, fe
       .replace('#include <color_fragment>', /* glsl */ `#include <color_fragment>
   vec2 mgV = mgVeins(vMPos) * uVein * (1.0 - mgGlowMask) * (1.0 - mgChromeMask);
   diffuseColor.rgb *= 0.965 + 0.035 * mgFbm(vMPos * 7.0 + 3.0); // soft clouding in the stone
-  diffuseColor.rgb *= 1.0 - mgShadePlate * 0.22 * (1.0 - mgGlowMask);
-  diffuseColor.rgb *= 1.0 - mgCut * 0.62; // incised lines read dark
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.46, 0.425, 0.385), mgV.x * 0.72);
+  diffuseColor.rgb *= 1.0 - mgShadePlate * 0.34 * (1.0 - mgGlowMask);
+  diffuseColor.rgb *= 1.0 - mgCut * 0.8; // incised lines read dark
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.4, 0.37, 0.34), mgV.x * 0.85);
   diffuseColor.rgb = mix(diffuseColor.rgb, uGold, mgV.y * 0.65);
   diffuseColor.rgb = mix(diffuseColor.rgb, uChrome, mgChromeMask);
   diffuseColor.rgb = mix(diffuseColor.rgb, uGold, mgGoldMask);
@@ -299,8 +304,10 @@ export function applyMarble(m: THREE.MeshPhysicalMaterial, u: MarbleUniforms, fe
     float mgOcc = mix(1.0 - uOcclusion, 1.0, smoothstep(-0.8, 0.55, dot(normal, mgUp)));
     mgOcc *= mix(1.0 - uOcclusion * 0.6, 1.0, smoothstep(-0.2, 0.9, mgFacing));
     outgoingLight *= mix(1.0, mgOcc * uExposure, mgMask);
+    // A soft darker contour, so white stone keeps its outline against a bright sky or a white page.
+    outgoingLight *= 1.0 - uContour * pow(1.0 - mgFacing, 2.5) * mgMask;
     // Light passing through the stone: a warm glow just inside the silhouette.
-    outgoingLight += uWarm * pow(1.0 - mgFacing, 2.2) * 0.16 * mgMask;
+    outgoingLight += uWarm * pow(1.0 - mgFacing, 2.2) * 0.1 * mgMask;
     vec3 mgRimCol = mix(uRim, vec3(1.0, 0.87, 0.74), smoothstep(-0.55, 0.55, normal.x));
     outgoingLight += mgRimCol * pow(1.0 - mgFacing, 3.0) * uRimAmt * mgMask;
   }
