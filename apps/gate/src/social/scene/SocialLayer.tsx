@@ -140,7 +140,10 @@ export function SocialLayer() {
   const placed = (stage === 'memory' || stage === 'leaving') && !!plan;
   const worldId = useSocial((s) => s.worldId);
   const photoWorld = useGate((s) => s.photoWorld);
-  const meadow = !!worldId && !!photoWorld && inMeadow();
+  // A meadow the conversation brought in (a prepared place) shows the kite only once it's mentioned, in the visitor's
+  // hands (scene/sketch/HeldKite), so the story's resting kite stays out of it.
+  const preparedPlace = useMemory((s) => s.place);
+  const meadow = !!worldId && !!photoWorld && inMeadow() && !preparedPlace;
   useEffect(() => { drawn.figures = [...ids]; }, [ids]);
   return (
     <group name="social" userData={{ noPoint: true }}>

@@ -15,6 +15,7 @@ import { GateDust } from './GateDust';
 import { MediaCard } from './MediaCard';
 import { PhotoWorld } from './PhotoWorld';
 import { MemoryScene } from './sketch/MemoryScene';
+import { HeldKite } from './sketch/HeldKite';
 import { PalaceWorld } from './palace/PalaceWorld';
 import { SHORE, XR_MOVE_AT } from './palace/plan';
 import { WhiteSpace } from './WhiteSpace';
@@ -128,6 +129,7 @@ export function World({ quality }: { quality: number }) {
       <group onClick={pointInHeadset}>
         <MemoryScene />
       </group>
+      <HeldKite />
       <MediaCard />
       <CompanionRig />
       <PresenceLights />

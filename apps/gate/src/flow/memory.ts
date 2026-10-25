@@ -7,6 +7,7 @@ import { api } from '../../../../convex/_generated/api';
 import type { Id } from '../../../../convex/_generated/dataModel';
 import { planOffline, validatePlan, type ScenePlan } from '../../../../packages/shared/src/scene';
 import { bringIn, placePlan, PLACES, type PlaceKey, type PreparedPlace } from '../../../../packages/shared/src/places';
+import { serverNow, usePresence } from '../presence/presence';
 import { convex, uploadFile } from '../backend/client';
 import type { MediaItem, Session } from '../state/store';
 
@@ -61,7 +62,10 @@ class Memory {
   bringIn(text: string): boolean {
     const st = useMemory.getState();
     if (!st.place || !st.plan) return false;
-    const next = bringIn(PLACES[st.place], st.plan, text);
+    // A spot pointed at in the last twenty seconds is what "here" and "there" mean.
+    const mark = usePresence.getState().myPoint;
+    const pointed: [number, number] | null = mark && serverNow() - mark.t < 20_000 ? [mark.at[0]!, mark.at[2]!] : null;
+    const next = bringIn(PLACES[st.place], st.plan, text, pointed);
     if (!next) return false;
     useMemory.setState((s) => ({ plan: next, version: s.version + 1 }));
     return true;

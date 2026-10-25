@@ -222,9 +222,10 @@ class Flow {
     const s = useGate.getState().session;
     if (!s || s.role !== 'host') return;
     void (async () => {
-      for (let i = 0; i < 3; i++) {
+      // A busy backend can run a call past its time limit: keep asking for about ten seconds (there's a walk to cross).
+      for (let i = 0; i < 5; i++) {
         try { await convex.mutation(api.splats.usePreparedPlace, { code: s.code, token: s.token, place: key }); return; }
-        catch (e) { console.warn('[place] world', e); await sleep(800 * (i + 1)); }
+        catch (e) { console.warn('[place] world', e); await sleep(1000 * (i + 1)); }
       }
     })();
   }

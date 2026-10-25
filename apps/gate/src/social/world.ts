@@ -15,8 +15,14 @@ export const MEADOW_WORLD_ID = '0b84554c-b182-4b3e-a7bb-78f15822a49d';
 
 type Feet = { x: number; z: number };
 const at = (feet: readonly [number, number, number]): Feet => ({ x: feet[0], z: feet[2] });
+/** fixtures/worlds/courtyard.json `worldId` (the cached courtyard, packages/shared/src/places.ts). */
+export const COURTYARD_WORLD_ID = '22679f51-8b8b-4f1c-85dc-6df65b1c5da8';
+
 export const WORLD_VIEWPOINTS: Record<string, Record<PerspectiveKey, Feet>> = {
   [MEADOW_WORLD_ID]: { child: at(VIEWPOINTS.elena.feet), grandparent: at(VIEWPOINTS.rosa.feet) },
+  // The courtyard's world camera faces a corner; it opens down the length of the pergola. The grandparent stands near
+  // that camera looking down the courtyard, the grandchild at its far end, the table under the vines between them.
+  [COURTYARD_WORLD_ID]: { grandparent: { x: 0.15, z: 0.6 }, child: { x: 0.3, z: 4.7 } },
 };
 
 export const inMeadow = () => useSocial.getState().worldId === MEADOW_WORLD_ID && !!useGate.getState().photoWorld;

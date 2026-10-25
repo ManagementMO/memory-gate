@@ -25,6 +25,8 @@ export type PlanObject = {
   scale: number;
   /** The words that put it there (shown when someone asks "who said that?"). */
   quote: string | null;
+  /** Where the person put it, in a prepared place's own frame (metres, x/z), when they said or showed where. */
+  at?: [number, number];
 };
 
 export type ScenePlan = {
@@ -158,7 +160,7 @@ export function kindFor(label: string, proposed?: string): string {
   const l = ` ${label.toLowerCase()} `;
   let best: { key: string; len: number } | null = null;
   for (const [key, e] of Object.entries(LIBRARY)) {
-    for (const s of e.syn) if (l.includes(` ${s} `) || l.includes(` ${s}s `)) { if (!best || s.length > best.len) best = { key, len: s.length }; }
+    for (const s of e.syn) if (l.includes(` ${s} `) || l.includes(` ${s}s `) || l.includes(` ${s}es `)) { if (!best || s.length > best.len) best = { key, len: s.length }; }
   }
   return best?.key ?? 'custom';
 }
@@ -255,8 +257,8 @@ export function planOffline(text: string, title?: string | null, opts: { seeds?:
   for (const [key, e] of Object.entries(LIBRARY)) {
     for (const s of [...e.syn].sort((a, b) => b.length - a.length)) {
       const i = t.indexOf(` ${s} `);
-      const j = i >= 0 ? i : t.indexOf(` ${s}s `);
-      if (j >= 0) { mentions.push({ key, at: j, label: s }); break; }
+      const j = i >= 0 ? i : t.indexOf(` ${s}s `) >= 0 ? t.indexOf(` ${s}s `) : t.indexOf(` ${s}es `); // benches, boxes
+      if (j >= 0) { mentions.push({ key, at: j, label: i >= 0 ? s : `${s}s` }); break; }
     }
   }
   mentions.sort((a, b) => a.at - b.at);

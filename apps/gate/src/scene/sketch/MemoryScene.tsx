@@ -6,7 +6,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { entryOf, layout, type Placement, type ScenePlan } from '../../../../../packages/shared/src/scene';
-import { PLACES, spotOf, type PreparedPlace } from '../../../../../packages/shared/src/places';
+import { PLACES, spotOf, whereIs, type PreparedPlace } from '../../../../../packages/shared/src/places';
 import { MEMORY_CENTER } from '../layout';
 import { useMemory } from '../../flow/memory';
 import { preloadRealModels, warmRealModels } from './realModels';
@@ -20,12 +20,18 @@ import { PerspectiveLayer } from '../../social/scene/PerspectiveLayer';
 
 const ORDER: Record<string, number> = { 'floor-under': 0, wall: 1, backdrop: 1, water: 1, edge: 2, floor: 3, 'wall-mounted': 4, surface: 5 };
 
+/** Things held in the visitor's hands rather than set in the place: a kite, and its spool when there is a kite. */
+const held = (plan: ScenePlan, kind: string) => kind === 'kite' || (kind === 'spool' && plan.objects.some((o) => o.kind === 'kite'));
+
 /** In a prepared place every thing has its spot in that world (things on the table sit on its top). */
 function placeSpots(place: PreparedPlace, plan: ScenePlan): Map<string, Placement> {
   const out = new Map<string, Placement>();
   for (const o of plan.objects) {
-    const spot = spotOf(place, plan, o);
-    if (!spot) continue;
+    const base = spotOf(place, plan, o);
+    const at = whereIs(place, plan, o);
+    if (!base || !at) continue;
+    // Where the person said or showed; things on or around something move with it, keeping their own turn.
+    const spot = { ...base, x: at[0], z: at[1], yaw: o.at && !base.on && !base.of ? undefined : base.yaw };
     const host = spot.on ? plan.objects.find((h) => h.kind === spot.on || (spot.on === 'table' && h.kind === 'round_table')) : undefined;
     const he = host ? entryOf(host.kind) : null;
     const y = host && he ? (he.surface ?? he.h) * host.scale : spot.y ?? 0;
@@ -121,7 +127,7 @@ export function MemoryScene() {
     stepAtmosphere(dt, active && !!plan);
     if (scene.fog instanceof THREE.Fog) scene.fog.color.copy(atmoLive.horizon).lerp(new THREE.Color('#f2f2f6'), 1 - atmoLive.amount);
     if (!plan) { if (lastFormed.current !== 0) { lastFormed.current = 0; useMemory.setState({ formed: 0 }); } return; }
-    const counted = useGate.getState().photoWorld ? plan.objects.filter((o) => !coveredByPhoto.current.has(o.id)) : plan.objects;
+    const counted = (useGate.getState().photoWorld ? plan.objects.filter((o) => !coveredByPhoto.current.has(o.id)) : plan.objects).filter((o) => !held(plan, o.kind));
     let sum = 0;
     for (const o of counted) sum += formation.get(o.id) ?? 0;
     const formed = counted.length ? sum / counted.length : 1;
@@ -132,12 +138,22 @@ export function MemoryScene() {
   });
 
   if (!active || !plan) return null;
+  // In a prepared place the floor is the world's own (a splat, which can't be pointed at): an unseen ground catches a
+  // tap, pinch or trigger, so "the bench was here" can put something where you pointed.
+  const ground = place ? (
+    <mesh name="ground-catcher" rotation-x={-Math.PI / 2} position={[0, 0.002, 0]} renderOrder={-10}>
+      <circleGeometry args={[9, 48]} />
+      <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
+    </mesh>
+  ) : null;
   // Inside a living photograph the photo already shows the room and its furniture; only what's said after forms.
-  const shown = photoWorld ? plan.objects.filter((o) => !coveredByPhoto.current.has(o.id)) : plan.objects;
+  // A kite (and the spool it flies from) is in the visitor's hands, drawn by HeldKite, not set in the place.
+  const shown = (photoWorld ? plan.objects.filter((o) => !coveredByPhoto.current.has(o.id)) : plan.objects).filter((o) => !held(plan, o.kind));
   const sorted = [...shown].sort((a, b) => (ORDER[entryOf(a.kind).place] ?? 3) - (ORDER[entryOf(b.kind).place] ?? 3));
   return (
     <group name="memory">
       {!photoWorld && !place && <Setting plan={plan} />}
+      {ground}
       <Ambience kind={plan.ambience} />
       {sorted.map((o, i) => {
         const p = placements.get(o.id);
