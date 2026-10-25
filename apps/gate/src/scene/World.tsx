@@ -16,6 +16,7 @@ import { MediaCard } from './MediaCard';
 import { PhotoWorld } from './PhotoWorld';
 import { MemoryScene } from './sketch/MemoryScene';
 import { HeldKite } from './sketch/HeldKite';
+import { Walk, walkPointer } from './Walk';
 import { PalaceWorld } from './palace/PalaceWorld';
 import { SHORE, XR_MOVE_AT } from './palace/plan';
 import { WhiteSpace } from './WhiteSpace';
@@ -31,6 +32,7 @@ import type { ThreeEvent } from '@react-three/fiber';
 function pointInHeadset(e: ThreeEvent<MouseEvent>) {
   const g = useGate.getState();
   if (!g.xr || !(g.stage === 'memory' || g.stage === 'forming') || !pointBus.send) return;
+  if (walkPointer.justMoved()) return; // that pinch was held: a step there, not a "here"
   e.stopPropagation();
   pointBus.send([e.point.x, e.point.y, e.point.z]);
 }
@@ -170,6 +172,7 @@ export function World({ quality }: { quality: number }) {
         <MemoryScene />
       </group>
       <HeldKite />
+      <Walk />
       <MediaCard />
       <CompanionRig />
       <PresenceLights />

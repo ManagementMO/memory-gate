@@ -2,6 +2,7 @@
 // deterministically, and draws the setting, the air and each thing in a calm order: ground and walls first, then
 // the big things, then the small ones resting on them. Things added later form where they're mentioned; nothing
 // already there jumps. Also reports how much has formed, so the companion knows when to speak.
+import { walkPointer } from '../Walk';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -139,10 +140,12 @@ export function MemoryScene() {
 
   if (!active || !plan) return null;
   // In a prepared place the floor is the world's own (a splat, which can't be pointed at): an unseen ground catches a
-  // tap, pinch or trigger, so "the bench was here" can put something where you pointed.
+  // tap, pinch or trigger, so "the bench was here" can put something where you pointed; in the headset a pinch held
+  // there for a moment is a step to it instead (Walk).
   const ground = place ? (
-    <mesh name="ground-catcher" rotation-x={-Math.PI / 2} position={[0, 0.002, 0]} renderOrder={-10}>
-      <circleGeometry args={[9, 48]} />
+    <mesh name="ground-catcher" rotation-x={-Math.PI / 2} position={[0, 0.002, 0]} renderOrder={-10}
+      onPointerDown={walkPointer.down} onPointerMove={walkPointer.move} onPointerUp={walkPointer.up} onPointerLeave={walkPointer.leave}>
+      <circleGeometry args={[20, 64]} />
       <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
     </mesh>
   ) : null;
