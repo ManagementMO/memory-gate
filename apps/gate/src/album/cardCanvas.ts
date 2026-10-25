@@ -129,8 +129,9 @@ function plate(ctx: CanvasRenderingContext2D, img: HTMLImageElement | null, tint
 export const CARD = { w: 768, h: 576 };
 
 /** One memory as a pane: its picture full-bleed, the plate at the bottom with its name and a line, "Sample" if it is one.
- *  Sized for reading at arm's length and a half: the name about 1.7° tall, the line about 0.75°. */
-export function paintCard(ctx: CanvasRenderingContext2D, m: AlbumMemory, img: HTMLImageElement | null) {
+ *  Sized for reading at arm's length and a half: the name about 1.7° tall, the line about 0.75°. A smaller pane can give
+ *  its name a second line rather than cut it short. */
+export function paintCard(ctx: CanvasRenderingContext2D, m: AlbumMemory, img: HTMLImageElement | null, titleLines = 1) {
   const { w: W, h: H } = CARD;
   const tint = m.palette[0] ?? '#b9a6ff';
   ctx.clearRect(0, 0, W, H);
@@ -141,18 +142,22 @@ export function paintCard(ctx: CanvasRenderingContext2D, m: AlbumMemory, img: HT
   sheen.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = sheen;
   ctx.fillRect(0, 0, W, H);
+  const pw = W - 40;
+  ctx.font = `400 80px ${SERIF}`;
+  const title = wrap(ctx, m.title, pw - 56, titleLines);
   ctx.font = `400 33px ${SANS}`;
-  const pw = W - 40, lines = wrap(ctx, memoryLine(m), pw - 56, 2);
-  const ph = 30 + 76 + 14 + lines.length * 41 + 20;
+  const lines = wrap(ctx, memoryLine(m), pw - 56, 2);
+  const th = title.length * 76;
+  const ph = 30 + th + 14 + lines.length * 41 + 20;
   const px = 20, py = H - 20 - ph;
   plate(ctx, img, tint, [0, 0, W, H], px, py, pw, ph, 32);
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = INK;
   ctx.font = `400 80px ${SERIF}`;
-  ctx.fillText(wrap(ctx, m.title, pw - 56, 1)[0] ?? '', px + 28, py + 30 + 62);
+  title.forEach((line, i) => ctx.fillText(line, px + 28, py + 30 + 62 + i * 76));
   ctx.fillStyle = INK_SOFT;
   ctx.font = `400 33px ${SANS}`;
-  lines.forEach((line, i) => ctx.fillText(line, px + 28, py + 30 + 76 + 14 + 28 + i * 41));
+  lines.forEach((line, i) => ctx.fillText(line, px + 28, py + 30 + th + 14 + 28 + i * 41));
   if (m.sample) {
     ctx.font = `600 27px ${SANS}`;
     const tw = ctx.measureText('Sample').width;
@@ -178,11 +183,9 @@ export function paintCard(ctx: CanvasRenderingContext2D, m: AlbumMemory, img: HT
 export const DETAIL = { w: 1280, h: 720 };
 export type DetailLayout = { rows: { index: number; y0: number; y1: number }[]; textX: number };
 
-/** A memory brought forward: its picture on the left, and on the right its name, when and how, and its moments' words
- *  (the chosen one marked). Returns where each moment's row is, so pointing at one can choose it. */
-export function paintDetail(ctx: CanvasRenderingContext2D, m: AlbumMemory, chosen: number, img: HTMLImageElement | null): DetailLayout {
+/** A page brought forward begins with its picture, on the left; returns where its words start. */
+function picture(ctx: CanvasRenderingContext2D, img: HTMLImageElement | null, tint: string): number {
   const { w: W, h: H } = DETAIL;
-  const tint = m.palette[0] ?? '#b9a6ff';
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = '#f6f6fa';
   ctx.fillRect(0, 0, W, H);
@@ -198,7 +201,24 @@ export function paintDetail(ctx: CanvasRenderingContext2D, m: AlbumMemory, chose
   ctx.lineWidth = 3;
   ctx.stroke();
   ctx.restore();
-  const x = pic.x + pic.w + 44, tw = W - x - 40;
+  return pic.x + pic.w + 44;
+}
+
+function rim(ctx: CanvasRenderingContext2D) {
+  ctx.save();
+  rounded(ctx, 2, 2, DETAIL.w - 4, DETAIL.h - 4, 40);
+  ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+  ctx.restore();
+}
+
+/** A memory brought forward: its picture on the left, and on the right its name, when and how, and its moments' words
+ *  (the chosen one marked). Returns where each moment's row is, so pointing at one can choose it. */
+export function paintDetail(ctx: CanvasRenderingContext2D, m: AlbumMemory, chosen: number, img: HTMLImageElement | null): DetailLayout {
+  const { w: W, h: H } = DETAIL;
+  const tint = m.palette[0] ?? '#b9a6ff';
+  const x = picture(ctx, img, tint), tw = W - x - 40;
   let y = 30 + 56;
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = INK;
@@ -235,12 +255,52 @@ export function paintDetail(ctx: CanvasRenderingContext2D, m: AlbumMemory, chose
     rows.push({ index: i, y0, y1: y0 + h });
     y += h + 6;
   }
-  // The rim.
-  ctx.save();
-  rounded(ctx, 2, 2, W - 4, H - 4, 40);
-  ctx.strokeStyle = 'rgba(255,255,255,0.95)';
-  ctx.lineWidth = 4;
-  ctx.stroke();
-  ctx.restore();
+  rim(ctx);
   return { rows, textX: x };
+}
+
+/** Someone else's memory as they shared it, and a line saying what it is. A place many people kept (the Golden Gate)
+ *  also shows who you'll find there. */
+export type SharedPage = { title: string; who: string; words: string[]; note: string; tint: string; people?: { name: string; img: HTMLImageElement | null }[] };
+
+/** A shared memory brought forward: their photograph on the left; on the right its name, whose and when, and what
+ *  they said, never cut short (there are only a few sentences). */
+export function paintShared(ctx: CanvasRenderingContext2D, p: SharedPage, img: HTMLImageElement | null) {
+  const { w: W, h: H } = DETAIL;
+  const x = picture(ctx, img, p.tint), tw = W - x - 40;
+  let y = 30 + 56;
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = INK;
+  ctx.font = `400 64px ${SERIF}`;
+  for (const line of wrap(ctx, p.title, tw, 2)) { ctx.fillText(line, x, y); y += 62; }
+  ctx.fillStyle = INK_SOFT;
+  ctx.font = `400 26px ${SANS}`;
+  y -= 18;
+  for (const line of wrap(ctx, p.who, tw, 2)) { ctx.fillText(line, x, y); y += 34; }
+  y += 26;
+  ctx.fillStyle = INK;
+  ctx.font = `400 29px ${SANS}`;
+  for (const said of p.words) {
+    for (const line of wrap(ctx, said, tw, 6)) { ctx.fillText(line, x, y); y += 40; }
+    y += 14;
+  }
+  if (p.people?.length) {
+    const size = 104, step = size + 34;
+    y += 6;
+    p.people.forEach((who, i) => {
+      const px = x + i * step;
+      ctx.save();
+      rounded(ctx, px, y, size, size, 22);
+      ctx.clip();
+      if (who.img) cover(ctx, who.img, px, y, size, size); else wash(ctx, p.tint, px, y, size, size);
+      ctx.restore();
+      ctx.fillStyle = INK_SOFT;
+      ctx.font = `600 21px ${SANS}`;
+      ctx.fillText(wrap(ctx, who.name, step - 8, 1)[0] ?? '', px, y + size + 30);
+    });
+  }
+  ctx.fillStyle = INK_SOFT;
+  ctx.font = `400 21px ${SANS}`;
+  ctx.fillText(wrap(ctx, p.note, tw, 1)[0] ?? '', x, H - 36);
+  rim(ctx);
 }
