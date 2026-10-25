@@ -24,6 +24,18 @@ const ObjectOut = z.object({
   scale: z.number(),
   quote: z.string(),
 });
+const PersonOut = z.object({
+  id: z.string(),
+  age: z.enum(['child', 'teen', 'young adult', 'adult', 'middle-aged', 'older']),
+  gender: z.enum(['female', 'male']),
+  pose: z.enum(['stand', 'wait', 'walk', 'wave', 'talk', 'sit', 'cheer', 'photo']),
+  zone: z.enum(['center', 'back', 'left', 'right', 'back-left', 'back-right', 'front-left', 'front-right']),
+  facing: z.number(),
+  skin: z.string(),
+  hair: z.string(),
+  top: z.string(),
+  bottom: z.string(),
+});
 const PlanOut = z.object({
   title: z.string(),
   setting: z.object({
@@ -38,6 +50,7 @@ const PlanOut = z.object({
   }),
   ambience: z.enum(['dust', 'petals', 'snow', 'fireflies', 'rain', 'leaves', 'none']),
   objects: z.array(ObjectOut),
+  people: z.array(PersonOut),
   intro: z.string(),
 });
 const SeeOut = z.object({ caption: z.string(), title: z.string(), plan: PlanOut });

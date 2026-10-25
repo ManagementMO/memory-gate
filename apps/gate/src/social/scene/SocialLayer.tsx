@@ -60,9 +60,11 @@ function StandIns() {
   const avatars = useSocial((s) => s.avatars);
   useSocial((s) => s.spots); // a story moving a perspective moves its stand-in
   const occupied = usePolledSet(occupiedPerspectives);
+  // A memory with its own people (the parents someone mentioned, the friends in a photo) needs no stand-in waiting in it.
+  const ownPeople = useMemory((s) => !!s.plan?.people?.length);
   const [, tick] = useState(0);
   useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 1000); return () => clearInterval(t); }, []); // follow things settling
-  const shown = perspectives.filter((p) => p.key !== viewing && !occupied.has(p.id));
+  const shown = ownPeople ? [] : perspectives.filter((p) => p.key !== viewing && !occupied.has(p.id));
   useEffect(() => { drawn.standIns = shown.map((p) => p.key); return () => { drawn.standIns = []; }; });
   return (
     <>

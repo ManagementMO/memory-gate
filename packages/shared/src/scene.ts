@@ -399,6 +399,18 @@ export function planOffline(text: string, title?: string | null, opts: { seeds?:
     used.add(k);
     objects.push({ id: `${k}-${objects.length}`, kind: k, label: k.replace(/_/g, ' '), color: null, material: null, zone: 'center', relation: 'none', target: null, scale: 1, quote: null });
   }
+  // The people they say were there ("my parents were with me"): one of each for parents, the right age for each.
+  const people: PlanPerson[] = [];
+  const who: [RegExp, PersonAge, 'female' | 'male'][] = [
+    [/\b(my )?(mom|mum|mother|mama)\b/, 'middle-aged', 'female'], [/\b(my )?(dad|father|papa)\b/, 'middle-aged', 'male'],
+    [/\b(grandma|grandmother|granny|nana)\b/, 'older', 'female'], [/\b(grandpa|grandfather|granddad)\b/, 'older', 'male'],
+    [/\b(my )?(sister)\b/, 'young adult', 'female'], [/\b(my )?(brother)\b/, 'young adult', 'male'],
+    [/\b(my )?(daughter|little girl)\b/, 'child', 'female'], [/\b(my )?(son|little boy)\b/, 'child', 'male'],
+    [/\b(my )?(wife|girlfriend)\b/, 'adult', 'female'], [/\b(my )?(husband|boyfriend)\b/, 'adult', 'male'],
+  ];
+  if (/\bparents\b/.test(t)) people.push(...(['female', 'male'] as const).map((g) => ({ age: 'middle-aged' as PersonAge, gender: g })) as PlanPerson[]);
+  for (const [re, age, gender] of who) if (re.test(t) && !(/\bparents\b/.test(t) && age === 'middle-aged')) people.push({ age, gender } as PlanPerson);
+  const planPeople: PlanPerson[] = people.slice(0, 6).map((p, i) => ({ id: `person-${i}`, age: p.age, gender: p.gender, skin: null, hair: null, top: null, bottom: null, pose: i % 2 ? 'wait' : 'stand', zone: 'center', facing: 0 }));
   // "... on the counter", "... by the fireplace": the words right after a thing name what it relates to.
   const after = (o: PlanObject) => t.slice((o as PlanObject & { _at?: number })._at ?? 0, ((o as PlanObject & { _at?: number })._at ?? 0) + 40);
   const named = (phrase: string) => objects.find((x) => LIBRARY[x.kind]?.syn.some((sy) => phrase.startsWith(sy)));
@@ -424,6 +436,7 @@ export function planOffline(text: string, title?: string | null, opts: { seeds?:
     setting: { indoor: setting.indoor, type: setting.type, timeOfDay, weather, floor: setting.floor, palette, walls: setting.indoor, water: !!('water' in setting && setting.water) },
     ambience: setting.indoor ? 'dust' : weather === 'snow' ? 'snow' : timeOfDay === 'night' ? 'fireflies' : 'leaves',
     objects,
+    ...(planPeople.length ? { people: planPeople } : {}),
     intro: offlineIntro(setting.indoor, title, inferTitle(text, setting.type), opts.language),
   });
   return plan;
@@ -642,13 +655,14 @@ export function layout(plan: ScenePlan): Placement[] {
   return plan.objects.map((o) => out.get(o.id)!).filter(Boolean);
 }
 
-export const PLAN_SYSTEM = `You turn someone's spoken description of a remembered place into a plan for a gentle 3D sketch of it. The person may be living with early dementia; their words are precious and may be partial or uncertain. Draw what they said; add only quiet, plausible context the setting needs (a kitchen has a counter), never people, never invented personal history, never text or signs.
+export const PLAN_SYSTEM = `You turn someone's spoken description of a remembered place into a plan for a gentle 3D sketch of it. The person may be living with early dementia; their words are precious and may be partial or uncertain. Draw what they said; add only quiet, plausible context the setting needs (a kitchen has a counter), never invented personal history, never text or signs. People go in "people", never in objects.
 
 Return JSON only, matching the schema:
 - title: a warm short name for the place in the speaker's terms ("Grandma's kitchen", "The lake at dusk"), at most 5 words.
 - setting: indoor (true/false); type (one or two plain words: kitchen, living room, garden, beach, lake, porch, park, street, classroom, café...); timeOfDay (morning|midday|golden|dusk|night) from their words, else golden; weather (clear|soft|rain|snow|mist); floor (wood|tile|carpet|grass|sand|stone|snow|water); palette: up to 3 hex colours they mentioned or that the place clearly has; walls (true for rooms); water (true for beaches, lakes, rivers).
 - ambience: dust (sunny rooms), petals, snow, fireflies (summer nights), rain, leaves, or none.
 - objects: 7 to 12 physical things, mentioned ones first, then the quiet context that makes the place feel whole and lived-in (a rug and a lamp in a living room, flower borders and a tree in a garden, a street lamp and a parked car on a street). For each: id (short, unique, lowercase, e.g. "table", "chair-2"); kind (one of the library keys listed below, else "custom"); label (2-4 plain words, the speaker's own noun with its telling word, e.g. "yellow curtains", "rocking chair", "old radio", "Monterey cypress": the label picks which real model is drawn); color (hex, only if said or obvious, else null); material (wood|fabric|metal|ceramic|glass|paper|plant|stone|plastic|water|light, or null); zone (center|back|left|right|back-left|back-right|front-left|front-right); relation (on|next_to|under|in_front_of|behind|against_wall|none) and target (the id it relates to, else null); scale (1 = ordinary size, 0.6-1.6); quote (the exact words that mention it, else null).
+- people: the people they say were there ("my parents were with me", "my sister and I") or that a shared photo shows, never anyone else, at most 6. For each: id; age (child|teen|young adult|adult|middle-aged|older; a speaker's parents are older than they are, a little brother is a child); gender (female|male; "my parents" are one of each); pose (stand|wait|walk|wave|talk|sit|cheer|photo); zone; facing (0 toward the viewer, 180 away, looking at the view); skin, hair, top, bottom: a hex colour only when said or seen in a photo, else "". Never names or who they are. None if nobody is mentioned or shown.
 - intro: the companion's first words once the place appears: present tense, at most 22 words, gently naming one or two remembered details. Never ask them to remember anything.
 
 Library keys: ${LIBRARY_KEYS.join(', ')}.
