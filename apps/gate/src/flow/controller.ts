@@ -18,7 +18,7 @@ import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { useMemory } from './memory';
 import { guideContext, story, turn } from '../social/attribution';
 import { overlayActive } from '../social/overlay';
-import { useAtlas } from '../map/state';
+import { useAtlas, type PlaceId } from '../map/state';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -466,14 +466,14 @@ class Flow {
   }
 
   /** From the start page: the memory map (earlier visits on this device are its San Francisco pin), before any
-   *  conversation begins. */
-  openAlbum(): void {
+   *  conversation begins; or straight onto one place's memories. */
+  openAlbum(place: PlaceId | null = null): void {
     const g = useGate.getState();
     if (g.stage !== 'portal') return;
     music.start();
     music.setEnabled(g.musicOn);
     music.setMode('album');
-    useAtlas.getState().show(null, 'mine'); // the memory map
+    useAtlas.getState().show(place, 'mine'); // the memory map, or that place
     g.set({ stage: 'album' });
   }
 

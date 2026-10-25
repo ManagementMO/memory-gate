@@ -186,6 +186,11 @@ const viewBoxOf = (p) => p.getAttribute('[data-testid=map-zoom-stage] svg', 'vie
   check('after a visit: the album opens on San Francisco with the way back to the map', (await p.locator('[data-testid=album-place]').count()) === 1 && (await p.locator('[data-testid=album-back]').count()) === 1);
   await p.click('[data-testid=album-back]');
   await p.waitForSelector('[data-testid=map]');
+  // Back from the Red Kite's own page, opened from the album (prepared.ts openPrepared): the album again, not the map.
+  await p.evaluate(() => sessionStorage.setItem('mg.return-to', 'album'));
+  await p.goto(`${base}/?mode=offline`, { waitUntil: 'load' });
+  await p.waitForSelector('[data-testid=album]', { timeout: 30000 });
+  check('back from the Red Kite: the San Francisco album again', (await p.locator('[data-testid=album-place]').count()) === 1 && (await p.locator('[data-testid=map]').count()) === 0);
   await p.context().close();
 }
 

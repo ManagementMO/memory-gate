@@ -64,7 +64,7 @@ test('walking in the meadow happens on the ground you see: its collision mesh, l
   };
   const meshes = gltf.meshes.flatMap((m: { primitives: { attributes: { POSITION: number }; indices: number }[] }) => m.primitives.map((p) => {
     const v = Float32Array.from(accessor(p.attributes.POSITION));
-    for (let i = 0; i < v.length; i += 3) { v[i] *= pack.scale; v[i + 1] = -v[i + 1]! * pack.scale + eye; v[i + 2] *= -pack.scale; }
+    for (let i = 0; i < v.length; i += 3) { v[i] = v[i]! * pack.scale; v[i + 1] = -v[i + 1]! * pack.scale + eye; v[i + 2] = -v[i + 2]! * pack.scale; }
     return { vertices: v, indices: Uint32Array.from(accessor(p.indices)) };
   }));
   const world = await createTraversal(meshes);
