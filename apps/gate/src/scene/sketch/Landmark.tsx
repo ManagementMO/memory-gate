@@ -87,7 +87,7 @@ export function Landmark({ landmark }: { landmark: PlanLandmark }) {
             c = src.clone() as THREE.MeshStandardMaterial;
             c.fog = false;
             c.userData.base = c.color?.clone() ?? new THREE.Color('#ffffff');
-            if (!c.emissive) c.emissive = new THREE.Color(0, 0, 0);
+            // lit materials take the haze as a glow too; an unlit scan (no emissive uniform) only in its colour
             seen.set(src, c); list.push(c);
           }
           return c;
@@ -113,8 +113,8 @@ export function Landmark({ landmark }: { landmark: PlanLandmark }) {
   useFrame((_, dt) => {
     t.value = Math.min(1, t.value + dt / 2.5);
     for (const m of mats) {
-      m.color.copy(m.userData.base as THREE.Color).lerp(atmoLive.horizon, haze * 0.6);
-      m.emissive.copy(atmoLive.horizon).multiplyScalar(haze * 0.55);
+      m.color.copy(m.userData.base as THREE.Color).lerp(atmoLive.horizon, haze * (m.emissive ? 0.6 : 0.75));
+      m.emissive?.copy(atmoLive.horizon).multiplyScalar(haze * 0.55);
       m.opacity = t.value; m.transparent = t.value < 1;
     }
   });

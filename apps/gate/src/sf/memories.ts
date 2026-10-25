@@ -61,7 +61,7 @@ export const SF_MEMORIES: SfMemory[] = [
       title: 'The Palace of Fine Arts', type: 'lagoon', time: 'golden', floor: 'stone', water: true, palette: ['#e8d9c4'],
       things: [thing('tree', 'weeping willow', 'back-left'), thing('bush', 'boxwood', 'left'), thing('flowers', 'white roses', 'front-left', '#f4f2ee'), thing('lamp_post', 'old street lamp', 'right')],
       people: [person('young adult', 'female', 'stand', { skin: S.light, hair: H.black, top: W, bottom: W }, 'center'), person('young adult', 'female', 'wait', { skin: S.light, hair: H.black, top: '#efe9dc', bottom: '#efe9dc' }, 'center')],
-      landmark: { id: 'palace_of_fine_arts', bearing: 0, distance: 120, yaw: 0 },
+      landmark: { id: 'palace_of_fine_arts', bearing: 0, distance: 230, yaw: 0 },
       intro: 'The rotunda glows across the water, and the lagoon holds the dome.',
     }),
   },

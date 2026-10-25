@@ -164,7 +164,12 @@ export function realObject(kind: string, reveal: Reveal, scale = 1, colour: stri
     const mats = (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).map((src) => {
       let m = copies.get(src);
       if (!m) {
-        m = src.clone() as THREE.MeshStandardMaterial;
+        // Scans often come unlit (their light baked in): the dissolve needs a lit material, so they become one that
+        // keeps its own light (the texture as a soft glow) rather than failing to draw.
+        const b = src as THREE.MeshBasicMaterial;
+        m = b.isMeshBasicMaterial
+          ? new THREE.MeshStandardMaterial({ name: b.name, map: b.map, color: b.color, transparent: b.transparent, opacity: b.opacity, alphaTest: b.alphaTest, side: b.side, roughness: 1, metalness: 0, emissive: '#ffffff', emissiveMap: b.map, emissiveIntensity: 0.4 })
+          : (src.clone() as THREE.MeshStandardMaterial);
         applyReveal(m as unknown as THREE.MeshPhysicalMaterial, reveal); // per-object reveal; standard materials share the chunks
         copies.set(src, m);
       }
@@ -173,6 +178,7 @@ export function realObject(kind: string, reveal: Reveal, scale = 1, colour: stri
     mesh.material = Array.isArray(mesh.material) ? mats : mats[0]!;
     mesh.castShadow = true;
     mesh.receiveShadow = true;
+    if (!mesh.geometry.attributes.normal) mesh.geometry.computeVertexNormals(); // unlit scans carry none; lit shading needs them
   });
   // "The green armchair": the main surface takes the colour (its texture still shows through, slightly lifted so a
   // dark colour doesn't turn it black).
