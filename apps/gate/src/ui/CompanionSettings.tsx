@@ -42,7 +42,7 @@ export function CompanionSettings() {
   if (!open) return null;
   return (
     <div className="sheet-backdrop side" onClick={close}>
-      <section ref={sheet} className="sheet glass settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-h" onClick={(e) => e.stopPropagation()} data-testid="settings-sheet">
+      <section ref={sheet} className="sheet glass settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-h" onClick={(e) => e.stopPropagation()} onKeyDown={trapFocus} data-testid="settings-sheet">
         <button type="button" className="icon-btn sheet-close" aria-label="Close" onClick={close}><CloseIcon /></button>
         <h2 id="settings-h">Your companion</h2>
         <fieldset className="lang-field">
@@ -61,6 +61,15 @@ export function CompanionSettings() {
       </section>
     </div>
   );
+}
+
+/** Tab and Shift+Tab stay inside the panel while it's open (it's a dialog). */
+function trapFocus(e: React.KeyboardEvent<HTMLElement>) {
+  if (e.key !== 'Tab') return;
+  const items = [...e.currentTarget.querySelectorAll<HTMLElement>('button, input:checked')];
+  const first = items[0], last = items.at(-1);
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
 }
 
 /** Close the panel and give focus back to the gear that opened it. */

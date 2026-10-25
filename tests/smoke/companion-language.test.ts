@@ -183,3 +183,26 @@ describe('final review: visits are never mistaken for leaving or resting', () =>
     expect(auto).toContain('a few words');
   });
 });
+
+describe('deferred review items, fixed', () => {
+  test('warm Spanish and French lines are no longer mistaken for medicine or a memory quiz', () => {
+    for (const r of ['Eso me recuerda que usted cocinaba los domingos.', 'El cura del pueblo venía a cenar, ¿verdad?', 'Y jamón curado en la mesa.', 'Un guéridon près de la fenêtre.'])
+      expect(safeReply(r, 'FALLBACK'), r).toBe(r);
+    for (const r of ['Esto cura la memoria.', 'Hay una cura para eso.', '¿Recuerda qué año era?', 'Ça va vous guérir.', 'La guérison viendra.'])
+      expect(safeReply(r, 'FALLBACK'), r).toBe('FALLBACK');
+  });
+  test('English: going back somewhere, or "that\'s all I remember", does not end the visit', () => {
+    for (const t of ['I want to go back to my grandmother\'s house', 'That\'s all I remember', 'That\'s all I remember about the kitchen', 'Can we go back to the summer of 1978?'])
+      expect(asksToLeave(t), t).toBe(false);
+    for (const t of ['I want to go back', 'Can we go back now?', 'I\'d like to go back home', 'Let\'s go back to the gate', 'That\'s all', 'That\'s all for today, thanks', 'Go back', 'I want to go home', 'Take me home'])
+      expect(asksToLeave(t), t).toBe(true);
+  });
+  const invited: GuideInput = { phase: 'gathering', transcript: '', history: [], media: null, mediaCaption: null, place: 'La cocina', invitedToEnter: true, turnsInPhase: 2, language: 'es' };
+  test('Spanish: a sentence that starts with "si" is not a yes; "sí" and "si, vamos" are', () => {
+    expect(guideOffline({ ...invited, transcript: 'Si no me equivoco, había un patio' }).intent).not.toBe('enter');
+    for (const t of ['Sí', 'Si', 'Sí, vamos', 'Si, vamos', 'Claro']) expect(guideOffline({ ...invited, transcript: t }).intent, t).toBe('enter');
+  });
+  test('Spanish: describing a portrait does not offer the photo picker', () => {
+    expect(guideOffline({ ...invited, invitedToEnter: false, transcript: 'En la pared había un retrato de mi abuelo' }).intent).not.toBe('offer_photo');
+  });
+});

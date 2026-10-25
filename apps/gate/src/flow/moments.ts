@@ -69,11 +69,13 @@ class Moments {
   }
 
   /** The last look before leaving. `fallback` names the picture when the place has no first words of its own. */
-  async captureFinal(title: string | null, fallback: string): Promise<void> {
+  /** `intro`: the place's first words in the conversation's language, when they aren't the plan's (a prepared place
+   *  visited in Spanish or French). */
+  async captureFinal(title: string | null, fallback: string, intro?: string): Promise<void> {
     if (title) this.update((m) => ({ ...m, title }));
     const last = useMoments.getState().memories.find((m) => m.id === this.currentId)?.moments.at(-1);
     if (last && Date.now() - last.at < 4000) return; // a moment was just taken
-    await this.mark(useMemory.getState().plan?.intro ?? fallback, null, false).then(() =>
+    await this.mark(intro ?? useMemory.getState().plan?.intro ?? fallback, null, false).then(() =>
       this.update((m) => ({ ...m, moments: m.moments.map((x, i, all) => (i === all.length - 1 ? { ...x, kind: 'final', speaker: 'companion' } : x)) })));
   }
 

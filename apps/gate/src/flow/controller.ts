@@ -425,7 +425,7 @@ class Flow {
     const g = useGate.getState();
     if (g.stage === 'memory' || g.stage === 'forming') {
       g.set({ stage: 'leaving', resting: false });
-      await moments.captureFinal(this.place, this.t('ourVisit'));
+      await moments.captureFinal(this.place, this.t('ourVisit'), this.lang === 'en' ? undefined : this.introLine());
       await this.say(this.t('thanksLeaving'));
     }
     await this.finish();

@@ -66,13 +66,15 @@ const E = '(?!\\p{L})';
 const anyOf = (alternatives: string) => new RegExp(`${B}(${alternatives})${E}`, 'iu');
 
 const MEDICAL_ES_FR = anyOf([
-  'cura(r|rse|ci[oó]n|do|da)?', 'sana(r|ci[oó]n)', 'tratamientos?', 'terapias?', 'terap[eé]utic\\p{L}*', 'diagn[oó]stic\\p{L}*',
+  // Curing ("esto cura", "ha curado", "una cura para"), not the village priest ("el cura") or cured ham ("jamón curado").
+  '(?<!(el|del|al|un|los|del buen) )cura[sn]?', 'curar(se|la|lo|le)?', 'curaci[oó]n(es)?', '(ha|han|he|hemos|haya) curado', 'sana(r|ci[oó]n)', 'tratamientos?', 'terapias?', 'terap[eé]utic\\p{L}*', 'diagn[oó]stic\\p{L}*',
   'demencias?', 'alzh[eé]imer\\p{L}*', 'p[eé]rdida de (la )?memoria', 'medicaci[oó]n(es)?', 'm[eé]dicament\\p{L}*', 's[ií]ntomas?',
-  'mejorar (su |la )?memoria', 'gu[eé]ri\\p{L}*', 'traitements?', 'th[eé]rapi\\p{L}*', 'd[eé]mences?', 'perte de m[eé]moire',
+  'mejorar (su |la )?memoria', 'gu[eé]ri(e|es|s|t|r|ra|rai\\p{L}*|sons?|ss\\p{L}*)?', 'traitements?', 'th[eé]rapi\\p{L}*', 'd[eé]mences?', 'perte de m[eé]moire',
   'sympt[oô]mes?', 'am[eé]lior\\p{L}* (votre |la |sa |ta )?m[eé]moire', 'mejor(a|ar|ará|e|en) (su |la |tu )?memoria', 'soign\\p{L}*',
 ].join('|'));
 const QUIZ_ES_FR = anyOf([
-  '(se acuerda|te acuerdas|recuerda|recuerdas) (de )?(qu[eé]|qui[eé]n|cu[aá]ndo|cu[aá]l|el a[nñ]o|la fecha)',
+  // A question asks with an accent ("¿recuerda qué año…?"); "eso me recuerda que…" only remembers.
+  '(?<!me )(se acuerda|te acuerdas|recuerda|recuerdas) (de )?(qué|quién|cuándo|cuál|el a[nñ]o|la fecha)',
   '(intente|intenta|trate|trata) (de )?recordar', 'est[aá] equivocad[oa]|se equivoca|te equivocas',
   'eso no es (as[ií]|correcto|verdad|cierto)', 'qu[eé] (a[nñ]o|d[ií]a|fecha) (es|era)',
   "(vous vous souvenez|tu te souviens|souvenez-vous|vous rappelez-vous|tu te rappelles) (de |du |des )?(quoi|qui|quand|quel|quelle|l['’]ann[eé]e|la date)",
@@ -123,9 +125,13 @@ export function asksToLeave(transcript: string): boolean {
   const t = norm(transcript);
   if (!t) return false;
   const wish = "(i'?d like to|i would like to|i want to|i wanna|i need to|can we|could we|can i|could i|may we|let'?s|let us|let me|please|time to|i'?m ready to|we should|i think i'?ll)";
-  const go = '(leave|go (back|home|now)|go$|stop|exit|head (back|home)|get out|be done|finish|end( this| it| here)?|wrap up|say goodbye)';
+  // "Go back" ends the visit only on its own ("can we go back now"), not on the way somewhere ("go back to my
+  // grandmother's house" asks to visit it).
+  const go = '(leave|go (back( home| now| please| to the (gate|start|beginning))?$|home|now)|go$|stop|exit|head (back|home)|get out|be done|finish|end( this| it| here)?|wrap up|say goodbye)';
   return new RegExp(`\\b${wish}\\s+(now\\s+)?${go}(\\b|$)`).test(t)
-    || /^(please\s+)?(leave|exit|stop|go back|take me (back|home|out)|end|end it|goodbye|bye( bye)?|i'?m done|we'?re done|that'?s enough|that'?s all|all done)\b/.test(t)
+    || /^(please\s+)?(leave|exit|stop|go back$|take me (back|home|out)|end|end it|goodbye|bye( bye)?|i'?m done|we'?re done|that'?s enough|all done)\b/.test(t)
+    // "That's all" on its own; "that's all I remember" is a memory.
+    || /^(that'?s all|that is all)( for (today|now))?( thank you| thanks)?$/.test(t)
     || /\b(take me (back|home|out)|get me out|i'?m (tired|finished|done)|too tired|that'?s enough for (today|now)|stop for (today|now))\b/.test(t)
     || LEAVE_ES_FR.some((re) => re.test(t));
 }
@@ -154,9 +160,10 @@ const KEYS: Record<Exclude<Lang, 'en'>, Keys> = {
   es: {
     rest: anyOf('descansar|descansemos|una pausa|un momento( por favor)?$|espere|esp[eé]reme|d[eé]me un momento'),
     video: anyOf('v[ií]deos?|grabaci[oó]n|pel[ií]cula'),
-    photo: anyOf('fotos?|fotograf[ií]as?|imagen|im[aá]genes|[aá]lbum|retratos?'),
+    photo: anyOf('fotos?|fotograf[ií]as?|imagen|im[aá]genes|[aá]lbum'),
     unsure: anyOf('no s[eé]|no estoy segur[oa]|no me acuerdo|no recuerdo|ni idea'),
-    yes: new RegExp(`^(s[ií]|claro|vale|de acuerdo|vamos|por favor|me encantar[ií]a|bueno)${E}`, 'u'),
+    // "Sí", or an unaccented "si" on its own or with a yes ("si, vamos"); "si no me equivoco…" begins a sentence.
+    yes: new RegExp(`^(sí|si(?=$| (claro|vamos|por favor|gracias|bueno|vale))|claro|vale|de acuerdo|vamos|por favor|me encantar[ií]a|bueno)${E}`, 'u'),
     notYet: new RegExp(`^(no|todav[ií]a no|a[uú]n no|espere|espera)${E}`, 'u'),
   },
   fr: {
