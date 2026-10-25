@@ -3,7 +3,8 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
-    "sourceMode": { "title": "Source", "type": "string", "enum": ["archive", "social"], "default": "archive", "editor": "select" },
+    "sourceMode": { "title": "Source", "type": "string", "enum": ["archive", "social", "place"], "default": "archive", "editor": "select" },
+    "query": { "title": "Public place or landmark (place mode)", "type": "string", "editor": "textfield", "maxLength": 120 },
     "postUrls": { "title": "Public Instagram photo posts (social mode)", "type": "array", "items": { "type": "string" }, "editor": "stringList", "maxItems": 3 },
     "permissionConfirmed": { "title": "I have permission to use these public posts", "type": "boolean", "default": false },
     "place": { "title": "Public place name", "type": "string", "description": "A city, neighborhood or public landmark. Do not send private family stories or addresses.", "editor": "textfield", "prefill": "San Francisco" },

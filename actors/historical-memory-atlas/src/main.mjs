@@ -1,10 +1,13 @@
 import { Actor } from 'apify';
 import { searchArchive } from './archive.mjs';
 import { collectSocial } from './social.mjs';
+import { collectPlaces } from './places.mjs';
 
 await Actor.main(async () => {
   const input = await Actor.getInput();
-  const result = input?.sourceMode === 'social'
+  const result = input?.sourceMode === 'place'
+    ? await collectPlaces(input, Actor.apifyClient, childRunId => Actor.setValue('CHILD_RUN', { childRunId }))
+    : input?.sourceMode === 'social'
     ? await collectSocial(input, Actor.apifyClient, childRunId => Actor.setValue('CHILD_RUN', { childRunId }))
     : await searchArchive(input);
   if (result.references.length) await Actor.pushData(result.references);

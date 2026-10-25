@@ -3,6 +3,7 @@ import { v, ConvexError } from 'convex/values';
 import { action } from './_generated/server';
 import { internal } from './_generated/api';
 import { normalizePosts, scraperInput, mediaUrl } from '../actors/historical-memory-atlas/src/social.mjs';
+import { normalizePlaces, placeInput, placeQuery } from '../actors/historical-memory-atlas/src/places.mjs';
 const auth = { code: v.string(), token: v.string() };
 
 async function apify(path: string, init: RequestInit = {}) {
@@ -39,7 +40,26 @@ export const refresh = action({ args: { ...auth, id: v.id('memoryImports') }, ha
   if (data.status !== 'SUCCEEDED') return;
   if (!/^[A-Za-z0-9]+$/.test(data.defaultDatasetId ?? '')) throw new ConvexError('The completed Apify run has no dataset.');
   const rows = await apify(`datasets/${data.defaultDatasetId}/items?clean=true&limit=12&format=json`);
-  await ctx.runMutation(internal.memorySources.complete, { id: job._id, cards: normalizePosts(rows, job.urls) });
+  if (job.kind === 'place') await ctx.runMutation(internal.memorySources.completePlaces, { id: job._id, places: normalizePlaces(rows) });
+  else await ctx.runMutation(internal.memorySources.complete, { id: job._id, cards: normalizePosts(rows, job.urls) });
+} });
+
+export const findPlace = action({ args: { ...auth, query: v.string(), mode: v.union(v.literal('fixture'), v.literal('cloud')), permission: v.boolean() }, handler: async (ctx, a): Promise<string> => {
+  const query = placeQuery(a.query);
+  if (a.mode === 'cloud' && (!process.env.APIFY_TOKEN || process.env.ALLOW_APIFY_CLOUD !== '1')) throw new ConvexError('Apify is not configured. The fictional park example is available offline.');
+  const actorId = process.env.APIFY_MEMORY_ACTOR_ID || 'compass~crawler-google-places';
+  if (!/^[\w-]+(?:[~\/][\w-]+)?$/.test(actorId)) throw new ConvexError('Invalid configured Actor ID.');
+  const id = await ctx.runMutation(internal.memorySources.begin, { code: a.code, token: a.token, mode: a.mode, urls: [], permission: a.permission, actorId, kind: 'place', queryText: query });
+  if (a.mode === 'fixture') { await ctx.runMutation(internal.memorySources.fixturePlace, { id }); return id; }
+  try {
+    const body = ['compass~crawler-google-places', 'compass/crawler-google-places'].includes(actorId) ? placeInput(query) : { sourceMode: 'place', query };
+    const { data } = await apify(`actors/${encodeURIComponent(actorId.replace('/', '~'))}/runs?timeout=210&maxTotalChargeUsd=0.15`, { method: 'POST', body: JSON.stringify(body) });
+    if (!/^[A-Za-z0-9]+$/.test(data?.id ?? '')) throw new Error('No run ID.');
+    await ctx.runMutation(internal.memorySources.recordRun, { id, runId: data.id }); return id;
+  } catch {
+    await ctx.runMutation(internal.memorySources.fail, { id, message: 'Place search could not start. The request may have reached Apify; inspect the account before retrying.' });
+    throw new ConvexError('Could not start the place search. Check the saved job and Apify Console before retrying.');
+  }
 } });
 
 export const attach = action({ args: { ...auth, id: v.id('memorySources'), objectKey: v.union(v.literal('kite'), v.literal('flower'), v.literal('landmark')), perspective: v.union(v.literal('elena'), v.literal('rosa')), note: v.string() }, handler: async (ctx, a): Promise<void> => {

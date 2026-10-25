@@ -3,6 +3,8 @@ import { internalMutation, internalQuery, mutation, query } from './_generated/s
 import { activeScopes, requireMember } from './lib/auth';
 import { deleteIfUnreferenced } from './lib/storage';
 import { postUrls, mediaUrl } from '../actors/historical-memory-atlas/src/social.mjs';
+import { placeQuery, mapsUrl } from '../actors/historical-memory-atlas/src/places.mjs';
+import { deleteMemoryObject } from './lib/memoryObjectFiles';
 
 const auth = { code: v.string(), token: v.string() };
 const objectKey = v.union(v.literal('kite'), v.literal('flower'), v.literal('landmark'));
@@ -16,23 +18,47 @@ export const list = query({ args: auth, handler: async (ctx, a) => {
   const jobs = canAuthor ? await ctx.db.query('memoryImports').withIndex('by_room', q => q.eq('roomId', room._id)).collect() : [];
   return { canAuthor, offline: !!room.offline,
     configured: !!process.env.APIFY_TOKEN && process.env.ALLOW_APIFY_CLOUD === '1',
-    jobs: jobs.slice(-10).map(j => ({ _id: j._id, status: j.status, runId: j.runId, mode: j.mode, error: j.error })),
+    jobs: jobs.slice(-10).map(j => ({ _id: j._id, status: j.status, runId: j.runId, mode: j.mode, error: j.error, kind: j.kind ?? 'social' })),
     sources: await Promise.all(rows.filter(r => r.approved || canAuthor).map(async r => ({ ...r, imageUrl: r.fileId ? await ctx.storage.getUrl(r.fileId) : r.imageUrl }))) };
 } });
 
-export const begin = internalMutation({ args: { ...auth, mode: v.union(v.literal('fixture'), v.literal('cloud')), urls: v.array(v.string()), permission: v.boolean(), actorId: v.string() }, handler: async (ctx, a) => {
+export const begin = internalMutation({ args: { ...auth, mode: v.union(v.literal('fixture'), v.literal('cloud')), urls: v.array(v.string()), permission: v.boolean(), actorId: v.string(), kind: v.optional(v.literal('place')), queryText: v.optional(v.string()) }, handler: async (ctx, a) => {
   const { room, member } = await requireMember(ctx, a.code, a.token, ['family']);
   if (room.paused) throw new ConvexError('Continue the room before importing.');
   if (!a.permission) throw new ConvexError('Confirm permission to use and share these photos.');
   if (a.mode === 'cloud' && room.offline) throw new ConvexError('This is an offline sample. Open a live import copy to use Apify.');
   if (a.mode === 'fixture' && !room.demo) throw new ConvexError('Fictional sources are available only in sample rooms.');
-  const urls = a.mode === 'cloud' ? postUrls(a.urls) : [];
+  const urls = a.mode === 'cloud' && !a.kind ? postUrls(a.urls) : [];
   const jobs = await ctx.db.query('memoryImports').withIndex('by_room', q => q.eq('roomId', room._id)).collect();
+  if (a.kind && (await ctx.db.query('memoryPlaces').withIndex('by_room', q => q.eq('roomId', room._id)).collect()).length >= 12) throw new ConvexError('Remove an unused place before adding another.');
   if (jobs.some(j => j.status === 'running')) throw new ConvexError('An import is already running. Check that run before starting another.');
   if (a.mode === 'cloud' && jobs.some(j => j.mode === 'cloud' && Date.now() - j.createdAt < 60_000)) throw new ConvexError('Please wait a minute before starting another Apify run.');
   const sources = await ctx.db.query('memorySources').withIndex('by_room', q => q.eq('roomId', room._id)).collect();
   if (sources.length >= 32 || jobs.length >= 40) throw new ConvexError('Remove unused sources or start a new source workspace before importing more.');
-  return ctx.db.insert('memoryImports', { roomId: room._id, memberId: member._id, mode: a.mode, urls, actorId: a.actorId, status: 'running', runId: null, error: null, createdAt: Date.now() });
+  return ctx.db.insert('memoryImports', { roomId: room._id, memberId: member._id, mode: a.mode, urls, actorId: a.actorId, status: 'running', runId: null, error: null, createdAt: Date.now(), ...(a.kind ? { kind: a.kind, queryText: placeQuery(a.queryText) } : {}) });
+} });
+
+const placeCard = v.object({ title: v.string(), sourceUrl: v.string(), address: v.string(), lat: v.union(v.number(), v.null()), lng: v.union(v.number(), v.null()) });
+export const completePlaces = internalMutation({ args: { id: v.id('memoryImports'), places: v.array(placeCard) }, handler: async (ctx, a) => {
+  const job = await ctx.db.get(a.id); if (!job || job.status !== 'running' || job.kind !== 'place') return;
+  const member = await ctx.db.get(job.memberId), room = await ctx.db.get(job.roomId);
+  if (!room || !member || member.revokedAt !== null || member.role !== 'family') { await ctx.db.patch(job._id, { status: 'failed', error: 'Import permission ended.' }); return; }
+  const existing = await ctx.db.query('memoryPlaces').withIndex('by_room', q => q.eq('roomId', room._id)).collect();
+  let count = 0;
+  for (const p of a.places.slice(0, Math.min(3, Math.max(0, 12 - existing.length)))) {
+    if (!mapsUrl(p.sourceUrl)) continue;
+    await ctx.db.insert('memoryPlaces', { ...p, title: p.title.slice(0, 120), address: p.address.slice(0, 220), roomId: room._id, importId: job._id, approved: false, execution: 'apify-cloud', runId: job.runId, createdAt: Date.now() }); count++;
+  }
+  await ctx.db.patch(job._id, { status: 'ready', error: count ? null : 'No supported place references returned, or the room already has 12 places.' });
+} });
+export const fixturePlace = internalMutation({ args: { id: v.id('memoryImports') }, handler: async (ctx, a) => {
+  const job = await ctx.db.get(a.id); if (!job || job.status !== 'running' || job.kind !== 'place' || job.mode !== 'fixture') return;
+  const room = await ctx.db.get(job.roomId), member = await ctx.db.get(job.memberId);
+  if (!room || !member || member.revokedAt !== null) return;
+  const places = await ctx.db.query('memoryPlaces').withIndex('by_room', q => q.eq('roomId', room._id)).collect();
+  if (places.length >= 12) throw new ConvexError('Remove an unused place before adding another.');
+  await ctx.db.insert('memoryPlaces', { roomId: room._id, importId: job._id, title: 'Willowbrook Park · fictional example', address: 'A small park with an arched wooden footbridge. Invented for this example.', sourceUrl: null, lat: null, lng: null, approved: false, execution: 'fixture', runId: null, createdAt: Date.now() });
+  await ctx.db.patch(job._id, { status: 'ready' });
 } });
 
 export const job = internalQuery({ args: { ...auth, id: v.id('memoryImports') }, handler: async (ctx, a) => {
@@ -96,6 +122,8 @@ export const remove = mutation({ args: { ...auth, id: v.id('memorySources') }, h
   if (room.paused) throw new ConvexError('Continue before removing a source.');
   const row = await ctx.db.get(a.id);
   if (!row || row.roomId !== room._id) throw new ConvexError('No such source.');
+  const objects = await ctx.db.query('memoryObjects').withIndex('by_room', q => q.eq('roomId', room._id)).collect();
+  for (const object of objects.filter(o => o.sourceId === row._id)) await deleteMemoryObject(ctx, object);
   await ctx.db.delete(row._id);
   if (row.fileId) await deleteIfUnreferenced(ctx, row.fileId);
 } });

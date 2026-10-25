@@ -10,7 +10,21 @@ export default defineSchema({
     roomId: v.id('rooms'), memberId: v.id('members'), mode: v.string(), status: v.string(),
     urls: v.array(v.string()), runId: v.union(v.string(), v.null()), actorId: v.string(),
     error: v.union(v.string(), v.null()), createdAt: v.number(),
+    kind: v.optional(v.literal('place')), queryText: v.optional(v.string()),
   }).index('by_room', ['roomId']),
+  memoryPlaces: defineTable({
+    roomId: v.id('rooms'), importId: v.id('memoryImports'), title: v.string(), address: v.string(),
+    sourceUrl: v.union(v.string(), v.null()), lat: v.union(v.number(), v.null()), lng: v.union(v.number(), v.null()),
+    approved: v.boolean(), execution: v.string(), runId: v.union(v.string(), v.null()), createdAt: v.number(),
+  }).index('by_room', ['roomId']),
+  memoryObjects: defineTable({
+    roomId: v.id('rooms'), memberId: v.id('members'), sourceId: v.union(v.id('memorySources'), v.null()), placeId: v.union(v.id('memoryPlaces'), v.null()),
+    perspective: v.string(), label: v.string(), note: v.string(), choice: v.string(), status: v.string(),
+    assetKey: v.union(v.string(), v.null()), fileId: v.union(v.id('_storage'), v.null()), modelSource: v.string(),
+    taskId: v.union(v.string(), v.null()), vendorConsent: v.boolean(), error: v.union(v.string(), v.null()),
+    slot: v.union(v.number(), v.null()), size: v.number(), yaw: v.number(), commandId: v.string(),
+    downloadLease: v.union(v.number(), v.null()), createdAt: v.number(),
+  }).index('by_room', ['roomId']).index('by_room_command', ['roomId', 'commandId']),
   memorySources: defineTable({
     roomId: v.id('rooms'), importId: v.id('memoryImports'), approved: v.boolean(),
     sourceUrl: v.union(v.string(), v.null()), imageUrl: v.union(v.string(), v.null()), fileId: v.union(v.id('_storage'), v.null()),
