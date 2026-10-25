@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
-import { asksToEnter, asksToGoIn, asksToLeave, guideOffline, perspectiveFromWords, saysYes, type GuideInput } from '../../packages/shared/src/guide';
-import { bringIn, placePlan, PLACES } from '../../packages/shared/src/places';
+import { asksToEnter, asksToGoIn, asksToLeave, guideOffline, perspectiveFromReply, perspectiveFromWords, saysYes, type GuideInput } from '../../packages/shared/src/guide';
+import { bringIn, placeFor, placePlan, PLACES } from '../../packages/shared/src/places';
 import { COLORS } from '../../packages/shared/src/scene';
 
 const gathering: GuideInput = { phase: 'gathering', transcript: '', history: [], media: null, mediaCaption: null, place: null, invitedToEnter: false, turnsInPhase: 1 };
@@ -68,3 +68,32 @@ test.each([
   ['Je me souviens de cette colline avec ma grand-mère.', 'child'],
   ['Traje a mis nietos a volar la cometa.', 'grandparent'],
 ])('whose eyes, in Spanish and French: %s → %s', (t, who) => expect(perspectiveFromWords(t)).toBe(who));
+
+test.each([
+  ['My grandmother’s garden, full of flowers, with a little path and soft grass.', null],
+  ['We had a back yard with a big oak and a dirt path.', null],
+  ['El jardín de mi abuela tenía flores y un camino.', null],
+  ['We flew a kite in the field.', 'red-kite'],
+  ['There were poppies along the path.', 'red-kite'],
+  ['I remember this hill.', 'red-kite'],
+  ['A garden on the hill where we flew a red kite.', 'red-kite'],
+  ['A courtyard with a pergola.', 'courtyard'],
+])('which prepared place the words call up: %s → %s', (t, key) => expect(placeFor(t)?.key ?? null).toBe(key));
+
+test.each([
+  ['A kite hill with my granma.', 'child'],
+  ['We flew kites with grandma.', 'child'],
+  ['Grandma and me, every summer.', 'child'],
+  ['Grandma.', 'child'],
+  ['My gramma took me there.', 'child'],
+  ['I was the grandma, watching.', 'grandparent'],
+  ['There were a hundred grams of flour.', null],
+])('whose eyes, as a transcript may spell it: %s → %s', (t, who) => expect(perspectiveFromWords(t)).toBe(who));
+
+test.each([
+  ['A kite hill with your grandmother. Shall we go there?', 'child'],
+  ['How lovely, flying kites with your grandson.', 'grandparent'],
+  ['Was anyone with you, your grandmother perhaps?', null],
+  ['A kite hill on a windy day. Shall we go there?', null],
+  ['Una colina con su abuela.', 'child'],
+])('whose eyes, from what the companion says back: %s → %s', (r, who) => expect(perspectiveFromReply(r)).toBe(who));

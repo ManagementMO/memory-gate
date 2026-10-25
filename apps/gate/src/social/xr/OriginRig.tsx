@@ -1,6 +1,7 @@
 // The headset side of perspectives, inside the XR origin (so everything here grows and shrinks with it):
 //   X (left): see through the next perspective's eyes      Y (left): the wrist menu (perspectives, handoffs, ghosts)
-//   hands: a small light on the left wrist opens the same menu with a pinch.
+//   hands: a small light on the left wrist opens the same menu with a pinch (only with ?eyes=1: whose eyes you see
+//   through comes from what you say).
 // Your eye height is measured once you stand in the headset (and again on entering a memory). Inside a memory,
 // changing perspective puts you where that perspective stands, at its eye height, facing the other one across the
 // room; it all happens behind a quick, soft blink, so it never feels like being moved.
@@ -20,6 +21,9 @@ import { anchorAt, anchored, clearAnchor, originScale, resetOriginScale, setOrig
 /** Where the hands are (world space, read by the pose publisher). Null when that hand isn't tracked. */
 export const handAnchors: { left: THREE.Object3D | null; right: THREE.Object3D | null } = { left: null, right: null };
 export const wristMenu = { open: false };
+/** Whose eyes you see through comes from what you say (or the companion asks), so hands get no wrist light for the
+ *  menu (?eyes=1 brings it back for testing; controllers keep Y). */
+const EYES_MENU = new URLSearchParams(location.search).get('eyes') === '1';
 
 const MEASURE_S = 1.5;
 const BLINK_OUT = 0.15;
@@ -152,8 +156,9 @@ function Row({ y, text, onSelect, on, color }: RowProps) {
   const [hover, setHover] = useState(false);
   const pick = (e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onSelect(); };
   return (
-    <group position={[0, y, 0]}>
-      <mesh onClick={pick} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)} userData={{ noPoint: true }}>
+    <group position={[0, y, 0]} onClick={pick} onPointerEnter={() => setHover(true)} onPointerLeave={() => setHover(false)} userData={{ noPoint: true }}>
+      {/* The whole row is the button (its words and colour dot sit in front of the plate; hand rays waver). */}
+      <mesh userData={{ noPoint: true }}>
         <planeGeometry args={[0.24, 0.034]} />
         <meshBasicMaterial color={on ? '#ffffff' : hover ? '#f3f1fb' : '#e7e5f2'} transparent opacity={0.94} toneMapped={false} />
       </mesh>
@@ -248,7 +253,7 @@ export function OriginRig() {
       {leftSpace && (
         <XRSpace space={leftSpace}>
           <object3D ref={(o) => { handAnchors.left = o; }} />
-          {!leftC && !menu && <WristLight onSelect={() => setMenu(() => true)} />}
+          {!leftC && !menu && EYES_MENU && <WristLight onSelect={() => setMenu(() => true)} />}
           {menu && <Suspense fallback={null}><MenuPanel onClose={() => setMenu(() => false)} /></Suspense>}
         </XRSpace>
       )}

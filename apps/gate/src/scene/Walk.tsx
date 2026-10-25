@@ -1,5 +1,6 @@
-// Stepping about a prepared place in the headset, on the meadow's walking surface (the Red Kite collision mesh that
-// Keira's walking, social/scene/Walking, loads and lifts onto the visible ground):
+// Stepping about a memory in the headset: in the meadow on its walking surface (the Red Kite collision mesh that
+// Keira's walking, social/scene/Walking, loads and lifts onto the visible ground); anywhere else on the flat floor,
+// inside the room, the clearing or the prepared world (social/walk keepInside):
 //   hold a pinch or trigger on the ground for half a second, then let go: go there, behind a short blink (hands have no
 //   sticks, so this is how a wearer without controllers walks)          left stick press: back to where you began
 // A quick pinch on the ground still means "here" (placing things where you point). Standing in someone's perspective,
@@ -12,7 +13,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { useMemory } from '../flow/memory';
 import { useGate } from '../state/store';
-import { walk as socialWalk } from '../social/walk';
+import { keepInside, walk as socialWalk } from '../social/walk';
 import { moveAnchor, perspectiveAnchored, reanchor, resetWalk, setWalk, walkState } from '../social/xr/perspectiveScale';
 import type { MeadowTraversal } from '../red-kite/traversal';
 import { splatEye } from './PhotoWorld';
@@ -43,6 +44,22 @@ async function loadSurface(s: { collider: string; scale: number; floorY: number 
   // normalizeSpawn lifts the collision mesh (only) so its ground under the entrance is the visible ground there.
   return createTraversal(meshes, { table: false });
 }
+/** What walking needs of a surface: the meadow's traversal, or the flat floor below. */
+type Surface = Pick<MeadowTraversal, 'feet' | 'place' | 'step' | 'groundAt'>;
+
+/** A memory without a walking surface (a sketched room or clearing, a photo, the courtyard): the floor is flat, and
+ *  every step stays inside the place, as walking on a screen does. */
+function flatSurface(): Surface {
+  let at = { x: 0, z: 0 };
+  return {
+    get feet(): [number, number, number] { return [at.x, 0, at.z]; },
+    place(p) { at = keepInside(p[0], p[2]); },
+    step(d) { at = keepInside(at.x + d[0], at.z + d[1]); return [at.x, 0, at.z]; },
+    groundAt: () => 0,
+  };
+}
+const flat = flatSurface();
+
 const SPEED = 1.2; // metres a second
 const TURN = Math.PI / 6;
 const HOLD_S = 0.45; // a pinch held this long on the ground is a step there, not a "here"
@@ -76,7 +93,7 @@ export function Walk() {
   const left = useXRInputSourceState('controller', 'left');
   const right = useXRInputSourceState('controller', 'right');
 
-  const st = useRef({ epoch: -1, start: [0, 0, 0] as [number, number, number], pivotX: 0, pivotZ: 0, turnArmed: true, backWas: false, blink: 0, blinkDir: 0, pending: null as null | (() => void) });
+  const st = useRef({ epoch: -1, surface: null as Surface | null, start: [0, 0, 0] as [number, number, number], pivotX: 0, pivotZ: 0, turnArmed: true, backWas: false, blink: 0, blinkDir: 0, pending: null as null | (() => void) });
   const ring = useRef<THREE.Mesh>(null);
   const blink = useRef<THREE.Mesh>(null);
   // The backup surface: only if Keira's hasn't arrived a few seconds after the place is chosen.
@@ -95,7 +112,8 @@ export function Walk() {
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05);
     const s = st.current;
-    const surface = socialWalk.traversal ?? own;
+    // The meadow waits for its real ground (a flat floor there would put feet in the hill); elsewhere the floor is flat.
+    const surface: Surface | null = socialWalk.traversal ?? own ?? (surfaceDef ? null : flat);
     const on = !!surface && gl.xr.isPresenting && useGate.getState().stage === 'memory' && !useGate.getState().resting;
     walkPointer.active = on;
     if (!on || !surface) { if (ring.current) ring.current.visible = false; if (blink.current) blink.current.visible = false; return; }
@@ -104,10 +122,11 @@ export function Walk() {
     const yaw = _e.setFromQuaternion(camera.getWorldQuaternion(_q), 'YXZ').y;
     const anchoredNow = perspectiveAnchored();
     const w = walkState();
-    // A fresh placement (a new memory, another perspective, a recentre): start walking from where the head is now.
-    if (!anchoredNow && s.epoch !== w.epoch) {
+    // A fresh placement (a new memory, another perspective, a recentre, the meadow's ground arriving): start walking
+    // from where the head is now.
+    if (!anchoredNow && (s.epoch !== w.epoch || s.surface !== surface)) {
       try { surface.place([_head.x - w.x, 0, _head.z - w.z]); } catch { return; } // outside the walkable ground: stay
-      s.epoch = w.epoch; s.start = [...surface.feet] as [number, number, number]; s.pivotX = 0; s.pivotZ = 0;
+      s.epoch = w.epoch; s.surface = surface; s.start = [...surface.feet] as [number, number, number]; s.pivotX = 0; s.pivotZ = 0;
     }
     const apply = () => { const f = surface.feet; setWalk(f[0] - s.start[0] + s.pivotX, f[1], f[2] - s.start[2] + s.pivotZ, walkState().yaw); };
 
@@ -178,12 +197,13 @@ export function Walk() {
       walkPointer.request = null;
       walkPointer.movedAt = performance.now();
       const f = surface.feet;
-      // Land the head (not the play space's middle) on the chosen spot.
-      const dx = target.x - _head.x, dz = target.z - _head.z;
+      // Land the head (not the play space's middle) on the chosen spot (on a flat floor, the nearest one inside the place).
+      const to = surface === flat ? keepInside(target.x, target.z) : { x: target.x, z: target.z };
+      const dx = to.x - _head.x, dz = to.z - _head.z;
       startBlink(() => {
         if (anchoredNow) {
           // Carry Keira's anchor (her walking's capsule rejoins the head by itself), onto the ground there.
-          const ground = surface.groundAt(target.x, target.z, _head.y + 1, 12);
+          const ground = surface.groundAt(to.x, to.z, _head.y + 1, 12);
           if (ground !== null) moveAnchor(dx, dz, ground);
           return;
         }
@@ -192,15 +212,15 @@ export function Walk() {
     }
   });
 
-  if (!place) return null;
   return (
     <>
       <WalkHint id="memory-walk" text="Hold a pinch on the ground to walk there" when={() => walkPointer.active} />
-      <mesh ref={ring} visible={false} rotation-x={-Math.PI / 2} renderOrder={1500}>
+      {/* Neither the ring nor the blink takes a ray: the ground (and the buttons) behind them must still get it. */}
+      <mesh ref={ring} visible={false} rotation-x={-Math.PI / 2} renderOrder={1500} raycast={() => null}>
         <ringGeometry args={[0.16, 0.22, 40]} />
         <meshBasicMaterial color="#fff6e6" transparent opacity={0.5} depthWrite={false} toneMapped={false} fog={false} />
       </mesh>
-      <mesh ref={blink} visible={false} renderOrder={3001}>
+      <mesh ref={blink} visible={false} renderOrder={3001} raycast={() => null}>
         <sphereGeometry args={[0.3, 24, 16]} />
         <meshBasicMaterial color="#f2f1f8" side={THREE.BackSide} transparent opacity={0} depthTest={false} depthWrite={false} toneMapped={false} fog={false} />
       </mesh>
