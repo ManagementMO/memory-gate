@@ -1,8 +1,9 @@
 // The headset side of perspectives, inside the XR origin (so everything here grows and shrinks with it):
 //   X (left): see through the next perspective's eyes      Y (left): the wrist menu (perspectives, handoffs, ghosts)
 //   hands: a small light on the left wrist opens the same menu with a pinch.
-// Your eye height is measured once you stand in the headset (and again on entering a memory); changing perspective
-// grows or shrinks the world around your feet behind a quick, soft blink so it never feels like being moved.
+// Your eye height is measured once you stand in the headset (and again on entering a memory). Inside a memory,
+// changing perspective puts you where that perspective stands, at its eye height, facing the other one across the
+// room; it all happens behind a quick, soft blink, so it never feels like being moved.
 import { Text } from '@react-three/drei';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useXR, useXRInputSourceState, XRSpace } from '@react-three/xr';
@@ -12,8 +13,9 @@ import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyper
 import { useGate } from '../../state/store';
 import { handOver, respondHandoff, lastStoryOfViewing, otherPerspective } from '../handoffs';
 import { cyclePerspective, setViewing } from '../perspectives';
+import { facingOther, spotOf, worldSpot } from '../spots';
 import { useSocial, type PerspectiveKey } from '../store';
-import { originScale, resetOriginScale, setOriginScale } from './perspectiveScale';
+import { anchorAt, anchored, clearAnchor, originScale, resetOriginScale, setOriginScale } from './perspectiveScale';
 
 /** Where the hands are (world space, read by the pose publisher). Null when that hand isn't tracked. */
 export const handAnchors: { left: THREE.Object3D | null; right: THREE.Object3D | null } = { left: null, right: null };
@@ -25,6 +27,7 @@ const BLINK_IN = 0.25;
 const _head = new THREE.Vector3();
 const _fwd = new THREE.Vector3();
 const _q = new THREE.Quaternion();
+const _e = new THREE.Euler(0, 0, 0, 'YXZ');
 
 function median(a: number[]): number { const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)] ?? 0; }
 
@@ -39,7 +42,7 @@ function Scaler({ anchor }: { anchor: React.RefObject<THREE.Group | null> }) {
   const camera = useThree((s) => s.camera);
   const presenting = useXR((s) => s.session != null);
   const blink = useRef<THREE.Mesh>(null);
-  const st = useRef({ samples: [] as number[], since: 0, measuring: true, phase: 'idle' as 'idle' | 'out' | 'in', t: 0, target: 1, stage: '' });
+  const st = useRef({ samples: [] as number[], since: 0, measuring: true, phase: 'idle' as 'idle' | 'out' | 'in', t: 0, target: 1, stage: '', place: '', nextPlace: '' });
   useEffect(() => {
     if (presenting) { st.current.measuring = true; st.current.samples = []; st.current.since = 0; return; }
     resetOriginScale();
@@ -61,13 +64,31 @@ function Scaler({ anchor }: { anchor: React.RefObject<THREE.Group | null> }) {
       if (s.since >= MEASURE_S) { s.measuring = false; useSocial.getState().set({ xr: { measured: median(s.samples), k: originScale() } }); }
     }
     const measured = useSocial.getState().xr.measured;
+    const viewing = useSocial.getState().viewing;
+    // Once the memory has formed, you stand where this perspective stands. Re-placed when you switch, or when the
+    // story moves your perspective; not for small nudges while things settle.
+    const placed = stage === 'memory' || stage === 'leaving';
+    const spot = placed ? spotOf(viewing) : null;
+    const place = spot ? `${viewing}|${spot.source}|${spot.objectId}` : '';
     if (measured && s.phase === 'idle') {
-      const target = scaleFor(useSocial.getState().perspectives.find((p) => p.key === useSocial.getState().viewing)?.eyeHeight ?? 1.6, measured);
-      if (Math.abs(target - originScale()) > 0.01) { s.phase = 'out'; s.t = 0; s.target = target; }
+      const target = scaleFor(useSocial.getState().perspectives.find((p) => p.key === viewing)?.eyeHeight ?? 1.6, measured);
+      if (Math.abs(target - originScale()) > 0.01 || place !== s.place) { s.phase = 'out'; s.t = 0; s.target = target; s.nextPlace = place; }
     }
     if (s.phase === 'out') {
       s.t += dt;
-      if (s.t >= BLINK_OUT) { setOriginScale(s.target, _head); useSocial.getState().set({ xr: { measured, k: s.target } }); s.phase = 'in'; s.t = 0; }
+      if (s.t >= BLINK_OUT) {
+        if (s.nextPlace) {
+          camera.getWorldQuaternion(_q);
+          const localYaw = _e.setFromQuaternion(_q, 'YXZ').y - origin.rotation.y;
+          anchorAt(worldSpot(viewing), facingOther(viewing), s.target, { x: _head.x, z: _head.z, yaw: localYaw });
+        } else {
+          if (anchored()) clearAnchor();
+          setOriginScale(s.target, _head);
+        }
+        s.place = s.nextPlace;
+        useSocial.getState().set({ xr: { measured, k: s.target } });
+        s.phase = 'in'; s.t = 0;
+      }
     } else if (s.phase === 'in') {
       s.t += dt;
       if (s.t >= BLINK_IN) s.phase = 'idle';

@@ -153,6 +153,22 @@ function Nameplate({ body, name, perspective, color }: { body: React.RefObject<B
   );
 }
 
+/** The figure itself, driven by any body: a likeness when one is shared, otherwise porcelain in the given colour. */
+function Figure({ body, url, color, name, sub }: { body: React.RefObject<Body>; url: string | null; color: string; name: string; sub: string }) {
+  const placeholder = <Placeholder body={body} color={color} />;
+  return (
+    <group userData={{ noPoint: true }}>
+      {url ? (
+        <Fallback fallback={placeholder}>
+          <Suspense fallback={placeholder}><Likeness url={url} body={body} /></Suspense>
+        </Fallback>
+      ) : placeholder}
+      <Nameplate body={body} name={name} perspective={sub} color={color} />
+    </group>
+  );
+}
+
+/** Someone who is here, where they really are. */
 export function Avatar({ memberId }: { memberId: string }) {
   const body = useBody(memberId);
   const name = useSocial((s) => s.members.find((m) => m.id === memberId)?.name ?? 'Family');
@@ -162,17 +178,20 @@ export function Avatar({ memberId }: { memberId: string }) {
   useEffect(() => { const t = setInterval(() => setPerspectiveId(poses.get(memberId)?.perspectiveId ?? ''), 500); return () => clearInterval(t); }, [memberId]);
   useSocial((s) => s.perspectives); // re-render when perspectives (labels, colours) change
   const p = perspectiveById(perspectiveId);
-  const color = p?.color ?? '#cdb4ff';
-  const url = avatar ? fileUrl(avatar.url) : null;
-  const placeholder = <Placeholder body={body} color={color} />;
-  return (
-    <group userData={{ noPoint: true }}>
-      {url ? (
-        <Fallback fallback={placeholder}>
-          <Suspense fallback={placeholder}><Likeness url={url} body={body} /></Suspense>
-        </Fallback>
-      ) : placeholder}
-      <Nameplate body={body} name={name} perspective={p ? `seeing as ${p.label.toLowerCase()}` : ''} color={color} />
-    </group>
-  );
+  return <Figure body={body} url={avatar ? fileUrl(avatar.url) : null} color={p?.color ?? '#cdb4ff'} name={name} sub={p ? `seeing as ${p.label.toLowerCase()}` : ''} />;
+}
+
+/**
+ * The other perspective when nobody is seeing through it right now: a stand-in at its spot and eye height, facing
+ * across the room (the claimant's likeness when they shared one). It steps aside the moment a person is there.
+ */
+export function StandIn({ at, eye, yaw, color, url, name, sub }: { at: { x: number; z: number }; eye: number; yaw: number; color: string; url: string | null; name: string; sub: string }) {
+  const body = useRef<Body>({ head: new THREE.Vector3(), headQ: new THREE.Quaternion(), left: null, right: null, yaw: 0, ready: false });
+  useFrame(() => {
+    const b = body.current;
+    b.head.set(at.x, eye, at.z);
+    b.headQ.setFromAxisAngle(UP, yaw);
+    b.yaw = yaw; b.ready = true;
+  });
+  return <Figure body={body} url={url} color={color} name={name} sub={sub} />;
 }

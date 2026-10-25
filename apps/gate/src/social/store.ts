@@ -41,6 +41,8 @@ export type Pin = { id: string; perspectiveId: string; data: ArchiveReference; p
 export type Avatar = { memberId: string; url: string; bytes: number };
 export type Pose = { memberId: string; perspectiveId: string; device: 'headset' | 'phone' | 'desktop'; inScene: boolean; head: number[]; left: number[]; right: number[]; updatedAt: number };
 export type Member = { id: string; name: string; role: string };
+/** Where a perspective stands in one memory, relative to its centre (metres). */
+export type Spot = { perspectiveId: string; memoryId: string; x: number; z: number; objectId: string; source: 'default' | 'story'; quote: string; updatedAt: number };
 
 export const PERSONAS: Record<PerspectiveKey, { label: string; eyeHeight: number; color: string }> = {
   grandparent: { label: 'Grandparent', eyeHeight: 1.6, color: '#8fb8ff' },
@@ -50,7 +52,7 @@ const local = (key: PerspectiveKey): Perspective => ({ id: `local:${key}`, key, 
 
 export type SocialSnapshot = {
   perspectives: Perspective[]; stories: Story[]; objects: PerspectiveObject[]; turns: Turn[]; summaries: Summary[];
-  handoffs: Handoff[]; pins: Pin[]; avatars: Avatar[];
+  handoffs: Handoff[]; pins: Pin[]; avatars: Avatar[]; spots: Spot[];
 };
 
 type SocialState = SocialSnapshot & {
@@ -77,7 +79,7 @@ type SocialState = SocialSnapshot & {
 
 export const useSocial = create<SocialState>((set) => ({
   perspectives: [local('grandparent'), local('child')],
-  stories: [], objects: [], turns: [], summaries: [], handoffs: [], pins: [], avatars: [],
+  stories: [], objects: [], turns: [], summaries: [], handoffs: [], pins: [], avatars: [], spots: [],
   status: 'local',
   memberId: null,
   members: [],
@@ -103,7 +105,7 @@ export const notify = (text: string) => useSocial.getState().set({ notice: { tex
 
 export function applySnapshot(s: SocialSnapshot): void {
   const perspectives = s.perspectives.length ? s.perspectives.map((p) => ({ ...p, key: (p.key === 'child' ? 'child' : 'grandparent') as PerspectiveKey })) : useSocial.getState().perspectives;
-  useSocial.setState({ ...s, perspectives, status: 'live' });
+  useSocial.setState({ ...s, spots: s.spots ?? [], perspectives, status: 'live' });
 }
 
 // For automated checks (like window.__gate and window.__presence).

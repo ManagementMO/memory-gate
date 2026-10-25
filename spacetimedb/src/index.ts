@@ -55,6 +55,12 @@ const db = schema({
     id: t.string().primaryKey(), roomId: t.string(), perspectiveId: t.string(), data: t.string(), placement: t.string(),
     addedBy: t.string(), addedByName: t.string(), createdAt: t.f64(),
   }),
+  // Where each perspective stands in a memory (relative to its centre, metres): opposite sides of the room by default,
+  // then wherever the story puts them ("by the stove"). Switching perspective takes you there, facing the other.
+  perspectiveSpot: table({ indexes: [{ accessor: 'byRoom', algorithm: 'btree', columns: ['roomId'] }] }, {
+    id: t.string().primaryKey(), roomId: t.string(), perspectiveId: t.string(), memoryId: t.string(), x: t.f32(), z: t.f32(),
+    objectId: t.string(), source: t.string(), quote: t.string(), setBy: t.string(), updatedAt: t.f64(),
+  }),
   // The likeness a member wears in this visit (a GLB in Convex storage). A minor's needs a guardian's consent.
   avatar: table({ indexes: [{ accessor: 'byRoom', algorithm: 'btree', columns: ['roomId'] }] }, {
     id: t.string().primaryKey(), roomId: t.string(), memberId: t.string(), avatarId: t.string(), url: t.string(), bytes: t.u32(),
@@ -126,6 +132,7 @@ export const purgeRoom = db.reducer({ roomId: t.string() }, (ctx, { roomId }) =>
   for (const row of [...ctx.db.handoff.byRoom.filter(roomId)]) ctx.db.handoff.id.delete(row.id);
   for (const row of [...ctx.db.perspectivePin.byRoom.filter(roomId)]) ctx.db.perspectivePin.id.delete(row.id);
   for (const row of [...ctx.db.avatar.byRoom.filter(roomId)]) ctx.db.avatar.id.delete(row.id);
+  for (const row of [...ctx.db.perspectiveSpot.byRoom.filter(roomId)]) ctx.db.perspectiveSpot.id.delete(row.id);
 });
 
 // Being together: the gateway calls these for a member it has just checked in Convex.
@@ -385,4 +392,17 @@ export const setAvatar = db.reducer({ roomId: t.string(), memberId: t.string(), 
 export const clearAvatar = db.reducer({ roomId: t.string(), memberId: t.string() }, (ctx, a) => {
   requireOperator(ctx);
   ctx.db.avatar.id.delete(`${a.roomId}:${a.memberId}`);
+});
+
+/** Where a perspective stands in one memory. A spot the story gave is not replaced by a default one. */
+export const setSpot = db.reducer({ roomId: t.string(), perspectiveId: t.string(), memoryId: t.string(), x: t.f32(), z: t.f32(), objectId: t.string(), source: t.string(), quote: t.string(), memberId: t.string() }, (ctx, a) => {
+  requireOperator(ctx); bounded(a.memoryId, 180, 'memory');
+  if (!['default', 'story'].includes(a.source) || !finite(a.x, 8) || !finite(a.z, 8) || a.objectId.length > 120 || a.quote.length > 300) throw new SenderError('Invalid spot.');
+  perspectiveIn(ctx, a.roomId, a.perspectiveId);
+  const id = `${a.perspectiveId}|${a.memoryId}`;
+  const prior = ctx.db.perspectiveSpot.id.find(id);
+  if (prior && prior.source === 'story' && a.source === 'default') return;
+  const row = { id, roomId: a.roomId, perspectiveId: a.perspectiveId, memoryId: a.memoryId, x: a.x, z: a.z, objectId: a.objectId, source: a.source, quote: a.quote.trim(), setBy: a.memberId, updatedAt: nowMs(ctx) };
+  if (prior) ctx.db.perspectiveSpot.id.update(row); else ctx.db.perspectiveSpot.insert(row);
+  if ([...ctx.db.perspectiveSpot.byRoom.filter(a.roomId)].length > 400) throw new SenderError('This visit has too many places.');
 });

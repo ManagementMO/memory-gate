@@ -1,16 +1,21 @@
 // Being together in the memory, for real: this device says where its eyes (and, in the headset, its hands) are,
 // about ten times a second, and everyone else appears where they really are, at their perspective's height. People
 // who aren't inside the memory yet (still at the gate, or without the exchange) stay the soft lights beside you.
+// There is always someone across the room: when nobody is seeing through the other perspective, a stand-in waits at
+// its spot. Someone seeing through the same eyes as you shares your spot, so you don't see them inside you.
 import { useFrame, useThree } from '@react-three/fiber';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { deviceKind } from '../../presence/presence';
+import { useMemory } from '../../flow/memory';
 import { useGate } from '../../state/store';
+import { fileUrl } from '../../backend/client';
 import { attachFirstPersonLook, firstPersonPose } from '../firstPerson';
 import { socialLink } from '../link';
+import { facingOther, keepDefaultSpots, worldSpot } from '../spots';
 import { poses, useSocial, viewingPerspective } from '../store';
 import { handAnchors } from '../xr/OriginRig';
-import { Avatar } from '../avatar/Avatar';
+import { Avatar, StandIn } from '../avatar/Avatar';
 
 const FRESH_MS = 5000;
 const round = (v: number) => Math.round(v * 1000) / 1000;
@@ -21,13 +26,48 @@ export function inSceneIds(): Set<string> {
   const now = Date.now();
   return new Set([...poses.values()].filter((p) => p.memberId !== me && p.inScene && p.head.length === 7 && now - p.receivedAt < FRESH_MS).map((p) => p.memberId));
 }
-export function useInSceneIds(): Set<string> {
+/** Live figures to draw: everyone in the memory except those sharing your spot (seeing through your eyes). */
+function visibleIds(): Set<string> {
+  const mine = viewingPerspective().id;
+  return new Set([...inSceneIds()].filter((id) => poses.get(id)?.perspectiveId !== mine));
+}
+/** Perspectives someone is seeing through in the memory right now (they need no stand-in). */
+function occupiedPerspectives(): Set<string> {
+  return new Set([...inSceneIds()].map((id) => poses.get(id)?.perspectiveId ?? '').filter(Boolean));
+}
+const same = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every((x) => b.has(x));
+function usePolledSet(read: () => Set<string>): Set<string> {
   const [ids, setIds] = useState<Set<string>>(() => new Set());
   useEffect(() => {
-    const t = setInterval(() => setIds((prev) => { const next = inSceneIds(); return next.size === prev.size && [...next].every((x) => prev.has(x)) ? prev : next; }), 400);
+    const t = setInterval(() => setIds((prev) => { const next = read(); return same(prev, next) ? prev : next; }), 400);
     return () => clearInterval(t);
-  }, []);
+  }, [read]);
   return ids;
+}
+export const useInSceneIds = () => usePolledSet(inSceneIds);
+
+/** Across the room: whichever perspective nobody is seeing through gets a stand-in at its spot. */
+function StandIns() {
+  const viewing = useSocial((s) => s.viewing);
+  const perspectives = useSocial((s) => s.perspectives);
+  const avatars = useSocial((s) => s.avatars);
+  useSocial((s) => s.spots); // a story moving a perspective moves its stand-in
+  const occupied = usePolledSet(occupiedPerspectives);
+  const [, tick] = useState(0);
+  useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 1000); return () => clearInterval(t); }, []); // follow things settling
+  return (
+    <>
+      {perspectives.filter((p) => p.key !== viewing && !occupied.has(p.id)).map((p) => {
+        const likeness = avatars.find((a) => a.memberId === p.claimedBy);
+        return (
+          <Suspense key={p.id} fallback={null}>
+            <StandIn at={worldSpot(p.key)} eye={p.eyeHeight} yaw={facingOther(p.key)} color={p.color} url={likeness ? fileUrl(likeness.url) : null}
+              name={p.claimedName || p.label} sub={p.claimedName ? p.label.toLowerCase() : ''} />
+          </Suspense>
+        );
+      })}
+    </>
+  );
 }
 
 const _p = new THREE.Vector3();
@@ -76,8 +116,13 @@ function FirstPersonLook() {
 }
 
 export function SocialLayer() {
-  const ids = useInSceneIds();
+  const ids = usePolledSet(visibleIds);
   const stage = useGate((s) => s.stage);
+  const plan = useMemory((s) => s.plan);
+  const live = useSocial((s) => s.status === 'live');
+  // Once the memory has formed, the host keeps where the two perspectives start, so every device agrees.
+  useEffect(() => { if (stage !== 'memory' || !live) return; const t = setTimeout(keepDefaultSpots, 1200); return () => clearTimeout(t); }, [stage, live, plan]);
+  const placed = (stage === 'memory' || stage === 'leaving') && !!plan;
   return (
     <group name="social" userData={{ noPoint: true }}>
       <PosePublisher />
@@ -85,6 +130,7 @@ export function SocialLayer() {
       {/* Each figure loads (its name's font, its likeness) behind its own boundary: a suspension inside the canvas
           would otherwise reach the page's boundary and briefly unmount everything, presence included. */}
       {stage !== 'album' && [...ids].map((id) => <Suspense key={id} fallback={null}><Avatar memberId={id} /></Suspense>)}
+      {placed && <StandIns />}
     </group>
   );
 }

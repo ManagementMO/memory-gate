@@ -7,9 +7,9 @@ import { createHash } from 'node:crypto';
 import { makeFunctionReference } from 'convex/server';
 import { safeArchiveUrl } from '../../actors/historical-memory-atlas/src/archive.mjs';
 
-const TABLES = ['perspective', 'perspectiveStory', 'perspectiveObject', 'companionTurn', 'companionSummary', 'handoff', 'perspectivePin', 'avatar'];
-export const SOCIAL_SUBSCRIPTIONS = ['perspective', 'pose', 'perspective_story', 'perspective_object', 'companion_turn', 'companion_summary', 'handoff', 'perspective_pin', 'avatar'].map(t => `SELECT * FROM ${t}`);
-const ACTIONS = new Set(['claim', 'perspective-settings', 'story', 'story-remove', 'object', 'object-remove', 'turn', 'summary', 'pass-story', 'respond-handoff', 'pin-perspective', 'unpin-perspective', 'place-pin', 'avatar', 'avatar-clear']);
+const TABLES = ['perspective', 'perspectiveStory', 'perspectiveObject', 'companionTurn', 'companionSummary', 'handoff', 'perspectivePin', 'avatar', 'perspectiveSpot'];
+export const SOCIAL_SUBSCRIPTIONS = ['perspective', 'pose', 'perspective_story', 'perspective_object', 'companion_turn', 'companion_summary', 'handoff', 'perspective_pin', 'avatar', 'perspective_spot'].map(t => `SELECT * FROM ${t}`);
+const ACTIONS = new Set(['claim', 'perspective-settings', 'story', 'story-remove', 'object', 'object-remove', 'turn', 'summary', 'pass-story', 'respond-handoff', 'pin-perspective', 'unpin-perspective', 'place-pin', 'avatar', 'avatar-clear', 'spot']);
 const DEVICES = ['headset', 'phone', 'desktop'];
 const POSES_PER_SECOND = 20;
 const IMAGE_MAX = 5_000_000;
@@ -59,6 +59,7 @@ export function createSocial({ db, clients, send, convex, authorize, isReady }) 
       pins: rows('perspectivePin', roomId).map(p => ({ ...p, data: json(p.data, null), placement: json(p.placement, null) })).filter(p => p.data && p.placement),
       // A child's likeness only ever travels with a guardian's agreement (the module refuses it otherwise, too).
       avatars: rows('avatar', roomId).filter(a => !a.subjectIsMinor || a.guardianConsent).map(a => ({ memberId: a.memberId, url: a.url, bytes: a.bytes })),
+      spots: rows('perspectiveSpot', roomId).map(({ perspectiveId, memoryId, x, z, objectId, source, quote, updatedAt }) => ({ perspectiveId, memoryId, x, z, objectId, source, quote, updatedAt })),
     };
   }
   const posesOf = (roomId) => rows('pose', roomId).map(p => ({ memberId: p.memberId, perspectiveId: p.perspectiveId, device: p.device, inScene: p.inScene, head: Array.from(p.head), left: Array.from(p.left), right: Array.from(p.right), updatedAt: p.updatedAt }));
@@ -169,6 +170,11 @@ export function createSocial({ db, clients, send, convex, authorize, isReady }) 
         return r.setAvatar({ roomId, memberId, avatarId: a.id, url: a.url, bytes: a.bytes, subjectIsMinor: a.subjectIsMinor, guardianConsent: a.guardianConsent });
       }
       case 'avatar-clear': return r.clearAvatar({ roomId, memberId });
+      case 'spot': {
+        if (![m.x, m.z].every(n => typeof n === 'number' && Number.isFinite(n) && Math.abs(n) <= 8)) throw bad();
+        return r.setSpot({ roomId, perspectiveId: str(m.perspectiveId, 240), memoryId: str(m.memoryId, 180), x: m.x, z: m.z, objectId: str(m.objectId ?? '', 120, true),
+          source: m.source === 'story' ? 'story' : 'default', quote: str(m.quote ?? '', 300, true), memberId });
+      }
     }
     throw new Error('Unknown exchange action.');
   }

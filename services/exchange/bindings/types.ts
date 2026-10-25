@@ -122,6 +122,21 @@ export const PerspectivePin = __t.object("PerspectivePin", {
 });
 export type PerspectivePin = __Infer<typeof PerspectivePin>;
 
+export const PerspectiveSpot = __t.object("PerspectiveSpot", {
+  id: __t.string(),
+  roomId: __t.string(),
+  perspectiveId: __t.string(),
+  memoryId: __t.string(),
+  x: __t.f32(),
+  z: __t.f32(),
+  objectId: __t.string(),
+  source: __t.string(),
+  quote: __t.string(),
+  setBy: __t.string(),
+  updatedAt: __t.f64(),
+});
+export type PerspectiveSpot = __Infer<typeof PerspectiveSpot>;
+
 export const PerspectiveStory = __t.object("PerspectiveStory", {
   id: __t.string(),
   roomId: __t.string(),

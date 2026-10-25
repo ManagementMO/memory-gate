@@ -1,23 +1,14 @@
-// Seeing through someone's eyes on a phone or laptop: you stand at your own spot at the front of the memory, at the
-// eye height of the perspective you see through (a grandchild's 1.1 m, a grandparent's 1.6 m), and drag to look
+// Seeing through someone's eyes on a phone or laptop: you stand where that perspective stands in the memory, at its
+// eye height (a grandchild's 1.1 m, a grandparent's 1.6 m), facing the other one across the room, and drag to look
 // around. The same pose is what everyone else sees of you, even while you watch the overview instead.
 import * as THREE from 'three';
-import { MEMORY_CENTER } from '../scene/layout';
-import { usePresence } from '../presence/presence';
 import { useGate } from '../state/store';
+import { facingOther, worldSpot } from './spots';
 import { useSocial, viewingPerspective } from './store';
 
-/** Standing spots by seat, relative to the memory's centre: along its open front, so even a grandchild's low view
- *  takes in the room rather than the nearest tabletop. The headset wearer stands at the middle of it (z ≈ 2.6). */
-const SPOTS: [number, number][] = [[-1.0, 2.3], [1.0, 2.3], [-2.0, 1.9], [2.0, 1.9], [-1.6, 2.8], [1.6, 2.8]];
-
-export function spotOf(seat: number, out = new THREE.Vector3()): THREE.Vector3 {
-  const s = SPOTS[((seat % SPOTS.length) + SPOTS.length) % SPOTS.length]!;
-  return out.set(MEMORY_CENTER.x + s[0], 0, MEMORY_CENTER.z + s[1]);
-}
-
 const look = { yaw: 0, pitch: -0.06, dragging: false, x: 0, y: 0 };
-const _spot = new THREE.Vector3();
+// A new perspective starts out facing the other one.
+useSocial.subscribe((s, prev) => { if (s.viewing !== prev.viewing) { look.yaw = 0; look.pitch = -0.06; } });
 const _q = new THREE.Quaternion();
 const _e = new THREE.Euler(0, 0, 0, 'YXZ');
 
@@ -28,12 +19,12 @@ export function firstPersonActive(): boolean {
   return day && !g.xr && !g.photoWorld && useSocial.getState().view === 'first';
 }
 
-/** Where this person's eyes are (and which way they look) when seeing through their perspective from their spot. */
+/** Where this person's eyes are (and which way they look): at their perspective's spot, facing the other one. */
 export function firstPersonPose(pos: THREE.Vector3, quat: THREE.Quaternion): void {
-  spotOf(usePresence.getState().me?.seat ?? 0, _spot);
-  const toCentre = Math.atan2(-(MEMORY_CENTER.x - _spot.x), -(MEMORY_CENTER.z - _spot.z));
-  pos.set(_spot.x, viewingPerspective().eyeHeight, _spot.z);
-  quat.setFromEuler(_e.set(look.pitch, toCentre + look.yaw, 0, 'YXZ'));
+  const p = viewingPerspective();
+  const at = worldSpot(p.key);
+  pos.set(at.x, p.eyeHeight, at.z);
+  quat.setFromEuler(_e.set(look.pitch, facingOther(p.key) + look.yaw, 0, 'YXZ'));
 }
 
 /** CameraRig's first-person branch: fills the camera target and returns the field of view. */

@@ -10,6 +10,7 @@ import { useGate } from '../state/store';
 import { socialLink } from './link';
 import { inMemory, memoryKey } from './perspectives';
 import { notify, perspectiveById, useSocial, viewingPerspective } from './store';
+import { placeFromStory } from './spots';
 
 const uuid = () => crypto.randomUUID();
 
@@ -33,6 +34,7 @@ export async function story(text: string, opts: { kind?: 'story' | 'note'; audio
       type: 'story', commandId, perspectiveId: p.id, memoryId: memoryKey(), kind: opts.kind ?? 'story', text: text.slice(0, 2000),
       objectId: opts.objectId ?? '', at: opts.at && opts.at.length === 3 ? opts.at : [], audioFileId: opts.audioFileId ?? '',
     });
+    void placeFromStory(text, p); // "I sat by the stove": stand this perspective there
     return `${roomId}:${commandId}`;
   } catch (e) {
     notify((e as Error).message);

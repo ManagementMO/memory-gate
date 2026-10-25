@@ -55,6 +55,7 @@ import RemoveStoryReducer from "./remove_story_reducer";
 import RespondHandoffReducer from "./respond_handoff_reducer";
 import RespondMemoryReducer from "./respond_memory_reducer";
 import SetAvatarReducer from "./set_avatar_reducer";
+import SetSpotReducer from "./set_spot_reducer";
 import SetSummaryReducer from "./set_summary_reducer";
 import UnpinFromPerspectiveReducer from "./unpin_from_perspective_reducer";
 import UnpinReferenceReducer from "./unpin_reference_reducer";
@@ -73,6 +74,7 @@ import OperatorRow from "./operator_table";
 import PerspectiveRow from "./perspective_table";
 import PerspectiveObjectRow from "./perspective_object_table";
 import PerspectivePinRow from "./perspective_pin_table";
+import PerspectiveSpotRow from "./perspective_spot_table";
 import PerspectiveStoryRow from "./perspective_story_table";
 import PoseRow from "./pose_table";
 import PresenceRow from "./presence_table";
@@ -208,6 +210,20 @@ const tablesSchema = __schema({
       { name: 'perspective_pin_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, PerspectivePinRow),
+  perspectiveSpot: __table({
+    name: 'perspective_spot',
+    indexes: [
+      { accessor: 'id', name: 'perspective_spot_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'byRoom', name: 'perspective_spot_room_id_idx_btree', algorithm: 'btree', columns: [
+        'roomId',
+      ] },
+    ],
+    constraints: [
+      { name: 'perspective_spot_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, PerspectiveSpotRow),
   perspectiveStory: __table({
     name: 'perspective_story',
     indexes: [
@@ -289,6 +305,7 @@ const reducersSchema = __reducers(
   __reducerSchema("respond_handoff", RespondHandoffReducer),
   __reducerSchema("respond_memory", RespondMemoryReducer),
   __reducerSchema("set_avatar", SetAvatarReducer),
+  __reducerSchema("set_spot", SetSpotReducer),
   __reducerSchema("set_summary", SetSummaryReducer),
   __reducerSchema("unpin_from_perspective", UnpinFromPerspectiveReducer),
   __reducerSchema("unpin_reference", UnpinReferenceReducer),
