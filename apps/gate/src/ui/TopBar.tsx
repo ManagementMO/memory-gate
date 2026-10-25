@@ -7,6 +7,7 @@ import { useSocial } from '../social/store';
 import { LeaveIcon, MapIcon, MuteIcon, PhotosIcon, PlayIcon, RestIcon, SoundIcon } from './Icons';
 import { openObjectWorkshop } from '../memory-objects/workshop';
 import { SettingsButton } from './CompanionSettings';
+import { useMemory } from '../flow/memory';
 
 /** The memory map: where your memories live, and where others have shared theirs (it opens over the palace). */
 function MapButton() {
@@ -51,6 +52,7 @@ function ListeningChip() {
 
 export function TopBar() {
   const stage = useGate((s) => s.stage);
+  const shared = useMemory((s) => !!s.shared); // someone else's memory: you go back, not leave
   const musicOn = useGate((s) => s.musicOn);
   const resting = useGate((s) => s.resting);
   const title = useGate((s) => s.memoryTitle);
@@ -77,7 +79,7 @@ export function TopBar() {
         )}
         {(stage === 'memory' || stage === 'forming') && (
           <button type="button" className="pill glass" onClick={() => flow.leave()} data-testid="leave">
-            <LeaveIcon /> Leave
+            <LeaveIcon /> {shared ? 'Back' : 'Leave'}
           </button>
         )}
       </div>
