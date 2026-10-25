@@ -90,6 +90,8 @@ export function XrControls() {
   else {
     if (stage === 'gathering' && !media) buttons.push({ label: 'Photo', id: 'xr-photo', onPress: () => setPhotoCard((v) => !v) });
     buttons.push({ label: 'Rest', id: 'xr-rest', onPress: () => void flow.rest() });
+    // Entering the headset skips the start page and its map: the album (San Francisco's memories with it) is reached here.
+    if (stage === 'gathering') buttons.push({ label: 'Album', id: 'xr-album', onPress: () => void flow.leave() });
     if (stage === 'memory') buttons.push({ label: useMemory.getState().shared ? 'Back' : 'Leave', id: 'xr-leave', onPress: () => void flow.leave() });
   }
   const gap = 0.19;
