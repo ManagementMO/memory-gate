@@ -49,4 +49,6 @@ test('uncertain starts never silently retry, and pausing during retrieval preven
   await t.mutation(internal.objectKnowledge.finish,{id:trees.id,references:[{topicKey:'trees',sourceUrl:OBJECT_TOPICS.trees.sources[0]!.url,title:'Trees',attribution:'DNR',excerpt:'Tree roots take up water and leaves use sunlight to produce food for the tree.',fetchedAt:Date.now()}]});
   expect((await t.query(api.objectKnowledge.list,auth)).jobs.find(j=>j._id===trees.id)).toMatchObject({status:'failed',references:[]});
   expect(id).toBeTruthy();
+  await t.mutation(api.consents.deleteMemory,{...auth,confirmText:auth.code});
+  expect(await t.run(ctx=>ctx.db.query('objectKnowledge').collect())).toHaveLength(0);
 });
