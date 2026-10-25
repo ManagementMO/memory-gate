@@ -33,15 +33,64 @@ export function showcaseFor(plan: ScenePlan | null): string | null {
   return null;
 }
 
+const texturesOf = (mat: THREE.Material) => Object.values(mat).filter((v): v is THREE.Texture => !!(v as THREE.Texture | null)?.isTexture);
+
 function dispose(b: BuiltShowcase) {
   b.group.traverse((o) => {
     const m = o as THREE.Mesh;
     if (!m.isMesh) return;
     m.geometry?.dispose();
-    for (const mat of [m.material].flat()) mat?.dispose();
+    for (const mat of [m.material].flat()) {
+      if (!mat) continue;
+      for (const t of texturesOf(mat)) t.dispose(); // a material lets go of its program, not its pictures
+      mat.dispose();
+    }
+    if ((m as THREE.InstancedMesh).isInstancedMesh) (m as THREE.InstancedMesh).dispose();
   });
   b.envMap?.dispose();
   b.hdr?.dispose();
+}
+
+/** Ahead of its first frame: its pictures go up to the GPU a few at a time and its shaders compile alongside (in its
+ *  own sky and fog, as it will be drawn), so its first frame in a headset is not a long stall. */
+async function warm(b: BuiltShowcase, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene) {
+  const textures = new Set<THREE.Texture>();
+  b.group.traverse((o) => { for (const mat of [(o as THREE.Mesh).material].flat()) if (mat) for (const t of texturesOf(mat)) textures.add(t); });
+  let n = 0;
+  for (const t of textures) { gl.initTexture(t); if (++n % 4 === 0) await new Promise((r) => setTimeout(r, 0)); }
+  const { environment, fog } = scene;
+  scene.environment = b.envMap; scene.fog = b.fog;
+  let compiled: Promise<unknown> = Promise.resolve();
+  try { compiled = gl.compileAsync(b.group, camera, scene); } catch { /* it compiles on its first frame instead */ }
+  scene.environment = environment; scene.fog = fog;
+  await compiled.catch(() => undefined);
+}
+
+async function make(name: string, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene): Promise<BuiltShowcase | null> {
+  const spec = specs[`./scenes/${name}.json`];
+  if (!spec) return null;
+  try {
+    const load = scripts[`./scenes/${name}.js`];
+    const script = load ? (await load().catch(() => null))?.default : undefined;
+    const b = await buildShowcase({ spec, script, renderer: gl, camera, grass: QUEST ? 0.1 : 0.5 });
+    await warm(b, gl, camera, scene).catch(() => undefined);
+    return b;
+  } catch (e) {
+    console.warn('[showcase]', name, e);
+    return null;
+  }
+}
+
+/** Places begun ahead: one named while they're still talking (the garden, the living room) is building as they walk
+ *  through the gate, so it's there when they arrive instead of starting then. */
+const ahead = new Map<string, Promise<BuiltShowcase | null>>();
+/** The place being shown now (it needs no second build). */
+const showing = new Set<string>();
+
+export function prebuildShowcase(name: string, gl: THREE.WebGLRenderer, camera: THREE.Camera, scene: THREE.Scene): void {
+  if (ahead.has(name) || showing.has(name) || !specs[`./scenes/${name}.json`]) return;
+  for (const [other, p] of ahead) { ahead.delete(other); void p.then((b) => b && dispose(b)); } // they've moved on from that one
+  ahead.set(name, make(name, gl, camera, scene));
 }
 
 export function Showcase({ name, camera: view = 0 }: { name: string; camera?: number }) {
@@ -50,20 +99,22 @@ export function Showcase({ name, camera: view = 0 }: { name: string; camera?: nu
   const scene = useThree((s) => s.scene);
   const spec = specs[`./scenes/${name}.json`];
   const [built, setBuilt] = useState<BuiltShowcase | null>(null);
+  const drawnFrames = useRef(0);
   useEffect(() => {
     if (!spec) return;
     let live = true;
     let made: BuiltShowcase | null = null;
-    void (async () => {
-      const load = scripts[`./scenes/${name}.js`];
-      const script = load ? (await load().catch(() => null))?.default : undefined;
-      const b = await buildShowcase({ spec, script, renderer: gl, camera, grass: QUEST ? 0.1 : 0.5 });
+    drawnFrames.current = 0;
+    showing.add(name);
+    const p = ahead.get(name) ?? make(name, gl, camera, scene);
+    ahead.delete(name);
+    void p.then((b) => {
+      if (!b) return;
       if (!live) { dispose(b); return; }
       made = b;
       setBuilt(b);
-      useMemory.setState({ showcaseReady: true });
-    })();
-    return () => { live = false; if (made) dispose(made); setBuilt(null); useMemory.setState({ showcaseReady: false }); };
+    });
+    return () => { live = false; showing.delete(name); if (made) dispose(made); setBuilt(null); useMemory.setState({ showcaseReady: false }); };
   }, [name]);
   // Its sky, light and fog while it's here; the white space's own come back after.
   useEffect(() => {
@@ -111,6 +162,9 @@ export function Showcase({ name, camera: view = 0 }: { name: string; camera?: nu
     return () => { delete w.__showcaseSay; };
   }, [name]);
   useFrame((_, dt) => {
+    // Ready once it has actually been drawn a couple of times behind the white (its first frame is the slow one): only
+    // then does the white step back and the companion say it's here.
+    if (built && drawnFrames.current < 3 && ++drawnFrames.current === 3) useMemory.setState({ showcaseReady: true });
     if (built) for (const u of built.uniforms) u.value += Math.min(dt, 0.1);
     for (const r of rising.current) {
       if (r.t >= 1.4) continue;
