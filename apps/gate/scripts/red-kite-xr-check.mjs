@@ -35,28 +35,55 @@ try {
     if (dev.devui) { dev.devui.devUIContainer.style.display = 'none'; dev.devui.devUICanvas.style.display = 'none'; dev.devui.render = () => undefined; }
     dev.ipd = .064; dev.stereoEnabled = true; // DevUI's constructor otherwise resets IPD to zero.
   });
-  await expect(page.getByTestId('restart-story')).toBeEnabled(); await page.getByTestId('restart-story').click();
+  await expect(page.getByTestId('restart-story')).toBeEnabled();
+  await page.getByTestId('scene-options').locator('summary').click(); await page.getByTestId('restart-story').click();
+  await page.getByTestId('scene-options').locator('summary').click();
   await expect(page.getByTestId('story-quote')).toContainText('Rosa and I used to run');
   await page.getByTestId('next-line').click(); await page.getByTestId('use-look').click();
   await page.getByTestId('next-line').click(); await page.getByTestId('use-look').click();
   await expect(page.getByTestId('visual-status')).toContainText('red');
   await check('Enter Quest VR starts a real emulated immersive session with advancing frames', async () => {
+    const meadowBefore = (await snap()).meadow;
     await page.getByTestId('enter-vr').click(); await page.waitForFunction(() => window.__redKite3D?.snapshot().xr === true);
     const first = await snap(); await page.waitForTimeout(800); const next = await snap();
     assert(next.frames > first.frames + 5); samples.push(next);
+    assert(next.meadow.activeSplats > 10000, 'the meadow itself must render in VR, not only the interactive props: ' + JSON.stringify(next.meadow));
+    assert.equal(next.meadow.instance, meadowBefore.instance, 'entering VR must preserve the loaded meadow instead of rebuilding its LoD');
     await page.evaluate(() => { window.__redKite3D.emulator().devui?.devUIContainer?.setAttribute('style', 'display:none'); });
     await page.waitForFunction(() => window.__redKite3D.snapshot().inputSources.filter(s => s.type === 'controller').length === 2);
+    await page.waitForFunction(() => window.__redKite3D.snapshot().nativeButtons.exit != null);
     await page.screenshot({ path: `${out}/07-xr-elena.png` });
+  });
+  await check('Quest sticks traverse the real meadow, snap-turn once per press, and return behind a mask', async () => {
+    const before = await snap();
+    await page.evaluate(() => window.__redKite3D.emulator().controllers.left.updateAxes('thumbstick', 0, -1));
+    await page.waitForTimeout(2300);
+    await page.evaluate(() => window.__redKite3D.emulator().controllers.left.updateAxes('thumbstick', 0, 0));
+    await page.waitForTimeout(100); const walked = await snap();
+    assert(Math.hypot(walked.origin[0] - before.origin[0], walked.origin[2] - before.origin[2]) > 1.6, 'native stick input must walk through the world, without an anchor-radius cap');
+    assert(walked.traversal.grounded); samples.push(walked);
+    await page.evaluate(() => window.__redKite3D.emulator().controllers.right.updateAxes('thumbstick', 1, 0));
+    await page.waitForTimeout(180); const turned = await snap();
+    assert(Math.abs(turned.yaw - walked.yaw + Math.PI / 6) < .001);
+    await page.waitForTimeout(250); assert.equal((await snap()).yaw, turned.yaw, 'a held stick must not keep spinning');
+    await page.evaluate(() => window.__redKite3D.emulator().controllers.right.updateAxes('thumbstick', 0, 0));
+    await button('left', 'thumbstick'); await page.waitForFunction(() => window.__redKite3D.snapshot().phase === 'idle');
+    const home = await snap(); assert(Math.hypot(home.origin[0], home.origin[2] - .25) < .02); samples.push(home);
+    await page.screenshot({ path: `${out}/07-xr-returned.png` });
   });
   await check('X controller input switches only after the XR mask covers both eyes', async () => {
     await button('left', 'x-button');
     await page.waitForFunction(() => { const s = window.__redKite3D.snapshot(); return s.selected === 'rosa' && s.phase === 'idle'; });
-    const s = await snap(); assert.deepEqual(s.origin, [-2, 0, -4]); assert.equal(s.moves.at(-1).opacity, 1); samples.push(s);
+    const s = await snap(); assert(Math.abs(s.origin[0] - .85) < .02 && Math.abs(s.origin[2] + 4) < .02); assert.equal(s.moves.at(-1).opacity, 1); samples.push(s);
     await page.screenshot({ path: `${out}/08-xr-rosa.png` });
   });
   await check('A controller input advances Rosa and native ray selection accepts her color-open kite', async () => {
     await button('right', 'a-button'); await expect(page.getByTestId('story-quote')).toContainText('I was holding');
-    await page.evaluate(() => { const c = window.__redKite3D.emulator().controllers.right; c.position.set(-.38, .67, -.9); c.quaternion.set(0, 0, 0, 1); });
+    await page.evaluate(() => {
+      const s = window.__redKite3D.snapshot(), target = s.nativeButtons.use, c = window.__redKite3D.emulator().controllers.right;
+      const dx = target[0] - s.origin[0], dz = target[2] - s.origin[2], cy = Math.cos(s.yaw), sy = Math.sin(s.yaw);
+      c.position.set(cy * dx - sy * dz, target[1] - s.origin[1], sy * dx + cy * dz + .5); c.quaternion.set(0, 0, 0, 1);
+    });
     await page.waitForTimeout(200); await button('right', 'trigger');
     await expect(page.getByTestId('visual-status')).toContainText('color left open');
     await button('right', 'a-button'); await expect(page.getByTestId('story-quote')).toContainText('orange');
@@ -77,7 +104,7 @@ try {
     await page.evaluate(() => {
       const s = window.__redKite3D.snapshot(), c = window.__redKite3D.emulator().controllers.right;
       const dx = s.spool[0] - s.origin[0], dz = s.spool[2] - s.origin[2], cy = Math.cos(s.yaw), sy = Math.sin(s.yaw);
-      c.position.set(cy * dx - sy * dz, s.spool[1], sy * dx + cy * dz + .4); c.quaternion.set(0, 0, 0, 1);
+      c.position.set(cy * dx - sy * dz, s.spool[1] - s.origin[1], sy * dx + cy * dz + .4); c.quaternion.set(0, 0, 0, 1);
     });
     await page.waitForTimeout(180);
     await page.evaluate(() => window.__redKite3D.emulator().controllers.right.updateButtonValue('trigger', 1));
@@ -120,11 +147,25 @@ try {
     } finally { await peerContext.close(); }
     await button('right', 'b-button'); await expect(page.getByTestId('red-kite-experience')).toHaveAttribute('data-paused', 'false');
   });
+  await check('a native ray can leave the headset while the story is resting', async () => {
+    await button('right', 'b-button');
+    await expect(page.getByTestId('red-kite-experience')).toHaveAttribute('data-paused', 'true');
+    await page.evaluate(() => {
+      const s = window.__redKite3D.snapshot(), target = s.nativeButtons.exit, c = window.__redKite3D.emulator().controllers.right;
+      const dx = target[0] - s.origin[0], dz = target[2] - s.origin[2], cy = Math.cos(s.yaw), sy = Math.sin(s.yaw);
+      c.position.set(cy * dx - sy * dz, target[1] - s.origin[1], sy * dx + cy * dz + .4); c.quaternion.set(0,0,0,1);
+    });
+    await page.waitForTimeout(200); await button('right', 'trigger');
+    await page.waitForFunction(() => window.__redKite3D.snapshot().xr === false);
+    await page.getByTestId('rest').click(); await expect(page.getByTestId('red-kite-experience')).toHaveAttribute('data-paused', 'false');
+  });
   await check('Y controller input leaves immersive mode', async () => {
+    await page.getByTestId('enter-vr').click(); await page.waitForFunction(() => window.__redKite3D.snapshot().xr === true);
+    await page.waitForFunction(() => window.__redKite3D.snapshot().inputSources.length === 2);
     await button('left', 'y-button'); await page.waitForFunction(() => window.__redKite3D.snapshot().xr === false);
   });
   assert.equal(errors.length, 0, 'page errors: ' + errors.join('; '));
-  writeFileSync(`${out}/xr-report.json`, JSON.stringify({ date: new Date().toISOString(), emulatedDevice: 'Meta Quest 3 via IWER', stereo: true, ipdMeters: .064, splats: lite ? 100000 : 500000, physicalQuestTested: false, checks, samples, pageErrors: errors }, null, 2) + '\n');
+  writeFileSync(`${out}/xr-report.json`, JSON.stringify({ date: new Date().toISOString(), emulatedDevice: 'Meta Quest 3 via IWER', stereo: true, ipdMeters: .064, sourceSplats: lite ? 100000 : 1920000, xrRenderTarget: 500000, quality: lite ? '100k' : 'adaptive-full', physicalQuestTested: false, checks, samples, pageErrors: errors }, null, 2) + '\n');
   console.log(JSON.stringify({ passed: checks.length, pageErrors: errors.length, physicalQuestTested: false }));
 } catch (e) {
   await page.screenshot({ path: `${out}/zz-xr-failure.png` }).catch(() => undefined);

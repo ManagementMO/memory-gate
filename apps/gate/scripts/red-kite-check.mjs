@@ -22,13 +22,50 @@ const ready = p => expect(p.getByTestId('red-kite-experience')).toHaveAttribute(
 const snap = p => p.evaluate(() => window.__redKite3D.snapshot());
 const settle = p => p.waitForFunction(() => window.__redKite3D?.snapshot().phase === 'idle');
 const check = async (name, fn) => { await fn(); checks.push(name); console.log('PASS ' + name); };
+async function options(p, open) {
+  const details = p.getByTestId('scene-options');
+  if ((await details.getAttribute('open') !== null) !== open) await details.locator('summary').click();
+}
 try {
   await check('actual cached meadow and all five GLBs load in Gate', async () => {
     await a.goto(`${origin}/?story=red-kite&room=${auth.code}`); await ready(a);
     await expect(a.getByTestId('restart-story')).toBeEnabled({ timeout: 15000 });
+    await options(a, true);
     await a.getByTestId('restart-story').click();
+    await options(a, false);
     await expect(a.getByTestId('story-quote')).toContainText('Rosa and I used to run');
     await a.screenshot({ path: `${out}/01-elena-open.png` });
+  });
+  await check('desktop drag looks around and keyboard steps move within the memory', async () => {
+    const before = await snap(a);
+    await a.mouse.move(720, 220); await a.mouse.down();
+    await a.mouse.move(850, 245, { steps: 8 }); await a.mouse.up();
+    await a.waitForTimeout(150);
+    const looked = await snap(a);
+    assert(Math.abs(looked.spoolScreen[0] - before.spoolScreen[0]) > .04, 'dragging the sky must change the actual camera view');
+    await a.keyboard.down('KeyW'); await a.waitForTimeout(2100); await a.keyboard.up('KeyW');
+    const walked = await snap(a);
+    assert(Math.hypot(walked.camera[0] - looked.camera[0], walked.camera[2] - looked.camera[2]) > 2, 'W must traverse metres of real terrain, not a tiny anchor radius');
+    assert(walked.traversal.grounded, 'the real character controller must keep the visitor grounded');
+    await a.keyboard.press('Space'); await a.waitForTimeout(280);
+    assert((await snap(a)).camera[1] > walked.camera[1] + .25, 'Space must jump the real character');
+    await a.waitForTimeout(900); assert((await snap(a)).traversal.grounded);
+    await a.keyboard.press('KeyR'); await settle(a);
+    const home = await snap(a);
+    assert(Math.hypot(home.camera[0], home.camera[2] - .25) < .02, 'R returns to the story entrance behind the mask');
+    snapshots.traversal = { before, walked, home };
+  });
+  await check('compact panels can disappear without stopping the scene, and motion can be explicitly selected', async () => {
+    const bounds = await a.locator('.rk-story').boundingBox();
+    assert(bounds.width <= 365 && bounds.height < 330, 'the story must leave most of the meadow visible');
+    await a.getByTestId('toggle-panels').click(); await expect(a.getByTestId('story-quote')).toBeHidden();
+    const start = await snap(a); await a.waitForTimeout(180); assert((await snap(a)).simulationTime > start.simulationTime);
+    await a.getByTestId('toggle-panels').click(); await expect(a.getByTestId('story-quote')).toBeVisible();
+    await options(a, true); await a.getByTestId('ambient-motion').uncheck();
+    await a.waitForTimeout(100); const first = await snap(a); await a.waitForTimeout(150);
+    assert.equal((await snap(a)).simulationTime, first.simulationTime);
+    await a.getByTestId('ambient-motion').check(); await options(a, false);
+    await a.waitForTimeout(100); assert((await snap(a)).simulationTime > first.simulationTime);
   });
   await check('viewer may choose Rosa locally but cannot author details', async () => {
     await b.goto(`${origin}/?story=red-kite&room=${auth.code}&lite=1`); await ready(b);
@@ -56,9 +93,18 @@ try {
     assert(x > 0 && x < 1440 && y > 0 && y < 900, 'spool must be visible and reachable in the desktop view');
     await a.mouse.move(x, y); await a.mouse.down(); await a.waitForTimeout(80);
     assert.equal((await snap(a)).held, true, 'actual R3F pointer event must capture the spool');
+    const heldView = (await snap(a)).viewDirection;
     await a.mouse.move(x + 35, y - 80, { steps: 8 }); await a.waitForTimeout(150);
-    assert((await snap(a)).spool[1] > .85, 'lifting the captured pointer must lift the spool');
+    const raised = await snap(a);
+    assert(raised.spool[1] > .85, 'lifting the captured pointer must lift the spool');
+    assert(raised.held, 'camera gesture handling must not release the captured spool during a drag');
+    assert.deepEqual(raised.viewDirection, heldView, 'dragging a prop must not also rotate the camera');
+    const beforeStep = raised.camera;
+    await a.keyboard.down('KeyW'); await a.waitForTimeout(220); await a.keyboard.up('KeyW');
+    const whileHeld = await snap(a);
+    assert(whileHeld.held && Math.hypot(whileHeld.camera[0] - beforeStep[0], whileHeld.camera[2] - beforeStep[2]) > .15, 'holding the spool must not freeze walking or gravity');
     await a.mouse.up(); await a.waitForTimeout(650); assert.equal((await snap(a)).held, false);
+    await a.keyboard.press('KeyR'); await settle(a);
   });
   await check('Rosa keeps her unknown color and may decline or choose her orange illustration', async () => {
     await a.getByTestId('perspective-rosa').click(); await settle(a);
