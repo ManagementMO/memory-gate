@@ -16,6 +16,8 @@ const _head = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 const _e = new THREE.Euler();
 const _target = new THREE.Vector3();
+/** A hand ray is on one of the dock's buttons (the dock never moves under it). */
+const aimed = { n: 0 };
 
 function pill(w: number, h: number): THREE.ShapeGeometry {
   const r = h / 2, s = new THREE.Shape();
@@ -32,7 +34,7 @@ function Button({ label, x, y = 0, width = 0.17, onPress, day, testId }: { label
   const [hover, setHover] = useState(false);
   const press = (e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onPress(); };
   return (
-    <group position={[x, y, 0]} name={testId} onClick={press} onPointerEnter={() => setHover(true)} onPointerLeave={() => setHover(false)}>
+    <group position={[x, y, 0]} name={testId} onClick={press} onPointerEnter={() => { setHover(true); aimed.n++; }} onPointerLeave={() => { setHover(false); aimed.n = Math.max(0, aimed.n - 1); }}>
       {/* A hit area a little larger than the pill (hand rays waver); a hit on any part of the button is the button's:
           the handlers sit on the group, so aiming at its words (in front of the pill) presses it too. */}
       <mesh position={[0, 0, -0.001]}><planeGeometry args={[width + 0.06, 0.11]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} /></mesh>
@@ -56,6 +58,7 @@ export function XrControls() {
   const cardGeo = useMemo(() => pill(0.62, 0.27), []);
   const group = useRef<THREE.Group>(null);
   const placed = useRef(false);
+  const anchor = useRef({ x: 0, y: 0, z: 0, yaw: 0, set: false, stage: '' });
   const camera = useThree((s) => s.camera);
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving';
   useFrame((_, dt) => {
@@ -64,11 +67,19 @@ export function XrControls() {
     camera.getWorldPosition(_head);
     camera.getWorldQuaternion(_q);
     const yaw = _e.setFromQuaternion(_q, 'YXZ').y;
-    // Below the captions, a little closer: within reach of a pointer, out of the way of the view.
-    _target.set(_head.x - Math.sin(yaw) * 1.05, _head.y - 0.68, _head.z - Math.cos(yaw) * 1.05);
+    // Below the captions, a little closer: within reach of a pointer, out of the way of the view. It stays put while
+    // you look down at it and reach for it (a dock that followed every turn of the head was a moving target under the
+    // hand), and comes round only once you've turned well away, walked off or stood up; never while a ray is on it.
+    const a = anchor.current;
+    if (a.stage !== stage) { a.stage = stage; a.set = false; } // each part of the visit starts it in front of you (resting doesn't)
+    const turned = Math.abs(Math.atan2(Math.sin(yaw - a.yaw), Math.cos(yaw - a.yaw)));
+    if (!a.set || (aimed.n === 0 && (turned > 0.8 || Math.hypot(_head.x - a.x, _head.z - a.z) > 0.6 || Math.abs(_head.y - a.y) > 0.3))) {
+      Object.assign(a, { x: _head.x, y: _head.y, z: _head.z, yaw, set: true });
+    }
+    _target.set(a.x - Math.sin(a.yaw) * 1.05, a.y - 0.68, a.z - Math.cos(a.yaw) * 1.05);
     if (!placed.current) { g.position.copy(_target); placed.current = true; }
-    g.position.lerp(_target, 1 - Math.exp(-dt * 1.2));
-    g.lookAt(_head.x, g.position.y + 0.25, _head.z);
+    g.position.lerp(_target, 1 - Math.exp(-dt * 4));
+    g.lookAt(a.x, g.position.y + 0.25, a.z);
   });
   const show = stage === 'greeting' || stage === 'gathering' || stage === 'memory' || resting;
   if (!show) return null;

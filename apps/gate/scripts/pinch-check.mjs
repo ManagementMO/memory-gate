@@ -8,7 +8,7 @@ import { mkdirSync } from 'node:fs';
 const arg = (n, d) => (process.argv.includes(`--${n}`) ? process.argv[process.argv.indexOf(`--${n}`) + 1] : d);
 const base = arg('base', (process.env.GATE_URL ?? 'https://localhost:4180')).replace(/\/$/, '');
 const online = process.argv.includes('--online');
-const say = arg('say', 'We flew a red kite on this hill, by the old oak.');
+const say = arg('say', 'We flew a red kite on this hill with my grandma, by the old oak.');
 const out = arg('out', 'apps/gate/.shots/pinch');
 mkdirSync(out, { recursive: true });
 const t0 = Date.now();
@@ -22,6 +22,7 @@ await ctx.addInitScript(() => { try { Object.defineProperty(Navigator.prototype,
 const page = await ctx.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e.stack ?? e).slice(0, 400)));
+page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().slice(0, 400)); });
 const st = () => page.evaluate(() => { const g = window.__gate.store.getState(); return { stage: g.stage, xr: g.xr, resting: g.resting, said: g.companionLine?.text ?? null }; });
 
 /** The rotation that turns -Z (where a ray points) toward d. */
@@ -67,9 +68,16 @@ try {
   note(`gathering; saying: "${say}"`);
   await page.evaluate((t) => window.__gate.flow.testHear(t), say);
   await page.waitForTimeout(7000);
-  note(`companion: ${(await st()).said}`);
+  const asked = (await st()).said ?? '';
+  note(`companion: ${asked}`);
+  check(!/who was there/i.test(asked) || !/grand|granma|gramma|nana/i.test(say), 'it does not ask who was there after being told');
+  if (/who was there/i.test(asked)) { await page.evaluate(() => window.__gate.flow.testHear('My grandma.')); await page.waitForTimeout(5000); note(`companion: ${(await st()).said}`); }
+  const yesAt = Date.now();
   await page.evaluate(() => window.__gate.flow.testHear('Yes.'));
+  await page.waitForFunction(() => window.__gate.store.getState().stage !== 'gathering', null, { timeout: 20000 });
+  note(`   "yes" to stepping through: ${((Date.now() - yesAt) / 1000).toFixed(1)} s (${(await st()).stage})`);
   await page.waitForFunction(() => window.__gate.store.getState().stage === 'memory', null, { timeout: 120000 });
+  note(`   "yes" to inside the memory: ${((Date.now() - yesAt) / 1000).toFixed(1)} s`);
   await page.waitForFunction(() => window.__walk?.active === true, null, { timeout: 30000 }).catch(() => undefined);
   const place = await page.evaluate(() => window.__gate.memoryStore.getState().place);
   check(await page.evaluate(() => window.__walk?.active === true), `walking is on in the memory (${place ?? 'a sketch'})`);
@@ -96,14 +104,18 @@ try {
   { const a = await head(); await aim([a[0] - Math.sin(a[3]) * 2, 0, a[2] - Math.cos(a[3]) * 2]); await pinch(120); await page.waitForTimeout(700); const b = await head();
     check(Math.hypot(b[0] - a[0], b[2] - a[2]) < 0.05, 'a quick pinch on the ground does not walk'); }
 
-  // The dock: Rest, then Resume, then Leave, each with one quick pinch on its words (the hardest part to hit).
+  // The dock: Rest, then Resume, then Leave, each with one quick pinch. After walking it comes round to where you are
+  // (a moment), then holds still under the hand.
+  await page.waitForTimeout(1500);
   for (const [id, want] of [['xr-rest', (s) => s.resting], ['xr-resume', (s) => !s.resting], ['xr-leave', (s) => s.stage === 'leaving' || s.stage === 'album']]) {
     await page.waitForFunction((n) => !!window.__aim(n), id, { timeout: 8000 }).catch(() => undefined);
     const at = await aim(id);
-    if (!at) { check(false, `${id} is shown`); continue; }
+    if (!at) { check(false, `${id} is shown (${JSON.stringify(await st())}, dock: ${await page.evaluate(() => JSON.stringify(window.__aim('xr-rest')))})`); continue; }
     await pinch(120);
-    await page.waitForTimeout(1200);
-    check(want(await st()), `a pinch on ${id.replace('xr-', '')} presses it (${at.map((v) => v.toFixed(2)).join(', ')} from the eyes)`);
+    // Rest says its line before resting; Leave says goodbye on the way out.
+    let ok = false;
+    for (const t1 = Date.now(); Date.now() - t1 < 6000 && !ok; await page.waitForTimeout(200)) ok = want(await st());
+    check(ok, `a pinch on ${id.replace('xr-', '')} presses it (${at.map((v) => v.toFixed(2)).join(', ')} from the eyes)`);
     if (id === 'xr-rest') await page.screenshot({ path: `${out}/3-resting.png` });
   }
 } catch (e) {
