@@ -1,24 +1,26 @@
 // The album in the headset. Leaving a memory in VR keeps you in VR: the album opens where you are, a gentle arc of
 // panes a couple of metres ahead, placed from where you're looking as it opens (so it's in front whichever way the
-// headset's tracking faces). Your own visits come first, then the samples to step into. Point and pull the trigger
-// (or pinch) at one and it comes forward with its moments' words; step back into it from there. Beneath the arc: visit
-// another memory, back to the start, or leave the headset (the album is waiting on the page there too). Back at the
-// start, Begin and the album are within reach as well. Moves that would carry you across the world (into a memory,
+// headset's tracking faces). On the left, yours: your own visits, then the samples to step into. On the right, San
+// Francisco: the memories people shared there (the page's map can't be seen in VR), the Golden Gate first. Point and
+// pull the trigger (or pinch) at one and it comes forward with its words; step into it from there. Beneath the arc:
+// visit another memory, back to the start, or leave the headset (the album is waiting on the page there too). Back at
+// the start, Begin and the album are within reach as well. Moves that would carry you across the world (into a memory,
 // back to the shore) happen behind a short soft blink, never with your eyes open.
 import { Text } from '@react-three/drei';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useXR } from '@react-three/xr';
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import * as THREE from 'three';
 import sansUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff?url';
 import boldUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-600-normal.woff?url';
 import serifUrl from '@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff?url';
-import { CARD, DETAIL, coverOf, fontsReady, loadImage, paintCard, paintDetail, type DetailLayout } from '../album/cardCanvas';
-import { summaryLine, todayLine } from '../album/format';
+import { CARD, DETAIL, coverOf, fontsReady, loadImage, paintCard, paintDetail, paintShared, type DetailLayout, type SharedPage } from '../album/cardCanvas';
+import { countWord, summaryLine, todayLine } from '../album/format';
 import { PREPARED, preparedVisit } from '../album/prepared';
 import type { AlbumMemory } from '../album/types';
 import { useAlbum } from '../album/useAlbum';
 import { flow } from '../flow/controller';
+import { GOLDEN_GATE_CROWD, SF_MEMORIES, SF_PLACES, sfMemory, type SfMemory } from '../sf/memories';
 import { useGate } from '../state/store';
 import { damp } from './util';
 import { xrStore } from './xr';
@@ -26,6 +28,8 @@ import { xrStore } from './xr';
 const R = 1.6; // the arc: a little more than arm's length ahead, centred on where you stand
 const NEAR = 1.2; // a chosen memory comes this close
 const OWN_W = 0.46, SAMPLE_W = 0.42, GAP = 0.05;
+const SF_W = 0.34, SF_GAP = 0.04; // seven of them, in two rows: a little smaller than yours
+const SPLIT = 0.1; // the space between yours and San Francisco's (radians on the arc)
 const DETAIL_W = 0.84, DETAIL_H = DETAIL_W * (DETAIL.h / DETAIL.w);
 const MAX_OWN = 3; // the newest few (the page's album keeps them all)
 const ORDER = 1980; // over the world, with the rest of the headset's words (under the veil)
@@ -159,8 +163,8 @@ const quick = <T,>(p: Promise<T>, ms: number): Promise<T | undefined> => Promise
 /** Which album pane the pointer is on (for the test hook and the hover lift). */
 const hovered = new Set<string>();
 
-type PaneProps = { memory: AlbumMemory; w: number; x: number; y: number; z: number; yaw: number; index: number; dim: boolean; onPick: (m: AlbumMemory) => void };
-function Pane({ memory, w, x, y, z, yaw, index, dim, onPick }: PaneProps) {
+type PaneProps = { memory: AlbumMemory; w: number; x: number; y: number; z: number; yaw: number; index: number; dim: boolean; titleLines?: number; onPick: (m: AlbumMemory) => void };
+function Pane({ memory, w, x, y, z, yaw, index, dim, titleLines, onPick }: PaneProps) {
   const h = w * (CARD.h / CARD.w);
   const geo = useMemo(() => roundedPlane(w, h, w * (44 / CARD.w)), [w, h]);
   useEffect(() => () => geo.dispose(), [geo]);
@@ -169,12 +173,12 @@ function Pane({ memory, w, x, y, z, yaw, index, dim, onPick }: PaneProps) {
     await fontsReady();
     if (!alive()) return;
     const ready = await quick(loadImage(cover), 150);
-    paintCard(ctx, memory, ready ?? null);
+    paintCard(ctx, memory, ready ?? null, titleLines);
     commit();
     if (ready !== undefined) return;
     const img = await loadImage(cover);
     if (!alive() || !img) return;
-    paintCard(ctx, memory, img);
+    paintCard(ctx, memory, img, titleLines);
     commit();
   }, `${memory.id}|${memory.title}|${cover}|${memory.moments.length}`);
   const name = `xr-album-pane:${memory.id}`;
@@ -251,6 +255,32 @@ function Row({ y, items, order }: { y: number; items: Omit<ButtonProps, 'x' | 'y
 let playing: HTMLAudioElement | null = null;
 const stopVoice = () => { playing?.pause(); playing = null; };
 
+/** The page a chosen pane becomes, nearer than the arc, coming toward you as it opens; its buttons beneath it. */
+function Forward({ tex, buttons, children }: { tex: THREE.Texture; buttons: Omit<ButtonProps, 'x' | 'y'>[]; children?: ReactNode }) {
+  const geo = useMemo(() => roundedPlane(DETAIL_W, DETAIL_H, DETAIL_W * (40 / DETAIL.w)), []);
+  useEffect(() => () => geo.dispose(), [geo]);
+  const group = useRef<THREE.Group>(null);
+  const mat = useRef<THREE.MeshBasicMaterial>(null);
+  const st = useRef({ a: 0, z: 0.12 });
+  useFrame((_, dtRaw) => {
+    const dt = Math.min(dtRaw, 0.05);
+    const s = st.current;
+    s.a = damp(s.a, 1, 5, dt);
+    s.z = damp(s.z, 0, 5, dt);
+    if (mat.current) mat.current.opacity = s.a;
+    if (group.current) group.current.position.z = -NEAR - s.z; // comes forward toward you as it opens
+  });
+  return (
+    <group ref={group} position={[0, 0.03, -NEAR - 0.12]}>
+      <mesh name="xr-album-detail" geometry={geo} renderOrder={ORDER + 4} onClick={(e: ThreeEvent<MouseEvent>) => e.stopPropagation()} onPointerOver={(e) => e.stopPropagation()}>
+        <meshBasicMaterial ref={mat} map={tex} transparent opacity={0} depthTest={false} depthWrite={false} toneMapped={false} />
+      </mesh>
+      {children}
+      <Row y={-DETAIL_H / 2 - 0.07} items={buttons} order={ORDER + 8} />
+    </group>
+  );
+}
+
 function Detail({ memory, onBack, onStep }: { memory: AlbumMemory; onBack: () => void; onStep: (m: AlbumMemory) => void }) {
   const first = Math.max(0, memory.moments.findIndex((m) => m === coverOf(memory)));
   const [chosen, setChosen] = useState(first);
@@ -260,8 +290,6 @@ function Detail({ memory, onBack, onStep }: { memory: AlbumMemory; onBack: () =>
   useEffect(() => () => stopVoice(), [memory.id]);
   const moment = memory.moments[chosen] ?? null;
   const picture = moment?.imageUrl ?? coverOf(memory)?.imageUrl ?? null;
-  const geo = useMemo(() => roundedPlane(DETAIL_W, DETAIL_H, DETAIL_W * (40 / DETAIL.w)), []);
-  useEffect(() => () => geo.dispose(), [geo]);
   const tex = usePainted(DETAIL.w, DETAIL.h, async (ctx, alive, commit) => {
     await fontsReady();
     if (!alive()) return;
@@ -274,17 +302,6 @@ function Detail({ memory, onBack, onStep }: { memory: AlbumMemory; onBack: () =>
     setLayout(paintDetail(ctx, memory, chosen, img));
     commit();
   }, `${memory.id}|${chosen}|${picture}`);
-  const group = useRef<THREE.Group>(null);
-  const mat = useRef<THREE.MeshBasicMaterial>(null);
-  const st = useRef({ a: 0, z: 0.12 });
-  useFrame((_, dtRaw) => {
-    const dt = Math.min(dtRaw, 0.05);
-    const s = st.current;
-    s.a = damp(s.a, 1, 5, dt);
-    s.z = damp(s.z, 0, 5, dt);
-    if (mat.current) mat.current.opacity = s.a;
-    if (group.current) group.current.position.z = -NEAR - s.z; // comes forward toward you as it opens
-  });
   const hear = () => {
     if (voiceOn) { stopVoice(); setVoiceOn(false); return; }
     if (!moment?.audioUrl) return;
@@ -304,10 +321,7 @@ function Detail({ memory, onBack, onStep }: { memory: AlbumMemory; onBack: () =>
     { label: 'Back', name: 'xr-album-back', onPress: onBack },
   ];
   return (
-    <group ref={group} position={[0, 0.03, -NEAR - 0.12]}>
-      <mesh name="xr-album-detail" geometry={geo} renderOrder={ORDER + 4} onClick={(e: ThreeEvent<MouseEvent>) => e.stopPropagation()} onPointerOver={(e) => e.stopPropagation()}>
-        <meshBasicMaterial ref={mat} map={tex} transparent opacity={0} depthTest={false} depthWrite={false} toneMapped={false} />
-      </mesh>
+    <Forward tex={tex} buttons={buttons}>
       {/* Each moment's words choose that moment (its picture comes up, and its voice when it was kept). */}
       {layout.rows.map((r) => {
         const y0 = toY(r.y0), y1 = toY(r.y1);
@@ -320,8 +334,58 @@ function Detail({ memory, onBack, onStep }: { memory: AlbumMemory; onBack: () =>
           </mesh>
         );
       })}
-      <Row y={-DETAIL_H / 2 - 0.07} items={buttons} order={ORDER + 8} />
-    </group>
+    </Forward>
+  );
+}
+
+// ------------------------------------------------------------ San Francisco: memories people shared there
+const AT_BRIDGE = SF_MEMORIES.filter((m) => m.crowd);
+/** The Golden Gate (where everyone who kept a memory of the bridge stands) and the three made there, then the city's. */
+const SF_ROWS: SfMemory[][] = [[GOLDEN_GATE_CROWD, ...AT_BRIDGE], SF_MEMORIES.filter((m) => !m.crowd)];
+const SF_TINT = '#9fb6d3';
+/** The small copy of a photograph: seven panes of full-size ones are too much for a headset. */
+const thumb = (photo: string) => photo.replace('/memories/sf/', '/memories/sf/thumbs/').replace(/\.\w+$/, '.jpg');
+const CROWD_LINE = `${countWord(AT_BRIDGE.length).replace(/^./, (c) => c.toUpperCase())} people kept a memory here`;
+const isCrowd = (m: SfMemory) => m.id === GOLDEN_GATE_CROWD.id;
+/** A shared memory as a pane: its photograph, its name, whose it is and when (fictional samples, marked as such). */
+function sfPane(m: SfMemory): AlbumMemory {
+  return {
+    id: m.id, title: m.title, at: 0, source: 'photo', palette: [SF_TINT], sample: true,
+    about: isCrowd(m) ? CROWD_LINE : `${m.owner} · ${m.when}`,
+    moments: [{ id: `${m.id}:photo`, memoryId: m.id, memoryTitle: m.title, caption: m.words.join(' '), speaker: 'you', at: 0, imageUrl: thumb(m.photo), sourceUrl: m.photo, audioUrl: null, kind: 'arrival' }],
+  };
+}
+const SF_PANES = new Map(SF_ROWS.flat().map((m) => [m.id, sfPane(m)]));
+
+/** Someone's memory in San Francisco, brought forward: their photograph and everything they said about it. At the
+ *  Golden Gate, who you'll find there; you go as yourself and point at anyone to step into theirs. */
+function SharedDetail({ memory, onBack, onStep }: { memory: SfMemory; onBack: () => void; onStep: (m: SfMemory) => void }) {
+  const crowd = isCrowd(memory);
+  const tex = usePainted(DETAIL.w, DETAIL.h, async (ctx, alive, commit) => {
+    await fontsReady();
+    const people = crowd ? await Promise.all(AT_BRIDGE.map(async (m) => ({ name: m.owner.split(' ')[0]!, img: await loadImage(thumb(m.photo)) }))) : undefined;
+    if (!alive()) return;
+    const page: SharedPage = {
+      title: memory.title, words: memory.words, tint: SF_TINT, people,
+      who: crowd ? CROWD_LINE : [memory.owner, SF_PLACES[memory.place]?.name, memory.when].filter(Boolean).join(' · '),
+      note: crowd ? 'Fictional samples, made for this demonstration.' : 'A fictional sample, made for this demonstration.',
+    };
+    // Its pane's small copy at once if the photograph itself isn't here yet (or can't be had), then the photograph.
+    const ready = await quick(loadImage(memory.photo), 150);
+    if (!alive()) return;
+    paintShared(ctx, page, ready ?? (await loadImage(thumb(memory.photo))));
+    commit();
+    if (ready !== undefined) return;
+    const img = await loadImage(memory.photo);
+    if (!alive() || !img) return;
+    paintShared(ctx, page, img);
+    commit();
+  }, memory.id);
+  return (
+    <Forward tex={tex} buttons={[
+      { label: crowd ? 'Go to the bridge' : 'Step into it', primary: true, name: 'xr-album-step', onPress: () => onStep(memory) },
+      { label: 'Back', name: 'xr-album-back', onPress: onBack },
+    ]} />
   );
 }
 
@@ -335,6 +399,8 @@ function Board() {
   const [picked, setPicked] = useState<string | null>(null);
   const all = useMemo(() => [...memories, ...PREPARED], [memories]);
   const chosen = picked ? all.find((m) => m.id === picked) ?? null : null;
+  const shared = picked && !chosen && SF_PANES.has(picked) ? sfMemory(picked) : null;
+  const forward = chosen?.id ?? shared?.id ?? null;
   const root = useRef<THREE.Group>(null);
   const dock = useRef<THREE.Group>(null);
   const place = useRef({ frames: 0, placed: false, x: 0, y: 1.5, z: 0, yaw: 0, away: 0, gliding: false });
@@ -365,7 +431,7 @@ function Board() {
     g.position.set(p.x, p.y, p.z);
     g.rotation.set(0, p.yaw, 0);
     // While a memory is brought forward, its own buttons are the ones within reach.
-    if (dock.current) dock.current.visible = !chosen;
+    if (dock.current) dock.current.visible = !forward;
   });
 
   const step = (m: AlbumMemory) => {
@@ -377,6 +443,8 @@ function Board() {
       else void flow.revisit(m.id);
     });
   };
+  // Into theirs, through their eyes. Back from there comes here again (from someone met at the bridge, to the bridge first).
+  const visit = (m: SfMemory) => { stopVoice(); blinkThen(() => { setPicked(null); void flow.visitShared(m.id); }); };
   const again = () => { stopVoice(); blinkThen(() => flow.again()); };
   const home = () => { stopVoice(); blinkThen(() => flow.home()); };
   const leave = () => { stopVoice(); void xrStore.getState().session?.end().catch(() => undefined); };
@@ -385,10 +453,10 @@ function Board() {
   useEffect(() => {
     const w = window as unknown as { __xrAlbum?: unknown };
     w.__xrAlbum = {
-      state: () => ({ placed: place.current.placed, own: own.map((m) => m.id), samples: PREPARED.map((m) => m.id), picked, hovered: [...hovered] }),
+      state: () => ({ placed: place.current.placed, own: own.map((m) => m.id), samples: PREPARED.map((m) => m.id), shared: [...SF_PANES.keys()], picked, hovered: [...hovered] }),
       pick: (id: string) => setPicked(id),
       back: () => setPicked(null),
-      step: () => { if (chosen) step(chosen); },
+      step: () => { if (chosen) step(chosen); else if (shared) visit(shared); },
       again, home, leave,
       /** Where a named part is, relative to the eyes (camera space), for aiming the emulated controller at it. */
       aim: (name: string) => {
@@ -404,15 +472,27 @@ function Board() {
     return () => { delete w.__xrAlbum; };
   });
 
-  const ownStep = (OWN_W + GAP) / R, sampleStep = (SAMPLE_W + GAP) / R;
+  const ownStep = (OWN_W + GAP) / R, sampleStep = (SAMPLE_W + GAP) / R, sfStep = (SF_W + SF_GAP) / R;
   const onArc = (i: number, n: number, stepA: number) => {
     const t = (i - (n - 1) / 2) * stepA;
     return { x: Math.sin(t) * R, z: -Math.cos(t) * R, yaw: -t };
   };
   const empty = own.length === 0;
+  // Two groups side by side on the arc, each turned to its own angle: yours on the left, San Francisco's on the right,
+  // as wide as their widest rows (yours at least as wide as its date line), and the pair centred where you look. Their
+  // rows line up (with no visits yet, the samples take your visits' row). A chosen pane comes forward in front of its
+  // own group.
+  const span = (n: number, stepA: number, w: number) => (n - 1) * stepA + w / R;
+  const mineW = Math.max(span(own.length, ownStep, OWN_W), span(PREPARED.length, sampleStep, SAMPLE_W), 1.1 / R);
+  const cityW = Math.max(...SF_ROWS.map((r) => span(r.length, sfStep, SF_W)));
+  const whole = mineW + SPLIT + cityW;
+  const mine = (mineW - whole) / 2, city = (whole - cityW) / 2;
+  const between = (mine + mineW / 2 + city - cityW / 2) / 2;
+  const sampleY = empty ? 0.12 : -0.32;
+  const pick = (m: AlbumMemory) => setPicked(m.id);
   return (
     <group ref={root} visible={false}>
-      <group>
+      <group rotation-y={-mine}>
         <Text font={serifUrl} fontSize={0.1} anchorX="center" anchorY="bottom" position={[0, 0.42, -R]} renderOrder={ORDER + 1}
           color="#f7f6ff" outlineWidth={0.0025} outlineBlur={0.02} outlineColor="#0b0c1c" outlineOpacity={0.45} material-depthTest={false} material-toneMapped={false}>
           Your moments
@@ -421,27 +501,50 @@ function Board() {
           color="#f7f6ff" outlineWidth={0.003} outlineBlur={0.014} outlineColor="#0b0c1c" outlineOpacity={0.7} material-depthTest={false} material-toneMapped={false}>
           {empty ? `${todayLine()}. Your first visit will be kept here.` : `${todayLine()}. ${summaryLine(memories)}`}
         </Text>
-        <Text font={boldUrl} fontSize={0.035} anchorX="center" anchorY="bottom" position={[0, empty ? 0.215 : -0.11, -R]} renderOrder={ORDER + 1}
+        <Text font={boldUrl} fontSize={0.035} anchorX="center" anchorY="bottom" position={[0, empty ? 0.295 : -0.11, -R]} renderOrder={ORDER + 1}
           color="#f7f6ff" outlineWidth={0.003} outlineBlur={0.014} outlineColor="#0b0c1c" outlineOpacity={0.7} material-depthTest={false} material-toneMapped={false}>
           Samples to step into
         </Text>
+        {own.map((m, i) => {
+          const a = onArc(i, own.length, ownStep);
+          return <Pane key={m.id} memory={m} w={OWN_W} x={a.x} y={0.12} z={a.z} yaw={a.yaw} index={i} dim={!!forward && forward !== m.id} onPick={pick} />;
+        })}
+        {PREPARED.map((m, i) => {
+          const a = onArc(i, PREPARED.length, sampleStep);
+          return <Pane key={m.id} memory={m} w={SAMPLE_W} x={a.x} y={sampleY} z={a.z} yaw={a.yaw} index={own.length + i} dim={!!forward && forward !== m.id} onPick={pick} />;
+        })}
+        {chosen && <Detail key={chosen.id} memory={chosen} onBack={() => { stopVoice(); setPicked(null); }} onStep={step} />}
       </group>
-      {own.map((m, i) => {
-        const a = onArc(i, own.length, ownStep);
-        return <Pane key={m.id} memory={m} w={OWN_W} x={a.x} y={0.12} z={a.z} yaw={a.yaw} index={i} dim={!!chosen && chosen.id !== m.id} onPick={(x) => setPicked(x.id)} />;
-      })}
-      {PREPARED.map((m, i) => {
-        const a = onArc(i, PREPARED.length, sampleStep);
-        return <Pane key={m.id} memory={m} w={SAMPLE_W} x={a.x} y={empty ? 0.03 : -0.32} z={a.z} yaw={a.yaw} index={own.length + i} dim={!!chosen && chosen.id !== m.id} onPick={(x) => setPicked(x.id)} />;
-      })}
-      <group ref={dock} position={[0, 0, -R + 0.02]}>
-        <Row y={empty ? -0.24 : -0.57} items={[
-          { label: 'Visit another memory', primary: true, name: 'xr-album-again', onPress: again },
-          { label: 'Back to the start', small: true, name: 'xr-album-home', onPress: home },
-          { label: 'Leave headset', small: true, name: 'xr-album-leave', onPress: leave },
-        ]} />
+      <group rotation-y={-city}>
+        <Text font={serifUrl} fontSize={0.1} anchorX="center" anchorY="bottom" position={[0, 0.42, -R]} renderOrder={ORDER + 1}
+          color="#f7f6ff" outlineWidth={0.0025} outlineBlur={0.02} outlineColor="#0b0c1c" outlineOpacity={0.45} material-depthTest={false} material-toneMapped={false}>
+          San Francisco
+        </Text>
+        <Text font={sansUrl} fontSize={0.037} anchorX="center" anchorY="top" position={[0, 0.405, -R]} renderOrder={ORDER + 1}
+          color="#f7f6ff" outlineWidth={0.003} outlineBlur={0.014} outlineColor="#0b0c1c" outlineOpacity={0.7} material-depthTest={false} material-toneMapped={false}>
+          Memories people shared here
+        </Text>
+        <Text font={boldUrl} fontSize={0.035} anchorX="center" anchorY="bottom" position={[0, -0.11, -R]} renderOrder={ORDER + 1}
+          color="#f7f6ff" outlineWidth={0.003} outlineBlur={0.014} outlineColor="#0b0c1c" outlineOpacity={0.7} material-depthTest={false} material-toneMapped={false}>
+          Around the city
+        </Text>
+        {SF_ROWS.map((row, r) => row.map((m, i) => {
+          const a = onArc(i, row.length, sfStep);
+          const index = own.length + PREPARED.length + (r ? SF_ROWS[0]!.length : 0) + i;
+          return <Pane key={m.id} memory={SF_PANES.get(m.id)!} w={SF_W} x={a.x} y={r ? -0.32 : 0.12} z={a.z} yaw={a.yaw} index={index} dim={!!forward && forward !== m.id} titleLines={2} onPick={pick} />;
+        }))}
+        {shared && <SharedDetail key={shared.id} memory={shared} onBack={() => setPicked(null)} onStep={visit} />}
       </group>
-      {chosen && <Detail key={chosen.id} memory={chosen} onBack={() => { stopVoice(); setPicked(null); }} onStep={step} />}
+      {/* Between the two and below both: wider than the space between them, so under their lowest rows. */}
+      <group rotation-y={-between}>
+        <group ref={dock} position={[0, 0, -R + 0.02]}>
+          <Row y={-0.57} items={[
+            { label: 'Visit another memory', primary: true, name: 'xr-album-again', onPress: again },
+            { label: 'Back to the start', small: true, name: 'xr-album-home', onPress: home },
+            { label: 'Leave headset', small: true, name: 'xr-album-leave', onPress: leave },
+          ]} />
+        </group>
+      </group>
     </group>
   );
 }

@@ -8,11 +8,15 @@ import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { buildShowcase, type BuiltShowcase } from './build';
 import { useMemory } from '../flow/memory';
 import { heldHeard } from './held';
+import { reportDevice } from '../diag/deviceLog';
 
 const specs = import.meta.glob('./scenes/*.json', { eager: true, import: 'default' }) as Record<string, ShowcaseSpec>;
 const scripts = import.meta.glob('./scenes/*.js') as Record<string, () => Promise<{ default?: (api: unknown) => Promise<void> }>>;
 const QUEST = /OculusBrowser|Quest/i.test(navigator.userAgent);
-type ShowcaseSpec = { title?: string; env?: Record<string, unknown>; cameras?: { name?: string; pos: [number, number, number]; target: [number, number, number]; env?: Record<string, unknown> }[] };
+type ShowcaseSpec = {
+  title?: string; env?: Record<string, unknown>; items?: { m?: string; say?: string[] }[]; scatter?: { m?: string }[];
+  cameras?: { name?: string; pos: [number, number, number]; target: [number, number, number]; env?: Record<string, unknown> }[];
+};
 
 /** Which showcase a memory is, from what it's called and what's in it (null: plan and draw it as usual). */
 export function showcaseFor(plan: ScenePlan | null): string | null {
@@ -77,17 +81,20 @@ async function make(name: string, view: number, gl: THREE.WebGLRenderer, camera:
   }
 }
 
-/** Places begun ahead: one named while they're still talking (the garden, the living room) is building as they walk
- *  through the gate, so it's there when they arrive instead of starting then. */
-const ahead = new Map<string, Promise<BuiltShowcase | null>>();
-/** The place being shown now (it needs no second build). */
-const showing = new Set<string>();
-
-export function prebuildShowcase(name: string, view: number, gl: THREE.WebGLRenderer, camera: THREE.Camera): void {
+/** Named while they're still talking (the garden, the living room): its files start coming then, so stepping through
+ *  waits only for it to be put together, behind the white. (Not put together then: that stalls a headset for seconds,
+ *  and the conversation at the gate froze.) */
+const fetched = new Set<string>();
+export function prefetchShowcase(name: string, view: number): void {
+  const spec = specs[`./scenes/${name}.json`];
   const key = `${name}:${view}`;
-  if (ahead.has(key) || showing.has(key) || !specs[`./scenes/${name}.json`]) return;
-  for (const [other, p] of ahead) { ahead.delete(other); void p.then((b) => b && dispose(b)); } // they've moved on from that one
-  ahead.set(key, make(name, view, gl, camera));
+  if (!spec || fetched.has(key)) return;
+  fetched.add(key);
+  const env = { ...spec.env, ...spec.cameras?.[view]?.env } as { hdri?: string };
+  const urls = new Set<string>();
+  if (env.hdri) urls.add(`/showcase/hdri/${env.hdri}.hdr`);
+  for (const it of [...(spec.items ?? []), ...(spec.scatter ?? [])]) if (it.m && !it.m.startsWith('@')) urls.add(`/showcase/models/${it.m}.glb`);
+  for (const u of urls) void fetch(u, { priority: 'low' } as RequestInit).catch(() => undefined);
 }
 
 /** The ground of the place being shown under a point (world x, z), near where you stand: for the people standing in
@@ -102,25 +109,62 @@ export function Showcase({ name, camera: view = 0 }: { name: string; camera?: nu
   const spec = specs[`./scenes/${name}.json`];
   const [built, setBuilt] = useState<BuiltShowcase | null>(null);
   const drawnFrames = useRef(0);
+  const settled = useRef(0);
   useEffect(() => {
     if (!spec) return;
     let live = true;
     let made: BuiltShowcase | null = null;
     drawnFrames.current = 0;
-    const key = `${name}:${view}`;
-    showing.add(key);
-    const begun = ahead.get(key);
-    ahead.delete(key);
-    // one begun ahead that failed is tried again, here, rather than leaving only the white
-    const p = (begun ?? make(name, view, gl, camera)).then((b) => b ?? (begun && live ? make(name, view, gl, camera) : null));
+    settled.current = 0;
+    // a build that fails is tried once more, rather than leaving only the white
+    const p = make(name, view, gl, camera).then((b) => b ?? (live ? make(name, view, gl, camera) : null));
     void p.then((b) => {
       if (!b) return;
       if (!live) { dispose(b); return; }
       made = b;
       setBuilt(b);
     });
-    return () => { live = false; showing.delete(key); if (made) dispose(made); setBuilt(null); useMemory.setState({ showcaseReady: false }); };
+    return () => { live = false; if (made) dispose(made); setBuilt(null); useMemory.setState({ showcaseReady: false }); };
   }, [name, view]);
+  // In a headset, while it's here: 72 frames a second (a whole place can't be drawn at 120) and the edges of the view
+  // drawn coarser. Both put back after.
+  useEffect(() => {
+    if (!built) return;
+    type Rates = XRSession & { frameRate?: number; supportedFrameRates?: Float32Array; updateTargetFrameRate?: (rate: number) => Promise<void> };
+    let session: Rates | null = null;
+    let rate = 0, foveation = 0;
+    const apply = () => {
+      session = gl.xr.getSession() as Rates | null;
+      if (!session) return;
+      rate = session.frameRate ?? 0;
+      const lowest = Math.min(...(session.supportedFrameRates ?? []));
+      if (Number.isFinite(lowest)) void session.updateTargetFrameRate?.(lowest).catch(() => undefined);
+      foveation = gl.xr.getFoveation() ?? 0;
+      gl.xr.setFoveation(1);
+    };
+    apply();
+    gl.xr.addEventListener('sessionstart', apply);
+    return () => {
+      gl.xr.removeEventListener('sessionstart', apply);
+      if (session && gl.xr.getSession() === session) {
+        if (rate) void session.updateTargetFrameRate?.(rate).catch(() => undefined);
+        gl.xr.setFoveation(foveation);
+      }
+    };
+  }, [built]);
+  // Its sun's shadows are drawn while it settles (and while something rises into it), then kept: a place holds still,
+  // and drawing them every frame cost a headset a second pass over the whole place.
+  const shadowLights = useMemo(() => {
+    const out: THREE.DirectionalLight[] = [];
+    built?.group.traverse((o) => { const l = o as THREE.DirectionalLight; if (l.isDirectionalLight && l.castShadow) { l.shadow.autoUpdate = false; l.shadow.needsUpdate = true; out.push(l); } });
+    return out;
+  }, [built]);
+  // What it costs to draw, from a headset (diag/deviceLog), once it has settled.
+  useEffect(() => {
+    if (!built) return;
+    const t = setTimeout(() => reportDevice('showcase', { name, view, calls: gl.info.render.calls, triangles: gl.info.render.triangles, textures: gl.info.memory.textures, geometries: gl.info.memory.geometries }), 5000);
+    return () => clearTimeout(t);
+  }, [built]);
   useEffect(() => {
     if (!built) return;
     let grounds: THREE.Object3D[] | null = null;
@@ -203,6 +247,10 @@ export function Showcase({ name, camera: view = 0 }: { name: string; camera?: nu
     // Ready once it has actually been drawn a couple of times behind the white (its first frame is the slow one): only
     // then does the white step back and the companion say it's here.
     if (built && drawnFrames.current < 3 && ++drawnFrames.current === 3) useMemory.setState({ showcaseReady: true });
+    if (built) {
+      settled.current += Math.min(dt, 0.1);
+      if (settled.current < (QUEST ? 2 : 8) || rising.current.some((r) => r.t < 1.4)) for (const l of shadowLights) l.shadow.needsUpdate = true;
+    }
     if (built) for (const u of built.uniforms) u.value += Math.min(dt, 0.1);
     for (const r of rising.current) {
       if (r.t >= 1.4) continue;

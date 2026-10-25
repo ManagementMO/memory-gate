@@ -485,7 +485,13 @@
     0,
     -1.6
    ],
-   "h": 2.2
+   "h": 2.2,
+   "say": [
+    "bench",
+    "garden bench",
+    "wooden bench",
+    "park bench"
+   ]
   },
   {
    "m": "nat_planter_box",
