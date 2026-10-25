@@ -9,6 +9,7 @@ import { MEMORY_CENTER } from './layout';
 import { damp, dampVec3, easeInOutCubic } from './util';
 import { useMemory } from '../flow/memory';
 import { EYE, LOOK_Y, SHORE, albumView, walkView } from './palace/plan';
+import { firstPersonActive, firstPersonView } from '../social/firstPerson';
 
 const useMemoryWater = () => !!useMemory.getState().plan?.setting.water;
 
@@ -88,6 +89,11 @@ export function CameraRig() {
       _look.set(0, 1.7 + p * 0.1, -6);
       fov = 50 - p * 9;
       rate = 6;
+    } else if (firstPersonActive()) {
+      // Through someone's eyes: at your spot, at the perspective's eye height (social/firstPerson.ts).
+      // Checked before the living photograph: first person declines single photos, but stands in prepared worlds.
+      fov = firstPersonView(_pos, _look, state.size.width / Math.max(1, state.size.height));
+      rate = 4;
     } else if (s.photoWorld && (s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving')) {
       // A living photograph only looks right from where it was taken: stand there, with a breath of parallax.
       const eye = s.photoWorld.eye;

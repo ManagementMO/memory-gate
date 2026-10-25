@@ -65,8 +65,11 @@ export async function startSession(opts: { name: string; invite: { code: string;
     }
     // ?mode=offline creates an immutable offline room: the server forces every paid service off (tests, demos without keys).
     const offline = new URLSearchParams(location.search).get('mode') === 'offline';
-    const r = await retry(() => convex.mutation(api.rooms.create, { title: 'A new memory', displayName: opts.name, demo: false, offline }));
+    // ?memory=red-kite visits the team's cached fictional meadow (a labeled sample room); no world is generated.
+    const meadow = new URLSearchParams(location.search).get('memory') === 'red-kite';
+    const r = await retry(() => convex.mutation(api.rooms.create, { title: meadow ? 'The Red Kite meadow (fictional sample)' : 'A new memory', displayName: opts.name, demo: meadow, offline }));
     await retry(() => convex.mutation(api.consents.give, { code: r.code, token: r.token, scopes: [...CONSENT_SCOPES] }));
+    if (meadow) await retry(() => convex.mutation(api.splats.usePracticeWorld, { code: r.code, token: r.token, setting: 'red-kite' })).catch((e) => console.warn('[gate] the meadow is not loaded (node scripts/red-kite-room.mjs)', e));
     const view = await retry(() => convex.query(api.rooms.get, { code: r.code, token: r.token }));
     const s: Session = { code: r.code, token: r.token, joinKey: view.joinKey ?? null, role: 'host', name: opts.name };
     rememberSession(s);

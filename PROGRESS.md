@@ -6,7 +6,7 @@ Verified: 71 backend/domain tests, 4 renderer tests, 6 Actor tests, 5 real datab
 
 Run `npm run local:up`, then `npm run demo:links`. Ports: Convex 3210, SpacetimeDB 3000, exchange 3212, phone 5173/5174, production Quest/spectator 4173. Private config, room credentials, DB files and run storage remain ignored.
 
-Latest requested extension, still outstanding: synchronized shared 3D perspectives and POV switching in VR, and an Apify path for authorized Instagram photos to become memories. The implemented Apify source is currently the Library of Congress. Do not describe the current handoff/board as already implementing shared VR camera perspectives.
+Perspectives and POV switching are implemented on branch `social-experience` (`docs/SOCIAL_EXPERIENCE.md`): grandparent and grandchild eyes, a headset toggle that scales the world, people at their real positions and heights, and per-perspective stories, things, companion context and archive photographs in SpacetimeDB. Gateway tests, the two-device check and the emulated-Quest check pass; a physical Quest and a real likeness are still to be checked (see that document's verification status). An Apify path for authorized Instagram photos remains outstanding; the implemented Apify source is the Library of Congress.
 
 Remaining external checks: Apify cloud deployment/run (no token found), physical Quest comfort/performance, current native emulator input test (managed Chromium launch failed), and event/sponsor eligibility. Convex still owns legacy capture/media/scene state. No public deployment or submission. See `MORNING_REPORT.md` and `docs/CALHACKS_RUNBOOK.md`.
 
