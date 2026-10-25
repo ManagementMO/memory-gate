@@ -59,6 +59,7 @@ export function Captions() {
   const faded = useFadedInCrossing();
   const heard = useGate((s) => s.heardLine);
   const spoken = useGate((s) => s.spoken);
+  const translations = useGate((s) => s.translatedMemories);
   const stage = useGate((s) => s.stage);
   // Between your last word and the companion's reply: a quiet sign that it heard you and is thinking.
   const thinking = useGate((s) => s.mood === 'thinking');
@@ -71,13 +72,22 @@ export function Captions() {
   const to = starts[page + 1] ?? words.length;
   return (
     <div className="captions" data-testid="captions">
-      <p className="visually-hidden" lang={spoken} aria-live="polite">{said?.text ?? ''}</p>
-      <p className={`said${faded ? ' faded' : ''}`} lang={spoken} aria-hidden="true" data-testid="companion-line" data-full={said?.text ?? ''}>
+      <p className="visually-hidden" lang={said?.language ?? spoken} aria-live="polite">{said?.text ?? ''}</p>
+      <p className={`said${faded ? ' faded' : ''}`} lang={said?.language ?? spoken} aria-hidden="true" data-testid="companion-line" data-full={said?.text ?? ''}>
         {words.slice(from, to).map((w, j) => {
           const i = from + j;
           return <span key={`${said?.id}-${i}`} className={`w ${i < shown ? 'on' : ''}`}>{w}{i < to - 1 ? ' ' : ''}</span>;
         })}
       </p>
+      {translations.length > 0 && <div className="memory-translations" role="region" aria-label="English translations" aria-live="polite" tabIndex={0} data-testid="memory-translations">
+        {translations.map((memory) => <div key={memory.id} className="memory-translation">
+          <p className="translation-speaker">{memory.name}</p>
+          <p className="translation-original" lang={memory.language ?? undefined}>“{memory.text}”</p>
+          <p className="translation-english" lang="en" data-testid="memory-english">
+            {memory.english ? <>In English: “{memory.english}”</> : 'English translation is unavailable right now.'}
+          </p>
+        </div>)}
+      </div>}
       <p className="heard" data-interim={heard?.interim ? 'true' : 'false'} data-testid="heard-line">
         {heard ? `“${heard.text}”` : ' '}
         {heard && !heard.interim && thinking && <span className="thinking-dots" aria-hidden="true"><i /><i /><i /></span>}

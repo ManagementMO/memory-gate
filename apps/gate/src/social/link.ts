@@ -6,7 +6,7 @@
 import { applySnapshot, poseClock, poses, useSocial, type Member, type Pose, type SocialSnapshot } from './store';
 
 type Wire = { request: (m: Record<string, unknown>, timeoutMs?: number) => Promise<unknown>; post: (m: Record<string, unknown>) => void };
-type VoicePush = { type: 'companion' | 'hush'; [k: string]: unknown };
+type VoicePush = { type: 'companion' | 'hush' | 'translation'; [k: string]: unknown };
 
 let wire: Wire | null = null;
 let room: string | null = null;
@@ -29,7 +29,7 @@ export const socialLink = {
   /** Everything the gateway pushes that perspectives care about. */
   receive(d: { type?: string; social?: SocialSnapshot; poses?: Pose[]; now?: number }) {
     if (d.type === 'social' && d.social) applySnapshot(d.social);
-    if ((d.type === 'companion' || d.type === 'hush') && voiceListener) voiceListener(d as VoicePush);
+    if ((d.type === 'companion' || d.type === 'hush' || d.type === 'translation') && voiceListener) voiceListener(d as VoicePush);
     if (d.type === 'poses' && d.poses) {
       const now = Date.now();
       if (typeof d.now === 'number') poseClock.offset = d.now - now;

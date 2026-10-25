@@ -10,6 +10,7 @@ import { socialLink } from '../social/link';
 import { MEADOW_CAST, poses, useSocial } from '../social/store';
 import { useGate } from '../state/store';
 import type { Heard, VoiceEngine } from '../voice/engine';
+import type { TranslatedMemory } from '../../../../packages/shared/src/translation';
 
 /** A companion line, to everyone in the room. `heard`: what it was answering (each person's words). `detailFor` /
  *  `intentFor`: whose device adds the detail / acts on a personal intent (resting, leaving). */
@@ -19,11 +20,13 @@ export type CompanionLine = {
   language?: string | null; speakIn?: string | null;
   /** The English reading of Spanish or French words just said (prepared places know English words). */
   english?: string | null;
+  /** The accepted companion reply in English for listeners whose own language is English. */
+  replyEnglish?: string | null;
   /** A line of the companion's own (flow/lines.ts) each device says in its own language, with `name` filled in. */
   line?: 'joinedToo' | 'allHere'; name?: string | null;
   detailFor?: string | null; intentFor?: string; heard?: { memberId: string; name: string; text: string }[];
 };
-export type RoomVoice = CompanionLine | { type: 'hush' };
+export type RoomVoice = CompanionLine | { type: 'hush' } | { type: 'translation'; heard: TranslatedMemory[] };
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 /** The room's lines this device received (for the automated checks, like window.__people). */

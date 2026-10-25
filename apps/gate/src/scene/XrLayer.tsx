@@ -5,7 +5,7 @@
 import { Text } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useXR, useXRInputSourceState } from '@react-three/xr';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff?url';
 import { flow } from '../flow/controller';
@@ -23,6 +23,18 @@ const _target = new THREE.Vector3();
 function Captions3D() {
   const said = useGate((s) => s.companionLine);
   const heard = useGate((s) => s.heardLine);
+  const translations = useGate((s) => s.translatedMemories);
+  const pages = useMemo(() => translations.flatMap((memory) => {
+    const words = (memory.english ?? 'English translation is unavailable right now.').split(/\s+/);
+    return Array.from({ length: Math.ceil(words.length / 28) }, (_, i) => `${memory.name} · In English\n${words.slice(i * 28, (i + 1) * 28).join(' ')}`);
+  }), [translations]);
+  const [page, setPage] = useState(0);
+  useEffect(() => {
+    setPage(0);
+    if (pages.length < 2) return;
+    const timer = setInterval(() => setPage((n) => (n + 1) % pages.length), 11_000);
+    return () => clearInterval(timer);
+  }, [pages]);
   const stage = useGate((s) => s.stage);
   const faded = useFadedInCrossing();
   const objectSource = useObjectWorkshop((s) => s.selected);
@@ -44,7 +56,7 @@ function Captions3D() {
     _target.set(_head.x - Math.sin(yaw) * 1.25, _head.y - 0.43, _head.z - Math.cos(yaw) * 1.25);
     if (!placed.current) { g.position.copy(_target); placed.current = true; }
     if (aimed.n === 0) { g.position.lerp(_target, 1 - Math.exp(-dt * 1.4)); g.lookAt(_head.x, g.position.y, _head.z); }
-    dialogue.below = heard ? 0.03 + heardHeight.current + 0.065 : 0.07;
+    dialogue.below = pages.length > 0 || heard ? 0.03 + heardHeight.current + 0.065 : 0.07;
   });
   if (stage === 'portal' || stage === 'album' || (objectSource && (stage === 'memory' || stage === 'forming'))) return null;
   // Just the words, with a soft halo of the opposite tone so they read on sky, marble or white. The companion's
@@ -59,11 +71,11 @@ function Captions3D() {
           {said.text}
         </Text>
       )}
-      {heard && (
+      {(pages.length > 0 || heard) && (
         <Text font={fontUrl} fontSize={0.027} lineHeight={1.3} maxWidth={0.82} anchorX="center" anchorY="top" textAlign="center" position={[0, -0.03, 0]} color={day ? '#4a4864' : '#d9d6f2'}
           onSync={(t: { textRenderInfo?: { blockBounds: number[] } }) => { const b = t.textRenderInfo?.blockBounds; if (b) heardHeight.current = b[3]! - b[1]!; }}
           outlineWidth={0.003} outlineBlur={0.008} outlineColor={halo} outlineOpacity={0.6} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>
-          {`“${heard.text}”${!heard.interim && thinking ? '   …' : ''}`}
+          {pages[page] ?? pages[0] ?? (heard ? `“${heard.text}”${!heard.interim && thinking ? '   …' : ''}` : '')}
         </Text>
       )}
     </group>

@@ -3,6 +3,7 @@
 // with useGate.getState() inside useFrame, so a 60 fps value never re-renders React.
 import { create } from 'zustand';
 import { BCP47, deviceLang, LANGUAGE_SETTINGS, type Lang, type LanguageSetting } from '../../../../packages/shared/src/language';
+import type { TranslatedMemory } from '../../../../packages/shared/src/translation';
 
 export type Stage = 'portal' | 'greeting' | 'gathering' | 'entering' | 'forming' | 'memory' | 'leaving' | 'album';
 export type CompanionKind = 'light' | 'figure';
@@ -13,7 +14,7 @@ export type Mood = 'idle' | 'listening' | 'thinking' | 'speaking';
 /** Finer emotional colour. The figure shows it in its eyes; the light shows it in its halo's warmth. */
 export type Expression = 'neutral' | 'happy' | 'curious' | 'gentle' | 'sleepy';
 
-export type Line = { id: number; text: string; interim: boolean; at: number };
+export type Line = { id: number; text: string; interim: boolean; at: number; language?: string | null };
 export type MediaItem = { id: string; kind: 'photo' | 'video'; url: string; name: string; width: number; height: number; poster?: string; file?: Blob };
 export type Session = { code: string; token: string; joinKey: string | null; role: 'host' | 'guest'; name: string };
 /** 'shared': a device that joined a visit in the same room stays quiet; the main device listens and speaks. */
@@ -29,6 +30,7 @@ export interface GateState {
   level: number;
   companionLine: Line | null;
   heardLine: Line | null;
+  translatedMemories: TranslatedMemory[];
   media: MediaItem | null;
   /** Which gentle offers are showing during gathering. */
   offers: { photo: boolean; video: boolean; invite: boolean };
@@ -67,7 +69,7 @@ export interface GateState {
   setCompanion: (kind: CompanionKind) => void;
   setWorld: (world: WorldKind) => void;
   toggleCompanion: () => void;
-  speakLine: (text: string) => number;
+  speakLine: (text: string, language?: string | null) => number;
   hearLine: (text: string, interim: boolean) => void;
   clearLines: () => void;
   setLanguage: (setting: LanguageSetting) => void;
@@ -104,6 +106,7 @@ export const useGate = create<GateState>((set, get) => ({
   level: 0,
   companionLine: null,
   heardLine: null,
+  translatedMemories: [],
   media: null,
   offers: { photo: false, video: false, invite: false },
   inviteOpen: false,
@@ -130,18 +133,18 @@ export const useGate = create<GateState>((set, get) => ({
   setCompanion: (kind) => set({ companion: kind }),
   toggleCompanion: () => get().setCompanion(get().companion === 'light' ? 'figure' : 'light'),
   setWorld: (world) => set({ world }),
-  speakLine: (text) => {
+  speakLine: (text, language) => {
     const id = ++lineSeq;
-    set({ companionLine: { id, text, interim: false, at: performance.now() } });
+    set({ companionLine: { id, text, interim: false, at: performance.now(), language } });
     return id;
   },
   hearLine: (text, interim) => {
     const prev = get().heardLine;
     // Interim words update the same line; a final line becomes a new one.
     const id = prev && prev.interim ? prev.id : ++lineSeq;
-    set({ heardLine: { id, text, interim, at: performance.now() } });
+    set({ heardLine: { id, text, interim, at: performance.now() }, translatedMemories: [] });
   },
-  clearLines: () => set({ companionLine: null, heardLine: null }),
+  clearLines: () => set({ companionLine: null, heardLine: null, translatedMemories: [] }),
   setLanguage: (setting) => {
     set({ language: setting });
     try { localStorage.setItem(LANGUAGE_KEY, setting); } catch { /* private mode: kept for this visit only */ }
