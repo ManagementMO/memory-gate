@@ -891,10 +891,12 @@ async function describeMedia(file: File): Promise<MediaItem | null> {
 }
 
 export const flow = new Flow();
-// Push to talk: hold V to speak, let go to send (never while typing in a field, never with a modifier key).
+// Push to talk, on the website only: hold V to speak, let go to send (never while typing in a field, never with a
+// modifier key). Not on the Meta Quest browser or inside VR, where listening stays hands-free as it always was.
+export const pushToTalkHere = !/OculusBrowser|Quest|Pacific/i.test(navigator.userAgent);
 const typing = (t: EventTarget | null) => t instanceof Element && !!t.closest('input, textarea, select, [contenteditable="true"]');
 window.addEventListener('keydown', (e) => {
-  if (e.code !== 'KeyV' || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
+  if (!pushToTalkHere || useGate.getState().xr || e.code !== 'KeyV' || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
   e.preventDefault();
   if (!e.repeat) flow.pushToTalk(true);
 });

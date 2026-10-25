@@ -1,7 +1,7 @@
 // The quiet frame: the wordmark (or, on the far side, the memory's name), a listening indicator that tells you
 // you're heard, and the few controls a person might reach for: sound, rest, leave.
 import { useEffect, useMemo, useRef } from 'react';
-import { flow } from '../flow/controller';
+import { flow, pushToTalkHere } from '../flow/controller';
 import { useGate } from '../state/store';
 import { useSocial } from '../social/store';
 import { LeaveIcon, MapIcon, MuteIcon, PhotosIcon, PlayIcon, RestIcon, SoundIcon } from './Icons';
@@ -27,7 +27,7 @@ function ListeningChip() {
   const stage = useGate((s) => s.stage);
   const ptt = useGate((s) => s.pushToTalk);
   const held = useGate((s) => s.talkHeld);
-  const keyboard = useMemo(() => matchMedia('(pointer: fine)').matches, []);
+  const keyboard = useMemo(() => pushToTalkHere && matchMedia('(pointer: fine)').matches, []); // the website, not the Quest
   const dot = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     let raf = 0;
