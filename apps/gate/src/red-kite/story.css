@@ -47,7 +47,6 @@
 .rk-header .rk-eyebrow { font-size: 9px; }
 .rk-header h1 { font: 400 24px/1.05 'Instrument Serif', serif; margin: 3px 0 0; }
 .rk-header h1 span { font: 400 10px/1.4 'Inter Variable', sans-serif; color: #ede8d9; display: block; margin-top: 5px; }
-.rk-sample { align-self: flex-start; font-size: 9px; text-transform: uppercase; letter-spacing: .06em; padding: 5px 8px; border: 1px solid #ede4cb66; border-radius: 4px; margin-top: 2px; }
 .rk-top-actions { display: flex; gap: 6px; margin-left: auto; font-size: 11px; }
 .rk-perspectives { position: absolute; left: 24px; top: 108px; display: flex; gap: 6px; z-index: 3; }
 .rk-perspectives button { display: flex; align-items: center; gap: 9px; text-align: left; padding: 7px 10px; background: #142c23c2; border-radius: 7px; min-width: 125px; }
@@ -146,7 +145,6 @@
   .rk-header h1 { font-size: 23px; }
   .rk-header h1 span { font-size: 9px; }
   .rk-header .rk-eyebrow { font-size: 8px; }
-  .rk-sample { position: absolute; right: 0; top: 48px; font-size: 8px; padding: 3px 5px; }
   .rk-top-actions { gap: 0; margin-top: 3px; }
   .rk-top-actions button { font-size: 10px; padding: 6px 10px; }
   .rk-top-actions :is(.rk-invite, .rk-desktop-rest) { display: none; }

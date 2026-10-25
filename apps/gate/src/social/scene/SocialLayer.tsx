@@ -60,10 +60,11 @@ function StandIns() {
   const avatars = useSocial((s) => s.avatars);
   useSocial((s) => s.spots); // a story moving a perspective moves its stand-in
   const occupied = usePolledSet(occupiedPerspectives);
-  // A memory with its own people (the parents someone mentioned, the friends in a photo) needs no stand-in waiting in it.
-  const ownPeople = useMemory((s) => !!s.plan?.people?.length);
-  // Nor does one where nobody was mentioned: the stand-in comes once they say who was there ("with my grandmother"),
-  // or when someone else is in the memory with them (the perspective nobody has taken yet).
+  // The stand-in waits only in the family's prepared places (the meadow, the courtyard): a memory of your own (a garden,
+  // a football field, the people you mention) has no Red Kite grandchild in it.
+  const ownPeople = useMemory((s) => !s.place || !!s.plan?.people?.length);
+  // Even there, only once they say who was with them ("with my grandmother"), or when someone else is in the memory
+  // with them (the perspective nobody has taken yet).
   const company = useMemory((s) => !!s.company);
   const [, tick] = useState(0);
   useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 1000); return () => clearInterval(t); }, []); // follow things settling

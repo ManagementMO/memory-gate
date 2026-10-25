@@ -66,7 +66,6 @@ export default function ProposalExperience() {
       <header className="rk-header">
         <a className="rk-wordmark" href="/" aria-label="Return to Memora">memora<span>/</span></a>
         <div><p className="rk-eyebrow">World memories · San Francisco, CA</p><h1>{PROPOSAL.title}<span>Shared publicly by {PROPOSAL.owners}</span></h1></div>
-        <span className="rk-sample">Fictional sample</span>
         <div className="rk-top-actions"><a className="pm-back" href="/" aria-label="Back to World memories" data-testid="proposal-back"><span>World memories</span></a></div>
       </header>
       <section className="rk-story pm-words" aria-label={`${PROPOSAL.owners}, in their own words`}>

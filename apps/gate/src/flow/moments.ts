@@ -44,6 +44,7 @@ class Moments {
 
   /** Capture a moment now. `arrival` marks the first look at the place. */
   async mark(caption: string, audioFileId: string | null, arrival = false): Promise<void> {
+    if (useMemory.getState().shared) return; // someone else's shared memory: nothing of it goes in your album
     const mem = this.current();
     const blob = await takeSnapshot({ width: 1280 });
     const imageUrl = blob ? URL.createObjectURL(blob) : null;

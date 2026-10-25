@@ -88,7 +88,7 @@ function Person({ p, at, delay, onStep }: { p: PlanPerson; at: [number, number];
 const taken = new Set<string>();
 
 /** Pointing at someone in a shared place steps into their memory (the flow is loaded lazily: it imports the scene). */
-const stepInto = (memoryId: string) => { void import('../../flow/controller').then((c) => c.flow.visitShared(memoryId)); };
+const stepInto = (memoryId: string) => { void import('../../flow/controller').then((c) => c.flow.visitShared(memoryId, 'crowd')); };
 
 /** Everyone the plan says is there. `onStep` steps into a person's shared memory (the crowd at a landmark). */
 export function PlanPeople({ plan, onStep = stepInto }: { plan: ScenePlan; onStep?: ((memoryId: string) => void) | null }) {

@@ -569,6 +569,7 @@ class Flow {
 
   async leave(): Promise<void> {
     if (this.leaving) return;
+    if (useMemory.getState().shared) return void this.leaveShared();
     this.leaving = true;
     this.clearNudge();
     this.listen(false);
@@ -634,11 +635,35 @@ class Flow {
     this.scheduleNudge();
   }
 
+  /** The shared memories stepped through, newest last: the Golden Gate crowd, then someone's memory from it. */
+  private sharedTrail: string[] = [];
+
+  /** Back out of someone else's memory: to the crowd it was entered from, else to the San Francisco map. Nothing of it
+   *  is kept and nothing is thanked for: it was theirs. */
+  private async leaveShared(): Promise<void> {
+    this.leaving = true;
+    this.clearNudge();
+    this.listen(false);
+    this.engine?.hush();
+    this.sharedTrail.pop();
+    const back = this.sharedTrail[this.sharedTrail.length - 1];
+    if (back) { this.leaving = false; return void this.visitShared(back, 'back'); }
+    memory.reset();
+    moments.reset();
+    music.setMode('album');
+    music.cue('album');
+    useAtlas.getState().show('sf', 'world');
+    useGate.getState().set({ stage: 'album', resting: false, heardLine: null, companionLine: null, mood: 'idle', memoryTitle: null });
+    this.leaving = false;
+  }
+
   /** From the San Francisco map, or someone in the Golden Gate crowd: step into a memory someone shared publicly,
    *  through their eyes (the place, its things, the people their photo shows). The same walk in as your own. */
-  async visitShared(id: string): Promise<void> {
+  async visitShared(id: string, from: 'map' | 'crowd' | 'back' = 'map'): Promise<void> {
     const m = sfMemory(id);
     if (!m) return;
+    if (from === 'map') this.sharedTrail = [id];
+    else if (from === 'crowd') this.sharedTrail.push(id);
     if (!this.begun) await this.setup(false);
     this.leaving = false;
     this.history = [];

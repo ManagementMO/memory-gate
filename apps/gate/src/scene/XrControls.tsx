@@ -10,6 +10,7 @@ import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyper
 import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
 import { xrStore } from './xr';
+import { useMemory } from '../flow/memory';
 
 const _head = new THREE.Vector3();
 const _q = new THREE.Quaternion();
@@ -76,7 +77,7 @@ export function XrControls() {
   else {
     if (stage === 'gathering' && !media) buttons.push({ label: 'Photo', id: 'xr-photo', onPress: () => setPhotoCard((v) => !v) });
     buttons.push({ label: 'Rest', id: 'xr-rest', onPress: () => void flow.rest() });
-    if (stage === 'memory') buttons.push({ label: 'Leave', id: 'xr-leave', onPress: () => void flow.leave() });
+    if (stage === 'memory') buttons.push({ label: useMemory.getState().shared ? 'Back' : 'Leave', id: 'xr-leave', onPress: () => void flow.leave() });
   }
   const gap = 0.19;
   const x0 = -((buttons.length - 1) * gap) / 2;

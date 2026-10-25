@@ -219,7 +219,6 @@ function Experience() {
     <header className="rk-header">
       <a className="rk-wordmark" href="/" aria-label="Return to Memora">memora<span>/</span></a>
       <div><p className="rk-eyebrow">One afternoon. Two tellings.</p><h1>The Red Kite<span>California, a long time ago</span></h1></div>
-      <span className="rk-sample">Fictional sample</span>
       <div className="rk-top-actions"><button className="rk-invite" onClick={share} disabled={!session}>Invite a viewer</button><button className="rk-desktop-rest" data-testid="rest" onClick={rest} disabled={!ready || (data?.paused && !data.canAuthor)}>{paused ? 'Continue' : 'Rest'}</button><button data-testid="toggle-panels" aria-expanded={panelsVisible} aria-controls="rk-story-panel rk-perspective-controls" onClick={() => { setPanelsVisible(v => !v); setCompare(false); }}>{panelsVisible ? 'Hide panels' : 'Show story'}</button></div>
     </header>
     <nav id="rk-perspective-controls" className="rk-perspectives" hidden={!panelsVisible} aria-label="Choose whose telling to explore">
