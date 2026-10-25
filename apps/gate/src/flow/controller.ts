@@ -485,6 +485,9 @@ class Flow {
 
   /** Ask the companion's brain: Claude through the backend, else the offline rules. Never longer than ~7 s. The answer
    *  also settles the conversation language, and the language Sonic says the reply in (resolveReply). */
+  private onlineMisses = 0;
+  private onlineSkipUntil = 0;
+
   private async ask(partial: Pick<GuideInput, 'phase' | 'transcript'>): Promise<GuideReply & { speakIn: string }> {
     const g = useGate.getState();
     // Inside a memory, the companion speaks to whoever's eyes the place is seen through, with that perspective's thread.
@@ -501,9 +504,13 @@ class Flow {
       language: this.lang,
       setting: g.language,
     };
-    const online = g.session
+    // The model failing (out of credit, no network): after two misses in a row it's left alone for a minute, so each
+    // turn doesn't first wait for it to fail; the answers here are the companion's own meanwhile.
+    const tryOnline = !!g.session && performance.now() >= this.onlineSkipUntil;
+    const online = tryOnline && g.session
       ? await withTimeout(convex.action(api.guide.respond, { code: g.session.code, token: g.session.token, input }) as Promise<GuideReply | null>, 7000, null)
       : null;
+    if (tryOnline) { if (online) this.onlineMisses = 0; else if (++this.onlineMisses >= 2) this.onlineSkipUntil = performance.now() + 60_000; }
     const r = resolveReply(input, online);
     this.setLang(r.language);
     return { ...r.reply, speakIn: r.speakIn };
