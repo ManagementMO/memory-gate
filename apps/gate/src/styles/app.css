@@ -126,6 +126,12 @@ button { font: inherit; color: inherit; }
   transition: opacity var(--calm);
 }
 .captions .heard[data-interim='true'] { color: var(--ink-faint); }
+.memory-translations { max-width: 56ch; max-height: min(28vh, 240px); overflow-y: auto; pointer-events: auto; padding: 10px 16px; border-radius: 16px; background: rgba(12, 12, 30, 0.88); color: #fff; text-align: left; }
+.memory-translation + .memory-translation { margin-top: 12px; }
+.memory-translation p { margin: 0; }
+.memory-translation .translation-speaker { font-size: 13px; opacity: 0.75; }
+.memory-translation .translation-original { font-size: 14px; line-height: 1.4; opacity: 0.8; }
+.memory-translation .translation-english { font-size: clamp(16px, 1.45vw, 20px); line-height: 1.45; margin-top: 4px; }
 /* The companion heard you and is thinking: three soft dots after your words. */
 .thinking-dots { display: inline-flex; gap: 0.28em; margin-left: 0.5em; vertical-align: middle; }
 .thinking-dots i { width: 0.34em; height: 0.34em; border-radius: 50%; background: currentColor; opacity: 0.25; animation: thinking-dot 1.2s ease-in-out infinite; }

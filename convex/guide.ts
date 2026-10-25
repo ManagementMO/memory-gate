@@ -10,6 +10,7 @@ import { internal } from './_generated/api';
 import { GUIDE_INTENTS, GUIDE_SYSTEM, type GuideInput, type GuideIntent, type GuideReply } from '../packages/shared/src/guide';
 import { cap, render } from './lib/guideRender';
 import { guideModel, structured } from './lib/claude';
+import { englishText } from '../packages/shared/src/translation';
 
 const Out = z.object({
   reply: z.string(),
@@ -18,6 +19,7 @@ const Out = z.object({
   language: z.string(),
   english: z.string(),
   reply_english: z.string(),
+  translations: z.array(z.object({ id: z.string(), language: z.string(), english: z.string() })),
   /** Several people talking together: true when they don't need the companion right now. */
   listen: z.boolean(),
   /** Several people talking together: whose words added a detail ("" otherwise). */
@@ -36,6 +38,7 @@ export const respond = action({
     return {
       reply: cap(out.reply, 220), intent: out.intent, place: cap(out.place, 48) || null,
       language: /^[a-z]{2}$/.test(heard) ? heard : null, english: cap(out.english, 600) || null, replyEnglish: cap(out.reply_english, 260) || null,
+      translations: together ? out.translations.slice(0, 8).map((t) => ({ id: cap(t.id, 80), language: cap(t.language, 16).toLowerCase(), english: englishText(t.english) })) : [],
       listen: together && out.listen && out.intent === 'chat', detailFor: together ? cap(out.detailFor, 40) || null : null,
     };
   },

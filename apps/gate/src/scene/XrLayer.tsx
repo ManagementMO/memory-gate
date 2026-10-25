@@ -5,7 +5,7 @@
 import { Text } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useXR, useXRInputSourceState } from '@react-three/xr';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff?url';
 import { flow } from '../flow/controller';
@@ -22,6 +22,18 @@ const _target = new THREE.Vector3();
 function Captions3D() {
   const said = useGate((s) => s.companionLine);
   const heard = useGate((s) => s.heardLine);
+  const translations = useGate((s) => s.translatedMemories);
+  const pages = useMemo(() => translations.flatMap((memory) => {
+    const words = (memory.english ?? 'English translation is unavailable right now.').split(/\s+/);
+    return Array.from({ length: Math.ceil(words.length / 28) }, (_, i) => `${memory.name} · In English\n${words.slice(i * 28, (i + 1) * 28).join(' ')}`);
+  }), [translations]);
+  const [page, setPage] = useState(0);
+  useEffect(() => {
+    setPage(0);
+    if (pages.length < 2) return;
+    const timer = setInterval(() => setPage((n) => (n + 1) % pages.length), 11_000);
+    return () => clearInterval(timer);
+  }, [pages]);
   const stage = useGate((s) => s.stage);
   const objectSource = useObjectWorkshop((s) => s.selected);
   const thinking = useGate((s) => s.mood === 'thinking');
@@ -54,10 +66,10 @@ function Captions3D() {
           {said.text}
         </Text>
       )}
-      {heard && (
+      {(pages.length > 0 || heard) && (
         <Text font={fontUrl} fontSize={0.027} lineHeight={1.3} maxWidth={0.82} anchorX="center" anchorY="top" textAlign="center" position={[0, -0.03, 0]} color={day ? '#4a4864' : '#d9d6f2'}
           outlineWidth={0.003} outlineBlur={0.008} outlineColor={halo} outlineOpacity={0.6} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>
-          {`“${heard.text}”${!heard.interim && thinking ? '   …' : ''}`}
+          {pages[page] ?? pages[0] ?? (heard ? `“${heard.text}”${!heard.interim && thinking ? '   …' : ''}` : '')}
         </Text>
       )}
     </group>

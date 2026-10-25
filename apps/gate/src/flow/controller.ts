@@ -24,6 +24,7 @@ import { claimPerspective, setViewing } from '../social/perspectives';
 import { useSocial } from '../social/store';
 import { worldStatus } from '../scene/worldStatus';
 import { companion, type CompanionLine, type RoomVoice } from './companion';
+import { memoriesForListener, replyForListener } from '../../../../packages/shared/src/translation';
 import { visitFromUrl } from '../album/prepared';
 import { useAtlas, type PlaceId, type Tab } from '../map/state';
 import { sfMemory } from '../sf/memories';
@@ -165,7 +166,7 @@ class Flow {
     const next = this.speakingLine.then(async () => {
       const g = useGate.getState();
       if (g.resting && !opts.whileResting) return;
-      g.speakLine(text);
+      g.speakLine(text, language);
       this.history.push({ who: 'companion', text });
       if (!companion.live()) turn('companion', text); // inside a memory: into the viewing perspective's thread
       else if (!opts.fromRoom) companion.postLine(text, language); // the host's own line, heard on every device
@@ -348,6 +349,15 @@ class Flow {
     const g = useGate.getState();
     if (g.stage === 'portal' || g.stage === 'album' || this.leaving) return;
     const me = companion.me();
+    if (d.type === 'translation') {
+      // Only this person's own words can change their Automatic language. The grandparent speaking Spanish must
+      // not switch an English-speaking grandchild's device to Spanish, including when both spoke in one batch.
+      for (const words of d.heard.filter((x) => x.memberId === me)) {
+        this.setLang(nextConversationLanguage(this.lang, g.language, { claimed: words.language, text: words.text }));
+      }
+      g.set({ translatedMemories: memoriesForListener(d.heard, me, this.lang) });
+      return;
+    }
     const mine = (d.heard ?? []).filter((x) => x.memberId === me);
     if (companion.leads() && !d.scripted) this.leadFrom(d);
     const inside = g.stage === 'memory' || g.stage === 'forming';
@@ -361,7 +371,10 @@ class Flow {
     // The conversation's language follows whoever spoke (resolveReply, in the gateway); each line is voiced in its own.
     if (d.intentFor === me && d.language && ['en', 'es', 'fr'].includes(d.language)) this.setLang(d.language as Lang);
     if (d.line) await this.say(this.t(d.line, { name: d.name ?? '' }), { fromRoom: true });
-    else await this.say(d.text, { fromRoom: true, language: d.speakIn ?? d.language ?? null });
+    else {
+      const reply = replyForListener(d, this.lang);
+      await this.say(reply.text, { fromRoom: true, language: reply.language });
+    }
     if (d.intentFor === me && d.intent === 'leave') return void (inside ? this.leave() : this.finish());
     if (d.intentFor === me && d.intent === 'rest') return void this.rest(null);
     if (companion.leads() && d.intent === 'enter' && (g.stage === 'gathering' || g.stage === 'greeting')) return void this.enter();

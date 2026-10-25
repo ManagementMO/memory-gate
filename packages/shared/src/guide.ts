@@ -4,6 +4,7 @@
 // only proposes, and every reply passes the same safety filter. It speaks English, Spanish or French
 // (packages/shared/src/language.ts): the rules, the offline replies and the safety filter know all three.
 import { LANGUAGE_NAME, nextConversationLanguage, type Lang, type LanguageSetting } from './language';
+import type { MemoryTranslation } from './translation';
 
 export type GuidePhase = 'gathering' | 'memory';
 export type GuideIntent = 'describe' | 'offer_photo' | 'offer_video' | 'offer_invite' | 'enter' | 'add_detail' | 'rest' | 'leave' | 'chat';
@@ -24,6 +25,8 @@ export type GuideInput = {
   perspective?: GuidePerspective;
   /** Two (or more) people talking with the companion and each other at once: one conversation, `history` named. */
   together?: { people: GuidePerson[]; summary: string | null };
+  /** Individually identified latest words, so mixed-language memories keep their own translations and speakers. */
+  utterances?: { id: string; name: string; text: string }[];
   /** The conversation language: replies and fixed lines are in it (English when not given). */
   language?: Lang;
   /** The device's setting: Automatic follows the person; a pinned language always wins. */
@@ -56,6 +59,7 @@ export type GuideReply = {
   english: string | null;
   /** The reply in English when it is in another language: the safety filter reads it too. */
   replyEnglish: string | null;
+  translations?: MemoryTranslation[];
   /** Several people talking together: they don't need the companion right now (say nothing). */
   listen?: boolean;
   /** Several people talking together: the name of the person whose words added the detail. */
@@ -418,7 +422,8 @@ export function resolveReply(input: GuideInput & { language: Lang; setting: Lang
   const said = safeReply(online.reply, fallback.reply, online.replyEnglish);
   // A safe model reply is in the language it heard (Hindi or Japanese too); a pinned language is what it was told.
   const speakIn = said === fallback.reply ? next : input.setting !== 'auto' ? input.setting : (online.language ?? next);
-  return { reply: { ...online, reply: said }, language: next, speakIn };
+  const replyEnglish = said === online.reply ? online.replyEnglish : next === 'en' ? null : guideOffline({ ...input, language: 'en' }).reply;
+  return { reply: { ...online, reply: said, replyEnglish }, language: next, speakIn };
 }
 
 export const GUIDE_SYSTEM = `You are the companion in Memory Gate. You walk beside an adult who may be living with early dementia (often younger-onset Alzheimer's) as they visit a remembered place, sometimes with family nearby. Age or diagnosis says nothing about their abilities; follow their lead.

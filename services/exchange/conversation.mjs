@@ -12,6 +12,7 @@ import { judge } from '../../packages/shared/src/crosstalk.ts';
 import { addressesCompanion, shouldSpeak, untilLull } from '../../packages/shared/src/lull.ts';
 import { asksToEnter, genericName as generic, guideTogether, resolveReply } from '../../packages/shared/src/guide.ts';
 import { LANGS, LANGUAGE_SETTINGS } from '../../packages/shared/src/language.ts';
+import { translateMemories } from '../../packages/shared/src/translation.ts';
 
 const respondRef = makeFunctionReference('guide:respond');
 const summarizeRef = makeFunctionReference('guide:summarize');
@@ -43,6 +44,7 @@ export function buildInput({ turns, batch, people, summary, flow, labelOf }) {
     media: flow?.media ?? null, mediaCaption: flow?.mediaCaption ?? null, place: flow?.place ?? null,
     invitedToEnter: !!flow?.invitedToEnter, turnsInPhase: flow?.turnsInPhase ?? 0,
     ...(two ? { together: { people: people.map(({ name, perspective, role, child, stories }) => ({ name, perspective, role, child, stories })), summary: summary ?? null } } : {}),
+    ...(two ? { utterances: batch.map(({ id, name, text }) => ({ id, name, text })) } : {}),
   };
 }
 
@@ -118,9 +120,14 @@ export function createConversation({ db, clients, send, convex }) {
       const last = batch[batch.length - 1];
       Object.assign(input, { language: last.language, setting: last.setting });
       const online = await withTimeout(convex.action(respondRef, { ...r.auth, input }), BRAIN_MS);
+      if (r.flow && !SPEAKING_STAGES.has(r.flow.stage)) return;
+      // Translate the people's words even when the companion chooses to stay quiet. Original text and attribution
+      // come from accepted microphone turns, never from the model. No translations are invented offline.
+      const heard = translateMemories(batch, online);
+      broadcast(roomId, { type: 'translation', heard });
       if (online?.listen) return; // they're talking with each other: let them
       // One turn's language, as for one person (shared/src/guide.ts resolveReply); offline, the last speaker by name.
-      const turn = resolveReply(input, online);
+      const turn = resolveReply({ ...input, transcript: last.text }, online);
       const reply = online ? turn.reply : guideTogether({ ...input, language: turn.language });
       if (!reply.reply?.trim()) return;
       if (r.flow && !SPEAKING_STAGES.has(r.flow.stage)) return; // the visit moved on (stepped through, left) meanwhile
@@ -132,6 +139,7 @@ export function createConversation({ db, clients, send, convex }) {
       r.lastSpokeAt = Date.now();
       broadcast(roomId, { type: 'companion', id, text, intent: reply.intent, place: reply.place ?? null, invites: asksToEnter(text), detailFor, intentFor: last.memberId,
         language: turn.language, speakIn: online ? turn.speakIn : turn.language, english: online?.english ?? null,
+        replyEnglish: online ? turn.reply.replyEnglish : turn.language === 'en' ? null : guideTogether({ ...input, language: 'en' }).reply,
         heard: batch.map(b => ({ memberId: b.memberId, name: b.name, text: b.text })) });
       r.sinceSummary += batch.length + 1;
       if (r.sinceSummary >= SUMMARY_EVERY) void summarize(roomId);
@@ -201,7 +209,7 @@ export function createConversation({ db, clients, send, convex }) {
       r.auth = c.auth;
       await addTurn({ id: `${ctx.roomId}:${turnId}:p`, roomId: ctx.roomId, who: 'person', memberId: ctx.memberId, speakerName: ctx.displayName.slice(0, 80), perspectiveId: perspective?.id ?? '', text });
       // Each person's conversation language (their device's): the companion answers in the last speaker's.
-      r.pending.push({ memberId: ctx.memberId, name: ctx.displayName, text,
+      r.pending.push({ id: turnId, memberId: ctx.memberId, name: ctx.displayName, text,
         language: LANGS.includes(m.language) ? m.language : 'en', setting: LANGUAGE_SETTINGS.includes(m.setting) ? m.setting : 'auto' });
       r.lastHeardAt = Date.now();
       r.addressed ||= addressesCompanion(text);
