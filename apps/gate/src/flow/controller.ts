@@ -20,7 +20,7 @@ import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { useMemory } from './memory';
 import { guideContext, story, turn } from '../social/attribution';
 import { overlayActive } from '../social/overlay';
-import { claimPerspective, setViewing } from '../social/perspectives';
+import { claimPerspective, POV_FROM_LINK, setViewing } from '../social/perspectives';
 import { useSocial, type PerspectiveKey } from '../social/store';
 import { similarity } from '../../../../packages/shared/src/crosstalk';
 import { worldStatus } from '../scene/worldStatus';
@@ -253,7 +253,10 @@ class Flow {
     // once they've said who was there at all ("with my parents", "just me"), it is never asked.
     const answering = this.who.asked && !this.who.known; // this is the answer to "Who was there with you?"
     const host = g.session?.role !== 'guest';
-    const who = host ? this.friendInMeadow(text) ?? perspectiveFromWords(text) : null;
+    // A link that chose whose eyes (?pov=) keeps them; the words still count as having said who was there.
+    const fromWords = host ? this.friendInMeadow(text) ?? perspectiveFromWords(text) : null;
+    const who = POV_FROM_LINK ? null : fromWords;
+    if (fromWords && POV_FROM_LINK) { this.who.known = true; useMemory.setState({ company: true }); }
     if (who) { this.who.known = true; useMemory.setState({ company: true }); void claimPerspective(who, null); }
     else if (host && mentionsCompany(text)) this.who.known = true;
     // Step through at once, without waiting on a model (and before the gate, "let's go" is never taken for goodbye),

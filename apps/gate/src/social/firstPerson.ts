@@ -17,9 +17,13 @@ const _e = new THREE.Euler(0, 0, 0, 'YXZ');
 /** Flat screens, inside the memory, with "My view" chosen. A living photograph only looks right from where it was
  *  taken, so there the photo's own view stays; a prepared world has checked viewpoints, so you stand at yours. */
 export function firstPersonActive(): boolean {
+  return firstPersonPossible() && useSocial.getState().view === 'first';
+}
+/** Where "My view" can be had at all (whichever view is chosen now). */
+export function firstPersonPossible(): boolean {
   const g = useGate.getState();
   const day = g.stage === 'forming' || g.stage === 'memory' || g.stage === 'leaving';
-  return day && !g.xr && (!g.photoWorld || !!worldViewpoints()) && useSocial.getState().view === 'first';
+  return day && !g.xr && (!g.photoWorld || !!worldViewpoints());
 }
 
 /** Where this person's eyes are (and which way they look): at their perspective's spot, facing the other one, or

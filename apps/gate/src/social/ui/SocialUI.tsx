@@ -14,7 +14,7 @@ import { story } from '../attribution';
 import { handOver, otherPerspective, respondHandoff } from '../handoffs';
 import { socialLink } from '../link';
 import { overlayActive } from '../overlay';
-import { claimPerspective, inMemory } from '../perspectives';
+import { claimPerspective, inMemory, POV_FROM_LINK } from '../perspectives';
 import { notify, perspectiveById, useSocial, viewingPerspective, type PerspectiveKey } from '../store';
 import { walkPad } from '../walk';
 import './social.css';
@@ -372,13 +372,15 @@ export function SocialUI() {
   useEffect(() => {
     if (!session || freshFor === `${session.code}:${session.token}`) return;
     freshFor = `${session.code}:${session.token}`;
-    useSocial.getState().set({ chosen: false, viewing: session.role === 'guest' ? 'child' : 'grandparent', view: session.role === 'guest' ? 'first' : 'overview' });
+    useSocial.getState().set({ chosen: !!POV_FROM_LINK, viewing: POV_FROM_LINK ?? (session.role === 'guest' ? 'child' : 'grandparent'), view: session.role === 'guest' ? 'first' : 'overview' });
   }, [session]);
   // Which prepared world this visit's memory is shown in (the team's cached meadow, say): perspectives stand at its
   // checked viewpoints instead of the sketch room's spots.
   const roomView = useQuery(api.rooms.get, session ? { code: session.code, token: session.token } : 'skip');
   const worldId = roomView?.splat?.status === 'ready' && roomView.splat.source === 'worldlabs' ? roomView.splat.worldId ?? null : null;
   useEffect(() => { useSocial.getState().set({ worldId }); }, [worldId]);
+  // A link that says whose eyes (?pov=grandma): claimed once the visit is live, so the other device sees them there.
+  useEffect(() => { if (POV_FROM_LINK && live && session) void claimPerspective(POV_FROM_LINK, null); }, [live, session]);
   // Someone who joins takes the perspective nobody has claimed yet (a laptop already seeing through the grandchild's
   // eyes leaves the grandparent's for the headset that joins), until they choose for themselves.
   const memberId = useSocial((s) => s.memberId);

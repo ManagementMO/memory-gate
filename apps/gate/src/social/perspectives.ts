@@ -9,6 +9,18 @@ import { notify, perspectiveOf, useSocial, type PerspectiveKey } from './store';
 
 const ORDER: PerspectiveKey[] = ['grandparent', 'child'];
 
+/**
+ * ?pov=grandma or ?pov=grandchild: the eyes this device sees through from the start of the visit, so each person can be
+ * sent their own link (the host's and the one who joins). Also grandparent/grandmother/abuela/young-grandma/girl, and
+ * child/grandchild/kid/friend/boy. Null without one: the host starts at the grandparent's, a guest takes the free one.
+ */
+export const POV_FROM_LINK: PerspectiveKey | null = (() => {
+  const v = (new URLSearchParams(location.search).get('pov') ?? '').trim().toLowerCase();
+  if (/^(grand ?(ma|mother|pa|father|parent)s?|abuel[ao]|young-?grandma|girl)$/.test(v)) return 'grandparent';
+  if (/^(grand ?(child|kid|son|daughter)|child|kid|friend|boy)$/.test(v)) return 'child';
+  return null;
+})();
+
 export function setViewing(key: PerspectiveKey): void {
   if (useSocial.getState().viewing === key) return;
   useSocial.setState({ viewing: key });

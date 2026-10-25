@@ -15,6 +15,19 @@ const convex = new ConvexHttpClient(process.env.CONVEX_URL ?? 'http://127.0.0.1:
 const contextRef = makeFunctionReference('exchange:context');
 const sourceRef = makeFunctionReference('exchange:source');
 const origins = new Set((process.env.EXCHANGE_ORIGINS ?? 'http://127.0.0.1:5173,http://localhost:5173,https://localhost:5174,https://localhost:5180,https://localhost:4180').split(','));
+/**
+ * A headset or phone on the same Wi-Fi opens the app by this computer's address (https://10.0.21.160:5180), not
+ * localhost: the same app, so the same ports are allowed from a private network address. Joining a visit still needs
+ * its code and key.
+ */
+const PRIVATE = /^(10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)$/;
+function allowedOrigin(origin) {
+  if (origins.has(origin)) return true;
+  try {
+    const u = new URL(origin);
+    return PRIVATE.test(u.hostname) && [...origins].some((o) => { const a = new URL(o); return a.protocol === u.protocol && a.port === u.port; });
+  } catch { return false; }
+}
 const clients = new Set();
 let ready = false; let archiveBusy = false;
 let reconciling = false;
@@ -180,7 +193,7 @@ const server = http.createServer((req, res) => {
 });
 const wss = new WebSocketServer({ noServer: true, maxPayload: 16_384 });
 server.on('upgrade', (req, socket, head) => {
-  if (req.url !== '/exchange' || !origins.has(req.headers.origin) || clients.size >= 64) { socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
+  if (req.url !== '/exchange' || !allowedOrigin(req.headers.origin) || clients.size >= 64) { socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
   wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws));
 });
 wss.on('connection', socket => {

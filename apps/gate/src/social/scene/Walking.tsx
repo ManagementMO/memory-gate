@@ -13,7 +13,7 @@ const Terrain = lazy(() => import('../../red-kite/Terrain').then((m) => ({ defau
 import type { MeadowTraversal } from '../../red-kite/traversal';
 import { xrStore } from '../../scene/xr';
 import { useGate } from '../../state/store';
-import { firstPersonActive, lookHeading } from '../firstPerson';
+import { firstPersonActive, firstPersonPossible, lookHeading } from '../firstPerson';
 import { worldSpot } from '../spots';
 import { perspectiveOf, poses, useSocial, type PerspectiveKey } from '../store';
 import { groundAt, keepApart, keepInside, walk, walkKey, walkPad } from '../walk';
@@ -74,7 +74,10 @@ export function Walking() {
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey || editable(e.target) || !firstPersonActive()) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || editable(e.target)) return;
+      // From the overview, a walking key steps into your own eyes and walks, so the others see you move at once.
+      if (!firstPersonActive() && MOVEMENT.has(e.code) && !e.code.startsWith('Shift') && firstPersonPossible()) useSocial.getState().set({ view: 'first' });
+      if (!firstPersonActive()) return;
       if (e.code === 'KeyR') { if (!e.repeat) walk.key = ''; return; } // back to your spot
       if (!MOVEMENT.has(e.code)) return;
       e.preventDefault();
