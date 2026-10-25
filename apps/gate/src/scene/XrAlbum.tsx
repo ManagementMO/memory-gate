@@ -393,9 +393,10 @@ function Board() {
         const o = scene.getObjectByName(name);
         if (!o) return null;
         o.getWorldPosition(_v);
-        const cam = gl.xr.isPresenting ? gl.xr.getCamera() : camera;
-        cam.updateMatrixWorld();
-        return cam.worldToLocal(_v.clone()).toArray();
+        // The scene camera, not gl.xr.getCamera(): it sits inside the XR origin, so its world matrix carries the
+        // origin's turn and offset (the XR array camera has no parent and would drop them).
+        camera.updateWorldMatrix(true, false);
+        return camera.worldToLocal(_v.clone()).toArray();
       },
     };
     return () => { delete w.__xrAlbum; };
