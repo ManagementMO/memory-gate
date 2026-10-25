@@ -89,7 +89,7 @@
     "card": false
   },
   "physicalHeadset": false,
-  "contractTests": 134,
+  "contractTests": 139,
   "actorTests": 16,
   "gateTypecheck": "passed",
   "gateProductionBuild": "passed",
@@ -100,5 +100,6 @@
     "passed": 17,
     "failed": 3,
     "evidence": "walking-check.json"
-  }
+  },
+  "addOnIsolation": "add-on-isolation.json"
 }

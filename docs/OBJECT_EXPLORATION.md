@@ -4,6 +4,12 @@ This is an additive HUD in the existing `/` journey, including the prepared Red 
 
 For an immediate comparison or a hardware fallback, append `&objectInfo=off` to the meadow URL. This disables both add-on components, their queries and markers, without changing any configuration file. The default is enabled. Optional information has its own error boundaries, so an unavailable source does not replace the memory.
 
+## Keep the main pipeline independent
+
+`memory-addons/MemoryAddOns.tsx` composes the existing source/object workflow with discovery at the two existing attachment points: screen UI and native scene UI. Both components return fragments and preserve their original order. Add a future external feature's screen and VR components there; it need not replace the companion, planner, uploaded-photo flow, POV collaboration, or album.
+
+`object-info/targets.ts` is a read-only snapshot adapter. `object-info/sceneHints.ts` holds the authored flower/tree hints for the checked meadow. Existing model objects, current-POV objects and reviewed optional props are still supported. Other POVs' ghosts and other memories are filtered out. The native flower card explicitly labels daisies as a flower example with no species identification.
+
 When a supported rendered object has formed and is visible, a small `Explore · Apify` marker appears beside it. Select the marker to retrieve a short public explanation. A corner card shows the excerpt, publisher, original source link and small `via Apify` credit. The headset renders actual Three.js markers and a native card; it does not depend on a DOM overlay in immersive mode. Trigger/pinch selects the marker; Back dismisses its card. Existing A/B/X/Y/menu and movement controls retain their behavior.
 
 Supported topics: kite/string, flowers/vase flowers, trees. Scene metadata supplies the topic. The prepared meadow also has two authored semantic hotspots for its baked scenery: flowers beside the path and the tree at the existing oak landmark. These appear only when that checked meadow's world ID is active. A generic flower uses daisies as a labeled example; it does not identify the model or scenery as a real species. Arbitrary background splats without this metadata are not treated as recognized objects. New supported objects from the current perspective and approved optional props receive markers too. Other perspectives' ghost objects do not receive this HUD's markers.
@@ -18,7 +24,9 @@ Validation: `npm run test:atlas`, `npm test -- tests/smoke/object-knowledge.test
 
 ## Verified local run
 
-Latest main `e78e720` is merged into `codex/apify-memory-lens`. Six main-journey browser/native XR checks pass with zero page errors: the existing view/dock, live citation, repeated-selection run reuse, POV/rest cleanup, real controller-ray selection/details/back, and native flower/tree retrieval. These use stereo Meta Quest 3 emulation. See [actual screenshots and sanitized run IDs](../evidence/object-exploration/verification.json). All 134 contract tests, 16 Actor tests, Gate typecheck and production build pass.
+Latest main `e78e720` is fully included in `codex/apify-memory-lens`; a fresh fetch/merge reports already up to date. The separated add-on passes all 139 contract tests, including five read-only/POV/hint isolation cases, Gate typecheck and production build. The six main-journey browser/native XR checks were rerun after this separation with zero page errors: existing view/dock, live citation, repeated-selection run reuse, POV/rest cleanup, real controller-ray selection/details/back, and native flower/tree retrieval. These use stereo Meta Quest 3 emulation and reused the saved real Apify citations without new Actor runs. See [actual screenshots and sanitized run IDs](../evidence/object-exploration/verification.json). The unchanged Actor previously passed its 16 tests.
+
+The existing main source/object workflow also passes three browser/native XR checks with `objectInfo=off`: review and placement, POV isolation, and the source card in an actual immersive session. This confirms disabling discovery retains the earlier add-on. See [add-on isolation verification](../evidence/object-exploration/add-on-isolation.json).
 
 The private Actor's corrected extraction prefers explanatory sentences and rejects synonym-only lists. Its public-reference cache format is versioned; an explicit selection can replace an older completed extraction. Running or uncertain jobs are never restarted automatically. The local SpacetimeDB module was brought to the pulled main code (which updates the two new avatars' eye heights) without changing configuration or deleting data.
 

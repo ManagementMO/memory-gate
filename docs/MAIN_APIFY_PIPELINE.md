@@ -2,6 +2,8 @@
 
 This describes the main Gate app at `/`, with current `origin/main` through `e78e720` fully included. A fresh fetch found no newer main commits. The separate `/?story=red-kite` experience is also available from the portal and album; it is not the main assistant conversation.
 
+The fetched `origin/interface` branch also contains unmerged XR album, terrain and rendering work. Those commits remain available on that branch. This update uses current main and keeps the discovery add-on independent of those broader changes.
+
 ## Current journey
 
 1. **Welcome.** The figure is waiting at the palace. Begin creates or joins the private room and starts the conversation. The companion asks which moment the person would like to visit. A returning visitor can also open the moments album.
