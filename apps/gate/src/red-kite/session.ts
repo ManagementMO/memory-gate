@@ -14,7 +14,8 @@ async function bootstrap(): Promise<KiteSession> {
   const params = new URLSearchParams(location.search);
   const code = (params.get('room') ?? '').toUpperCase();
   if (code && !/^[A-Z0-9]{6}$/.test(code)) throw new Error('This story link has an invalid room code.');
-  const slot = key + (code || 'owner');
+  const liveSources = params.get('sources') === 'live';
+  const slot = key + (code || (liveSources ? 'owner-live' : 'owner'));
   let saved: KiteSession | null = null;
   try { saved = JSON.parse(localStorage.getItem(slot) ?? 'null'); } catch { /* first visit */ }
   if (saved) {
@@ -37,7 +38,7 @@ async function bootstrap(): Promise<KiteSession> {
     const auth = await convex.mutation(api.rooms.join, { code, role, displayName: 'Story visitor', ...(familyKey ? { key: familyKey } : {}) });
     session = { ...auth, role };
   } else {
-    const auth = await convex.mutation(api.rooms.create, { title: 'The Red Kite · two tellings', displayName: 'Sample storyteller', demo: true, offline: true });
+    const auth = await convex.mutation(api.rooms.create, { title: 'The Red Kite · two tellings', displayName: 'Sample storyteller', demo: true, offline: !liveSources });
     session = { ...auth, role: 'family' };
     // Persist before the remaining setup so a slow response can be recovered without another room.
     localStorage.setItem(slot, JSON.stringify(session));

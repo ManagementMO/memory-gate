@@ -133,8 +133,8 @@ export function HeldKite() {
   if (!models) return null;
   return (
     <>
-      <group ref={spoolGroup} visible={false}><primitive object={models.spool} /></group>
-      <group ref={kiteGroup} visible={false}><primitive object={models.kite} /></group>
+      <group ref={spoolGroup} visible={false} name="memory-held-spool"><primitive object={models.spool} /></group>
+      <group ref={kiteGroup} visible={false} name="memory-held-kite"><primitive object={models.kite} /></group>
       <primitive object={string.mesh} />
     </>
   );

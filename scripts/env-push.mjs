@@ -5,7 +5,11 @@ import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 const AUTH = process.env.MEMORY_GATE_ENV || process.env.MEMGATE_AUTH_FILE || 'auth/memory-gate.env';
 const env = existsSync(AUTH) ? Object.fromEntries(readFileSync(AUTH, 'utf8').split('\n').filter((l) => /^[A-Z_]+=/.test(l)).map((l) => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).trim().replace(/^["']|["']$/g, '')]; })) : {};
-if (!existsSync(AUTH)) console.log('No private provider file supplied. Preparing local fixture mode; no paid API calls.');
+// The source importer and archive gateway share one canonical server credential.
+// Existing .env.exchange installations keep working; the private provider file takes precedence.
+const exchange = existsSync('.env.exchange') ? Object.fromEntries(readFileSync('.env.exchange', 'utf8').split('\n').filter(l => /^[A-Z_]+=/.test(l)).map(l => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).trim().replace(/^["']|["']$/g, '')]; })) : {};
+for (const key of ['APIFY_TOKEN', 'ALLOW_APIFY_CLOUD', 'APIFY_MEMORY_ACTOR_ID']) if (!env[key]) env[key] = process.env[key] || exchange[key];
+if (!existsSync(AUTH)) console.log('No private provider file supplied. Checking only the existing Apify environment; other providers keep their current configuration.');
 if (env.WORLDLABS_API_KEY && !env.WORLD_LABS_API_KEY) env.WORLD_LABS_API_KEY = env.WORLDLABS_API_KEY;
 let worker = existsSync('.env.worker') ? Object.fromEntries(readFileSync('.env.worker', 'utf8').split('\n').filter(Boolean).map((l) => l.split(/=(.*)/s).slice(0, 2))) : {};
 if (!worker.WORKER_SECRET) worker.WORKER_SECRET = randomBytes(24).toString('hex');
@@ -16,7 +20,7 @@ worker.CONVEX_URL = local.CONVEX_URL;
 writeFileSync('.env.worker', Object.entries(worker).map(([k, v]) => `${k}=${v}`).join('\n') + '\n', { mode: 0o600 });
 chmodSync('.env.worker', 0o600);
 if (env.WORLD_LABS_GENERATION_LIMIT && !/^(?:0|[1-9]\d{0,2}|1000)$/.test(env.WORLD_LABS_GENERATION_LIMIT)) throw new Error('WORLD_LABS_GENERATION_LIMIT must be a whole number from 0 to 1000.');
-const push = { ...Object.fromEntries(['ANTHROPIC_API_KEY', 'ANTHROPIC_WORKSPACE_ID', 'CARTESIA_API_KEY', 'TRIPO_API_KEY', 'WORLD_LABS_API_KEY', 'WORLD_LABS_GENERATION_LIMIT'].filter((k) => env[k]).map((k) => [k, env[k]])), WORKER_SECRET: worker.WORKER_SECRET, ADMIN_CODE: worker.ADMIN_CODE };
+const push = { ...Object.fromEntries(['ANTHROPIC_API_KEY', 'ANTHROPIC_WORKSPACE_ID', 'CARTESIA_API_KEY', 'TRIPO_API_KEY', 'WORLD_LABS_API_KEY', 'WORLD_LABS_GENERATION_LIMIT', 'APIFY_TOKEN', 'APIFY_MEMORY_ACTOR_ID'].filter((k) => env[k]).map((k) => [k, env[k]])), ALLOW_APIFY_CLOUD: env.ALLOW_APIFY_CLOUD === '1' ? '1' : '0', WORKER_SECRET: worker.WORKER_SECRET, ADMIN_CODE: worker.ADMIN_CODE };
 let failed = false;
 for (const [k, v] of Object.entries(push)) {
   const r = spawnSync(process.execPath, ['node_modules/convex/bin/main.js', 'env', 'set', k, v], { encoding: 'utf8', windowsHide: true });

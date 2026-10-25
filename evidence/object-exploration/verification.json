@@ -1,0 +1,105 @@
+{
+  "checks": [
+    "the same main meadow and existing controls remain visible",
+    "selecting the kite retrieves an actual Apify citation inside the unchanged view",
+    "POV switching and resting close the addon without changing their controls",
+    "real native flowers hotspot retrieves attributed Apify context",
+    "real native trees hotspot retrieves attributed Apify context",
+    "native markers and a source card render in a stereo Quest session"
+  ],
+  "errors": [],
+  "actorVersion": "1.3",
+  "mainBase": "e78e720",
+  "jobs": [
+    {
+      "topic": "kite",
+      "status": "ready",
+      "runId": "JnqmvAdeUDeqmJfSv",
+      "sources": [
+        {
+          "url": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/four-forces-on-a-kite/",
+          "publisher": "NASA Glenn Research Center",
+          "fetchedAt": 1792907673380
+        }
+      ]
+    },
+    {
+      "topic": "flowers",
+      "status": "ready",
+      "runId": "35wQf4PYqW48IZpIw",
+      "sources": [
+        {
+          "url": "https://www.rhs.org.uk/plants/94326/bellis-perennis/details",
+          "publisher": "Royal Horticultural Society",
+          "fetchedAt": 1792907700614
+        }
+      ]
+    },
+    {
+      "topic": "trees",
+      "status": "ready",
+      "runId": "mHdomC8YXjoXxUhRs",
+      "sources": [
+        {
+          "url": "https://www.dnr.state.mn.us/forestry/education/foresttreasures/partsofatree.html",
+          "publisher": "Minnesota Department of Natural Resources",
+          "fetchedAt": 1792907711122
+        }
+      ]
+    }
+  ],
+  "xr": {
+    "selected": null,
+    "xr": true,
+    "markers": [
+      {
+        "id": "kite-1",
+        "topic": "kite",
+        "node": "memory-held-spool",
+        "position": [
+          0.21951516133133445,
+          2.5086531526739018,
+          -1.0740400494099656
+        ],
+        "visible": true
+      },
+      {
+        "id": "meadow:flowers",
+        "topic": "flowers",
+        "node": "",
+        "position": [
+          1.65,
+          0.42,
+          -1.8
+        ],
+        "visible": true
+      },
+      {
+        "id": "meadow:oak",
+        "topic": "trees",
+        "node": "",
+        "position": [
+          -1.7,
+          1.5,
+          -3.4
+        ],
+        "visible": true
+      }
+    ],
+    "card": false
+  },
+  "physicalHeadset": false,
+  "contractTests": 139,
+  "actorTests": 16,
+  "gateTypecheck": "passed",
+  "gateProductionBuild": "passed",
+  "actorBuildId": "A2d6gKeLbOWKetN4U",
+  "runtimeNote": "Local SpacetimeDB module updated to current main without destructive migration or configuration changes.",
+  "broaderWalkingCheck": {
+    "status": "failed",
+    "passed": 17,
+    "failed": 3,
+    "evidence": "walking-check.json"
+  },
+  "addOnIsolation": "add-on-isolation.json"
+}

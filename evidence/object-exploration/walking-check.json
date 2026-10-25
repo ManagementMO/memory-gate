@@ -1,0 +1,110 @@
+{
+  "status": "failed",
+  "checks": [
+    {
+      "seconds": 92.0,
+      "status": "pass",
+      "check": "the headset, in VR at the gate, follows the host into the prepared meadow"
+    },
+    {
+      "seconds": 97.3,
+      "status": "pass",
+      "check": "the laptop (the boy's eyes) sees the grandmother (grandma, walk 0.00, 0.00 m/s)"
+    },
+    {
+      "seconds": 97.3,
+      "status": "pass",
+      "check": "the Quest (the grandmother's eyes) sees the boy (boy, walk 0.00, 0.00 m/s)"
+    },
+    {
+      "seconds": 97.3,
+      "status": "pass",
+      "check": "the laptop sees from the boy's eyes, 1.21 m above the ground"
+    },
+    {
+      "seconds": 101.1,
+      "status": "pass",
+      "check": "W walks forward (0.94 m forward, -0.00 m right)"
+    },
+    {
+      "seconds": 102.6,
+      "status": "pass",
+      "check": "S walks back (-0.87 m forward, -0.00 m right)"
+    },
+    {
+      "seconds": 104.3,
+      "status": "pass",
+      "check": "A steps left (-0.00 m forward, -0.97 m right)"
+    },
+    {
+      "seconds": 105.9,
+      "status": "pass",
+      "check": "D steps right (-0.00 m forward, 0.82 m right)"
+    },
+    {
+      "seconds": 107.4,
+      "status": "pass",
+      "check": "the up arrow walks forward (0.89 m forward, -0.00 m right)"
+    },
+    {
+      "seconds": 109.0,
+      "status": "pass",
+      "check": "the down arrow walks back (-0.81 m forward, -0.00 m right)"
+    },
+    {
+      "seconds": 110.5,
+      "status": "pass",
+      "check": "the left arrow steps left (-0.00 m forward, -0.84 m right)"
+    },
+    {
+      "seconds": 112.2,
+      "status": "fail",
+      "check": "the right arrow steps right (-0.00 m forward, 0.44 m right)"
+    },
+    {
+      "seconds": 115.4,
+      "status": "pass",
+      "check": "Shift hurries (0.44 m \u00e2\u2020\u2019 1.65 m in the same time)"
+    },
+    {
+      "seconds": 115.8,
+      "status": "pass",
+      "check": "R goes back to your place (0.00 m from it)"
+    },
+    {
+      "seconds": 117.0,
+      "status": "pass",
+      "check": "typing w a s d in a note doesn\u00e2\u20ac\u2122t walk"
+    },
+    {
+      "seconds": 118.9,
+      "status": "fail",
+      "check": "the Quest sees the boy walking (boy, walk 1.00, 0.72 m/s)"
+    },
+    {
+      "seconds": 126.2,
+      "status": "pass",
+      "check": "and stopping (boy, walk 0.00, 0.02 m/s)"
+    },
+    {
+      "seconds": 126.5,
+      "status": "pass",
+      "check": "he stops short of her, not inside her (0.69 m apart)"
+    },
+    {
+      "seconds": 129.2,
+      "status": "fail",
+      "check": "the laptop sees the grandmother walking (grandma, walk 0.42, 0.28 m/s)"
+    },
+    {
+      "seconds": 132.3,
+      "status": "pass",
+      "check": "and stopping (grandma, walk 0.00, 0.03 m/s)"
+    }
+  ],
+  "passed": 17,
+  "failed": 3,
+  "pageErrors": 0,
+  "harness": "Team walk-check.mjs using the existing Windows browser helper, waiting for the live exchange before choosing POV, and 900ms key holds. Production movement unchanged.",
+  "limitation": "Missed three displacement/speed/animation thresholds in headless Chromium. Cause not fully isolated; physical Quest performance unverified."
+}
