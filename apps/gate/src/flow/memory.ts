@@ -172,6 +172,8 @@ class Memory {
   titleNow(): string | null { return useMemory.getState().plan?.title ?? this.title; }
   wordsSoFar(): string[] { return [...this.words]; }
   get kind() { return this.mediaKind; }
+  /** The shared memory's id once the backend has one (perspectives keep their things with it). */
+  get id(): string | null { return this.memoryId; }
 
   /** Take on a memory someone else in the session began (a guest following the host, the host taking a guest's photo). */
   adopt(plan: ScenePlan, memoryId: string, photoUrl: string | null) {

@@ -39,16 +39,16 @@ export function PhotoWorld() {
     };
   }, [usable, splat?.source, camera]);
 
-  // A World Labs world is sparser than a photo's splat: Spark's wider default kernel fills it without speckled gaps
-  // (the team's Red Kite meadow uses the same); a living photograph keeps the tighter, sharper one.
-  const kernel = splat?.source === 'worldlabs' ? Math.sqrt(8) : Math.sqrt(5);
   const spark = useMemo(() => {
-    const s = new SparkRenderer({ renderer: gl, maxStdDev: kernel, lodCleanupTimeoutMs: Infinity } as ConstructorParameters<typeof SparkRenderer>[0]);
+    const s = new SparkRenderer({ renderer: gl, maxStdDev: Math.sqrt(5), lodCleanupTimeoutMs: Infinity } as ConstructorParameters<typeof SparkRenderer>[0]);
     const mat = (s as unknown as { material?: THREE.Material }).material;
     if (mat) mat.forceSinglePass = true;
     return s;
-  }, [gl, kernel]);
+  }, [gl]);
   useEffect(() => { scene.add(spark); return () => { scene.remove(spark); spark.dispose(); }; }, [scene, spark]);
+  // A whole World Labs world is seen from several places (each perspective's viewpoint), not only where a photo was
+  // taken: Spark's default kernel coverage, as the Red Kite meadow uses, since the photo-tuned one leaves gaps there.
+  useEffect(() => { spark.maxStdDev = splat?.source === 'worldlabs' ? Math.sqrt(8) : Math.sqrt(5); }, [spark, splat?.source]);
 
   const mesh = useRef<SplatMesh | null>(null);
   const ready = useRef(false);

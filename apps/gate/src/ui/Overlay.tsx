@@ -13,6 +13,7 @@ import { Portal } from './Portal';
 import { TopBar } from './TopBar';
 import { XrButton } from './XrButton';
 import { PresenceSync } from '../presence/PresenceSync';
+import { SocialUI } from '../social/ui/SocialUI';
 import { lazyRetry } from './lazyRetry';
 
 const AlbumView = lazyRetry(() => import('../album/AlbumView'));
@@ -58,6 +59,7 @@ export function Overlay() {
       <InviteSheet />
       <DropZone />
       <PresenceSync />
+      <SocialUI />
     </div>
   );
 }

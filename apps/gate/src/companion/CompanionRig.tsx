@@ -5,6 +5,7 @@ import { useRef } from 'react';
 import * as THREE from 'three';
 import { useGate } from '../state/store';
 import { COMPANION_SPOT, MEDIA_SPOT } from '../scene/layout';
+import { firstPersonActive } from '../social/firstPerson';
 import { damp, dampVec3, easeInOutCubic } from '../scene/util';
 import { LightCompanion } from './light/LightCompanion';
 import { FigureCompanion } from './figure/FigureCompanion';
@@ -67,6 +68,15 @@ export function CompanionRig() {
       _target.copy(s.media ? COMPANION_SPOT.gatheringWithMedia : COMPANION_SPOT.gathering).lerp(COMPANION_SPOT.entering, p);
       targetScale = 1.1 - p * 0.3;
       rate = 5;
+    } else if (day && firstPersonActive()) {
+      // Seeing through someone's eyes on a screen (social/firstPerson.ts): beside your line of sight as in the
+      // headset, so it never stands between you and the other perspective across the room.
+      camera.getWorldPosition(_head);
+      camera.getWorldQuaternion(_q);
+      const y = _e.setFromQuaternion(_q, 'YXZ').y;
+      _target.set(_head.x - Math.sin(y) * 1.05 - Math.cos(y) * 0.62, _head.y - 0.15, _head.z - Math.cos(y) * 1.05 + Math.sin(y) * 0.62);
+      targetScale = 0.8;
+      rate = 1.6;
     } else if (day && s.photoWorld) {
       const [x, z] = turned(-0.85, -1.35, viewOf(useMemory.getState().place)); // beside you, inside the photograph
       _target.set(x, s.photoWorld.eye - 0.22, z);

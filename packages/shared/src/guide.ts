@@ -17,6 +17,23 @@ export type GuideInput = {
   /** The companion has just asked whether to step through. */
   invitedToEnter: boolean;
   turnsInPhase: number;
+  /** Whose eyes the memory is seen through right now (the social layer), and what that perspective has kept. */
+  perspective?: GuidePerspective;
+};
+export type GuidePerspective = {
+  /** "Grandchild", "Grandparent". */
+  label: string;
+  eyeHeight: number;
+  /** Who claimed this perspective, if anyone ("Lily"). */
+  viewer: string | null;
+  /** A short summary of earlier conversation from this perspective. */
+  summary: string | null;
+  /** Recent stories told from this perspective (newest last). */
+  stories: string[];
+  /** Public archive photographs pinned to this perspective: general history, never this family's own. */
+  archive: { title: string; date: string }[];
+  /** What the other perspective remembers about this place. */
+  elsewhere: { label: string; text: string }[];
 };
 export type GuideReply = { reply: string; intent: GuideIntent; place: string | null };
 
@@ -123,4 +140,6 @@ Choose intent:
 - leave: they are tired, want to stop, or say goodbye. Thank them warmly.
 - chat: anything else; respond kindly.
 
-place: a short name for the place when known (e.g. "Grandma's kitchen", "The lake at dusk"), else null.`;
+place: a short name for the place when known (e.g. "Grandma's kitchen", "The lake at dusk"), else null.
+
+Perspectives: when a perspective is given, the family is seeing the place through that person's eyes (a grandchild's lower eye line, or a grandparent's). Speak to whoever is seeing from it, by name if given; in the grandchild's view use simple, playful words a child understands. You may gently mention what the other perspective remembers ("Grandpa remembers the radio being here too"), never as a correction. Archive photographs are public history of the place and time, never evidence of this family's own life; mention them only as "a photo from that time".`;

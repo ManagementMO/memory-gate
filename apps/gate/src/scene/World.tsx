@@ -19,6 +19,9 @@ import { PalaceWorld } from './palace/PalaceWorld';
 import { SHORE, XR_MOVE_AT } from './palace/plan';
 import { WhiteSpace } from './WhiteSpace';
 import { PresenceLights } from '../presence/PresenceLights';
+import { SocialLayer } from '../social/scene/SocialLayer';
+import { OriginRig } from '../social/xr/OriginRig';
+import { applyPerspectiveToOrigin, perspectiveAnchored } from '../social/xr/perspectiveScale';
 import { pointBus } from '../presence/presence';
 import type { ThreeEvent } from '@react-three/fiber';
 
@@ -91,18 +94,20 @@ function MemoryLights() {
 }
 
 /** The headset wearer's feet. In the palace they begin across the lagoon, and are carried under the dome while the
- *  world is white (never a glide in the headset). Everywhere else they stay at the origin. */
+ *  world is white (never a glide in the headset). Everywhere else they stay at the origin. Seeing through a
+ *  grandchild's eyes, the world grows around those feet (social/xr: the origin is scaled, the head stays put). */
 function PlayerOrigin() {
   const origin = useRef<THREE.Group>(null);
   useFrame(() => {
     const s = useGate.getState();
     const atShore = s.world === 'palace' && (s.stage === 'portal' || s.stage === 'greeting' || s.stage === 'gathering' || (s.stage === 'entering' && s.enterProgress < XR_MOVE_AT));
-    origin.current?.position.set(0, 0, atShore ? SHORE.z : 0);
-    // In a prepared place the wearer faces its best side (turned while the world is white, never in view).
+    applyPerspectiveToOrigin(origin.current, 0, atShore ? SHORE.z : 0);
+    // In a prepared place the wearer faces its best side (turned while the world is white, never in view), unless
+    // they stand in someone's perspective, which places and turns them itself.
     const inMemory = s.stage === 'forming' || s.stage === 'memory' || s.stage === 'leaving';
-    if (origin.current) origin.current.rotation.y = inMemory ? viewOf(useMemory.getState().place) : 0;
+    if (origin.current && inMemory && !perspectiveAnchored()) origin.current.rotation.y = viewOf(useMemory.getState().place);
   });
-  return <XROrigin ref={origin} />;
+  return <XROrigin ref={origin}><OriginRig /></XROrigin>;
 }
 
 const PREVIEW = !!(window as unknown as { __scenePreview?: boolean }).__scenePreview;
@@ -126,6 +131,7 @@ export function World({ quality }: { quality: number }) {
       <MediaCard />
       <CompanionRig />
       <PresenceLights />
+      <SocialLayer />
       <Snapshotter />
       <XrLayer />
     </>

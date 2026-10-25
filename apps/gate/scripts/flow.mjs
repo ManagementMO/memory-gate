@@ -26,6 +26,8 @@ const errors = [];
 page.on('pageerror', (e) => errors.push(`pageerror: ${String(e).slice(0, 300)}`));
 page.on('console', (m) => { if (m.type() === 'error') errors.push(`console: ${m.text().slice(0, 300)}`); });
 const t0 = Date.now();
+// The perspective chooser (social/ui) opens on flat screens during a visit; this journey looks without choosing.
+await page.addLocatorHandler(page.getByTestId('perspective-picker'), async () => { await page.getByText('Just look for now').click(); });
 const log = [];
 const note = (s) => { const line = `${((Date.now() - t0) / 1000).toFixed(1)}s  ${s}`; log.push(line); console.log(line); };
 const state = () => page.evaluate(() => { const g = window.__gate.store.getState(); return { stage: g.stage, said: g.companionLine?.text ?? null, heard: g.heardLine?.text ?? null, voice: g.voice, session: !!g.session, title: g.memoryTitle, offers: g.offers }; });

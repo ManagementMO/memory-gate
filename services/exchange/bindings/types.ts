@@ -10,6 +10,20 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+export const Avatar = __t.object("Avatar", {
+  id: __t.string(),
+  roomId: __t.string(),
+  memberId: __t.string(),
+  avatarId: __t.string(),
+  url: __t.string(),
+  bytes: __t.u32(),
+  subjectIsMinor: __t.bool(),
+  guardianConsent: __t.bool(),
+  consentedAt: __t.f64(),
+  updatedAt: __t.f64(),
+});
+export type Avatar = __Infer<typeof Avatar>;
+
 export const Capsule = __t.object("Capsule", {
   id: __t.string(),
   roomId: __t.string(),
@@ -24,11 +38,134 @@ export const Capsule = __t.object("Capsule", {
 });
 export type Capsule = __Infer<typeof Capsule>;
 
+export const CompanionSummary = __t.object("CompanionSummary", {
+  perspectiveId: __t.string(),
+  roomId: __t.string(),
+  summary: __t.string(),
+  turnCount: __t.u32(),
+  updatedAt: __t.f64(),
+});
+export type CompanionSummary = __Infer<typeof CompanionSummary>;
+
+export const CompanionTurn = __t.object("CompanionTurn", {
+  id: __t.string(),
+  roomId: __t.string(),
+  perspectiveId: __t.string(),
+  who: __t.string(),
+  speakerName: __t.string(),
+  text: __t.string(),
+  createdAt: __t.f64(),
+});
+export type CompanionTurn = __Infer<typeof CompanionTurn>;
+
+export const Handoff = __t.object("Handoff", {
+  id: __t.string(),
+  roomId: __t.string(),
+  storyId: __t.string(),
+  fromPerspectiveId: __t.string(),
+  toPerspectiveId: __t.string(),
+  senderId: __t.string(),
+  senderName: __t.string(),
+  status: __t.string(),
+  respondedBy: __t.string(),
+  revision: __t.u32(),
+  createdAt: __t.f64(),
+  updatedAt: __t.f64(),
+});
+export type Handoff = __Infer<typeof Handoff>;
+
 export const Operator = __t.object("Operator", {
   id: __t.u32(),
   identity: __t.identity(),
 });
 export type Operator = __Infer<typeof Operator>;
+
+export const Perspective = __t.object("Perspective", {
+  id: __t.string(),
+  roomId: __t.string(),
+  key: __t.string(),
+  label: __t.string(),
+  eyeHeight: __t.f32(),
+  color: __t.string(),
+  claimedBy: __t.string(),
+  claimedName: __t.string(),
+  archivePlace: __t.string(),
+  yearFrom: __t.u32(),
+  yearTo: __t.u32(),
+  createdAt: __t.f64(),
+});
+export type Perspective = __Infer<typeof Perspective>;
+
+export const PerspectiveObject = __t.object("PerspectiveObject", {
+  id: __t.string(),
+  roomId: __t.string(),
+  perspectiveId: __t.string(),
+  memoryId: __t.string(),
+  storyId: __t.string(),
+  data: __t.string(),
+  placement: __t.string(),
+  addedBy: __t.string(),
+  addedByName: __t.string(),
+  createdAt: __t.f64(),
+});
+export type PerspectiveObject = __Infer<typeof PerspectiveObject>;
+
+export const PerspectivePin = __t.object("PerspectivePin", {
+  id: __t.string(),
+  roomId: __t.string(),
+  perspectiveId: __t.string(),
+  data: __t.string(),
+  placement: __t.string(),
+  addedBy: __t.string(),
+  addedByName: __t.string(),
+  createdAt: __t.f64(),
+});
+export type PerspectivePin = __Infer<typeof PerspectivePin>;
+
+export const PerspectiveSpot = __t.object("PerspectiveSpot", {
+  id: __t.string(),
+  roomId: __t.string(),
+  perspectiveId: __t.string(),
+  memoryId: __t.string(),
+  x: __t.f32(),
+  z: __t.f32(),
+  objectId: __t.string(),
+  source: __t.string(),
+  quote: __t.string(),
+  setBy: __t.string(),
+  updatedAt: __t.f64(),
+});
+export type PerspectiveSpot = __Infer<typeof PerspectiveSpot>;
+
+export const PerspectiveStory = __t.object("PerspectiveStory", {
+  id: __t.string(),
+  roomId: __t.string(),
+  perspectiveId: __t.string(),
+  memoryId: __t.string(),
+  kind: __t.string(),
+  text: __t.string(),
+  objectId: __t.string(),
+  at: __t.array(__t.f32()),
+  speakerId: __t.string(),
+  speakerName: __t.string(),
+  audioFileId: __t.string(),
+  handedFrom: __t.string(),
+  createdAt: __t.f64(),
+});
+export type PerspectiveStory = __Infer<typeof PerspectiveStory>;
+
+export const Pose = __t.object("Pose", {
+  memberId: __t.string(),
+  roomId: __t.string(),
+  perspectiveId: __t.string(),
+  device: __t.string(),
+  inScene: __t.bool(),
+  head: __t.array(__t.f32()),
+  left: __t.array(__t.f32()),
+  right: __t.array(__t.f32()),
+  updatedAt: __t.f64(),
+});
+export type Pose = __Infer<typeof Pose>;
 
 export const Presence = __t.object("Presence", {
   memberId: __t.string(),

@@ -16,6 +16,8 @@ import { PALACE_ENTER_MS } from '../scene/palace/plan';
 import { placeFor, placePlan, PLACES, type PlaceKey } from '../../../../packages/shared/src/places';
 import type { ScenePlan } from '../../../../packages/shared/src/scene';
 import { useMemory } from './memory';
+import { guideContext, story, turn } from '../social/attribution';
+import { overlayActive } from '../social/overlay';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -108,6 +110,7 @@ class Flow {
       if (g.resting && !/rest|ready/i.test(text)) return;
       g.speakLine(text);
       this.history.push({ who: 'companion', text });
+      turn('companion', text); // inside a memory: into the viewing perspective's thread
       music.duck(true);
       const words = text.split(/\s+/).length;
       try {
@@ -133,6 +136,7 @@ class Flow {
     if (!text) return;
     g.hearLine(text, false);
     this.history.push({ who: 'person', text });
+    turn('person', text);
     this.clearNudge();
     music.duck(false);
     // "I'd like to leave", "take me back", "I'm done": acted on at once, without waiting on a model, so leaving always
@@ -186,8 +190,14 @@ class Flow {
     if (reply.intent === 'leave') { await this.say(reply.reply); return void this.leave(); }
     if (reply.intent === 'rest') return void this.rest(reply.reply);
     if (reply.intent === 'add_detail' && !brought) {
-      memory.addDetail(text, h.audioFileId);
+      // Seeing through someone's eyes (and the exchange is keeping perspectives): it becomes that perspective's own
+      // story and things in the place. Otherwise the shared memory grows, as always. (In a prepared place, named
+      // things were already brought in above.)
+      if (overlayActive()) void story(text, { audioFileId: h.audioFileId, addsThings: true });
+      else memory.addDetail(text, h.audioFileId);
       moments.mark(text, h.audioFileId);
+    } else if (reply.intent === 'chat' && text.split(/\s+/).length >= 5) {
+      void story(text, { audioFileId: h.audioFileId });
     }
     await this.say(reply.reply);
   }
@@ -250,9 +260,12 @@ class Flow {
   /** Ask the companion's brain: Claude through the backend, else the offline rules. Never longer than ~7 s. */
   private async ask(partial: Pick<GuideInput, 'phase' | 'transcript'>): Promise<GuideReply> {
     const g = useGate.getState();
+    // Inside a memory, the companion speaks to whoever's eyes the place is seen through, with that perspective's thread.
+    const seen = guideContext();
     const input: GuideInput = {
       ...partial,
-      history: this.history.slice(-8),
+      history: seen && seen.history.length >= 2 ? seen.history : this.history.slice(-8),
+      ...(seen ? { perspective: seen.perspective } : {}),
       media: g.media?.kind ?? null,
       mediaCaption: this.mediaCaption,
       place: this.place,

@@ -72,13 +72,25 @@ export const get = query({
         soundLevel: room.soundLevel, echoEnabled: room.echoEnabled, familyNames: room.familyNames, revision: room.revision, demo: room.demo, offline: room.offline ?? false, layout: room.layout ?? 'photo' },
       me: { displayName: member.displayName, role: member.role, isOwner: member.isOwner },
       joinKey: member.role === 'family' ? room.joinKey ?? null : null, // only family can share the privileged links
-      splat: splat ? { id: splat._id, status: splat.status, source: splat.source, url: splatUrl, liteUrl, numSplats: splat.numSplats, liteNumSplats: splat.liteNumSplats ?? null, floorY: splat.floorY, scale: splat.scale, sourceStory: await sourceOf(splat) } : null,
+      splat: splat ? { id: splat._id, status: splat.status, source: splat.source, url: splatUrl, liteUrl, numSplats: splat.numSplats, liteNumSplats: splat.liteNumSplats ?? null, floorY: splat.floorY, scale: splat.scale, worldId: splat.worldId ?? null, sourceStory: await sourceOf(splat) } : null,
       recentSplats: await Promise.all(splats.map(async (s) => ({ id: s._id, status: s.status, source: s.source, error: s.error, createdAt: s.createdAt, readyAt: s.readyAt, sourceStory: await sourceOf(s), previewUrl: s.previewFileId ? await ctx.storage.getUrl(s.previewFileId) : null }))),
       preparedCourtyardAvailable: !!(await ctx.db.query('assets').withIndex('by_key', q => q.eq('key', 'world.practice-courtyard')).unique()),
       flags: await readFlags(ctx, room),
       members: members.filter((m) => m.revokedAt === null).map((m) => ({ displayName: m.displayName, role: m.role })),
       consents: consents.filter((c) => c.revokedAt === null).map((c) => ({ id: c._id, givenBy: c.givenBy, scopes: c.scopes, createdAt: c.createdAt })),
     };
+  },
+});
+
+/** The name others see for you in a shared visit ("Lily", "Grandpa Joe"); set when someone picks whose eyes they see through. */
+export const rename = mutation({
+  args: { code: v.string(), token: v.string(), displayName: v.string() },
+  handler: async (ctx, { code, token, displayName }) => {
+    const { member } = await requireMember(ctx, code, token);
+    const name = displayName.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (name.length < 1) throw new ConvexError({ code: 'BAD_NAME', message: 'Add a name.' });
+    await ctx.db.patch(member._id, { displayName: name });
+    return name;
   },
 });
 
