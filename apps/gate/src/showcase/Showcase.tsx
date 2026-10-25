@@ -42,7 +42,7 @@ function dispose(b: BuiltShowcase) {
   b.hdr?.dispose();
 }
 
-export function Showcase({ name }: { name: string }) {
+export function Showcase({ name, camera: view = 0 }: { name: string; camera?: number }) {
   const gl = useThree((s) => s.gl);
   const camera = useThree((s) => s.camera);
   const scene = useThree((s) => s.scene);
@@ -65,7 +65,11 @@ export function Showcase({ name }: { name: string }) {
   // Its sky, light and fog while it's here; the white space's own come back after.
   useEffect(() => {
     if (!built) return;
-    const prev = { bg: scene.background, env: scene.environment, fog: scene.fog, exp: gl.toneMappingExposure, envI: scene.environmentIntensity, bgI: scene.backgroundIntensity, blur: scene.backgroundBlurriness, rot: scene.environmentRotation.y };
+    const prev = { bg: scene.background, env: scene.environment, fog: scene.fog, exp: gl.toneMappingExposure, envI: scene.environmentIntensity, bgI: scene.backgroundIntensity, blur: scene.backgroundBlurriness, rot: scene.environmentRotation.y, far: (camera as THREE.PerspectiveCamera).far };
+    // a showcase is a whole landscape (the Golden Gate is two kilometres off): the camera sees as far as it does (in a
+    // headset too: the XR session takes its depth range from this camera)
+    const cam = camera as THREE.PerspectiveCamera;
+    if (cam.isPerspectiveCamera) { cam.far = 4000; cam.updateProjectionMatrix(); }
     scene.background = built.background;
     scene.environment = built.envMap;
     scene.fog = built.fog;
@@ -79,17 +83,18 @@ export function Showcase({ name }: { name: string }) {
       scene.environmentIntensity = prev.envI; scene.backgroundIntensity = prev.bgI; scene.backgroundBlurriness = prev.blur;
       scene.environmentRotation.y = scene.backgroundRotation.y = prev.rot;
       gl.toneMappingExposure = prev.exp;
+      if (cam.isPerspectiveCamera) { cam.far = prev.far; cam.updateProjectionMatrix(); }
     };
   }, [built]);
   useFrame((_, dt) => { if (built) for (const u of built.uniforms) u.value += Math.min(dt, 0.1); });
-  // Stand it so its eye-level camera is where you are, looking the way it looks.
-  const eye = spec?.cameras?.[0];
+  // Stand it so its eye-level camera is where you are (on its ground, however high), looking the way it looks.
+  const eye = spec?.cameras?.[view] ?? spec?.cameras?.[0];
   const [dx, dz] = eye ? [eye.target[0] - eye.pos[0], eye.target[2] - eye.pos[2]] : [0, -1];
   const turn = useMemo(() => Math.PI - Math.atan2(dx, dz), [dx, dz]);
   if (!built || !eye) return null;
   return (
     <group rotation-y={turn} name="showcase">
-      <group position={[-eye.pos[0], 0, -eye.pos[2]]}>
+      <group position={[-eye.pos[0], -(eye.pos[1] - 1.6), -eye.pos[2]]}>
         <primitive object={built.group} />
       </group>
     </group>

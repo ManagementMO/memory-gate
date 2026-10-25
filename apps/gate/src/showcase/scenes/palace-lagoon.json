@@ -1,0 +1,386 @@
+{
+ "title": "The Palace of Fine Arts, across the lagoon",
+ "env": {
+  "hdri": "qwantani_late_afternoon_puresky",
+  "background": "hdri",
+  "hdriRotation": 200,
+  "exposure": 0.95,
+  "envIntensity": 1.0,
+  "toneMapping": "aces",
+  "sun": {
+   "dir": [
+    -0.55,
+    0.42,
+    -0.6
+   ],
+   "intensity": 3.2,
+   "color": "#ffe2bf",
+   "shadowArea": 45,
+   "center": [
+    0,
+    0,
+    -10
+   ]
+  },
+  "ground": {
+   "texture": "leafy_grass",
+   "size": 600,
+   "tile": 3,
+   "color": "#93ad6c"
+  },
+  "grass": [
+   {
+    "area": [
+     -55,
+     -4.6,
+     55,
+     30
+    ],
+    "density": 150,
+    "max": 700000,
+    "height": [
+     0.06,
+     0.17
+    ],
+    "width": 0.028,
+    "colors": [
+     "#3b5a1e",
+     "#5f8a2e",
+     "#93ad4c",
+     "#b9ad6a"
+    ],
+    "dry": 0.04,
+    "wind": 0.18,
+    "lean": 0.1,
+    "seed": 4,
+    "exclude": [
+     [
+      -75,
+      -4.4,
+      75,
+      -1.6
+     ]
+    ]
+   }
+  ],
+  "fog": {
+   "color": "#e8dccb",
+   "density": 0.0028
+  }
+ },
+ "items": [
+  {
+   "plane": {
+    "size": [
+     170,
+     92
+    ],
+    "color": "#2c4a50",
+    "roughness": 0.16
+   },
+   "p": [
+    0,
+    0.03,
+    -50.6
+   ]
+  },
+  {
+   "box": {
+    "size": [
+     170,
+     0.28,
+     0.55
+    ],
+    "texture": "precast_stone_paving",
+    "tile": 1.5,
+    "color": "#ddd3c3"
+   },
+   "p": [
+    0,
+    0,
+    -4.6
+   ]
+  },
+  {
+   "plane": {
+    "size": [
+     170,
+     2.8
+    ],
+    "texture": "stone_pathway",
+    "tile": 2.2,
+    "color": "#e6dccb"
+   },
+   "p": [
+    0,
+    0.035,
+    -2.9
+   ]
+  },
+  {
+   "m": "land_palace_of_fine_arts",
+   "p": [
+    0,
+    0,
+    -80
+   ],
+   "ry": 0,
+   "h": 46
+  },
+  {
+   "m": "nat_willow_tree",
+   "p": [
+    -19,
+    0,
+    -7.4
+   ],
+   "h": 9.5,
+   "ry": 30
+  },
+  {
+   "m": "nat_willow_tree",
+   "p": [
+    23,
+    0,
+    -8.2
+   ],
+   "h": 10.5,
+   "ry": 200
+  },
+  {
+   "m": "nat_willow_tree",
+   "p": [
+    -46,
+    0,
+    -64
+   ],
+   "h": 11,
+   "ry": 90
+  },
+  {
+   "m": "nat_italian_cypress",
+   "p": [
+    -34,
+    0,
+    -90
+   ],
+   "h": 19
+  },
+  {
+   "m": "nat_italian_cypress",
+   "p": [
+    37,
+    0,
+    -92
+   ],
+   "h": 18
+  },
+  {
+   "m": "nat_cypress",
+   "p": [
+    -62,
+    0,
+    -40
+   ],
+   "h": 21,
+   "ry": 40
+  },
+  {
+   "m": "nat_cypress",
+   "p": [
+    64,
+    0,
+    -48
+   ],
+   "h": 19,
+   "ry": 160
+  },
+  {
+   "m": "nat_summer_tree",
+   "p": [
+    55,
+    0,
+    -14
+   ],
+   "h": 14,
+   "ry": 70
+  },
+  {
+   "m": "nat_oak_tree",
+   "p": [
+    -58,
+    0,
+    -8
+   ],
+   "h": 12,
+   "ry": 10
+  },
+  {
+   "m": "bench_painted",
+   "p": [
+    -6.5,
+    0,
+    -1.25
+   ],
+   "ry": 180,
+   "h": 0.89
+  },
+  {
+   "m": "bench_painted",
+   "p": [
+    6.5,
+    0,
+    -1.25
+   ],
+   "ry": 180,
+   "h": 0.89
+  },
+  {
+   "m": "city_lamp_lantern",
+   "p": [
+    -11,
+    0,
+    -2.9
+   ],
+   "h": 3.8
+  },
+  {
+   "m": "city_lamp_lantern",
+   "p": [
+    11,
+    0,
+    -2.9
+   ],
+   "h": 3.8
+  },
+  {
+   "m": "city_lamp_lantern",
+   "p": [
+    -33,
+    0,
+    -2.9
+   ],
+   "h": 3.8
+  },
+  {
+   "m": "city_lamp_lantern",
+   "p": [
+    33,
+    0,
+    -2.9
+   ],
+   "h": 3.8
+  }
+ ],
+ "scatter": [
+  {
+   "m": "nat_phlox",
+   "area": [
+    -50,
+    -6.2,
+    50,
+    -5.2
+   ],
+   "count": 34,
+   "scale": [
+    0.8,
+    1.25
+   ],
+   "h": 0.55,
+   "seed": 11,
+   "minDist": 1.6
+  },
+  {
+   "m": "nat_boxwood_bush",
+   "area": [
+    -70,
+    -1,
+    70,
+    4
+   ],
+   "count": 14,
+   "scale": [
+    0.8,
+    1.3
+   ],
+   "h": 1.0,
+   "seed": 12,
+   "minDist": 6,
+   "exclude": [
+    [
+     -14,
+     -2,
+     14,
+     6
+    ]
+   ]
+  },
+  {
+   "m": "nat_pink_rose",
+   "area": [
+    -45,
+    1.5,
+    45,
+    3.5
+   ],
+   "count": 10,
+   "scale": [
+    0.8,
+    1.2
+   ],
+   "h": 0.7,
+   "seed": 13,
+   "minDist": 5,
+   "exclude": [
+    [
+     -12,
+     0,
+     12,
+     6
+    ]
+   ]
+  }
+ ],
+ "cameras": [
+  {
+   "name": "by the lagoon",
+   "pos": [
+    0,
+    1.6,
+    9
+   ],
+   "target": [
+    0,
+    13,
+    -100
+   ],
+   "fov": 58
+  },
+  {
+   "name": "wide",
+   "pos": [
+    30,
+    9,
+    30
+   ],
+   "target": [
+    0,
+    8,
+    -70
+   ]
+  },
+  {
+   "name": "under the willow",
+   "pos": [
+    -15,
+    1.6,
+    2
+   ],
+   "target": [
+    0,
+    14,
+    -100
+   ]
+  }
+ ]
+}

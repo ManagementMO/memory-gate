@@ -1,0 +1,136 @@
+{
+ "title": "The Golden Gate from Crissy Field",
+ "env": {
+  "hdri": "kloofendal_48d_partly_cloudy_puresky",
+  "background": "hdri",
+  "hdriRotation": 40,
+  "envIntensity": 0.9,
+  "backgroundIntensity": 1.0,
+  "exposure": 0.95,
+  "toneMapping": "aces",
+  "sun": {
+   "dir": [
+    0.32,
+    0.5,
+    -0.8
+   ],
+   "intensity": 3.0,
+   "color": "#fff3e2",
+   "shadowArea": 60,
+   "center": [
+    1200,
+    1,
+    -1150
+   ]
+  },
+  "ground": null,
+  "fog": {
+   "color": "#cfdbe3",
+   "density": 8e-05
+  },
+  "ao": true,
+  "aoRadius": 0.5,
+  "aoIntensity": 0.7,
+  "far": 40000
+ },
+ "gg": {
+  "cx": 1200,
+  "cz": -1150
+ },
+ "items": [],
+ "cameras": [
+  {
+   "name": "Crissy Field beach",
+   "pos": [
+    1195,
+    2.4,
+    -1150
+   ],
+   "shore": 14,
+   "eye": 1.6,
+   "target": [
+    150,
+    105,
+    0
+   ],
+   "fov": 50
+  },
+  {
+   "name": "the Gate from above the Presidio",
+   "pos": [
+    2700,
+    280,
+    -3700
+   ],
+   "target": [
+    -200,
+    70,
+    0
+   ],
+   "fov": 50
+  },
+  {
+   "name": "detail: south tower and fender from the waterline",
+   "pos": [
+    1195,
+    1.9,
+    -1050
+   ],
+   "shore": 4,
+   "eye": 1.6,
+   "target": [
+    622,
+    150,
+    0
+   ],
+   "fov": 30
+  },
+  {
+   "name": "Baker Beach",
+   "pos": [
+    1700,
+    8,
+    1300
+   ],
+   "shore": 40,
+   "eye": 1.6,
+   "target": [
+    -300,
+    90,
+    -200
+   ],
+   "fov": 55
+  },
+  {
+   "name": "Battery Spencer",
+   "pos": [
+    -1010,
+    120,
+    -260
+   ],
+   "eye": 1.6,
+   "target": [
+    500,
+    110,
+    200
+   ],
+   "fov": 60
+  },
+  {
+   "name": "Vista Point",
+   "pos": [
+    -1160,
+    70,
+    -170
+   ],
+   "eye": 1.6,
+   "target": [
+    150,
+    110,
+    40
+   ],
+   "fov": 60
+  }
+ ],
+ "script": "golden-gate.js"
+}
