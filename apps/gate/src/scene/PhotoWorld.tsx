@@ -72,13 +72,49 @@ export function PhotoWorld() {
     return () => { live = false; scene.remove(m); m.dispose(); mesh.current = null; useGate.getState().set({ photoWorld: null }); };
   }, [url, splat?.id, scene]);
 
+  // A world whose full-resolution export ships with the app comes in twice: the room's copy first (it arrives in
+  // seconds), then the full source with Spark's level of detail, faded in over it once loaded, so what's near the
+  // visitor keeps the source's own detail (the Red Kite page does the same; a uniformly reduced copy can't).
+  const fullUrl = usable && splat!.source === 'worldlabs' && splat!.worldId && liteAsked !== '1' ? FULL_SOURCE[splat!.worldId] ?? null : null;
+  const detail = useRef<SplatMesh | null>(null);
+  const detailReady = useRef(false);
+  useEffect(() => {
+    if (!fullUrl || !splat) return;
+    detailReady.current = false;
+    const m = new SplatMesh({ url: fullUrl, raycastable: false, lod: true, enableLod: true });
+    m.quaternion.set(1, 0, 0, 0);
+    m.scale.setScalar(splat.scale);
+    m.position.set(0, splatEye(splat.floorY, splat.scale), 0);
+    m.opacity = 0;
+    m.visible = false;
+    scene.add(m);
+    detail.current = m;
+    let live = true;
+    m.initialized.then(() => { if (live) detailReady.current = true; }).catch(() => undefined); // the room's copy stays
+    return () => { live = false; scene.remove(m); m.dispose(); detail.current = null; };
+  }, [fullUrl, splat?.id, scene]);
+
   useFrame((_, dt) => {
     const m = mesh.current;
     if (!m) return;
     const st = useGate.getState().stage;
     const show = ready.current && (st === 'forming' || st === 'memory' || st === 'leaving');
-    m.opacity = damp(m.opacity, show ? 1 : 0, show ? 0.7 : 3, Math.min(dt, 0.05));
+    const d = detail.current, dtc = Math.min(dt, 0.05);
+    if (d) {
+      // The splat budget around the visitor: what the headset carries at its frame rate, more on a computer.
+      spark.lodSplatCount = gl.xr.isPresenting ? 500_000 : COARSE ? 600_000 : 1_200_000;
+      const showDetail = show && detailReady.current;
+      d.opacity = damp(d.opacity, showDetail ? 1 : 0, showDetail ? 0.7 : 3, dtc);
+      d.visible = d.opacity > 0.01;
+    }
+    // The room's copy steps aside once the full detail has fully come in over it.
+    const base = show && !(d && detailReady.current && d.opacity > 0.97);
+    m.opacity = damp(m.opacity, base ? 1 : 0, base ? 0.7 : 3, dtc);
     m.visible = m.opacity > 0.01;
   });
   return null;
 }
+
+/** Worlds whose full-resolution export is in the app (fixtures/worlds/*.json): the Red Kite meadow, 1.92M splats. */
+const FULL_SOURCE: Record<string, string> = { '0b84554c-b182-4b3e-a7bb-78f15822a49d': '/red-kite/meadow-full.spz' };
+const COARSE = matchMedia('(pointer: coarse)').matches;
