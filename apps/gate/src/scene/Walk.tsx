@@ -7,12 +7,41 @@
 //   left stick   walk where you look (about a slow stroll)       right stick   turn in 30° steps about your head
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useXRInputSourceState } from '@react-three/xr';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { useMemory } from '../flow/memory';
 import { useGate } from '../state/store';
 import { walk as socialWalk } from '../social/walk';
-import { moveAnchor, perspectiveAnchored, reanchor, setWalk, walkState } from '../social/xr/perspectiveScale';
+import { moveAnchor, perspectiveAnchored, reanchor, resetWalk, setWalk, walkState } from '../social/xr/perspectiveScale';
+import type { MeadowTraversal } from '../red-kite/traversal';
+import { splatEye } from './PhotoWorld';
+
+/** Places with a walking surface, and the frame their world is drawn in (fixtures/worlds/*.json): a backup copy of the
+ *  surface comes from these when Keira's (which waits on the room's world from the backend) hasn't arrived. */
+const SURFACES: Record<string, { collider: string; scale: number; floorY: number }> = {
+  'red-kite': { collider: '/red-kite/meadow-collider.glb', scale: 2.6397884, floorY: -0.5775501930381995 },
+};
+
+async function loadSurface(s: { collider: string; scale: number; floorY: number }): Promise<MeadowTraversal> {
+  const gltf = await new GLTFLoader().loadAsync(s.collider);
+  gltf.scene.updateWorldMatrix(true, true);
+  // The world's frame (PhotoWorld): OpenCV's half-turn about X, its scale, its camera at eye height.
+  const frame = new THREE.Matrix4().makeRotationX(Math.PI).scale(new THREE.Vector3(s.scale, s.scale, s.scale));
+  frame.setPosition(0, splatEye(s.floorY, s.scale), 0);
+  const meshes: { vertices: Float32Array; indices: Uint32Array }[] = [];
+  gltf.scene.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh) return;
+    const g = m.geometry.clone().applyMatrix4(m.matrixWorld).applyMatrix4(frame);
+    const n = g.getAttribute('position').count;
+    meshes.push({ vertices: Float32Array.from(g.getAttribute('position').array as ArrayLike<number>), indices: g.index ? Uint32Array.from(g.index.array as ArrayLike<number>) : Uint32Array.from({ length: n }, (_, i) => i) });
+    g.dispose();
+  });
+  const { createTraversal } = await import('../red-kite/traversal');
+  // normalizeSpawn lifts the collision mesh (only) so its ground under the entrance is the visible ground there.
+  return createTraversal(meshes, { table: false });
+}
 const SPEED = 1.2; // metres a second
 const TURN = Math.PI / 6;
 const HOLD_S = 0.45; // a pinch held this long on the ground is a step there, not a "here"
@@ -49,11 +78,23 @@ export function Walk() {
   const st = useRef({ epoch: -1, start: [0, 0, 0] as [number, number, number], pivotX: 0, pivotZ: 0, turnArmed: true, backWas: false, blink: 0, blinkDir: 0, pending: null as null | (() => void) });
   const ring = useRef<THREE.Mesh>(null);
   const blink = useRef<THREE.Mesh>(null);
+  // The backup surface: only if Keira's hasn't arrived a few seconds after the place is chosen.
+  const surfaceDef = place ? SURFACES[place] : undefined;
+  const [own, setOwn] = useState<MeadowTraversal | null>(null);
+  useEffect(() => {
+    if (!surfaceDef) return;
+    let live = true, made: MeadowTraversal | null = null;
+    const t = setTimeout(() => {
+      if (socialWalk.traversal) return;
+      loadSurface(surfaceDef).then((s) => { if (live) { made = s; setOwn(s); } else s.dispose(); }).catch((e) => console.warn('[walk] no walking surface', e));
+    }, 4000);
+    return () => { live = false; clearTimeout(t); setOwn(null); made?.dispose(); resetWalk(); };
+  }, [surfaceDef]);
 
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.05);
     const s = st.current;
-    const surface = socialWalk.traversal;
+    const surface = socialWalk.traversal ?? own;
     const on = !!surface && gl.xr.isPresenting && useGate.getState().stage === 'memory' && !useGate.getState().resting;
     walkPointer.active = on;
     if (!on || !surface) { if (ring.current) ring.current.visible = false; if (blink.current) blink.current.visible = false; return; }
