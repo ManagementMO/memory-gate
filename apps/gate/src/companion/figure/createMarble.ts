@@ -163,9 +163,10 @@ export function createMarbleFigure(): FigureRig {
   applyMarble(shellMat, U, 'shell');
   const wingMat = new THREE.MeshPhysicalMaterial(stone);
   applyMarble(wingMat, U, 'wing');
-  // Champagne chrome for the neck, rings and bezels (the carved seams and frames are gold): it also glows a little,
-  // so it reads in a dark scene.
-  const goldMat = new THREE.MeshPhysicalMaterial({ color: '#e9e1d0', metalness: 1, roughness: 0.16, clearcoat: 0.5, emissive: new THREE.Color('#3d3324'), emissiveIntensity: 0.5, transparent: true, fog: false });
+  // Warm gold for the neck, rings, bezels and the blades' edges (the joints between the stone parts), matching the
+  // carved seams and frames: satin enough that its highlights spread and read from across a room, and it glows a
+  // little, so it reads in a dark scene too.
+  const goldMat = new THREE.MeshPhysicalMaterial({ color: '#e2b867', metalness: 1, roughness: 0.26, clearcoat: 0.6, clearcoatRoughness: 0.12, emissive: new THREE.Color('#5c421c'), emissiveIntensity: 0.6, transparent: true, fog: false });
   const glassMat = new THREE.MeshPhysicalMaterial({ color: '#1b1d24', roughness: 0.14, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.08, transparent: true, fog: false });
   const lightMat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#fff2dc'), toneMapped: false, transparent: true, fog: false });
   const disposables: { dispose(): void }[] = [headMat, bodyMat, shellMat, wingMat, goldMat, glassMat, lightMat];
@@ -240,7 +241,7 @@ export function createMarbleFigure(): FigureRig {
   disposables.push(arm.geo);
   const edgePts: THREE.Vector3[] = [];
   for (let y = 0.002; y >= -0.165; y -= 0.006) edgePts.push(new THREE.Vector3(radiusAt(arm.pts, y) + armBend(y) - 0.0004, y, 0));
-  const edgeGeo = geo(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(edgePts), 60, 0.00085, 6, false));
+  const edgeGeo = geo(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(edgePts), 60, 0.0013, 8, false));
   const arms = [-1, 1].map((side) => {
     const pivot = new THREE.Group();
     pivot.position.set(side * ARM_X, -0.012, 0.002);

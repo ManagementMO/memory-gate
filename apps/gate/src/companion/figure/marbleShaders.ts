@@ -161,6 +161,7 @@ function featureBlock(feature: MarbleFeature): string {
   const base = /* glsl */ `
   float mgFront = smoothstep(0.18, 0.55, normalize(vMNor).z);
   float mgGoldMask = 0.0, mgChromeMask = 0.0, mgGlowMask = 0.0, mgH = 0.0, mgShadePlate = 0.0, mgCut = 0.0, mgDarkRim = 0.0;
+  float mgForm = 1.0; // how strongly the outline and shading draw this part's shape (the head's diamond the most)
   vec3 mgEmit = vec3(0.0);
   vec2 mgP = vMPos.xy;
   // Carving fades where a pixel spans more than a few millimetres (no shimmer far away); glow does the opposite: its
@@ -171,6 +172,7 @@ function featureBlock(feature: MarbleFeature): string {
   float mgLine = mgPx * 0.75; // the least half-width a line keeps: it reads from across a room, not only up close`;
   if (feature === 'face') {
     return base + /* glsl */ `
+  mgForm = 1.6;
   // The brow star, inside the top of the oval.
   vec2 mgSq = mgP - vec2(0.0, ${f(FACE.starY)});
   float mgSf = mgStar(mgSq, vec2(${f(FACE.star[0])}, ${f(FACE.star[1])}));
@@ -279,8 +281,8 @@ export function applyMarble(m: THREE.MeshPhysicalMaterial, u: MarbleUniforms, fe
       .replace('#include <color_fragment>', /* glsl */ `#include <color_fragment>
   vec2 mgV = mgVeins(vMPos) * uVein * (1.0 - mgGlowMask) * (1.0 - mgChromeMask);
   diffuseColor.rgb *= 0.965 + 0.035 * mgFbm(vMPos * 7.0 + 3.0); // soft clouding in the stone
-  diffuseColor.rgb *= 1.0 - mgShadePlate * 0.34 * (1.0 - mgGlowMask);
-  diffuseColor.rgb *= 1.0 - mgCut * 0.8; // incised lines read dark
+  diffuseColor.rgb *= 1.0 - mgShadePlate * 0.18 * (1.0 - mgGlowMask);
+  diffuseColor.rgb *= 1.0 - mgCut * 0.5; // incised lines read, softly
   diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.4, 0.37, 0.34), mgV.x * 0.85);
   diffuseColor.rgb = mix(diffuseColor.rgb, uGold, mgV.y * 0.65);
   diffuseColor.rgb = mix(diffuseColor.rgb, uChrome, mgChromeMask);
@@ -301,11 +303,12 @@ export function applyMarble(m: THREE.MeshPhysicalMaterial, u: MarbleUniforms, fe
     vec3 mgUp = normalize((viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
     float mgFacing = clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);
     // Studio occlusion: undersides fall into soft shadow, so white stone reads as form even on a white page.
-    float mgOcc = mix(1.0 - uOcclusion, 1.0, smoothstep(-0.8, 0.55, dot(normal, mgUp)));
-    mgOcc *= mix(1.0 - uOcclusion * 0.6, 1.0, smoothstep(-0.2, 0.9, mgFacing));
+    float mgOccAmt = uOcclusion * mix(1.0, 1.25, mgForm - 1.0);
+    float mgOcc = mix(1.0 - mgOccAmt, 1.0, smoothstep(-0.8, 0.55, dot(normal, mgUp)));
+    mgOcc *= mix(1.0 - mgOccAmt * 0.6, 1.0, smoothstep(-0.2, 0.9, mgFacing));
     outgoingLight *= mix(1.0, mgOcc * uExposure, mgMask);
     // A soft darker contour, so white stone keeps its outline against a bright sky or a white page.
-    outgoingLight *= 1.0 - uContour * pow(1.0 - mgFacing, 2.5) * mgMask;
+    outgoingLight *= 1.0 - min(0.85, uContour * mgForm) * pow(1.0 - mgFacing, 2.5) * mgMask;
     // Light passing through the stone: a warm glow just inside the silhouette.
     outgoingLight += uWarm * pow(1.0 - mgFacing, 2.2) * 0.1 * mgMask;
     vec3 mgRimCol = mix(uRim, vec3(1.0, 0.87, 0.74), smoothstep(-0.55, 0.55, normal.x));
