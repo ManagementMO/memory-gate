@@ -224,7 +224,8 @@ export async function buildShowcase({ spec, script, renderer, camera, grass: gra
     const base = normalized(src, sc);
     base.updateMatrixWorld(true);
     const rand = rng(sc.seed ?? 7);
-    const pts = sc.points ?? samplePoints(sc, sc.count ?? 50, rand);
+    // a headset draws fewer of each (the beds still read full at a few metres; the garden was ten million triangles)
+    const pts = sc.points ?? samplePoints(sc, Math.round((sc.count ?? 50) * (grassScale < 0.5 ? 0.6 : 1)), rand);
     const meshes = [];
     base.traverse((o) => { if (o.isMesh) meshes.push(o); });
     const [s0, s1] = sc.scale ?? [0.8, 1.2];
