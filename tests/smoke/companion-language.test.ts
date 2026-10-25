@@ -2,8 +2,9 @@
 import { describe, expect, test } from 'vitest';
 import { asksToEnter, asksToLeave, guideOffline, languageLines, resolveReply, safeReply, type GuideInput } from '../../packages/shared/src/guide';
 import { planOffline } from '../../packages/shared/src/scene';
+import { LINES, PLACE_INTROS, line } from '../../apps/gate/src/flow/lines';
 import { generationConfig } from '../../apps/headset/src/voice/tts';
-import { asLang, detectLanguage, deviceLang, initialConversationLanguage, nextConversationLanguage, sameLanguage } from '../../packages/shared/src/language';
+import { asLang, detectLanguage, deviceLang, initialConversationLanguage, LANGS, nextConversationLanguage, sameLanguage } from '../../packages/shared/src/language';
 
 const base: GuideInput = { phase: 'gathering', transcript: '', history: [], media: null, mediaCaption: null, place: null, invitedToEnter: false, turnsInPhase: 0 };
 
@@ -123,4 +124,27 @@ test('emotion is sent only with English lines', () => {
   expect(generationConfig(null)).toEqual({ speed: 0.95, emotion: 'calm' });
   expect(generationConfig('es')).toEqual({ speed: 0.95 });
   expect(generationConfig('fr')).toEqual({ speed: 0.95 });
+});
+
+describe('the companion’s fixed lines', () => {
+  const holes = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+  test('every line exists in all three languages with the same placeholders', () => {
+    for (const [key, v] of Object.entries(LINES)) for (const l of LANGS) {
+      expect(v[l], `${key}.${l}`).toBeTruthy();
+      expect(holes(v[l]), `${key}.${l}`).toEqual(holes(v.en));
+    }
+  });
+  test('no Spanish or French line was left in English', () => {
+    for (const [key, v] of Object.entries(LINES)) { expect(sameLanguage(v.es, 'es'), key).toBe(true); expect(sameLanguage(v.fr, 'fr'), key).toBe(true); }
+  });
+  test('English lines are word for word as today', () => {
+    expect(LINES.hello.en).toBe('Hello. I’m so glad you’re here.');
+    expect(LINES.tellMeMore.en).toBe('Tell me what else was here, or anything you notice. Say when you’d like to leave.');
+  });
+  test('placeholders are filled', () => {
+    expect(line('seeCaption', 'es', { caption: 'una cocina soleada' })).toBe('Veo una cocina soleada. ¿Dónde es este lugar?');
+  });
+  test('both prepared places have Spanish and French introductions', () => {
+    for (const k of ['courtyard', 'red-kite'] as const) { expect(PLACE_INTROS[k]?.es).toBeTruthy(); expect(PLACE_INTROS[k]?.fr).toBeTruthy(); }
+  });
 });
