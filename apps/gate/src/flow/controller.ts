@@ -21,7 +21,8 @@ import { useMemory } from './memory';
 import { guideContext, story, turn } from '../social/attribution';
 import { overlayActive } from '../social/overlay';
 import { claimPerspective, setViewing } from '../social/perspectives';
-import { useSocial } from '../social/store';
+import { useSocial, type PerspectiveKey } from '../social/store';
+import { similarity } from '../../../../packages/shared/src/crosstalk';
 import { worldStatus } from '../scene/worldStatus';
 import { companion, type CompanionLine, type RoomVoice } from './companion';
 import { visitFromUrl } from '../album/prepared';
@@ -44,6 +45,8 @@ const XR_ENTER_MS = 6500; // the headset's step through the palace: into light, 
 class Flow {
   private engine: VoiceEngine | null = null;
   private history: GuideTurn[] = [];
+  /** The companion's own last lines and when they were said: on laptop speakers the microphone hears them back. */
+  private spoken: { text: string; at: number }[] = [];
   private turnsInPhase = 0;
   private invitedToEnter = false;
   private nudgeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -72,6 +75,8 @@ class Flow {
     this.setLang(initialConversationLanguage(useGate.getState().language, navigator.language));
     // A new choice in the companion's settings (on the start page) is the language of the next visit.
     useGate.subscribe((s, before) => { if (s.language !== before.language) this.setLang(initialConversationLanguage(s.language, navigator.language)); });
+    // Into the meadow (or out of it): the room's companion hears who the perspectives are now.
+    useSocial.subscribe((s, before) => { if (s.cast !== before.cast) this.postFlow(); });
     // Together (flow/companion.ts): the room's companion speaks to everyone, and hears how the visit is going.
     companion.onVoice((d) => void this.roomVoice(d));
     useGate.subscribe((s, p) => { if (s.stage !== p.stage || s.media !== p.media || s.memoryTitle !== p.memoryTitle) this.postFlow(); });
@@ -166,6 +171,7 @@ class Flow {
       const g = useGate.getState();
       if (g.resting && !opts.whileResting) return;
       g.speakLine(text);
+      this.spoken = [...this.spoken.slice(-3), { text, at: Date.now() }];
       this.history.push({ who: 'companion', text });
       if (!companion.live()) turn('companion', text); // inside a memory: into the viewing perspective's thread
       else if (!opts.fromRoom) companion.postLine(text, language); // the host's own line, heard on every device
@@ -219,6 +225,9 @@ class Flow {
     const beforeMemory = g.stage === 'gathering' || g.stage === 'greeting';
     // "Yes" to "Shall we go and see it?", or "let's go" once there's somewhere to go.
     const goNow = beforeMemory && companion.leads() && ((this.invitedToEnter && saysYes(text)) || (asksToGoIn(text) && this.somewhereToGo()));
+    // The companion's own voice, heard back through laptop speakers ("Say when you'd like to leave", transcribed as
+    // "Say when I'd like to leave"), is not something this person said.
+    if (this.echoOfMine(text)) { useGate.getState().set({ heardLine: null }); return; }
     // Together: whose words were these? The room's companion says (the other person, heard faintly from across the
     // room, isn't this person) before anything here acts on them, a "take me back" included. With nobody else in the
     // visit no one's words can be taken for theirs, so stepping through doesn't wait on that answer.
@@ -244,7 +253,7 @@ class Flow {
     // once they've said who was there at all ("with my parents", "just me"), it is never asked.
     const answering = this.who.asked && !this.who.known; // this is the answer to "Who was there with you?"
     const host = g.session?.role !== 'guest';
-    const who = host ? perspectiveFromWords(text) : null;
+    const who = host ? this.friendInMeadow(text) ?? perspectiveFromWords(text) : null;
     if (who) { this.who.known = true; useMemory.setState({ company: true }); void claimPerspective(who, null); }
     else if (host && mentionsCompany(text)) this.who.known = true;
     // Step through at once, without waiting on a model (and before the gate, "let's go" is never taken for goodbye),
@@ -259,7 +268,9 @@ class Flow {
     }
     // "I'd like to leave", "take me back", "I'm done": acted on at once, without waiting on a model, so leaving always
     // works (even offline, even on a slow connection).
-    if (asksToLeave(text) && !(beforeMemory && asksToGoIn(text)) && ['memory', 'forming', 'gathering', 'greeting'].includes(g.stage)) {
+    // "Let's go" is how a visit starts, never a goodbye, before stepping in or after: a second "yes, let's go" arriving
+    // while the place forms, or a child shouting it at the kite, used to end the visit at once. "Let's go home" leaves.
+    if (asksToLeave(text) && !asksToGoIn(text) && ['memory', 'forming', 'gathering', 'greeting'].includes(g.stage)) {
       // The goodbye is said in the language of the wish (in Automatic), by the same free rule any turn uses.
       this.setLang(nextConversationLanguage(this.lang, g.language, { claimed: null, text }));
       if (g.stage === 'memory' || g.stage === 'forming') return void this.leave();
@@ -331,6 +342,22 @@ class Flow {
     this.scheduleNudge();
   }
 
+  private echoOfMine(text: string): boolean {
+    if (text.split(/\s+/).length < 4) return false;
+    return this.spoken.some((s) => Date.now() - s.at < 25_000 && similarity(text, s.text) >= 0.8);
+  }
+
+  /** The kite meadow is the grandmother's childhood (social/store.ts MEADOW_CAST): "I was there with my friend" or
+   *  "when I was little" is her, as a girl, and the friend she flew the kite with comes too. Someone speaking of their
+   *  grandmother ("with my grandma") is still the grandchild (perspectiveFromWords). */
+  private friendInMeadow(text: string): PerspectiveKey | null {
+    const meadow = OPENED_AS_MEADOW || useMemory.getState().place === 'red-kite' || placeFor([...this.said, text].join(' '))?.key === 'red-kite';
+    if (!meadow || /\b(grand ?(ma|pa|mother|father|mom|dad)|granny|nana|abuel[ao]s?|grand-?(mère|père)|mamie|papi)\b/i.test(text)) return null;
+    const friend = /\b(my|our|a|with|con|avec|mi|mis|mon|ma)\s+(best\s+|little\s+)?(friends?|buddy|pal|amig[oa]s?|amie?s?|copains?|copines?)\b/i.test(text);
+    const childhood = /\b(when i was|as) (a |an )?(little|small|young|kid|child|girl|little girl|little one)\b|\bcuando (yo )?era (niñ[ao]|chic[ao]|pequeñ[ao])\b|\bquand j'étais (petite?|enfant)\b/i.test(text);
+    return friend || childhood ? 'grandparent' : null;
+  }
+
   /** Together, the room's companion answers everyone at the next lull. Here, only what can't wait: the host's own
    *  words start shaping the place at once (a guest's arrive with the companion's answer, roomVoice). */
   private heardTogether(text: string, h: Heard) {
@@ -362,7 +389,7 @@ class Flow {
     if (d.intentFor === me && d.language && ['en', 'es', 'fr'].includes(d.language)) this.setLang(d.language as Lang);
     if (d.line) await this.say(this.t(d.line, { name: d.name ?? '' }), { fromRoom: true });
     else await this.say(d.text, { fromRoom: true, language: d.speakIn ?? d.language ?? null });
-    if (d.intentFor === me && d.intent === 'leave') return void (inside ? this.leave() : this.finish());
+    if (d.intentFor === me && d.intent === 'leave' && !(mine.length && mine.every((x) => asksToGoIn(x.text)))) return void (inside ? this.leave() : this.finish());
     if (d.intentFor === me && d.intent === 'rest') return void this.rest(null);
     if (companion.leads() && d.intent === 'enter' && (g.stage === 'gathering' || g.stage === 'greeting')) return void this.enter();
   }
@@ -407,7 +434,8 @@ class Flow {
       brought = true;
       setTimeout(() => void moments.mark(text, h.audioFileId), 1800);
     }
-    if (reply.intent === 'leave') { await this.say(reply.reply, { language: reply.speakIn }); return void this.leave(); }
+    // A goodbye only for a wish to leave: "let's go" (how the visit started) is never one, whoever reads it that way.
+    if (reply.intent === 'leave' && !asksToGoIn(text)) { await this.say(reply.reply, { language: reply.speakIn }); return void this.leave(); }
     if (reply.intent === 'rest') return void this.rest(reply.reply, reply.speakIn);
     if (reply.intent === 'add_detail' && !brought) {
       // Seeing through someone's eyes (and the exchange is keeping perspectives): it becomes that perspective's own

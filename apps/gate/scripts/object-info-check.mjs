@@ -9,7 +9,7 @@ import { launchBrowser } from './browser.mjs';
 if(!process.argv.includes('--live'))throw Error('Pass --live to verify real bounded Apify retrieval.');
 const base=process.env.GATE_URL??'https://localhost:5180',out='.logs/object-info-live';mkdirSync(out,{recursive:true});
 const fromHome=process.argv.includes('--from-home');
-const backend=new ConvexHttpClient('http://127.0.0.1:3210');
+const backend=new ConvexHttpClient(process.env.CONVEX_URL??'http://127.0.0.1:3210');
 if(existsSync(out+'/room.json')){
   const previous=JSON.parse(readFileSync(out+'/room.json','utf8'));
   const jobs=(await backend.query(api.objectKnowledge.list,previous)).jobs;
@@ -20,6 +20,8 @@ await ctx.addInitScript(()=>Object.defineProperty(Navigator.prototype,'xr',{get:
 const page=await ctx.newPage(),errors=[],checks=[];
 page.on('pageerror',e=>errors.push(e.message));
 const check=async(name,fn)=>{await fn();checks.push(name);console.log('PASS '+name);};
+// Whose eyes: the picker no longer opens by itself (the companion asks in words); open it from the chip when it isn't.
+const choose=async key=>{if(!await page.getByTestId('perspective-picker').isVisible().catch(()=>false))await page.getByTestId('perspective-chip').click({timeout:45000});await page.getByTestId('choose-'+key).click({timeout:45000});};
 let auth;
 try{
   await page.goto(`${base}/?voice=off&memory=red-kite&emulate=1`);
@@ -59,14 +61,14 @@ try{
     });
     await page.getByTestId('explore-meadow').click();
     await page.waitForFunction(()=>window.__gate.store.getState().stage==='memory',null,{timeout:90000});
-    await page.getByTestId('choose-grandparent').click({timeout:45000});
+    await choose('grandparent');
     await check('the home option opens the existing prepared meadow and labels it as a fictional sample',async()=>{
       assert.match(await page.evaluate(()=>window.__gate.store.getState().memoryTitle),/fictional sample/);
       assert.equal(await page.evaluate(()=>window.__gate.memory.introLine()),'Here we are. The little path, and the old oak at the bend.');
     });
   }else{
     await page.getByTestId('begin').click({timeout:90000});
-    await page.getByTestId('choose-grandparent').click({timeout:45000});
+    await choose('grandparent');
   }
   await page.waitForFunction(()=>window.__gate.store.getState().session,null,{timeout:30000});
   auth=await page.evaluate(()=>{const s=window.__gate.store.getState().session;return{code:s.code,token:s.token};});
@@ -89,7 +91,8 @@ try{
     await page.locator('.object-info-marker[data-topic="kite"]').click();
     await expect(page.getByTestId('object-info-card')).toBeVisible();
     await expect(page.getByTestId('object-info-card').getByRole('link',{name:'Read source'})).toBeVisible({timeout:120000});
-    await expect(page.getByTestId('object-info-card')).toContainText('Public');
+    // The saved copy shows at once; the live lookup's own citation replaces it ("Found with Apify").
+    await expect(page.getByTestId('object-info-card')).toContainText('Found with Apify',{timeout:120000});
     assert.deepEqual(await page.getByTestId('leave').boundingBox(),before);
     const jobs=(await backend.query(api.objectKnowledge.list,auth)).jobs;
     assert.equal(jobs.find(j=>j.topicKey==='kite')?.status,'ready');
@@ -133,7 +136,7 @@ try{
     await page.waitForFunction(()=>window.__objectInfo.rayTarget('ObjectInfoAction:Less'));
     await aim('ObjectInfoAction:Back');
     await page.waitForFunction(()=>!window.__objectInfo.snapshot().card);
-    for(const [topic,id] of [['flowers','meadow:flowers'],['trees','meadow:oak']]){
+    for(const [topic,id] of [['flowers','meadow:flowers'],['oak','meadow:oak']]){
       await aim('ObjectInfoMarker:'+id);
       await page.waitForFunction(()=>window.__objectInfo.snapshot().card,null,{timeout:15000});
       await expect.poll(async()=>{const j=(await backend.query(api.objectKnowledge.list,auth)).jobs.find(j=>j.topicKey===topic);if(j?.status==='failed'||j?.status==='uncertain')throw Error(`Saved ${topic} run ${j.runId} needs inspection; no automatic retry.`);return j?.status;},{timeout:120000,intervals:[1500,2500,4000]}).toBe('ready');

@@ -65,7 +65,9 @@ function StandIns() {
   const ownPeople = useMemory((s) => !s.place || !!s.plan?.people?.length);
   // Even there, only once they say who was with them ("with my grandmother"), or when someone else is in the memory
   // with them (the perspective nobody has taken yet).
-  const company = useMemory((s) => !!s.company);
+  // The kite meadow is two children's afternoon (social/store.ts MEADOW_CAST): the friend is there from the start.
+  const said = useMemory((s) => !!s.company), meadowCast = useSocial((s) => s.cast === 'meadow');
+  const company = said || meadowCast;
   const [, tick] = useState(0);
   useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 1000); return () => clearInterval(t); }, []); // follow things settling
   const shown = ownPeople || !(company || occupied.size > 0) ? [] : perspectives.filter((p) => p.key !== viewing && !occupied.has(p.id));

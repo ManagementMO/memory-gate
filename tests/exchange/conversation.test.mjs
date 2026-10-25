@@ -118,3 +118,19 @@ test('the conversation is summarised as it grows and erased with the room', { ti
   await backend.mutation(ref('consents:deleteMemory'), { ...room.owner, confirmText: room.owner.code });
   await waitFor(() => mine() === 0, 25000);
 });
+
+test('"yes, let\'s go" at the gate is never answered as a goodbye once the visit has stepped through', { timeout: 40000 }, async t => {
+  const { host, lily } = await together(t);
+  await waitFor(() => lines(host).some(l => l.intent === 'welcome'), 30000);
+  const before = answers(host).length;
+  // Said at the gate; the page steps through at once ("Come with me"), before the lull would let the companion answer.
+  assert.equal((await say(host, 'Yes, let us go.', 26)).result.own, true);
+  await host.send({ ...flow, stage: 'forming' });
+  await new Promise(r => setTimeout(r, 9000));
+  const late = answers(host).slice(before);
+  assert.ok(!late.some(l => l.intent === 'leave'), `answered from inside as a goodbye: ${JSON.stringify(late.map(l => [l.intent, l.text]))}`);
+  // Words said inside are still answered there.
+  assert.equal((await say(lily, 'There was a little cat sleeping on one of the chairs', 25)).result.own, true);
+  const inside = await waitFor(() => answers(host).slice(before).find(l => l.intent !== 'leave'), 15000);
+  assert.ok(inside.heard.some(h => /cat/.test(h.text)));
+});

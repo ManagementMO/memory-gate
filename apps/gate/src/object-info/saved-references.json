@@ -1,0 +1,2273 @@
+{
+ "note": "Public context retrieved with Apify (Source Atlas). Not from any family story. Regenerate with node scripts/atlas-snapshot.mjs.",
+ "actor": "ingenuous_pomegranate~heirloom-historical-memory-atlas",
+ "runId": "URsg2Q3OVHbIxhKvr",
+ "retrievedAt": "2026-10-25T11:59:38.327Z",
+ "topics": {
+  "agave": [
+   {
+    "topicKey": "agave",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Agave",
+    "title": "Agave",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Agave (; also UK:; Anglo-Hispanic, also US: ) is a genus of monocots native to the arid regions of the Americas. The genus is primarily known for its succulent and xerophytic species that typically form large rosettes of strong, fleshy leaves.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "arbor": [
+   {
+    "topicKey": "arbor",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Pergola",
+    "title": "Arbor",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A pergola is most commonly used as an outdoor garden feature forming a shaded walkway, passageway, or sitting area of vertical posts or pillars that usually support crossbeams and a sturdy open lattice, often upon which woody vines are trained. The origin of the word is the Late Latin pergula, referring to a projecting eave.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "armchair": [
+   {
+    "topicKey": "armchair",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Wing_chair",
+    "title": "Armchair",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A wing chair (also, wing-back chair, wing-back or armchair) is an easy chair or club chair with \"wings\" attached to the back of the chair, typically, but not always, stretching down to the arm rest.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "backpack": [
+   {
+    "topicKey": "backpack",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Backpack",
+    "title": "Backpack",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A backpack, also called knapsack, schoolbag, rucksack, pack, booksack, bookbag, haversack, packsack, or backsack, is in its simplest frameless form, a fabric sack carried on one’s back and secured with two straps that go over the shoulders, and is used to carry goods from one place to another.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "ball": [
+   {
+    "topicKey": "ball",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Ball",
+    "title": "Ball",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A ball is a round object (usually spherical, but sometimes ovoid). Balls can have several uses. For example they are used in ball games, where the play of the game follows the state of the ball as it is hit, kicked or thrown by players.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "ball",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2011647910/",
+    "title": "[Asia. Children playing ball. Men in the woods. Girl carrying infant on her back]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Asia. Children playing ball. Men in the woods. Girl carrying infant on her back]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/31300/31344r.jpg#h=533&w=640",
+    "date": "1917-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "ball",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2022651606/",
+    "title": "A game of ball on the play ground of the St. Vincent summer home for children, Spring Valley, N.Y.",
+    "attribution": "Library of Congress",
+    "excerpt": "A game of ball on the play ground of the St. Vincent summer home for children, Spring Valley, N.Y.",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/stereo/1s40000/1s43000/1s43400/1s43484r.jpg#h=331&w=640",
+    "date": "1904-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "basket": [
+   {
+    "topicKey": "basket",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Basket",
+    "title": "Basket",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A basket is a container that is traditionally constructed from stiff fibers, and can be made from a range of materials, including wood splints, runners, and cane. While most baskets are made from plant materials, other materials such as horsehair, baleen, or metal wire can be used. Baskets are generally woven by hand.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "basketball_hoop": [
+   {
+    "topicKey": "basketball_hoop",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Basketball",
+    "title": "Basketball hoop",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Basketball is a team sport in which two teams of five players each (excluding substitutes) oppose one another on a rectangular court. Players compete with the primary objective of shooting a basketball through a hoop (a basket mounted to a backboard) at each end of the court.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "bed": [
+   {
+    "topicKey": "bed",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Bed",
+    "title": "Bed",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A bed is a piece of furniture that is used as a place to sleep, rest, and relax. Most modern beds consist of a soft, cushioned mattress on a bed frame. The mattress rests either on a solid base, often wood slats, or a sprung base.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "bench": [
+   {
+    "topicKey": "bench",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Bench_(furniture)",
+    "title": "Bench",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A bench is a long seat on which several people may sit at the same time. Benches are typically made of wood, but may also be made of metal, stone, or synthetic materials. Many benches have back rests, while others do not and can be accessed from either side.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "bench",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2007666667/",
+    "title": "[Benches in Kensington Park]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Benches in Kensington Park]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/12000/12017r.jpg#h=640&w=524",
+    "date": "1901-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "bench",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2020635933/",
+    "title": "[People sitting on park bench]",
+    "attribution": "Library of Congress",
+    "excerpt": "[People sitting on park bench]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/69700/69700r.jpg#h=524&w=640",
+    "date": "1953-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "bench",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2020636245/",
+    "title": "[Woman reading on park bench]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Woman reading on park bench]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/69900/69991r.jpg#h=640&w=511",
+    "date": "1956-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "bicycle": [
+   {
+    "topicKey": "bicycle",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Bicycle",
+    "title": "Bicycle",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A bicycle, also called a pedal cycle, bike, push-bike or cycle, is a human-powered or motor-assisted, pedal-driven, single-track vehicle, with two wheels attached to a frame, one behind the other. A bicycle rider is called a cyclist or bicyclist. The bicycle was invented in Europe in the 19th century.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "bicycle",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016816232/",
+    "title": "[Children posed with bicycle and tricycles]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Children posed with bicycle and tricycles]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/det/4a20000/4a25000/4a25800/4a25886r.jpg#h=516&w=640",
+    "date": "1910-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "bicycle",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2020636534/",
+    "title": "[Four children riding a bicycle on a sidewalk]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Four children riding a bicycle on a sidewalk]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/70300/70362r.jpg#h=524&w=640",
+    "date": "1958-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "bicycle",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2024634760/",
+    "title": "Boys on bicycles",
+    "attribution": "Library of Congress",
+    "excerpt": "Boys on bicycles",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/89800/89863r.jpg#h=491&w=640",
+    "date": "1940",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "bird": [
+   {
+    "topicKey": "bird",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Bird",
+    "title": "Bird",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Birds are vertebrate animals constituting the class Aves, characterised by feathers, toothless beaked jaws, the laying of hard-shelled eggs, a high metabolic rate, a four-chambered heart, and a strong yet lightweight skeleton. 8 m (9 ft 2 in) common ostrich. There are over 11,000 living species of birds, classified in 44 orders.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "birdbath": [
+   {
+    "topicKey": "birdbath",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Bird_bath",
+    "title": "Birdbath",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A bird bath (or birdbath) is an artificial puddle or small shallow pond, created with a water-filled basin, in which birds may drink, bathe, and cool themselves. A bird bath can be a garden ornament, small reflecting pool, outdoor sculpture, and also can be a part of creating a vital wildlife garden.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "bleachers": [
+   {
+    "topicKey": "bleachers",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Bleachers",
+    "title": "Bleachers",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Bleachers (North American English), or stands, are raised, tiered rows of benches found at sports-fields and at other spectator events. Stairways provide access to the horizontal rows of seats, often with every other step enabling access to a row of benches. Benches range from simple planks to elaborate ones with backrests.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "boat": [
+   {
+    "topicKey": "boat",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Boat",
+    "title": "Boat",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A boat is a watercraft of a large range of types and sizes, but generally smaller than a ship, which is distinguished by its larger size or capacity, its shape, or its ability to carry boats. Small boats are typically used on inland waterways such as rivers and lakes, or in protected coastal areas.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "boat",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016796857/",
+    "title": "[Landscape with rowboat]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Landscape with rowboat]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/det/4a30000/4a31000/4a31300/4a31352r.jpg#h=640&w=504",
+    "date": "1900-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "boat",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2018756556/",
+    "title": "[Girl in rowboat, Yale University]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Girl in rowboat, Yale University]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/58700/58744v.jpg#h=1024&w=791",
+    "date": "1905-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "boat",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2018708313/",
+    "title": "Lewisohn, Walter, Master, in a rowboat",
+    "attribution": "Library of Congress",
+    "excerpt": "Lewisohn, Walter, Master, in a rowboat",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/agc/7a00000/7a00200/7a00255v.jpg#h=1024&w=781",
+    "date": "1926-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "books": [
+   {
+    "topicKey": "books",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Book",
+    "title": "Books",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A book is a written work of substantial length created by one or more authors. The work is typically printed on many sheets of paper as pages bound together into a bookblock, then glued to the middle of a foldable cover that protects the pages.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "bookshelf": [
+   {
+    "topicKey": "bookshelf",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Bookcase",
+    "title": "Bookshelf",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A bookcase also called a bookshelf, is a piece of furniture with horizontal shelves, often in a cabinet, used to store books or other printed materials. Bookcases are used in private homes, public and university libraries, offices, schools, and bookstores. Bookcases range from small, low models the height of a table to high models reaching up to ceiling height.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "bowl_fruit": [
+   {
+    "topicKey": "bowl_fruit",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Fruit",
+    "title": "Fruit",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "In botany, a fruit is the seed-bearing structure in flowering plants (angiosperms) that is formed from the ovary after flowering. Fruits are the means by which angiosperms disseminate their seeds.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "bowl_fruit",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/afc9999005.10130/",
+    "title": "Bury me in the fruit-a-stand",
+    "attribution": "Library of Congress",
+    "excerpt": "Bury me in the fruit-a-stand",
+    "imageUrl": "https://tile.loc.gov/image-services/iiif/public:afc:afc9999005-10130:0326/full/pct:50.0/0/default.jpg#h=452&w=742",
+    "date": "1939-07-17",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "bucket": [
+   {
+    "topicKey": "bucket",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Bucket",
+    "title": "Bucket",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A bucket is typically a watertight, vertical cylinder or truncated cone or square, with an open top and a flat bottom that is attached to a semicircular carrying handle called the bail. A bucket is usually an open-top container.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "building": [
+   {
+    "topicKey": "building",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Building",
+    "title": "Building",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A building or edifice is an enclosed structure with a roof, walls and often windows, usually standing permanently in one place, such as a house or factory.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "bus": [
+   {
+    "topicKey": "bus",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Bus",
+    "title": "Bus",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": ") is a motor vehicle that carries significantly more passengers than an average car or van, but fewer than the average rail transport. It is most commonly used in public transport, but is also in use for charter purposes, or through private ownership.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "bush": [
+   {
+    "topicKey": "bush",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Shrub",
+    "title": "Bush",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A shrub or bush is a small to medium-sized perennial woody plant. Unlike herbaceous plants, shrubs have persistent woody stems above the ground. Shrubs can be either deciduous or evergreen.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "cabinet": [
+   {
+    "topicKey": "cabinet",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Cabinetry",
+    "title": "Cabinet",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A cabinet is a case or cupboard with shelves or drawers for storing or displaying items. Some cabinets are stand-alone while others are built into a wall or are attached to it like a medicine cabinet. Cabinets are typically made of wood (solid or with veneers or artificial surfaces), coated steel (common for medicine cabinets), or synthetic materials.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "cable_car": [
+   {
+    "topicKey": "cable_car",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/San_Francisco_cable_car_system",
+    "title": "Cable car",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "The San Francisco cable car system is the world's last manually operated cable car system and an icon of the city of San Francisco, California.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "cake": [
+   {
+    "topicKey": "cake",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Cake",
+    "title": "Cake",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Cake is a baker's confectionery made by combining flour with a liquid, a fat or both, and usually with a leavening agent. Cakes are usually baked, but can be griddled.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "cake",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2013648266/",
+    "title": "The birthday cake",
+    "attribution": "Library of Congress",
+    "excerpt": "The birthday cake",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ds/04000/04028r.jpg#h=490&w=640",
+    "date": "1914-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "cake",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/98506681/",
+    "title": "[Robert Frost, poet poses with his birthday cake on his 85th birthday] / World Telegram photo by Walter Albertin.",
+    "attribution": "Library of Congress",
+    "excerpt": "[Robert Frost, poet poses with his birthday cake on his 85th birthday] / World Telegram photo by Walter Albertin.",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/cph/3c20000/3c20000/3c20700/3c20744r.jpg#h=640&w=513",
+    "date": "1959",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "cake",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016866957/",
+    "title": "WOMAN SUFFRAGE. BIRTHDAY CAKE",
+    "attribution": "Library of Congress",
+    "excerpt": "WOMAN SUFFRAGE. BIRTHDAY CAKE",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/hec/07000/07052r.jpg#h=476&w=640",
+    "date": "1916-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "camera": [
+   {
+    "topicKey": "camera",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Camera",
+    "title": "Camera",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A camera is an instrument used to capture and store images and videos, either digitally via an electronic image sensor, or chemically via a light-sensitive material such as photographic film. As a pivotal technology in the fields of photography and videography, cameras have played a significant role in the progression of visual arts, media, entertainment, surveillance, and scientific research.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "campfire": [
+   {
+    "topicKey": "campfire",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Campfire",
+    "title": "Campfire",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A campfire is a fire at a campsite that provides light, warmth, and heat for cooking. It can also serve as a beacon and an insect and predator deterrent. Established campgrounds often provide a stone or steel fire ring for safety.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "campfire",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2017656412/",
+    "title": "Picnic campfire",
+    "attribution": "Library of Congress",
+    "excerpt": "Picnic campfire",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppss/00900/00917r.jpg#h=201&w=640",
+    "date": "1914-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "campfire",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2021725272/",
+    "title": "Four Roses - Campfire",
+    "attribution": "Library of Congress",
+    "excerpt": "Four Roses - Campfire",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/tofr/22800/22882v.jpg#h=1024&w=696",
+    "date": "1960",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "campfire",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2021725281/",
+    "title": "Four Roses - Campfire",
+    "attribution": "Library of Congress",
+    "excerpt": "Four Roses - Campfire",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/tofr/22800/22891v.jpg#h=1024&w=696",
+    "date": "1960",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "candle": [
+   {
+    "topicKey": "candle",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Candle",
+    "title": "Candle",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A candle is an ignitable wick embedded in wax, or another flammable solid substance such as tallow, that provides light, and in some cases, a fragrance. A candle can also provide heat or a method of keeping time.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "car": [
+   {
+    "topicKey": "car",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Car",
+    "title": "Car",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A car, or an automobile, is a motor vehicle with wheels. Most definitions of cars state that they run primarily on roads, seat 1–8 people, have four wheels, and mainly transport people rather than cargo. 6 billion cars in use worldwide as of 2025.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "car",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016885660/",
+    "title": "[Family group in automobile; State, War and Navy Building in background. Washington, D.C.]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Family group in automobile; State, War and Navy Building in background. Washington, D.C.]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/hec/30700/30710r.jpg#h=463&w=640",
+    "date": "1921-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "cat": [
+   {
+    "topicKey": "cat",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Cat",
+    "title": "Cat",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "The cat (Felis catus), also called domestic cat and house cat, is a small domesticated carnivorous mammal. It is a member of Felidae, the family of mammals in the order Carnivora also colloquially referred to as cats. An obligate carnivore requiring a predominantly meat-based diet, it has retractable claws adapted to killing small prey species such as mice and rats.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "chair": [
+   {
+    "topicKey": "chair",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Chair",
+    "title": "Chair",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A chair is a type of seat, typically designed for one person and consisting of one or more legs, a flat or slightly angled seat, and a back rest. It may be made of wood, metal, or synthetic materials, and may be padded or upholstered in various colors and fabrics. Chairs vary in design.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "chess": [
+   {
+    "topicKey": "chess",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Chess",
+    "title": "Chess",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Chess is a board game for two players, played on a square board consisting of 64 squares arranged in an 8×8 grid. The players, referred to as \"White\" and \"Black\", each control sixteen pieces: one king, one queen, two rooks, two bishops, two knights, and eight pawns, with each piece type having a different pattern of movement.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "chess",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/afc9999005.22630/",
+    "title": "Tom Chesser calling hogs",
+    "attribution": "Library of Congress",
+    "excerpt": "Tom Chesser calling hogs",
+    "imageUrl": "https://tile.loc.gov/image-services/iiif/public:afc:afc9999005-22630:0564/full/pct:50.0/0/default.jpg#h=453&w=751",
+    "date": "1944-08",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "chess",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/90713754/",
+    "title": "A game of chess",
+    "attribution": "Library of Congress",
+    "excerpt": "A game of chess",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/stereo/1s40000/1s42000/1s42900/1s42973r.jpg#h=330&w=640",
+    "date": "1905-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "clock": [
+   {
+    "topicKey": "clock",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Clock",
+    "title": "Clock",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A clock or chronometer is a device that measures and displays time. The clock is one of the oldest human inventions, meeting the need to measure intervals of time shorter than the natural units such as the day, the lunar month, and the year. Devices operating on several physical processes have been used over the millennia.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "counter": [
+   {
+    "topicKey": "counter",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Countertop",
+    "title": "Counter",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A countertop, also counter top, counter, benchtop, worktop (British English) or kitchen bench (Australian or New Zealand English), bunker (Scottish English) is a raised, firm, flat, and horizontal surface. They are built for work in kitchens or other food preparation areas, bathrooms or lavatories, and workrooms in general.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "cup": [
+   {
+    "topicKey": "cup",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Cup",
+    "title": "Cup",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A cup is a small container used to hold liquids for drinking, typically with a flattened hemispherical shape and an open \"mouth\", and often with a capacity of about 6–16 US fluid ounces (177–473 ml). Cups may be made of pottery (including porcelain), glass, metal, wood, stone, polystyrene, plastic, lacquerware, or other materials.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "desk_fan": [
+   {
+    "topicKey": "desk_fan",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Mechanical_fan",
+    "title": "Fan",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A fan is a powered machine that creates airflow. A fan consists of rotating vanes or blades, generally made of wood, plastic, or metal, which act on the air. The rotating assembly of blades and hub is known as an impeller, rotor, or runner.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "dock": [
+   {
+    "topicKey": "dock",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Pier",
+    "title": "Dock",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A pier is a raised structure that rises above a body of water and usually juts out from its shore, typically supported by piles or pillars, and provides above-water access to offshore areas. g. the Edgar Downie Pier in Kingston, the 46 swim piers in Lake Geneva, or LoveQuay swim pier in Toronto).",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "dog": [
+   {
+    "topicKey": "dog",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Dog",
+    "title": "Dog",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "The dog (Canis familiaris or Canis lupus familiaris) is a domesticated descendant of wolves. Also called the domestic dog, it was selectively bred during the Late Pleistocene by hunter-gatherers. Dogs and the modern gray wolf share a common ancestor.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "dog",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016831133/",
+    "title": "Mrs. Harding's dog O'Boy & Laddie Boy",
+    "attribution": "Library of Congress",
+    "excerpt": "Mrs. Harding's dog O'Boy & Laddie Boy",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/npcc/04700/04791r.jpg#h=520&w=640",
+    "date": "1921-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "dog",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016886409/",
+    "title": "[Boy and dog]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Boy and dog]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/hec/31400/31460v.jpg#h=1024&w=743",
+    "date": "1921-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "dog",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016831134/",
+    "title": "Mrs. Harding's dog O'Boy & Laddie Boy",
+    "attribution": "Library of Congress",
+    "excerpt": "Mrs. Harding's dog O'Boy & Laddie Boy",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/npcc/04700/04792r.jpg#h=517&w=640",
+    "date": "1921-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "door": [
+   {
+    "topicKey": "door",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Door",
+    "title": "Door",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A door is a hinged or otherwise movable barrier that allows ingress (entry) into and egress (exit) from an enclosure. The created opening in the wall is a doorway or portal. A door's essential and primary purpose is to provide security by controlling access to the doorway (portal).",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "electric_fan": [
+   {
+    "topicKey": "electric_fan",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Mechanical_fan",
+    "title": "Fan",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A fan is a powered machine that creates airflow. A fan consists of rotating vanes or blades, generally made of wood, plastic, or metal, which act on the air. The rotating assembly of blades and hub is known as an impeller, rotor, or runner.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "fence": [
+   {
+    "topicKey": "fence",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Fence",
+    "title": "Fence",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A fence is a structure that encloses an area, typically outdoors creating a boundary, and is usually constructed from posts that are connected by boards, wire, rails or netting. A fence differs from a wall in not having a solid foundation along its whole length. Alternatives to fencing include a ditch (sometimes filled with water, forming a moat).",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "fire_hydrant": [
+   {
+    "topicKey": "fire_hydrant",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Fire_hydrant",
+    "title": "Fire hydrant",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A fire hydrant, fireplug, firecock (archaic), hydrant riser or Johnny Pump is a connection point by which firefighters can tap into a water supply. It is a component of active fire protection. Underground fire hydrants have been used in Europe and Asia since at least the 18th century.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "fireplace": [
+   {
+    "topicKey": "fireplace",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Fireplace",
+    "title": "Fireplace",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A fireplace or hearth is a structure made of brick, stone or metal designed to contain a fire. Fireplaces are used to heat a room or dwelling and also for the relaxing ambiance they create. Modern fireplaces vary in heat efficiency, depending on the design.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "fireplace",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2002708955/",
+    "title": "Bedroom fireplace",
+    "attribution": "Library of Congress",
+    "excerpt": "Bedroom fireplace",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/cph/3g00000/3g09000/3g09500/3g09514r.jpg#h=640&w=511",
+    "date": "1936-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "fireplace",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2019704189/",
+    "title": "Stoltzfus family in salon at fireplace",
+    "attribution": "Library of Congress",
+    "excerpt": "Stoltzfus family in salon at fireplace",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/matpc/12700/12797r.jpg#h=492&w=640",
+    "date": "1946-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "floor_lamp": [
+   {
+    "topicKey": "floor_lamp",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Light_fixture",
+    "title": "Floor lamp",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A light fixture (US English), light fitting (UK English) or luminaire is an electrical lighting device containing one or more light sources, such as light bulbs, and all the accessory components required for its operation to provide illumination to the environment. All light fixtures have a fixture body and one or more light sources.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "flowers": [
+   {
+    "topicKey": "flowers",
+    "kind": "text",
+    "sourceUrl": "https://www.rhs.org.uk/plants/94326/bellis-perennis/details",
+    "title": "Bellis perennis · common daisy",
+    "attribution": "Royal Horticultural Society",
+    "excerpt": "An evergreen perennial forming rosettes of dark green, spoon-shaped leaves, with small, solitary, yellow-centred, pink-tinged, white daisies in late spring and summer",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "flowers",
+    "kind": "text",
+    "sourceUrl": "https://www.fs.usda.gov/managing-land/wildflowers/plant-of-the-week/eschscholzia-californica",
+    "title": "California poppy",
+    "attribution": "USDA Forest Service",
+    "license": "Public domain (U.S. government work)",
+    "excerpt": "California poppy, the state flower of California, is native to the Pacific slope of North America from Western Oregon to Baja California. Adelbert von Chamisso, naturalist aboard the Russian exploring ship \"Rurick”, discovered and named the species.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "flowers",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Eschscholzia_californica",
+    "title": "California poppy",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Eschscholzia californica, the California poppy, golden poppy, Mexican poppy, California sunlight or cup of gold, is a species of flowering plant in the family Papaveraceae, native to the United States and Mexico.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "flowers",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Wildflower",
+    "title": "Wildflower",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A wildflower (or wild flower) is a flower that grows in the wild, rather than being intentionally seeded or planted. The term implies that the plant is neither a hybrid nor a selected cultivar that is any different from the native plant, even if it is growing where it would not naturally be found.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "flowers",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2018704433/",
+    "title": "California golden poppies",
+    "attribution": "Library of Congress",
+    "excerpt": "California golden poppies",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/agc/7a17000/7a17700/7a17748r.jpg#h=420&w=303",
+    "date": "1906-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "flowers",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2018704466/",
+    "title": "Field of California golden poppies",
+    "attribution": "Library of Congress",
+    "excerpt": "Field of California golden poppies",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/agc/7a17000/7a17700/7a17794r.jpg#h=396&w=560",
+    "date": "1906-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "flowers",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2007685127/",
+    "title": "[Field of poppies and lupin, California]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Field of poppies and lupin, California]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/16100/16185r.jpg#h=519&w=640",
+    "date": "1917",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "fridge": [
+   {
+    "topicKey": "fridge",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Refrigerator",
+    "title": "Refrigerator",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A refrigerator, commonly shortened to fridge, is a commercial and home appliance consisting of a thermally insulated compartment and a heat pump (mechanical, electronic, or chemical) that transfers heat from its inside to its external environment so that its inside is cooled to a temperature below the ambient temperature of the room.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "gazebo": [
+   {
+    "topicKey": "gazebo",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Gazebo",
+    "title": "Gazebo",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A gazebo is a pavilion structure, sometimes octagonal or turret-shaped, often built in a park, garden, or spacious public area. Some are used on occasions as bandstands. In British English, the word is also used for a tent-like canopy with open sides to provide shelter from sun and rain at outdoor events.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "globe": [
+   {
+    "topicKey": "globe",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Globe",
+    "title": "Globe",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A globe is a spherical model of Earth, of some other celestial body, or of the celestial sphere. Globes serve purposes similar to maps, but, unlike maps, they do not distort the surface that they portray except to scale it down. A model globe of Earth is called a terrestrial globe.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "goal": [
+   {
+    "topicKey": "goal",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Goal_(sports)",
+    "title": "Goal",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "In sport, a goal may refer to either an instance of scoring, or to the physical structure or area where an attacking team must send the ball or puck in order to score points.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "goalpost": [
+   {
+    "topicKey": "goalpost",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Goal_(sports)",
+    "title": "Goalpost",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "In sport, a goal may refer to either an instance of scoring, or to the physical structure or area where an attacking team must send the ball or puck in order to score points.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "guitar": [
+   {
+    "topicKey": "guitar",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Guitar",
+    "title": "Guitar",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "The guitar is a stringed musical instrument that is usually fretted (with some exceptions) and typically has six or twelve strings, though guitars with seven, eight and nine strings also exist.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "handbag": [
+   {
+    "topicKey": "handbag",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Handbag",
+    "title": "Handbag",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A handbag, commonly known as a purse in North American English, is a handled medium-to-large bag used to carry personal items.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "hat": [
+   {
+    "topicKey": "hat",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Hat",
+    "title": "Hat",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A hat is a head covering which is worn for various reasons, including protection against weather conditions, ceremonial reasons such as university graduation, religious reasons, comedy, safety, or as a fashion accessory. Hats which incorporate mechanical features, such as visors, spikes, flaps, braces or beer holders shade into the broader category of headgear.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "heater": [
+   {
+    "topicKey": "heater",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Space_heater",
+    "title": "Heater",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A space heater is an appliance used to heat a single small- to medium-sized area. This type of heater can be contrasted with central heating, which distributes heat to multiple areas.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "hills": [
+   {
+    "topicKey": "hills",
+    "kind": "text",
+    "sourceUrl": "https://www.nps.gov/subjects/grasslands/index.htm",
+    "title": "Grasslands",
+    "attribution": "National Park Service",
+    "license": "Public domain (U.S. government work)",
+    "excerpt": "While seemingly an endless sea of one type of plant, grasslands are incredibly diverse, housing native plants and animals found nowhere else. Learn how you can visit and help protect these important spaces.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "hills",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/California_coastal_prairie",
+    "title": "California coastal prairie",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "California coastal prairie, also known as northern coastal grassland, is a grassland plant community of California and Oregon in the temperate grasslands, savannas, and shrublands biome. This ecosystem is found along the Pacific Coast, from as far south as Los Angeles in Southern California to southern Oregon.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "hills",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Grassland",
+    "title": "Grassland",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A grassland is an area (or ecosystem) where the vegetation is dominated by grasses. Sedges and rushes can also be found along with some legumes such as clover and other herbs. Grasslands occur naturally on all continents except Antarctica and are found in most ecoregions of the Earth.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "hills",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2023640613/",
+    "title": "California street from Nob Hill",
+    "attribution": "Library of Congress",
+    "excerpt": "California street from Nob Hill",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/stereo/1s50000/1s50000/1s50900/1s50958r.jpg#h=379&w=640",
+    "date": "1906",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "house": [
+   {
+    "topicKey": "house",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/House",
+    "title": "House",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A house is a residential building. It may range in complexity from a rudimentary hut to a complex structure of wood, masonry, concrete or other material, outfitted with plumbing, electrical, and heating, ventilation, and air conditioning systems. Houses use a range of different roofing systems to keep precipitation such as rain from getting into the dwelling space.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "keepsake_box": [
+   {
+    "topicKey": "keepsake_box",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Memory_box",
+    "title": "Keepsake box",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A memory box is a box containing objects that serve as reminders. A person may make a memory box as a way to organize meaningful items from their own life.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "kite": [
+   {
+    "topicKey": "kite",
+    "kind": "text",
+    "sourceUrl": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/four-forces-on-a-kite/",
+    "title": "Four Forces on a Kite",
+    "attribution": "NASA Glenn Research Center",
+    "license": "Public domain (U.S. government work)",
+    "excerpt": "As the air moves past the kite, the kite resists the motion of the air. This resistance force is called the drag of the kite.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "kite",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Kite",
+    "title": "Kite",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A kite is a tethered heavier-than-air craft with wing surfaces that react against the air to create lift and drag forces. A kite consists of wings, tethers and anchors. Kites often have a bridle and tail to guide the face of the kite so the wind can lift it.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "kite",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Kite_line",
+    "title": "Kite line",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "In kiting, a line is the string or thin cord made of cotton, nylon, silk, or wire, which connects the kite to the person operating it or an anchor. Kites have a set of wings, a set of anchors, and a set of lines coupling the wings with the anchors.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "kite",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2020637417/",
+    "title": "New year's day in Japan - children flying kites",
+    "attribution": "Library of Congress",
+    "excerpt": "New year's day in Japan - children flying kites",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/stereo/1s30000/1s31000/1s31600/1s31643r.jpg#h=334&w=640",
+    "date": "1905-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "kite",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2017877652/",
+    "title": "Boys flying a kite in front of community center, FSA ... camp, Robstown, Tex.",
+    "attribution": "Library of Congress",
+    "excerpt": "Boys flying a kite in front of community center, FSA ... camp, Robstown, Tex.",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/fsac/1a34000/1a34200/1a34257r.jpg#h=453&w=640",
+    "date": "1939-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "kite",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2017877656/",
+    "title": "Boys flying a kite in front of the community center, FSA camp, Robstown, Tex.",
+    "attribution": "Library of Congress",
+    "excerpt": "Boys flying a kite in front of the community center, FSA camp, Robstown, Tex.",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/fsac/1a34000/1a34200/1a34261r.jpg#h=455&w=640",
+    "date": "1939-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "lamp": [
+   {
+    "topicKey": "lamp",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Light_fixture",
+    "title": "Lamp",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A light fixture (US English), light fitting (UK English) or luminaire is an electrical lighting device containing one or more light sources, such as light bulbs, and all the accessory components required for its operation to provide illumination to the environment. All light fixtures have a fixture body and one or more light sources.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "lamp_post": [
+   {
+    "topicKey": "lamp_post",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Street_light",
+    "title": "Street lamp",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A street light, light pole, lamp pole, lamppost, streetlamp, light standard, or lamp standard is a raised source of light on the edge of a road or path. Similar lights may be found on a railway platform. When urban electric power distribution became ubiquitous in developed countries in the 20th century, lights for urban streets followed, or sometimes led.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "lantern": [
+   {
+    "topicKey": "lantern",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Lantern",
+    "title": "Lantern",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A lantern is a source of lighting, often portable. It typically features a protective enclosure for the light source – historically usually a candle, a wick in oil, or a heated mesh, and often a battery-powered light in modern times – to make it easier to carry and hang up, and make it more reliable outdoors or in drafty interiors.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "mahjong": [
+   {
+    "topicKey": "mahjong",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Mahjong",
+    "title": "Mahjong",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Mahjong is a tile-based game for two to four players. Though regional variations may exclude certain tiles or add unique ones, it is typically played with a set of 144 tiles based on Chinese characters and symbols. Players hold one of four \"wind\" positions referred to as the East, South, West, and North.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "mailbox": [
+   {
+    "topicKey": "mailbox",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Letter_box",
+    "title": "Mailbox",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A letter box, letterbox, letter plate, letter hole, mail slot or mailbox is a receptacle for receiving incoming mail at a private residence or business. For outgoing mail, post boxes are often used for depositing the mail for collection, although some letter boxes are also capable of holding outgoing mail for a carrier to pick up.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "meadow": [
+   {
+    "topicKey": "meadow",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Meadow",
+    "title": "Meadow",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A meadow ( MED-oh) is an open habitat or field, vegetated by grasses, herbs, and other non-woody plants. Trees or shrubs may sparsely populate meadows, as long as they maintain an open character. Meadows can occur naturally under favourable conditions but are often artificially created from cleared shrub or woodland for the production of hay, fodder or livestock.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "meadow",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2010646537/",
+    "title": "A primary school in the field",
+    "attribution": "Library of Congress",
+    "excerpt": "A primary school in the field",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/cph/3c30000/3c38000/3c38900/3c38995r.jpg#h=526&w=640",
+    "date": "1900-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "mirror": [
+   {
+    "topicKey": "mirror",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Mirror",
+    "title": "Mirror",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A mirror, also known as a looking glass, is an object that reflects an image. Light that bounces off a mirror forms an image of whatever is in front of it, which is then focused through the lens of the eye or a camera. Mirrors reverse the direction of light at an angle equal to its incidence.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "oak": [
+   {
+    "topicKey": "oak",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Quercus_lobata",
+    "title": "Valley oak",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Quercus lobata, commonly called the valley oak or roble, is a deciduous oak endemic to California. It is among the largest North American oaks, sometimes exceeding 100 ft in height and developing a broad, spreading crown.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "oak",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Quercus_agrifolia",
+    "title": "Coast live oak",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Quercus agrifolia, the coast live oak or California live oak, is a live oak (a semi-evergreen oak) native to the California Floristic Province. Live oaks are so-called because they keep living leaves on the tree all year, adding young leaves and shedding dead leaves simultaneously rather than dropping dead leaves en masse in the autumn like a true deciduous tree.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "oak",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Oak",
+    "title": "Oak",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "An oak is a hardwood tree or shrub in the genus Quercus of the beech family. They have spirally arranged leaves, often with lobed edges, and a nut called an acorn, borne within a cup. The genus is widely distributed in the Northern Hemisphere, with some 475 species, both deciduous and evergreen.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "oak",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2025662123/",
+    "title": "Le Conte Oak, University of California",
+    "attribution": "Library of Congress",
+    "excerpt": "Le Conte Oak, University of California",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/pcrd/1a00000/1a00000/1a00400/1a00487r.jpg#h=491&w=640",
+    "date": "1924",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "oak",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/afc9999005.12409/",
+    "title": "Beneath the old oak tree Betsy",
+    "attribution": "Library of Congress",
+    "excerpt": "Beneath the old oak tree Betsy",
+    "imageUrl": "https://tile.loc.gov/image-services/iiif/public:afc:afc9999005-12409:0696/full/pct:50.0/0/default.jpg#h=450&w=748",
+    "date": "1938-12",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "oak",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2025662117/",
+    "title": "Live Oaks at Berkeley, Cal.",
+    "attribution": "Library of Congress",
+    "excerpt": "Live Oaks at Berkeley, Cal.",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/pcrd/1a00000/1a00000/1a00400/1a00482r.jpg#h=387&w=640",
+    "date": "1901",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "palm_tree": [
+   {
+    "topicKey": "palm_tree",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Arecaceae",
+    "title": "Palm tree",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "The Arecaceae are a family of perennial, flowering plants in the monocot order Arecales. Their growth form can be climbers, shrubs, tree-like and stemless plants, all commonly known as palms. Those having a tree-like form are colloquially called palm trees.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "path": [
+   {
+    "topicKey": "path",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Trail",
+    "title": "Trail",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A trail, also known as a path or track, is a dirt road or a small paved road, usually through an undeveloped natural area, that is designed primarily for use by pedestrians, equestrians and non-motorized vehicles, although occasionally some off-roading motor vehicles may also use it. In the United Kingdom and Ireland, footpath or hiking trail is the preferred term.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "path",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Footpath",
+    "title": "Footpath",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A footpath is a type of thoroughfare, walking trail, or nature trail that is intended for use only by pedestrians and not by other forms of traffic such as motor vehicles, bicycles and horses.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "path",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2018678717/",
+    "title": "On the way to school. Country children en route to the Buckeye Grades School, (See Photos) near Marlinton, W. Va. These come from some of the poorer farms and w",
+    "attribution": "Library of Congress",
+    "excerpt": "On the way to school. Country children en route to the Buckeye Grades School, (See Photos) near Marlinton, W. Va. These come from some of the poorer farms and w",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/nclc/04300/04336r.jpg#h=484&w=640",
+    "date": "1921-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "path",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2018678718/",
+    "title": "On the way to school. Country children en route to the Buckeye Grades School, (See Photos) near Marlinton, W. Va. These come from some of the poorer farms and w",
+    "attribution": "Library of Congress",
+    "excerpt": "On the way to school. Country children en route to the Buckeye Grades School, (See Photos) near Marlinton, W. Va. These come from some of the poorer farms and w",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/nclc/04300/04337r.jpg#h=505&w=640",
+    "date": "1921-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "path",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2018677201/",
+    "title": "Country view near Charleston, W. Va. Location: Charleston, West Virginia / Photo by Lewis W. Hine.",
+    "attribution": "Library of Congress",
+    "excerpt": "Country view near Charleston, W. Va. Location: Charleston, West Virginia / Photo by Lewis W. Hine.",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/nclc/04400/04404r.jpg#h=464&w=640",
+    "date": "1921-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "piano": [
+   {
+    "topicKey": "piano",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Piano",
+    "title": "Piano",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A piano is a keyboard instrument that produces sound when its keys are pressed, activating an action mechanism where hammers strike strings. Modern pianos have a row of 88 black and white keys—with the exception of the Bosendörfer and Stuart & Sons pianos—and tuned to a chromatic scale in equal temperament.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "piano",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2019704188/",
+    "title": "Stoltzfus family in salon (at piano)",
+    "attribution": "Library of Congress",
+    "excerpt": "Stoltzfus family in salon (at piano)",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/matpc/12700/12796r.jpg#h=499&w=640",
+    "date": "1946-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "piano",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2019701866/",
+    "title": "Mr. Detcherd's house, etc., Tripoli. Groups of the family around the piano",
+    "attribution": "Library of Congress",
+    "excerpt": "Mr. Detcherd's house, etc., Tripoli. Groups of the family around the piano",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/matpc/11500/11546r.jpg#h=489&w=640",
+    "date": "1940-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "picnic_blanket": [
+   {
+    "topicKey": "picnic_blanket",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Picnic",
+    "title": "Picnic",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A picnic is a meal taken outdoors as part of an excursion, especially in scenic surroundings, such as a park, lakeside, or other place affording an interesting view, or else in conjunction with a public event such as preceding an open-air theater performance, and usually in summer or spring.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "picnic_blanket",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2021738881/",
+    "title": "Picnic in New Hampshire, Bacon and Pool families",
+    "attribution": "Library of Congress",
+    "excerpt": "Picnic in New Hampshire, Bacon and Pool families",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/tofr/36400/36449r.jpg#h=434&w=640",
+    "date": "1968",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "picnic_blanket",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2021738882/",
+    "title": "Picnic in New Hampshire, Bacon and Pool families",
+    "attribution": "Library of Congress",
+    "excerpt": "Picnic in New Hampshire, Bacon and Pool families",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/tofr/36400/36450r.jpg#h=435&w=640",
+    "date": "1968",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "picnic_blanket",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2021738883/",
+    "title": "Picnic in New Hampshire, Bacon and Pool families",
+    "attribution": "Library of Congress",
+    "excerpt": "Picnic in New Hampshire, Bacon and Pool families",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/tofr/36400/36451r.jpg#h=436&w=640",
+    "date": "1968",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "picnic_table": [
+   {
+    "topicKey": "picnic_table",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Picnic_table",
+    "title": "Picnic table",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A picnic table (or picnic bench) is a table with benches (often attached), designed for outdoor dining. The term is often specifically associated with rectangular tables having an A-frame structure. Such tables may be referred to as \"picnic tables\" even when used exclusively indoors.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "picnic_table",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016648961/",
+    "title": "[Frances Benjamin Johnston at picnic table in Yellowstone National Park]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Frances Benjamin Johnston at picnic table in Yellowstone National Park]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/cph/3a40000/3a41000/3a41600/3a41657r.jpg#h=516&w=640",
+    "date": "1903-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "picnic_table",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2018726737/",
+    "title": "Becton Dickinson & Co., Rutherford, New Jersey. Picnic tables under willow tree",
+    "attribution": "Library of Congress",
+    "excerpt": "Becton Dickinson & Co., Rutherford, New Jersey. Picnic tables under willow tree",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/gsc/5a22000/5a22800/5a22804r.jpg#h=420&w=532",
+    "date": "1954-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "picnic_table",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2013650620/",
+    "title": "[Backyard of a brick house in the suburbs with picnic table and barbecue] / MST.",
+    "attribution": "Library of Congress",
+    "excerpt": "[Backyard of a brick house in the suburbs with picnic table and barbecue] / MST.",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ds/04500/04578r.jpg#h=424&w=640",
+    "date": "1959",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "picture_frame": [
+   {
+    "topicKey": "picture_frame",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Picture_frame",
+    "title": "Picture frame",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A picture frame is a protective and decorative edging for a picture, such as a painting or photograph. It makes displaying the work safer and easier and both sets the picture apart from its surroundings and aesthetically integrates it with them.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "pine_tree": [
+   {
+    "topicKey": "pine_tree",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Pine",
+    "title": "Pine tree",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Pines (genus Pinus are a genus of conifers in the family Pinaceae. Pinus is the sole genus in the subfamily Pinoideae. The species are trees or shrubs with their leaves in bunches, usually of 2 to 5 needles.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "planter": [
+   {
+    "topicKey": "planter",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Container_garden",
+    "title": "Planter",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Container gardening or pot gardening/farming is the practice of growing plants, including edible plants, exclusively in containers instead of planting them in the ground. A container in gardening is a small, enclosed and usually portable object used for displaying live flowers or plants. It may take the form of a pot, box, tub, basket, tin, barrel or hanging basket.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "playground": [
+   {
+    "topicKey": "playground",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Playground",
+    "title": "Playground",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A playground, playpark, or play area is a place designed to provide an environment for children that facilitates play, typically outdoors. While playgrounds are usually designed for children, some are designed for other age groups or older people with disabilities. A playground might exclude children below or above a certain age.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "playground",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016803651/",
+    "title": "Children's playground, Bois Blanc Park",
+    "attribution": "Library of Congress",
+    "excerpt": "Children's playground, Bois Blanc Park",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/det/4a10000/4a11000/4a11100/4a11134r.jpg#h=504&w=640",
+    "date": "1900-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "playground",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2020636182/",
+    "title": "[Playground]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Playground]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/69900/69927r.jpg#h=484&w=640",
+    "date": "1955-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "playground",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016794822/",
+    "title": "Children's playground, Belle Isle Park, Detroit, Mich.",
+    "attribution": "Library of Congress",
+    "excerpt": "Children's playground, Belle Isle Park, Detroit, Mich.",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/det/4a10000/4a11000/4a11500/4a11570r.jpg#h=514&w=640",
+    "date": "1900-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "potted_plant": [
+   {
+    "topicKey": "potted_plant",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Houseplant",
+    "title": "Potted plant",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A houseplant, also known as a pot plant, potted plant, or indoor plant, is an ornamental plant cultivated indoors for aesthetic or practical purposes. These plants are commonly found in homes, offices, and various indoor spaces, where they contribute to the ambiance by adding natural beauty and improving air quality.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "radio": [
+   {
+    "topicKey": "radio",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Radio_receiver",
+    "title": "Radio",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "In radio communications, a radio receiver, also known as a receiver, a wireless receiver, or simply a radio, is an electronic device that receives radio waves and converts the information carried by them into a usable form. It is used with an antenna.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "radio",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016894380/",
+    "title": "[Family group listening to radio?]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Family group listening to radio?]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/hec/45100/45134r.jpg#h=496&w=640",
+    "date": "1921-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "radio",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2006677937/",
+    "title": "[Farm families sitting in rocking chairs listening to radio; men are dressed in coveralls]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Farm families sitting in rocking chairs listening to radio; men are dressed in coveralls]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/cph/3b00000/3b02000/3b02300/3b02306r.jpg#h=500&w=640",
+    "date": "1925-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "rice_cooker": [
+   {
+    "topicKey": "rice_cooker",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Rice_cooker",
+    "title": "Rice cooker",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A rice cooker or rice steamer is an automated kitchen appliance designed to boil or steam rice. It consists of a heat source, a cooking bowl, and a thermostat. The thermostat measures the temperature of the cooking bowl and controls the heat.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "rock": [
+   {
+    "topicKey": "rock",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Rock_(geology)",
+    "title": "Rock",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "In geology, a rock (also called a stone) is any naturally occurring solid mass or aggregate of minerals or mineraloid matter. It is categorized by the minerals included, its chemical composition, and the way in which it is formed.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "round_table": [
+   {
+    "topicKey": "round_table",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Table_(furniture)",
+    "title": "Table",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A table is a piece of furniture with a raised flat top and is supported most commonly by 1 to 4 legs (although some can have more). It is used as a surface for working, eating or placing things.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "rug": [
+   {
+    "topicKey": "rug",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Carpet",
+    "title": "Rug",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A carpet or rug is a textile floor covering that typically consists of an upper layer of pile attached to a backing. In Europe, the pile was traditionally made of wool, but since the 20th century, synthetic fibres such as polypropylene, nylon, and polyester have been used as less expensive alternatives.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "school_desk": [
+   {
+    "topicKey": "school_desk",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Desk",
+    "title": "School desk",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A desk or bureau is a piece of furniture with a flat table-style work surface used in a school, office, home or the like for academic, professional or domestic activities such as reading, writing, or using equipment such as a computer. Desks often have one or more drawers, compartments, or pigeonholes to store items such as office supplies and papers.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "school_desk",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2018747395/",
+    "title": "Viewpoint School, Amenia, New York. Small children's schoolroom",
+    "attribution": "Library of Congress",
+    "excerpt": "Viewpoint School, Amenia, New York. Small children's schoolroom",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/gsc/5a14000/5a14600/5a14689r.jpg#h=399&w=560",
+    "date": "1948-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "school_desk",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2017670017/",
+    "title": "Schoolroom operated by American Red Cross for children of refugee barracks at Fortress No. 6. Vladivostok",
+    "attribution": "Library of Congress",
+    "excerpt": "Schoolroom operated by American Red Cross for children of refugee barracks at Fortress No. 6. Vladivostok",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/anrc/04000/04059r.jpg#h=463&w=640",
+    "date": "1919",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "school_desk",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/91728101/",
+    "title": "Future citizens of equatorial America--a schoolroom full of boys at Guayaquil, Ecuador",
+    "attribution": "Library of Congress",
+    "excerpt": "Future citizens of equatorial America--a schoolroom full of boys at Guayaquil, Ecuador",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/stereo/1s20000/1s20000/1s20700/1s20748r.jpg#h=336&w=640",
+    "date": "1907-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "seesaw": [
+   {
+    "topicKey": "seesaw",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Seesaw",
+    "title": "Seesaw",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A see saw (also sometimes known as a teeter-totter in North America) is a long, narrow board supported by a single pivot point, most commonly located at the midpoint between both ends; as one end goes up, the other goes down. These are most commonly found at parks and school playgrounds.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "sewing_machine": [
+   {
+    "topicKey": "sewing_machine",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Sewing_machine",
+    "title": "Sewing machine",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A sewing machine is a machine used to sew fabric and materials together with thread. Sewing machines were invented during the first Industrial Revolution to decrease the amount of manual sewing work performed in clothing companies.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "shoes": [
+   {
+    "topicKey": "shoes",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Shoe",
+    "title": "Shoes",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A shoe is an item of footwear normally found in pairs intended to protect and comfort the human foot, usually made in such a way that one is designed to fit the left foot and the other the right foot.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "shop": [
+   {
+    "topicKey": "shop",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Retail",
+    "title": "Shop",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Retail is the sale of goods and services to consumers, in contrast to wholesaling, which is the sale to business or institutional customers. A retailer purchases goods in large quantities from manufacturers, directly from or through a wholesaler, and then sells in smaller quantities to consumers for a profit.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "side_table": [
+   {
+    "topicKey": "side_table",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/End_table",
+    "title": "Side table",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A table is a piece of furniture with a raised flat top and is supported most commonly by 1 to 4 legs (although some can have more). It is used as a surface for working, eating or placing things.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "slide": [
+   {
+    "topicKey": "slide",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Playground_slide",
+    "title": "Slide",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Playground slides are found in parks, schools, playgrounds and backyards. The slide is an example of the simple machine known as the inclined plane, which makes moving objects up and down easier, or in this case more fun. The slide may be flat, or half cylindrical or tubular to prevent falls.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "slide",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2020636182/",
+    "title": "[Playground]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Playground]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/69900/69927r.jpg#h=484&w=640",
+    "date": "1955-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "slide",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2017668192/",
+    "title": "American Red Cross Playgrounds at Milan. A popular slide",
+    "attribution": "Library of Congress",
+    "excerpt": "American Red Cross Playgrounds at Milan. A popular slide",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/anrc/02200/02207r.jpg#h=463&w=640",
+    "date": "1918",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "slide",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2011646333/",
+    "title": "Queen and son in Palace playground",
+    "attribution": "Library of Congress",
+    "excerpt": "Queen and son in Palace playground",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmsca/30100/30184r.jpg#h=451&w=640",
+    "date": "1965-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "sofa": [
+   {
+    "topicKey": "sofa",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Couch",
+    "title": "Sofa",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A couch, also known as a sofa, settee, chesterfield, or davenport, is a cushioned piece of furniture that can seat multiple people. It is commonly found in the form of a bench with upholstered armrests and is often fitted with springs and tailored cushion and pillows. Although a couch is used primarily for seating, it may be used for sleeping.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "story_card": [
+   {
+    "topicKey": "story_card",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Storytelling",
+    "title": "Story card",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "Storytelling is the social and cultural activity of sharing stories, sometimes with improvisation, theatrics, or embellishment. Every culture has its own narratives, which are shared as a means of entertainment, education, cultural preservation, or instilling moral values (sometimes through morals). Crucial elements of stories and storytelling include plot, characters, and narrative point of view.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "stove": [
+   {
+    "topicKey": "stove",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Kitchen_stove",
+    "title": "Stove",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A kitchen stove, often called simply a stove or a cooker, is a kitchen appliance designed for the purpose of cooking food. Kitchen stoves rely on the application of direct heat for the cooking process and may also contain an oven, used for baking.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "stove",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016816403/",
+    "title": "[Kitchen with Garland stove]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Kitchen with Garland stove]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/det/4a20000/4a28000/4a28100/4a28103r.jpg#h=420&w=512",
+    "date": "1900-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "stove",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016824202/",
+    "title": "[Stove in kitchen]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Stove in kitchen]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/npcc/30500/30543r.jpg#h=513&w=640",
+    "date": "1910-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "stove",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016893361/",
+    "title": "[Woman at stove in kitchen]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Woman at stove in kitchen]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/hec/44100/44115v.jpg#h=1024&w=793",
+    "date": "1924-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "stump": [
+   {
+    "topicKey": "stump",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Tree_stump",
+    "title": "Tree stump",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A tree stump is the remaining portion of a tree trunk and its roots that remains after a tree has been felled or has naturally fallen. The roots often remain largely intact underground. The cross section of a tree stump shows the annual growth rings that can reveal the tree's age, growth patterns, and environmental conditions during its lifetime.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "suitcase": [
+   {
+    "topicKey": "suitcase",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Suitcase",
+    "title": "Suitcase",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A suitcase is a form of baggage. It is a rectangular container with a handle and is typically used to carry one's clothes and other belongings while traveling. The first suitcases appeared in the late 19th century due to the increased popularity of mass tourism at the time, and were meant to hold dress suits (hence their name).",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "swing": [
+   {
+    "topicKey": "swing",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Swing_(seat)",
+    "title": "Swing",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A swing is a seat or platform, suspended from chains, ropes, or bars, on which one or more people can swing back and forth for enjoyment or relaxation.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "swing",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2014683234/",
+    "title": "Children in swings, Hamilton Fish Park, New York",
+    "attribution": "Library of Congress",
+    "excerpt": "Children in swings, Hamilton Fish Park, New York",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ggbain/03200/03240r.jpg#h=465&w=640",
+    "date": "1900-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "swing",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2014683233/",
+    "title": "Children in playground swings, Hamilton Fish Park, New York",
+    "attribution": "Library of Congress",
+    "excerpt": "Children in playground swings, Hamilton Fish Park, New York",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ggbain/03200/03239r.jpg#h=473&w=640",
+    "date": "1900-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "table": [
+   {
+    "topicKey": "table",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Table_(furniture)",
+    "title": "Table",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A table is a piece of furniture with a raised flat top and is supported most commonly by 1 to 4 legs (although some can have more). It is used as a surface for working, eating or placing things.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "teapot": [
+   {
+    "topicKey": "teapot",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Teapot",
+    "title": "Teapot",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A teapot is a vessel used for steeping tea leaves or a herbal mix in boiling or near-boiling water and serving the resulting infusion called tea; usually put in a teacup. It is one of the core components of teaware.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "teddy_bear": [
+   {
+    "topicKey": "teddy_bear",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Teddy_bear",
+    "title": "Teddy bear",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A teddy bear, or simply a teddy, is a stuffed toy in the form of a bear.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "telephone": [
+   {
+    "topicKey": "telephone",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Telephone",
+    "title": "Telephone",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A telephone, commonly shortened to phone, is a telecommunications device that enables two or more users to conduct a conversation when they are too far apart to be easily heard directly.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "tent": [
+   {
+    "topicKey": "tent",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Tent",
+    "title": "Tent",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A tent is a type of shelter, generally consisting of sheets of fabric supported by a frame of poles. Smaller tents may be free-standing or attached to the ground, while large ones are usually anchored using guy ropes tied to stakes or tent pegs.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "tent",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2007664261/",
+    "title": "Tent City, Camp Dodge, Iowa",
+    "attribution": "Library of Congress",
+    "excerpt": "Tent City, Camp Dodge, Iowa",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/pan/6a32000/6a32000/6a32095v.jpg#h=198&w=1024",
+    "date": "1919-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "tent",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2007664159/",
+    "title": "Depot Brigade Recruit Camp, 1500 Tents, Camp Custer",
+    "attribution": "Library of Congress",
+    "excerpt": "Depot Brigade Recruit Camp, 1500 Tents, Camp Custer",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/pan/6a30000/6a30400/6a30475v.jpg#h=176&w=1024",
+    "date": "1918-01-01",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "tent",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016890079/",
+    "title": "[Tents, military camp]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Tents, military camp]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/hec/37100/37120r.jpg#h=496&w=640",
+    "date": "1932-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "thermos": [
+   {
+    "topicKey": "thermos",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Vacuum_flask",
+    "title": "Thermos",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A vacuum flask (also known as a Dewar flask, Dewar bottle or thermos) is an insulating storage vessel that slows the rate at which its contents change in temperature. It greatly lengthens the time over which its contents remain hotter or cooler than the flask's surroundings by trying to be as adiabatic as possible.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "toy": [
+   {
+    "topicKey": "toy",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Toy",
+    "title": "Toy",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A toy or plaything is an object that is used primarily to provide entertainment. Simple examples include toy blocks, board games, and dolls. Toys are often designed for use by children, although many are designed specifically for adults and pets.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "toy",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2017677606/",
+    "title": "Children making toys",
+    "attribution": "Library of Congress",
+    "excerpt": "Children making toys",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/anrc/11900/11946r.jpg#h=468&w=640",
+    "date": "1920",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "toy",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2017677607/",
+    "title": "Children making toys",
+    "attribution": "Library of Congress",
+    "excerpt": "Children making toys",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/anrc/11900/11947r.jpg#h=468&w=640",
+    "date": "1920",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "toy",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2016890323/",
+    "title": "[Children playing with toys]",
+    "attribution": "Library of Congress",
+    "excerpt": "[Children playing with toys]",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/hec/38000/38032r.jpg#h=496&w=640",
+    "date": "1934-01-01",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "trash_can": [
+   {
+    "topicKey": "trash_can",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Waste_container",
+    "title": "Trash can",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A waste container, known as a trash can, garbage can, or wastebasket (most commonly in the Americas); or known as a rubbish bin or dustbin (usually in Commonwealth English); among other names, is a type of container intended to store waste. It is usually made out of metal or plastic.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "trees": [
+   {
+    "topicKey": "trees",
+    "kind": "text",
+    "sourceUrl": "https://www.dnr.state.mn.us/forestry/education/foresttreasures/partsofatree.html",
+    "title": "Parts of a tree",
+    "attribution": "Minnesota Department of Natural Resources",
+    "excerpt": "The crown is the branches and leaves of the tree.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "trees",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Tree",
+    "title": "Tree",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "In botany, a tree is a perennial plant with an elongated stem, or trunk, usually supporting branches and leaves. , including only woody plants with secondary growth, only plants that are usable for timber, or only plants above a specified height. Wider definitions include taller palms, tree ferns, bananas, and bamboos.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "trees",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/afc9999005.6101/",
+    "title": "In the shade of the tree",
+    "attribution": "Library of Congress",
+    "excerpt": "In the shade of the tree",
+    "imageUrl": "https://tile.loc.gov/image-services/iiif/public:afc:afc9999005-6101:0372/full/pct:50.0/0/default.jpg#h=452&w=744",
+    "date": "1937-11-03",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "trees",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/afc9999005.17054/",
+    "title": "The shade of the old apple tree (a parody)",
+    "attribution": "Library of Congress",
+    "excerpt": "The shade of the old apple tree (a parody)",
+    "imageUrl": "https://tile.loc.gov/image-services/iiif/public:afc:afc9999005-17054:0157/full/pct:50.0/0/default.jpg#h=447&w=739",
+    "date": "1942-02",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "trees",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/afc9999005.14187/",
+    "title": "Eve",
+    "attribution": "Library of Congress",
+    "excerpt": "Eve",
+    "imageUrl": "https://tile.loc.gov/image-services/iiif/public:afc:afc9999005-14187:1142/full/pct:50.0/0/default.jpg#h=456&w=753",
+    "date": "1946-07-11",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "tv": [
+   {
+    "topicKey": "tv",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Television_set",
+    "title": "Television",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A television set or television receiver (more commonly called TV, TV set, television, telly, or tele) is an electronic device for viewing and hearing television broadcasts. It combines a tuner, display, and loudspeakers.",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "tv",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2011661230/",
+    "title": "[A man and a woman watching film footage of the Vietnam war on a television in their living room] / WKL.",
+    "attribution": "Library of Congress",
+    "excerpt": "[A man and a woman watching film footage of the Vietnam war on a television in their living room] / WKL.",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ds/01300/01311r.jpg#h=413&w=640",
+    "date": "1968",
+    "fetchedAt": 1792928819359
+   },
+   {
+    "topicKey": "tv",
+    "kind": "photo",
+    "sourceUrl": "https://www.loc.gov/item/2026167861/",
+    "title": "[Two children seated in front of television set while their mother knits or crochets in the background] / WKL.",
+    "attribution": "Library of Congress",
+    "excerpt": "[Two children seated in front of television set while their mother knits or crochets in the background] / WKL.",
+    "imageUrl": "https://tile.loc.gov/storage-services/service/pnp/ppmscd/04600/04656r.jpg#h=434&w=640",
+    "date": "1975",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "typewriter": [
+   {
+    "topicKey": "typewriter",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Typewriter",
+    "title": "Typewriter",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A typewriter is a mechanical or electromechanical machine for typing characters. Typically, a typewriter has an array of keys, and each one causes a different single character to be produced on paper by striking an inked ribbon selectively against the paper with a type element. Thereby, the machine produces a legible written document composed of ink and paper.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "umbrella": [
+   {
+    "topicKey": "umbrella",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Umbrella",
+    "title": "Umbrella",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "An umbrella (parasol or rarely parapluie) is a folding canopy supported by wooden or metal ribs that is mounted on a wooden, metal, or plastic pole. It is usually designed to protect a person against sun or rain.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "vase_flowers": [
+   {
+    "topicKey": "vase_flowers",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Vase",
+    "title": "Vase of flowers",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A vase (,, or ) is an open container. It can be made from a number of materials, such as ceramics, glass, or non-rusting metals, such as aluminium, brass, bronze, or stainless steel.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "wardrobe": [
+   {
+    "topicKey": "wardrobe",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Wardrobe",
+    "title": "Wardrobe",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A wardrobe, also called armoire or almirah, is a piece of standing furniture used for storing clothes. The term is also sometimes used for a closet. The earliest wardrobe was likely a chest, but the term wardrobe was first given to a room in which garments were stored, then to freestanding furniture with the same function, sometimes called a clothes-press.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "wash_basin": [
+   {
+    "topicKey": "wash_basin",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Sink",
+    "title": "Wash basin",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A sink (also known as basin or washbin in the UK) is a bowl-shaped plumbing fixture for washing hands, dishwashing, and other purposes. Sinks have a tap (faucet) that supplies hot and cold water and may include a spray feature to be used for faster rinsing.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "watering_can": [
+   {
+    "topicKey": "watering_can",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Watering_can",
+    "title": "Watering can",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A watering can (or watering pot or watering jug) is a portable container, usually with a handle and a funnel, used to water plants by hand. D. 79 and has since seen many improvements in design.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "wheelbarrow": [
+   {
+    "topicKey": "wheelbarrow",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Wheelbarrow",
+    "title": "Wheelbarrow",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A wheelbarrow is a small hand-propelled load-bearing vehicle, usually with just one wheel, designed to be pushed and guided by a single person using two handles at the rear. \" \"Barrow\" is a derivation of the Old English \"barew\" which was a device used for carrying loads.",
+    "fetchedAt": 1792928819359
+   }
+  ],
+  "window": [
+   {
+    "topicKey": "window",
+    "kind": "text",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Window",
+    "title": "Window",
+    "attribution": "Wikipedia",
+    "license": "CC BY-SA 4.0",
+    "excerpt": "A window is an opening in a wall, door, roof, or vehicle that allows the exchange of light and sometimes allows the passage of sound and air. Modern windows are usually glazed, or covered in some other transparent or translucent material, a sash set in a frame in the opening.",
+    "fetchedAt": 1792928819359
+   }
+  ]
+ }
+}

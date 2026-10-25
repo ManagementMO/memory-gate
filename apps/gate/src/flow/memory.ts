@@ -12,6 +12,7 @@ import { serverNow, usePresence } from '../presence/presence';
 import { convex, uploadFile } from '../backend/client';
 import type { MediaItem, Session } from '../state/store';
 import { heldHeard } from '../showcase/held';
+import { recogniseNamed, shapeNamed } from '../object-info/state';
 
 type MemoryState = {
   plan: ScenePlan | null;
@@ -105,9 +106,12 @@ class Memory {
     // A spot pointed at in the last twenty seconds is what "here" and "there" mean.
     const mark = usePresence.getState().myPoint;
     const pointed: [number, number] | null = mark && serverNow() - mark.t < 20_000 ? [mark.at[0]!, mark.at[2]!] : null;
-    const next = bringIn(PLACES[st.place], st.plan, text, pointed);
+    const next = bringIn(PLACES[st.place], st.plan, text, pointed, recogniseNamed(text));
     if (!next) return false;
-    useMemory.setState((s) => ({ plan: next, version: s.version + 1 }));
+    // What came in is shaped by what Apify's public references say it looks like ("a big daisy": white, yellow-centred).
+    const before = new Set(st.plan.objects.map((o) => o.id));
+    const plan = { ...next, objects: shapeNamed(text, next.objects, (o) => !before.has(o.id)) };
+    useMemory.setState((s) => ({ plan, version: s.version + 1 }));
     this.sharePlace();
     return true;
   }

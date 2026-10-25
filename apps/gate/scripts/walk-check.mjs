@@ -22,6 +22,11 @@ const questCtx = await browser.newContext({ viewport: { width: 1280, height: 800
 // Headless Chrome ships a WebXR object with no device; hide it so the emulated Quest 3 (IWER) installs instead.
 await questCtx.addInitScript(() => { try { Object.defineProperty(Navigator.prototype, 'xr', { get: () => undefined, configurable: true }); } catch { /* ignore */ } });
 const quest = await questCtx.newPage();
+// Whose eyes: the picker no longer opens by itself (the companion asks in words); the perspective chip opens it.
+const openPicker = async (p, timeout = 30000) => {
+  if (await p.waitForSelector('[data-testid=perspective-picker]', { timeout: 6000 }).then(() => true, () => false)) return;
+  await p.click('[data-testid=perspective-chip]', { timeout }); await p.waitForSelector('[data-testid=perspective-picker]', { timeout });
+};
 const errors = [];
 for (const [p, who] of [[laptop, 'laptop'], [quest, 'quest']]) p.on('pageerror', (e) => errors.push(`${who} ${String(e).slice(0, 200)}`));
 const shot = (p, n) => p.screenshot({ path: `${out}/${n}.png`, timeout: 45000 }).catch(() => undefined);
@@ -31,11 +36,11 @@ const fmt = (o) => (o ? `${o.model}, walk ${o.walking.toFixed(2)}, ${o.speed.toF
 
 try {
   await laptop.goto(`${base}?voice=off&memory=red-kite`); await laptop.waitForTimeout(3000); await laptop.click('[data-testid=begin]');
-  await laptop.waitForSelector('[data-testid=perspective-picker]'); await laptop.fill('[data-testid=social-name]', 'Lily'); await laptop.click('[data-testid=choose-child]');
+  await openPicker(laptop); await laptop.fill('[data-testid=social-name]', 'Lily'); await laptop.click('[data-testid=choose-child]');
   await laptop.click('[data-testid=child-voice-words]', { timeout: 5000 }).catch(() => undefined); // words only (no guardian here)
   await quest.goto(`${base}?voice=off&emulate=1`); await quest.waitForSelector('[data-testid=join-nearby]', { timeout: 30000 }); await quest.click('[data-testid=join-nearby]');
   // The grandparent chooses her eyes and name on the page (the picker isn't shown in VR), then goes into VR.
-  if (await quest.waitForSelector('[data-testid=perspective-picker]', { timeout: 20000 }).then(() => true, () => false)) {
+  if (await openPicker(quest, 20000).then(() => true, () => false)) {
     await quest.fill('[data-testid=social-name]', 'Rosa'); await quest.click('[data-testid=choose-grandparent]');
   }
   await quest.getByTestId('enter-vr').click({ timeout: 10000 }).catch(() => undefined);

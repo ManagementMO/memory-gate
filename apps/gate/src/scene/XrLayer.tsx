@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff?url';
 import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
+import { useFadedInCrossing } from '../ui/Captions';
 import { XrAlbum } from './XrAlbum';
 import { XrControls, aimed, dialogue } from './XrControls';
 import { useObjectWorkshop } from '../memory-objects/workshop';
@@ -23,6 +24,7 @@ function Captions3D() {
   const said = useGate((s) => s.companionLine);
   const heard = useGate((s) => s.heardLine);
   const stage = useGate((s) => s.stage);
+  const faded = useFadedInCrossing();
   const objectSource = useObjectWorkshop((s) => s.selected);
   const thinking = useGate((s) => s.mood === 'thinking');
   const group = useRef<THREE.Group>(null);
@@ -51,7 +53,7 @@ function Captions3D() {
   const halo = day ? '#ffffff' : '#0b0c1c';
   return (
     <group ref={group} name="CompanionCaptions">
-      {said && (
+      {said && !faded && (
         <Text font={fontUrl} fontSize={0.04} lineHeight={1.25} maxWidth={0.82} anchorX="center" anchorY="bottom" textAlign="center" position={[0, 0, 0]} color={ink}
           outlineWidth={0.0035} outlineBlur={0.009} outlineColor={halo} outlineOpacity={0.7} renderOrder={1991} material-depthTest={false} material-toneMapped={false}>
           {said.text}

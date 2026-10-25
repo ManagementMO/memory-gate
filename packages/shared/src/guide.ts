@@ -187,12 +187,13 @@ const KEYS: Record<Exclude<Lang, 'en'>, Keys> = {
 
 // Every offline reply, in each language. Spanish and French speak to the storyteller as usted / vous.
 type OfflineLines = {
-  leaveMemory: string; leaveGate: string; rest: string; goIn: string; listening: readonly string[]; addDetail: readonly string[];
+  leaveMemory: string; leaveGate: string; rest: string; goIn: string; offWeGo: string; listening: readonly string[]; addDetail: readonly string[];
   video: string; photo: string; unsure: string; enter: string; notYet: string; describe: (place: string | null) => string; ask: readonly string[];
 };
 const OFFLINE: Record<Lang, OfflineLines> = {
   en: {
     leaveMemory: 'Thank you for bringing me here. I’ll keep this moment safe for you.',
+    offWeGo: 'Off we go. What do you see from here?',
     leaveGate: 'Of course. Thank you for spending this time with me.',
     rest: 'Of course. Let’s rest here for a moment.',
     goIn: 'Gladly. Tell me about a place you’d like to visit.',
@@ -208,6 +209,7 @@ const OFFLINE: Record<Lang, OfflineLines> = {
   },
   es: {
     leaveMemory: 'Gracias por traerme aquí. Guardaré este momento para usted.',
+    offWeGo: '¡Vamos! ¿Qué ve desde aquí?',
     leaveGate: 'Por supuesto. Gracias por pasar este rato conmigo.',
     rest: 'Por supuesto. Descansemos aquí un momento.',
     goIn: 'Con mucho gusto. Cuénteme de algún lugar que le gustaría visitar.',
@@ -223,6 +225,7 @@ const OFFLINE: Record<Lang, OfflineLines> = {
   },
   fr: {
     leaveMemory: 'Merci pour ce moment ici. Je le garderai précieusement pour vous.',
+    offWeGo: 'Allons-y. Que voyez-vous d’ici ?',
     leaveGate: 'Bien sûr. Merci d’avoir passé ce moment avec moi.',
     rest: 'Bien sûr. Reposons-nous ici un instant.',
     goIn: 'Avec plaisir. Parlez-moi d’un endroit que vous aimeriez visiter.',
@@ -254,7 +257,9 @@ export function guideOffline(input: GuideInput): GuideReply {
   // Before leaving: "let's go" to "Shall we go there together?" means step in, not goodbye.
   if (input.phase === 'gathering' && ((input.invitedToEnter && saysYes(input.transcript)) || (asksToGoIn(input.transcript) && (!!place || input.turnsInPhase >= 2 || !!input.media)))) return reply(say.enter, 'enter');
   if (input.phase === 'gathering' && asksToGoIn(input.transcript)) return reply(say.goIn, 'chat');
-  if (asksToLeave(input.transcript)) return reply(input.phase === 'memory' ? say.leaveMemory : say.leaveGate, 'leave');
+  // "Let's go" is how a visit starts (and what a child shouts at a kite), never a goodbye: "let's go home" is.
+  if (asksToLeave(input.transcript) && !asksToGoIn(input.transcript)) return reply(input.phase === 'memory' ? say.leaveMemory : say.leaveGate, 'leave');
+  if (input.phase === 'memory' && asksToGoIn(input.transcript)) return reply(say.offWeGo, 'chat');
   if ((/\b(rest|pause|a break|wait a (minute|moment|second)|hold on|one moment)\b/.test(t) || keys?.rest.test(t)) && words <= 8) return reply(say.rest, 'rest');
   if (input.phase === 'memory') {
     if (words < 2) return reply(pick(say.listening, seed), 'chat');

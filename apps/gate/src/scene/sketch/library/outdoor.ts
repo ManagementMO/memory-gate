@@ -142,20 +142,31 @@ export const flowers: Builder = (o) => {
   const green = twoSided(k.m(TINT.leaf, 'plant'));
   const sunflower = says(o, 'sunflower');
   const lavender = says(o, 'lavender');
-  const primary = o.color || (sunflower ? '#e9c547' : lavender ? '#a993d1' : TINT.rose);
+  // A daisy is a ring of white petals round a yellow eye; a poppy an open orange cup (object-info/inspiration.ts names
+  // them from what people say and what the references describe).
+  const daisy = says(o, 'daisy', 'daisies'), poppy = says(o, 'popp');
+  const primary = o.color || (sunflower ? '#e9c547' : lavender ? '#a993d1' : daisy ? '#f4f2ee' : poppy ? '#e8862e' : TINT.rose);
   k.add(ellipsoid(0.72, 0.07, 0.42, 36, 14), soil, 0, 0.0, 0);
   const tufts: [number, number, number, number][] = Array.from({ length: 9 }, () => { const x = k.between(-0.55, 0.55); return [x, 0.08, k.between(-0.26, 0.26) * Math.sqrt(1 - (x / 0.7) ** 2), 0.12] as [number, number, number, number]; });
   k.add(leafCards(k.r, tufts, 22, [0.05, 0.12], 0.7), green);
-  const stems: THREE.BufferGeometry[] = [], a: THREE.BufferGeometry[] = [], b: THREE.BufferGeometry[] = [];
+  const stems: THREE.BufferGeometry[] = [], a: THREE.BufferGeometry[] = [], b: THREE.BufferGeometry[] = [], eyes: THREE.BufferGeometry[] = [];
   for (let i = 0; i < 26; i++) {
     const x = k.between(-0.62, 0.62), z = k.between(-0.32, 0.32) * Math.sqrt(1 - (x / 0.7) ** 2), h = k.between(0.26, 0.44) * (sunflower ? 1.6 : 1);
     stems.push(at(geo.cylinder(0.004, 0.005, h, 6), x, h / 2, z, k.between(-0.1, 0.1), 0, k.between(-0.1, 0.1)));
-    const s = sunflower ? 0.06 : 0.032;
+    const s = sunflower ? 0.06 : daisy ? 0.038 : 0.032;
+    if (daisy || poppy) {
+      // Petals in a flat ring (daisy) or a shallow cup (poppy); the eye drawn on its own in its own colour.
+      const petals = Array.from({ length: daisy ? 10 : 5 }, (_, j) => { const t = (j / (daisy ? 10 : 5)) * Math.PI * 2; return at(ellipsoid(s * (daisy ? 0.55 : 0.7), s * 0.08, s * (daisy ? 0.2 : 0.5), 8, 4), x + Math.cos(t) * s * 0.55, h + (poppy ? s * 0.25 : 0), z + Math.sin(t) * s * 0.55, poppy ? -0.6 * Math.sin(t) : 0, -t, poppy ? 0.6 * Math.cos(t) : 0); });
+      a.push(merge(petals));
+      eyes.push(at(geo.sphere(s * (daisy ? 0.28 : 0.2), 10, 8), x, h + s * 0.06, z));
+      continue;
+    }
     const head = lavender ? at(geo.capsule(0.012, 0.07), x, h + 0.03, z) : merge([at(ellipsoid(s, s * 0.45, s, 14, 8), x, h, z), at(geo.sphere(s * 0.38, 10, 8), x, h + s * 0.25, z)]);
     (i % 4 === 3 && !sunflower ? b : a).push(head);
   }
   k.add(merge(stems), green);
   k.add(merge(a), k.m(primary, 'plant'));
+  if (eyes.length) k.add(merge(eyes), k.m(daisy ? '#e9b934' : '#3b2e22', 'plant'));
   if (b.length) k.add(merge(b), k.m('#f3ece2', 'plant'));
   return k.done();
 };

@@ -27,6 +27,13 @@ export const WORLD_VIEWPOINTS: Record<string, Record<PerspectiveKey, Feet>> = {
 
 export const inMeadow = () => useSocial.getState().worldId === MEADOW_WORLD_ID && !!useGate.getState().photoWorld;
 
+// The meadow is the grandmother's childhood: inside it the two perspectives are her as a girl and her friend
+// (store.ts). At the gate they are still the family as they are now, even while the meadow is being prepared.
+const inside = () => ['forming', 'memory', 'leaving'].includes(useGate.getState().stage);
+const syncCast = () => useSocial.getState().setCast(inMeadow() && inside() ? 'meadow' : 'family');
+useSocial.subscribe((s, before) => { if (s.worldId !== before.worldId) syncCast(); });
+useGate.subscribe((s, before) => { if (s.photoWorld !== before.photoWorld || s.stage !== before.stage) syncCast(); });
+
 /** The checked viewpoints of the world this memory is shown in (world space), or null in the sketch room. */
 export function worldViewpoints(): Record<PerspectiveKey, Feet> | null {
   const id = useSocial.getState().worldId;

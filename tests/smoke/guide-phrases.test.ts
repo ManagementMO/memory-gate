@@ -21,8 +21,10 @@ test('"let\'s go" before the gate means step in once there is a place, and is ne
   expect(guideOffline({ ...gathering, transcript: "let's go", turnsInPhase: 2 }).intent).toBe('enter');
   expect(guideOffline({ ...gathering, transcript: "let's go", place: 'The meadow' }).intent).toBe('enter');
   expect(guideOffline({ ...gathering, transcript: "let's go" }).intent).not.toBe('leave');
-  // Inside a memory and for real wishes to stop, leaving is unchanged.
-  expect(guideOffline({ ...gathering, phase: 'memory', transcript: "let's go" }).intent).toBe('leave');
+  // Inside a memory "let's go" isn't goodbye either (a late "yes, let's go" while the place formed, or a child shouting
+  // it at the kite, ended the visit at once); real wishes to stop still leave.
+  expect(guideOffline({ ...gathering, phase: 'memory', transcript: "let's go" }).intent).toBe('chat');
+  expect(guideOffline({ ...gathering, phase: 'memory', transcript: "let's go home" }).intent).toBe('leave');
   expect(guideOffline({ ...gathering, transcript: 'take me home' }).intent).toBe('leave');
   expect(asksToLeave("I'd like to leave")).toBe(true);
 });

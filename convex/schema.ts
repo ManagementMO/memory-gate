@@ -9,7 +9,8 @@ export default defineSchema({
   objectKnowledge: defineTable({
     roomId: v.id('rooms'), memberId: v.id('members'), topicKey: v.string(), status: v.string(),
     runId: v.union(v.string(), v.null()), error: v.union(v.string(), v.null()), createdAt: v.number(), formatVersion: v.optional(v.number()),
-    references: v.array(v.object({ topicKey: v.string(), sourceUrl: v.string(), title: v.string(), attribution: v.string(), excerpt: v.string(), fetchedAt: v.number() })),
+    references: v.array(v.object({ topicKey: v.string(), sourceUrl: v.string(), title: v.string(), attribution: v.string(), excerpt: v.string(), fetchedAt: v.number(),
+      kind: v.optional(v.string()), license: v.optional(v.string()), imageUrl: v.optional(v.string()), date: v.optional(v.string()) })),
   }).index('by_room_topic', ['roomId', 'topicKey']).index('by_topic_status', ['topicKey', 'status']).index('by_room', ['roomId']),
   memoryImports: defineTable({
     roomId: v.id('rooms'), memberId: v.id('members'), mode: v.string(), status: v.string(),

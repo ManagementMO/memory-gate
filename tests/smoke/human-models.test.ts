@@ -11,10 +11,10 @@ const read = (path: string) => readFileSync(new URL(path, root), 'utf8');
 const gltfJson = (path: string) => {
   const b = readFileSync(new URL(path, root));
   expect(b.readUInt32LE(0)).toBe(0x46546c67); // glTF binary
-  return JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString()) as { nodes: { name?: string }[]; animations?: { name: string }[] };
+  return JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString()) as { nodes: { name?: string; children?: number[] }[]; animations?: { name: string }[] };
 };
 
-test('the boy and the grandmother are light, rigged for head and hands, and walk', () => {
+test('the boy and the grandmother are light, rigged for head and hands, and walk; standing in, the boy has a daisy', () => {
   for (const name of ['boy', 'grandma']) {
     const file = `apps/gate/public/people/${name}.glb`;
     expect(statSync(new URL(file, root)).size).toBeLessThan(3_000_000);
@@ -23,6 +23,13 @@ test('the boy and the grandmother are light, rigged for head and hands, and walk
     for (const bone of ['Hips', 'Neck', 'Head', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightArm', 'RightForeArm', 'RightHand', 'LeftToeBase', 'RightToeBase']) expect(bones.has(`mixamorig:${bone}`)).toBe(true);
     expect(j.animations?.some((a) => /walk/i.test(a.name))).toBe(true);
   }
+  // Standing in, while nobody sees through his eyes, the boy holds a daisy and plays with it.
+  const file = 'apps/gate/public/people/boy-flower.glb';
+  expect(statSync(new URL(file, root)).size).toBeLessThan(3_000_000);
+  const boy = gltfJson(file);
+  const daisy = boy.nodes.findIndex((n) => n.name === 'Daisy');
+  expect(boy.nodes.find((n) => n.children?.includes(daisy))?.name).toBe('mixamorig:RightHand');
+  expect(boy.animations?.some((a) => a.name === 'Idle_Flower')).toBe(true);
 });
 
 test('each perspective sees from its person’s eyes, the same in the gate and the exchange', () => {
@@ -34,7 +41,7 @@ test('each perspective sees from its person’s eyes, the same in the gate and t
   expect(eye(exchange, 'grandparent')).toBe(1.45);
   expect(eye(exchange, 'child')).toBe(1.21);
   const people = read('apps/gate/src/social/avatar/people.ts');
-  expect(people).toContain("child: { url: '/people/boy.glb'");
+  expect(people).toContain("child: { url: '/people/boy.glb', label: 'boy', height: 1.31, standIn: '/people/boy-flower.glb' }");
   expect(people).toContain("grandparent: { url: '/people/grandma.glb'");
 });
 

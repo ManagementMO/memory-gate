@@ -10,6 +10,7 @@ import { useGate } from '../state/store';
 import { socialLink } from './link';
 import { memoryKey } from './perspectives';
 import { notify, useSocial, viewingPerspective } from './store';
+import { recogniseNamed, shapeNamed } from '../object-info/state';
 
 /** The shared memory's placements as drawn on this device (published by MemoryScene). */
 export const memoryPlacements = { current: new Map<string, Placement>() };
@@ -44,11 +45,14 @@ export async function addPerspectiveDetail(text: string, storyId: string | null)
   }
   // Offline (or no budget): only what these words name, and nothing of the same kind already there.
   if (!fresh.length) fresh = planOffline(text, shared.title, { seeds: false }).objects.filter((o) => !known.some((k) => k.kind === o.kind));
+  // Still nothing: a thing the library doesn't know by that name, recognised from Apify's public references ("a daisy").
+  if (!fresh.length) fresh = recogniseNamed(text).filter((o) => !known.some((k) => k.kind === o.kind));
   fresh = fresh.slice(0, 3);
   if (!fresh.length) return [];
   const rename = new Map<string, string>();
   fresh = fresh.map((o) => { const id = `${p.key}-${short()}`; rename.set(o.id, id); return { ...o, id, quote: o.quote ?? text.slice(0, 200) }; })
     .map((o) => (o.target && rename.has(o.target) ? { ...o, target: rename.get(o.target)! } : o));
+  fresh = shapeNamed(text, fresh, () => true); // shaped by what the references say it looks like
   // Where layout puts them among everything already there, nudged off anything standing on the floor.
   const laid = layout({ ...shared, objects: [...merged.objects, ...fresh] });
   const taken: Placement[] = [...memoryPlacements.current.values(), ...mine.map((o) => o.placement)];

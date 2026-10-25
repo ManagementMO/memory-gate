@@ -1,11 +1,14 @@
 import { ConvexError, v } from 'convex/values';
 import { internalMutation, internalQuery, query } from './_generated/server';
 import { requireMember } from './lib/auth';
-import { OBJECT_CONTEXT_VERSION, normalizeObjectReferences, type ObjectTopicKey } from '../actors/historical-memory-atlas/src/knowledge.mjs';
+import { OBJECT_CONTEXT_VERSION, OBJECT_TOPICS, normalizeObjectReferences, type ObjectTopicKey } from '../actors/historical-memory-atlas/src/knowledge.mjs';
 
-export const topicV = v.union(v.literal('kite'), v.literal('flowers'), v.literal('trees'));
+/** Any fixed topic (actors/historical-memory-atlas/src/knowledge.mjs); checked against the list, never passed on as text. */
+export const topicV = v.string();
+export const requireTopic = (key: string) => { if (!Object.hasOwn(OBJECT_TOPICS, key)) throw new ConvexError('Choose a supported object topic.'); };
 const auth = { code: v.string(), token: v.string() };
-const referenceV = v.object({ topicKey: v.string(), sourceUrl: v.string(), title: v.string(), attribution: v.string(), excerpt: v.string(), fetchedAt: v.number() });
+const referenceV = v.object({ topicKey: v.string(), sourceUrl: v.string(), title: v.string(), attribution: v.string(), excerpt: v.string(), fetchedAt: v.number(),
+  kind: v.optional(v.string()), license: v.optional(v.string()), imageUrl: v.optional(v.string()), date: v.optional(v.string()) });
 export const list = query({ args: auth, handler: async (ctx, a) => {
   const { room, member } = await requireMember(ctx, a.code, a.token);
   const rows = await ctx.db.query('objectKnowledge').withIndex('by_room', q => q.eq('roomId', room._id)).collect();
@@ -15,6 +18,7 @@ export const list = query({ args: auth, handler: async (ctx, a) => {
 } });
 /** Atomic per-room/topic reservation prevents duplicate cloud starts on repeated clicks or multiple devices. */
 export const begin = internalMutation({ args: { ...auth, topicKey: topicV }, handler: async (ctx, a) => {
+  requireTopic(a.topicKey);
   const { room, member } = await requireMember(ctx, a.code, a.token);
   if (room.paused) throw new ConvexError('Continue the memory before exploring.');
   const existing = await ctx.db.query('objectKnowledge').withIndex('by_room_topic', q => q.eq('roomId', room._id).eq('topicKey', a.topicKey)).unique();

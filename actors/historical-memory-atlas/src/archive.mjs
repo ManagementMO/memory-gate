@@ -58,6 +58,37 @@ async function readJson(url, fetcher) {
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
   return JSON.parse(new TextDecoder().decode(bytes));
 }
+/**
+ * Photos for an object's card: a fixed search phrase (never family words), kept only when the record says the image is
+ * free to publish. At most `maxItems` photos and `maxItems + 2` detail requests.
+ */
+export async function findPhotos({ q, yearFrom, yearTo, maxItems = 3 }, { fetcher = fetch, pause = 0, now = () => new Date().toISOString() } = {}) {
+  if (typeof q !== 'string' || q.length < 3 || q.length > 80) throw new Error('Use a short public search phrase.');
+  const input = { yearFrom, yearTo }, retrievedAt = now(), wait = () => new Promise(r => setTimeout(r, pause));
+  const url = new URL('https://www.loc.gov/photos/');
+  url.search = new URLSearchParams({ fo: 'json', q, c: '20', at: 'results' }).toString();
+  const response = await readJson(url, fetcher);
+  if (!Array.isArray(response.results)) throw new Error('Archive returned an unrecognized response.');
+  const photos = [], seen = new Set();
+  let details = 0;
+  for (const result of response.results) {
+    if (photos.length >= maxItems || details >= maxItems + 2) break;
+    const sourceUrl = safeArchiveUrl(result.id ?? result.url);
+    if (!sourceUrl || seen.has(sourceUrl) || !Array.isArray(result.image_url) || !result.image_url.length) continue; seen.add(sourceUrl);
+    if (!normalizeReference(result, null, input, retrievedAt)) continue;
+    if (pause) await wait();
+    let detail = null;
+    try { details++; const detailUrl = new URL(sourceUrl); detailUrl.searchParams.set('fo', 'json'); detail = await readJson(detailUrl, fetcher); } catch { continue; }
+    const ref = normalizeReference(result, detail, input, retrievedAt);
+    if (!ref?.imageUrl) continue;
+    // A card-sized copy: the smallest at least 500 px wide (the catalog lists sizes as #h=…&w=…), else the largest.
+    const sized = result.image_url.map(u => safeArchiveUrl(u, true)).filter(Boolean).map(u => ({ u, w: Number(/[#&]w=(\d+)/.exec(u)?.[1] ?? 0) }));
+    ref.imageUrl = sized.filter(x => x.w >= 500).sort((a, b) => a.w - b.w)[0]?.u ?? ref.imageUrl;
+    photos.push(ref);
+  }
+  return photos;
+}
+
 export async function searchArchive(rawInput, { fetcher = fetch, now = () => new Date().toISOString() } = {}) {
   const input = validateInput(rawInput); const retrievedAt = now();
   const url = new URL('https://www.loc.gov/photos/');

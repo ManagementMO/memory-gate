@@ -1,8 +1,9 @@
-// A character's walk loop, sampled by hand rather than through an AnimationMixer: each frame every bone starts again
-// from its rest pose, the walk is laid over it as much as the person is walking, and only then are the head and
-// arms turned toward the real head and hands. (A mixer only writes values that changed since its last write, so
-// those turns would pile up frame after frame whenever the walk stood still.) The loop walks in place; the figure
-// is carried by the person's real movement, and the loop's pace follows their speed so the feet don't slide.
+// A character's loops, sampled by hand rather than through an AnimationMixer: each frame every bone starts again
+// from its rest pose, the idle loop (if the file has one, like the boy with his daisy) is laid over it, the walk over
+// that as much as the person is walking, and only then are the head and arms turned toward the real head and hands.
+// (A mixer only writes values that changed since its last write, so those turns would pile up frame after frame
+// whenever the walk stood still.) The loops stay in place; the figure is carried by the person's real movement, and
+// the walk's pace follows their speed so the feet don't slide.
 import * as THREE from 'three';
 
 type Channel = { node: THREE.Object3D; path: 'quaternion' | 'position'; sample: THREE.Interpolant };
@@ -11,13 +12,12 @@ type Rest = { node: THREE.Object3D; p: THREE.Vector3; q: THREE.Quaternion; s: TH
 const _q = new THREE.Quaternion();
 const _v = new THREE.Vector3();
 
-export class WalkCycle {
+/** One looping clip, laid over whatever pose the bones are in. */
+export class Loop {
   readonly duration: number;
-  /** How fast the walk would carry the character (m/s at its own size): its stance foot's speed. */
-  readonly pace: number;
   private readonly channels: Channel[];
 
-  constructor(root: THREE.Object3D, clip: THREE.AnimationClip, rest: RestPose) {
+  constructor(root: THREE.Object3D, clip: THREE.AnimationClip) {
     this.duration = clip.duration;
     this.channels = clip.tracks.flatMap((track) => {
       const { nodeName, propertyName } = THREE.PropertyBinding.parseTrackName(track.name);
@@ -25,10 +25,9 @@ export class WalkCycle {
       if (!node || (propertyName !== 'quaternion' && propertyName !== 'position')) return [];
       return [{ node, path: propertyName, sample: track.InterpolantFactoryMethodLinear(undefined) }]; // quaternion tracks give a slerping one
     });
-    this.pace = this.measurePace(root, rest);
   }
 
-  /** Lay the walk at time t over the pose (weight 0: rest, 1: fully walking). */
+  /** Lay the loop at time t over the pose (weight 0: as it was, 1: fully the loop's). */
   apply(t: number, weight: number): void {
     if (weight <= 0.001) return;
     const time = ((t % this.duration) + this.duration) % this.duration;
@@ -37,6 +36,16 @@ export class WalkCycle {
       if (c.path === 'quaternion') c.node.quaternion.slerp(_q.set(r[0]!, r[1]!, r[2]!, r[3]!), weight);
       else c.node.position.lerp(_v.set(r[0]!, r[1]!, r[2]!), weight);
     }
+  }
+}
+
+export class WalkCycle extends Loop {
+  /** How fast the walk would carry the character (m/s at its own size): its stance foot's speed. */
+  readonly pace: number;
+
+  constructor(root: THREE.Object3D, clip: THREE.AnimationClip, rest: RestPose) {
+    super(root, clip);
+    this.pace = this.measurePace(root, rest);
   }
 
   /** The stance foot (the lower one) slides back under a walk in place as fast as the walk would move forward. */
@@ -79,3 +88,5 @@ export function findBone(root: THREE.Object3D, name: string): THREE.Object3D | n
 
 /** The loop to walk with, if the file has one ("Walk_InPlace", "walk", ...). */
 export const walkClipOf = (clips: THREE.AnimationClip[]) => clips.find((c) => /walk/i.test(c.name)) ?? null;
+/** The loop to stand with, if the file has one ("Idle_Flower", "idle", ...). */
+export const idleClipOf = (clips: THREE.AnimationClip[]) => clips.find((c) => /idle/i.test(c.name)) ?? null;

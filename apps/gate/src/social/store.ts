@@ -49,12 +49,28 @@ export const PERSONAS: Record<PerspectiveKey, { label: string; eyeHeight: number
   grandparent: { label: 'Grandparent', eyeHeight: 1.45, color: '#8fb8ff' },
   child: { label: 'Grandchild', eyeHeight: 1.21, color: '#ffb48f' },
 };
-const local = (key: PerspectiveKey): Perspective => ({ id: `local:${key}`, key, ...PERSONAS[key], claimedBy: '', claimedName: '', archivePlace: '', yearFrom: 1900, yearTo: 1980 });
+/**
+ * Who the two perspectives are in the memory being visited. Usually the family as they are now; the Red Kite meadow is
+ * the grandmother's childhood, seen through her eyes as a girl of about nine and through the friend's she flew the kite
+ * with (the boy). The room keeps the same two perspectives (and who claimed them); only who they are changes.
+ */
+export type Cast = 'family' | 'meadow';
+export const MEADOW_CAST: Record<PerspectiveKey, { label: string; eyeHeight: number }> = {
+  grandparent: { label: 'Young grandma', eyeHeight: 1.19 }, // her own eyes at 1.29 m tall (avatar/people.ts)
+  child: { label: 'Friend', eyeHeight: 1.21 },
+};
+const dress = (p: Perspective, cast: Cast): Perspective => (cast === 'meadow' ? { ...p, ...MEADOW_CAST[p.key] } : p);
+const localRow = (key: PerspectiveKey): Perspective => ({ id: `local:${key}`, key, ...PERSONAS[key], claimedBy: '', claimedName: '', archivePlace: '', yearFrom: 1900, yearTo: 1980 });
+const local = (key: PerspectiveKey): Perspective => dress(localRow(key), useSocial.getState().cast);
 
 /** A line of the one conversation the companion holds with everyone in the visit (services/exchange/conversation.mjs). */
 export type ConversationTurn = { id: string; who: 'person' | 'companion'; memberId: string; speakerName: string; perspectiveId: string; text: string; intent: string; createdAt: number };
 export type SocialSnapshot = {
   perspectives: Perspective[]; stories: Story[]; objects: PerspectiveObject[]; turns: Turn[]; summaries: Summary[];
+  /** The perspectives as the room keeps them; `perspectives` is them as the memory's cast. */
+  rawPerspectives: Perspective[];
+  cast: Cast;
+  setCast: (cast: Cast) => void;
   handoffs: Handoff[]; pins: Pin[]; avatars: Avatar[]; spots: Spot[];
   conversation?: ConversationTurn[]; conversationSummary?: string | null;
 };
@@ -84,7 +100,10 @@ type SocialState = SocialSnapshot & {
 };
 
 export const useSocial = create<SocialState>((set) => ({
-  perspectives: [local('grandparent'), local('child')],
+  perspectives: [localRow('grandparent'), localRow('child')],
+  rawPerspectives: [localRow('grandparent'), localRow('child')],
+  cast: 'family',
+  setCast: (cast) => set((s) => (s.cast === cast ? s : { cast, perspectives: s.rawPerspectives.map((p) => dress(p, cast)) })),
   stories: [], objects: [], turns: [], summaries: [], handoffs: [], pins: [], avatars: [], spots: [], conversation: [], conversationSummary: null,
   status: 'local',
   memberId: null,
@@ -119,8 +138,9 @@ export const notify = (text: string) => {
 };
 
 export function applySnapshot(s: SocialSnapshot): void {
-  const perspectives = s.perspectives.length ? s.perspectives.map((p) => ({ ...p, key: (p.key === 'child' ? 'child' : 'grandparent') as PerspectiveKey })) : useSocial.getState().perspectives;
-  useSocial.setState({ ...s, spots: s.spots ?? [], conversation: s.conversation ?? [], conversationSummary: s.conversationSummary ?? null, perspectives, status: 'live' });
+  const raw = s.perspectives.length ? s.perspectives.map((p) => ({ ...p, key: (p.key === 'child' ? 'child' : 'grandparent') as PerspectiveKey })) : useSocial.getState().rawPerspectives;
+  const cast = useSocial.getState().cast;
+  useSocial.setState({ ...s, spots: s.spots ?? [], conversation: s.conversation ?? [], conversationSummary: s.conversationSummary ?? null, rawPerspectives: raw, perspectives: raw.map((p) => dress(p, cast)), status: 'live' });
 }
 
 // For automated checks (like window.__gate and window.__presence).

@@ -36,8 +36,27 @@ function pageStarts(words: string[], max = 10): number[] {
   return starts;
 }
 
+/**
+ * Crossing into a memory nothing new is said for a while (the walk through the palace, then the place forming): the
+ * last line ("Come with me.") fades a couple of seconds after it has been said, instead of hanging over the whole
+ * crossing. Everywhere else a line stays until the next one, to be read at ease.
+ */
+export function useFadedInCrossing(): boolean {
+  const said = useGate((s) => s.companionLine);
+  const crossing = useGate((s) => s.stage === 'entering' || s.stage === 'forming');
+  const [faded, setFaded] = useState<number | null>(null);
+  useEffect(() => {
+    if (!crossing || !said) return;
+    const words = said.text.split(/\s+/).filter(Boolean).length;
+    const t = setTimeout(() => setFaded(said.id), Math.max(0, said.at + (words / 2.6) * 1000 + 2500 - performance.now()));
+    return () => clearTimeout(t);
+  }, [crossing, said]);
+  return crossing && !!said && faded === said.id;
+}
+
 export function Captions() {
   const said = useGate((s) => s.companionLine);
+  const faded = useFadedInCrossing();
   const heard = useGate((s) => s.heardLine);
   const spoken = useGate((s) => s.spoken);
   const stage = useGate((s) => s.stage);
@@ -53,7 +72,7 @@ export function Captions() {
   return (
     <div className="captions" data-testid="captions">
       <p className="visually-hidden" lang={spoken} aria-live="polite">{said?.text ?? ''}</p>
-      <p className="said" lang={spoken} aria-hidden="true" data-testid="companion-line" data-full={said?.text ?? ''}>
+      <p className={`said${faded ? ' faded' : ''}`} lang={spoken} aria-hidden="true" data-testid="companion-line" data-full={said?.text ?? ''}>
         {words.slice(from, to).map((w, j) => {
           const i = from + j;
           return <span key={`${said?.id}-${i}`} className={`w ${i < shown ? 'on' : ''}`}>{w}{i < to - 1 ? ' ' : ''}</span>;
