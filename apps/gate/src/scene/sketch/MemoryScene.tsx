@@ -147,16 +147,16 @@ export function MemoryScene() {
   });
 
   if (!active || !plan) return null;
-  // In a prepared place the floor is the world's own (a splat, which can't be pointed at): an unseen ground catches a
-  // tap, pinch or trigger, so "the bench was here" can put something where you pointed; in the headset a pinch held
-  // there for a moment is a step to it instead (Walk).
-  const ground = place ? (
+  // An unseen ground just over the floor catches a tap, pinch or trigger there, so "the bench was here" can put something
+  // where you pointed (in a prepared place the floor is the world's own, a splat, which can't be pointed at), and in
+  // the headset a pinch held there for a moment is a step to it instead (Walk), in every memory.
+  const ground = (
     <mesh name="ground-catcher" rotation-x={-Math.PI / 2} position={[0, 0.002, 0]} renderOrder={-10}
       onPointerDown={walkPointer.down} onPointerMove={walkPointer.move} onPointerUp={walkPointer.up} onPointerLeave={walkPointer.leave}>
       <circleGeometry args={[20, 64]} />
       <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
     </mesh>
-  ) : null;
+  );
   // Inside a living photograph the photo already shows the room and its furniture; only what's said after forms.
   // A kite (and the spool it flies from) is in the visitor's hands, drawn by HeldKite, not set in the place.
   const shown = (photoWorld ? plan.objects.filter((o) => !coveredByPhoto.current.has(o.id)) : plan.objects).filter((o) => !held(plan, o.kind));

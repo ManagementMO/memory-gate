@@ -28,7 +28,7 @@ export function WalkHint({ id, text, when }: { id: string; text: string; when: (
   });
   return (
     <group ref={g} visible={false}>
-      <Text font={fontUrl} fontSize={0.04} maxWidth={0.9} textAlign="center" anchorX="center" anchorY="middle" color="#ffffff"
+      <Text raycast={() => null} font={fontUrl} fontSize={0.04} maxWidth={0.9} textAlign="center" anchorX="center" anchorY="middle" color="#ffffff"
         outlineWidth={0.004} outlineColor="#1d1c2e" renderOrder={1999} material-depthTest={false} material-toneMapped={false}>{text}</Text>
     </group>
   );

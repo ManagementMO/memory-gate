@@ -31,9 +31,11 @@ function Button({ label, x, y = 0, width = 0.17, onPress, day, testId }: { label
   const [hover, setHover] = useState(false);
   const press = (e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onPress(); };
   return (
-    <group position={[x, y, 0]} name={testId}>
-      <mesh geometry={geo} renderOrder={1992} onClick={press}
-        onPointerOver={(e) => { e.stopPropagation(); setHover(true); }} onPointerOut={() => setHover(false)}>
+    <group position={[x, y, 0]} name={testId} onClick={press} onPointerEnter={() => setHover(true)} onPointerLeave={() => setHover(false)}>
+      {/* A hit area a little larger than the pill (hand rays waver); a hit on any part of the button is the button's:
+          the handlers sit on the group, so aiming at its words (in front of the pill) presses it too. */}
+      <mesh position={[0, 0, -0.001]}><planeGeometry args={[width + 0.06, 0.11]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} /></mesh>
+      <mesh geometry={geo} renderOrder={1992}>
         <meshBasicMaterial color={day ? (hover ? '#1d1c2e' : '#ffffff') : hover ? '#f5f4ff' : '#1a1b33'} transparent opacity={hover ? 0.95 : 0.82} depthTest={false} depthWrite={false} toneMapped={false} />
       </mesh>
       <Text font={fontUrl} fontSize={0.026} anchorX="center" anchorY="middle" position={[0, 0.001, 0.002]} renderOrder={1993}
