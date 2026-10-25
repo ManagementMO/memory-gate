@@ -8,6 +8,7 @@ import { api } from '../../../convex/_generated/api.js';
 import { launchBrowser } from './browser.mjs';
 if(!process.argv.includes('--live'))throw Error('Pass --live to verify real bounded Apify retrieval.');
 const base=process.env.GATE_URL??'https://localhost:5180',out='.logs/object-info-live';mkdirSync(out,{recursive:true});
+const fromHome=process.argv.includes('--from-home');
 const backend=new ConvexHttpClient('http://127.0.0.1:3210');
 if(existsSync(out+'/room.json')){
   const previous=JSON.parse(readFileSync(out+'/room.json','utf8'));
@@ -22,13 +23,58 @@ const check=async(name,fn)=>{await fn();checks.push(name);console.log('PASS '+na
 let auth;
 try{
   await page.goto(`${base}/?voice=off&memory=red-kite&emulate=1`);
-  await page.getByTestId('begin').click({timeout:90000});
-  await page.getByTestId('choose-grandparent').click({timeout:45000});
+  if(fromHome){
+    await check('welcome keeps Begin and the existing examples alongside the Apify option at three screen sizes',async()=>{
+      await expect(page.getByTestId('home-discovery')).toContainText('via Apify',{timeout:90000});
+      await expect(page.getByTestId('begin')).toBeEnabled();
+      await expect(page.getByTestId('enter-vr')).toBeVisible({timeout:15000});
+      await expect(page.getByTestId('open-red-kite')).toHaveAttribute('href','/?story=red-kite');
+      await expect(page.getByTestId('open-object-workshop')).toHaveAttribute('href','/?story=red-kite&objects=1');
+      for(const [label,width,height] of [['desktop',1440,900],['phone',390,844],['landscape',844,390]]){
+        await page.setViewportSize({width,height});
+        const portal=await page.getByTestId('portal').boundingBox(),bar=await page.locator('.topbar').boundingBox();
+        assert.ok(portal.x>=0&&portal.x+portal.width<=width&&portal.y>=bar.y+bar.height&&portal.y+portal.height<=height,`${label}: welcome fits below the top bar`);
+        const controls=await Promise.all(['begin','explore-meadow','open-red-kite','open-object-workshop','enter-vr'].map(id=>page.getByTestId(id).boundingBox()));
+        for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++){
+          const a=controls[i],b=controls[j];
+          assert.ok(a.x+a.width<=b.x||b.x+b.width<=a.x||a.y+a.height<=b.y||b.y+b.height<=a.y,`${label}: welcome and headset controls do not overlap`);
+        }
+        await page.screenshot({path:out+`/home-${label}.png`,timeout:60000});
+      }
+      assert.equal(await page.evaluate(()=>window.__gate.store.getState().session),null,'viewing the welcome does not create a room or trigger a lookup');
+      await page.setViewportSize({width:1440,height:900});
+    });
+    await check('a family invitation keeps its focused Join flow',async()=>{
+      await page.evaluate(()=>window.__gate.store.getState().set({invite:{code:'ABCDEF',key:'ABCDEF',host:'your family'}}));
+      await expect(page.getByTestId('home-discovery')).toHaveCount(0);
+      await expect(page.getByTestId('begin')).toHaveText('Join');
+      await page.evaluate(()=>window.__gate.store.getState().set({invite:null}));
+    });
+    await check('nearby visits retain Join and Start a new visit with the optional sample',async()=>{
+      await page.evaluate(()=>window.__presence.setState({nearby:{code:'ABCDEF',key:'ABCDEF'}}));
+      await expect(page.getByTestId('join-nearby')).toBeVisible();
+      await expect(page.getByTestId('begin')).toHaveText('Start a new visit');
+      await expect(page.getByTestId('explore-meadow')).toBeVisible();
+      await page.evaluate(()=>window.__presence.setState({nearby:null}));
+    });
+    await page.getByTestId('explore-meadow').click();
+    await page.waitForFunction(()=>window.__gate.store.getState().stage==='memory',null,{timeout:90000});
+    await page.getByTestId('choose-grandparent').click({timeout:45000});
+    await check('the home option opens the existing prepared meadow and labels it as a fictional sample',async()=>{
+      assert.match(await page.evaluate(()=>window.__gate.store.getState().memoryTitle),/fictional sample/);
+      assert.equal(await page.evaluate(()=>window.__gate.memory.introLine()),'Here we are. The little path, and the old oak at the bend.');
+    });
+  }else{
+    await page.getByTestId('begin').click({timeout:90000});
+    await page.getByTestId('choose-grandparent').click({timeout:45000});
+  }
   await page.waitForFunction(()=>window.__gate.store.getState().session,null,{timeout:30000});
   auth=await page.evaluate(()=>{const s=window.__gate.store.getState().session;return{code:s.code,token:s.token};});
   writeFileSync(out+'/room.json',JSON.stringify(auth)); // ignored, private credentials; never copy into evidence
-  await page.evaluate(()=>window.__gate.flow.testHear('We flew a white kite in this meadow, with flowers beside the little path.'));
-  await page.evaluate(()=>window.__gate.flow.testHear('Yes, let us go there together.'));
+  if(!fromHome){
+    await page.evaluate(()=>window.__gate.flow.testHear('We flew a white kite in this meadow, with flowers beside the little path.'));
+    await page.evaluate(()=>window.__gate.flow.testHear('Yes, let us go there together.'));
+  }
   await page.waitForFunction(()=>window.__gate.store.getState().stage==='memory',null,{timeout:90000});
   await page.waitForFunction(()=>window.__gate.store.getState().photoWorld,null,{timeout:45000});
   await page.getByRole('button',{name:'My view',exact:true}).click();
@@ -102,7 +148,7 @@ try{
   });
   const jobs=(await backend.query(api.objectKnowledge.list,auth)).jobs;
   assert.deepEqual(errors,[]);
-  writeFileSync(out+'/verification.json',JSON.stringify({checks,errors,actorVersion:'1.3',mainBase:'e78e720',jobs:jobs.map(j=>({topic:j.topicKey,status:j.status,runId:j.runId,sources:j.references.map(r=>({url:r.sourceUrl,publisher:r.attribution,fetchedAt:r.fetchedAt}))})),xr:await page.evaluate(()=>window.__objectInfo.snapshot()),physicalHeadset:false},null,2));
+  writeFileSync(out+'/verification.json',JSON.stringify({checks,errors,fromHome,actorVersion:'1.3',mainBase:'e78e720',jobs:jobs.map(j=>({topic:j.topicKey,status:j.status,runId:j.runId,sources:j.references.map(r=>({url:r.sourceUrl,publisher:r.attribution,fetchedAt:r.fetchedAt}))})),xr:await page.evaluate(()=>window.__objectInfo.snapshot()),physicalHeadset:false},null,2));
   console.log(JSON.stringify({checks:checks.length,errors:errors.length,runs:jobs.map(j=>j.runId)}));
 }catch(e){
   writeFileSync(out+'/failure.json',JSON.stringify({error:String(e),errors,scene:await page.evaluate(()=>({stage:window.__gate?.store.getState().stage,objects:window.__objectInfo?.snapshot()})).catch(()=>null),jobs:auth?(await backend.query(api.objectKnowledge.list,auth)).jobs.map(j=>({topic:j.topicKey,status:j.status,runId:j.runId,error:j.error})):[]},null,2));

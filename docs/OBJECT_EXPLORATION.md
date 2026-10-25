@@ -2,6 +2,8 @@
 
 This is an additive HUD in the existing `/` journey, including the prepared Red Kite meadow. It does not replace the welcome, companion, captions, social dock, walking, viewpoints, terrain, splat renderer, or controller bindings.
 
+The welcome now has a secondary **Explore the meadow** option with the same glass controls and small `via Apify` credit. It opens the existing sample through the prepared-place flow with the kite and spool already present. Its label explicitly calls this fictional. Begin still starts the companion conversation, invitation links keep Join, and the existing source/3D examples remain available. Nothing is scraped on the welcome screen. In the meadow, the same markers and cards appear in desktop and native VR.
+
 For an immediate comparison or a hardware fallback, append `&objectInfo=off` to the meadow URL. This disables both add-on components, their queries and markers, without changing any configuration file. The default is enabled. Optional information has its own error boundaries, so an unavailable source does not replace the memory.
 
 ## Keep the main pipeline independent
@@ -21,6 +23,8 @@ No new API key is needed. The existing private `APIFY_TOKEN`, `ALLOW_APIFY_CLOUD
 Object information is public context, separate from a person's recollection. This addition does not change or generate any memory details or rewrite the person's words. Leaving, switching perspective, resting or opening the existing source/story panel closes the info card.
 
 Validation: `npm run test:atlas`, `npm test -- tests/smoke/object-knowledge.test.ts`, Gate typecheck/build, and `node apps/gate/scripts/object-info-check.mjs --live` (explicitly enables bounded Apify retrieval). Browser evidence and live run IDs are recorded separately after verification. Physical Quest testing is still required before claiming headset hardware verification.
+
+Use `node apps/gate/scripts/object-info-check.mjs --live --from-home` to verify the new welcome entry, three responsive layouts with no overlapping controls, invitation/nearby states, and the complete desktop-to-native discovery flow. The final run passed all ten checks with zero page errors, reusing the existing saved NASA, RHS and Minnesota DNR references. Gate typecheck/build, 139 contract tests and 16 Actor tests also pass. [Sanitized results and current home screenshots](../evidence/object-exploration/home-to-headset.json).
 
 ## Verified local run
 

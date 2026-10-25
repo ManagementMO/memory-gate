@@ -11,7 +11,7 @@
     {
       "name": "assistant asks for a memory",
       "stage": "gathering",
-      "said": "Is there a moment you\u00e2\u20ac\u2122d like to visit today? You can tell me about it, or show me a photo.",
+      "said": "Is there a moment you’d like to visit today? You can tell me about it, or show me a photo.",
       "title": null,
       "voice": "unsupported",
       "session": true,
@@ -38,7 +38,7 @@
     {
       "name": "Apify workshop is manual and available after entry",
       "stage": "memory",
-      "said": "Tell me what else was here, or anything you notice. Say when you\u00e2\u20ac\u2122d like to leave.",
+      "said": "Tell me what else was here, or anything you notice. Say when you’d like to leave.",
       "title": null,
       "voice": "unsupported",
       "session": true,
@@ -47,7 +47,7 @@
     {
       "name": "an extra spoken detail",
       "stage": "memory",
-      "said": "Tell me what else was here, or anything you notice. Say when you\u00e2\u20ac\u2122d like to leave.",
+      "said": "Tell me what else was here, or anything you notice. Say when you’d like to leave.",
       "title": null,
       "voice": "unsupported",
       "session": true,
@@ -64,13 +64,15 @@
   ],
   "errors": [],
   "mode": "offline, simulated speech; no paid calls",
-  "mainCommit": "8b1948c",
+  "mainCommit": "e78e720",
+  "homeAdaptation": true,
   "verification": {
-    "contracts": 126,
+    "contracts": 139,
+    "actorTests": 16,
     "gateTypecheck": "passed",
     "gateProductionBuild": "passed"
   },
-  "mergedApifyRegression": {
+  "earlierSourceRegression": {
     "checks": [
       "place references require review and optional models start as private previews",
       "explicit placement shares the real model and switching POV preserves the other viewer",
