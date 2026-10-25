@@ -1,6 +1,6 @@
 // The DOM layer over the world: what's on screen at each part of the journey. Everything here is optional to use;
 // the companion offers each thing out loud when it matters.
-import { lazy, Suspense } from 'react';
+import { Component, Suspense, type ReactNode } from 'react';
 import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
 import { Captions } from './Captions';
@@ -11,8 +11,25 @@ import { Portal } from './Portal';
 import { TopBar } from './TopBar';
 import { XrButton } from './XrButton';
 import { PresenceSync } from '../presence/PresenceSync';
+import { lazyRetry } from './lazyRetry';
 
-const AlbumView = lazy(() => import('../album/AlbumView'));
+const AlbumView = lazyRetry(() => import('../album/AlbumView'));
+
+/** If the album can't be fetched (a dropped connection), say so where it would be and offer to try again. */
+class AlbumUnavailable extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch(e: unknown) { console.error('[album] could not load', e); }
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <div className="boot" role="alert">
+        <div>Your moments are kept, but they couldn’t be shown just now.<small>Check the Wi-Fi, then try again.</small></div>
+        <button type="button" onClick={() => location.reload()}>Try again</button>
+      </div>
+    );
+  }
+}
 
 export function Overlay() {
   const stage = useGate((s) => s.stage);
@@ -26,9 +43,11 @@ export function Overlay() {
       <Offers />
       {stage === 'forming' && <FormingNote />}
       {stage === 'album' && (
-        <Suspense fallback={null}>
-          <AlbumView onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} />
-        </Suspense>
+        <AlbumUnavailable>
+          <Suspense fallback={null}>
+            <AlbumView onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} />
+          </Suspense>
+        </AlbumUnavailable>
       )}
       <XrButton />
       <InviteSheet />

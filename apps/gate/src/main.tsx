@@ -1,4 +1,5 @@
-import { Component, StrictMode, Suspense, lazy, useEffect, useState, type ComponentType, type ReactNode } from 'react';
+import { Component, StrictMode, Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
+import { lazyRetry } from './ui/lazyRetry';
 import { createRoot } from 'react-dom/client';
 import './styles/tokens.css';
 import './styles/glass.css';
@@ -7,15 +8,6 @@ import './diag/deviceLog';
 
 // ?preview=figure|light|album|library|scene renders one piece in isolation (used for visual review and by the test suite).
 const preview = new URLSearchParams(location.search).get('preview');
-
-/** A slow connection (a headset through a tunnel) can drop a download: try again a few times before giving up. */
-function lazyRetry<T extends ComponentType>(load: () => Promise<{ default: T }>) {
-  return lazy(async () => {
-    for (let i = 0; ; i++) {
-      try { return await load(); } catch (e) { if (i >= 3) throw e; await new Promise((r) => setTimeout(r, 1500 * (i + 1))); }
-    }
-  });
-}
 
 /** While the experience downloads: a breathing light, and a word if it's taking a while. */
 function Opening() {
