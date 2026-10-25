@@ -180,6 +180,16 @@ class Flow {
     this.engine?.setListening(on && !useGate.getState().resting);
   }
 
+  /** Push to talk (hold V): down opens a turn at once, up sends it (VoiceEngine.pushToTalk). Only in conversation, and
+   *  not while resting; the first press turns hands-free listening off for the rest of the visit. */
+  pushToTalk(down: boolean): void {
+    const g = useGate.getState();
+    if (!down) { if (g.talkHeld) { g.set({ talkHeld: false }); this.engine?.pushToTalk(false); } return; }
+    if (!this.engine || g.resting || g.talkHeld || !['greeting', 'gathering', 'forming', 'memory'].includes(g.stage)) return;
+    g.set({ pushToTalk: true, talkHeld: true });
+    this.engine.pushToTalk(true);
+  }
+
   private async heard(h: Heard): Promise<void> {
     const g = useGate.getState();
     if (g.resting || this.leaving) return;
@@ -881,6 +891,15 @@ async function describeMedia(file: File): Promise<MediaItem | null> {
 }
 
 export const flow = new Flow();
+// Push to talk: hold V to speak, let go to send (never while typing in a field, never with a modifier key).
+const typing = (t: EventTarget | null) => t instanceof Element && !!t.closest('input, textarea, select, [contenteditable="true"]');
+window.addEventListener('keydown', (e) => {
+  if (e.code !== 'KeyV' || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
+  e.preventDefault();
+  if (!e.repeat) flow.pushToTalk(true);
+});
+window.addEventListener('keyup', (e) => { if (e.code === 'KeyV') flow.pushToTalk(false); });
+window.addEventListener('blur', () => flow.pushToTalk(false)); // a key released in another window still lets go here
 export { uploadFile };
 // Exposed for the dogfood loop and Playwright: drive the conversation without a microphone.
 (window as unknown as { __gate: unknown }).__gate = { flow, store: useGate, memory, moments, memoryStore: useMemory };

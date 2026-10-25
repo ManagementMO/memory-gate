@@ -1,5 +1,7 @@
 // Hands-free voice. Nobody holds a button: the microphone stays open and a small voice-activity detector decides
-// when someone starts and finishes talking, with patience for long pauses (people often stop mid-thought).
+// when someone starts and finishes talking, with patience for long pauses (people often stop mid-thought). Or push to
+// talk: holding V opens a turn at once and letting go sends it (pushToTalk); after the first press the room's noise
+// no longer starts a turn on its own for the rest of the visit.
 //   cartesia  the shared Memory Gate voice module (Cartesia ink-2 STT, Sonic TTS, original clips kept with consent);
 //             this file only decides when a turn starts and ends.
 //   browser   the browser's own speech recognition and synthesis: a free fallback when no voice token is available.
@@ -40,6 +42,10 @@ export interface VoiceEngine {
   hush(): void;
   /** Open or close the hands-free microphone (closed while resting, while the companion is mid-sentence, etc.). */
   setListening(on: boolean): void;
+  /** Push to talk (hold V): held opens a turn at once (the person has the floor, so the companion stops); released
+   *  ends it and sends what was said. The first press also stops hands-free turns for the rest of the visit. Ignored
+   *  while the microphone is closed (resting). */
+  pushToTalk(down: boolean): void;
   /** 0..1 for the companion: the voice while it speaks, the person while they speak. */
   level(): number;
   /** True once the companion can speak aloud (the speaking token is in hand). */
@@ -118,6 +124,7 @@ function cartesiaEngine(session: Session, ev: EngineEvents): VoiceEngine {
   let turnId = '';
   let snrSum = 0, snrCount = 0, turnFloor = -62;
   let bargePending = 0; // when speech began over the companion, still to be confirmed as this person's own
+  let ptt = false, held = false; // push to talk: on after the first press; the key is down
   const detector = new TurnDetector();
   const voice: Voice = createVoice({
     client: session.client, api, code: session.code, token: session.token, voiceId: GATE_VOICE_ID,
@@ -147,6 +154,8 @@ function cartesiaEngine(session: Session, ev: EngineEvents): VoiceEngine {
     const db = dbOf(raw.mic);
     const now = performance.now();
     if (!listening) { if (turnOpen) void endTurn(); detector.reset(); return; }
+    // Push to talk: the key, not the detector, starts and ends turns (the level still counts toward this turn's SNR).
+    if (ptt) { if (turnOpen && held) { snrSum += db - turnFloor; snrCount++; } return; }
     const edge = detector.step(db, now, speakingNow);
     if (edge === 'start' && !turnOpen) {
       turnOpen = true; hearingNow = true; turnStartedAt = now;
@@ -172,6 +181,19 @@ function cartesiaEngine(session: Session, ev: EngineEvents): VoiceEngine {
     },
     hush() { voice.cancelSpeech(); speakingNow = false; },
     setListening(on) { listening = on; if (!on && turnOpen) void endTurn(); },
+    pushToTalk(down) {
+      ptt = true;
+      if (!down) { if (held) { held = false; void endTurn(); } return; }
+      if (held || !listening) return;
+      held = true;
+      if (turnOpen) return; // a hands-free turn already under way simply becomes this one
+      turnOpen = true; hearingNow = true; turnStartedAt = performance.now(); bargePending = 0;
+      turnId = newTurnId(); snrSum = 0; snrCount = 0; turnFloor = detector.floor;
+      ev.onTurnStart?.(turnId);
+      ev.onSpeechStart();
+      if (speakingNow) { voice.cancelSpeech(); speakingNow = false; ev.onBargeIn?.(); } // the person has the floor
+      void voice.start();
+    },
     level() {
       const raw = voice.debug.raw();
       const v = hearingNow ? raw.mic : speakingNow ? raw.speech : 0;
@@ -217,6 +239,7 @@ function browserEngine(ev: EngineEvents, recognitionLang: () => string): VoiceEn
   let speakT0 = 0;
   let turnId = '';
   let floorDb = -60, snrSum = 0, snrCount = 0;
+  let ptt = false, held = false, pttText = ''; // push to talk: on after the first press; the key is down; words so far
   // A separate analyser only for the companion's breathing (recognition has no level API).
   let analyser: AnalyserNode | null = null;
   const buf = new Float32Array(1024);
@@ -244,7 +267,7 @@ function browserEngine(ev: EngineEvents, recognitionLang: () => string): VoiceEn
   })();
 
   const startRec = () => {
-    if (!Ctor || disposed || !listening || speakingNow || rec) return;
+    if (!Ctor || disposed || !listening || speakingNow || rec || (ptt && !held)) return;
     const r = new Ctor();
     r.continuous = true; r.interimResults = true; r.lang = recognitionLang(); r.maxAlternatives = 1;
     r.onspeechstart = () => {
@@ -257,6 +280,7 @@ function browserEngine(ev: EngineEvents, recognitionLang: () => string): VoiceEn
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const res = e.results[i]!;
         const text = res[0].transcript;
+        if (ptt) { if (res.isFinal) pttText += ` ${text}`; else interim += text; continue; } // sent once, on release
         if (res.isFinal) {
           hearingNow = false;
           const id = turnId || newTurnId(); turnId = '';
@@ -265,11 +289,14 @@ function browserEngine(ev: EngineEvents, recognitionLang: () => string): VoiceEn
         }
         else interim += text;
       }
-      if (interim.trim()) ev.onPartial(interim.trim());
+      const shown = ptt ? `${pttText} ${interim}` : interim;
+      if (shown.trim()) ev.onPartial(shown.trim());
     };
     r.onerror = (e) => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') ev.onProblem('The microphone is blocked. Allow it for this page to talk with the companion.', 'blocked'); };
     r.onend = () => {
-      rec = null; hearingNow = false;
+      rec = null;
+      if (ptt) { if (held) restartTimer = setTimeout(startRec, 100); else finishPtt(); return; } // still holding: keep listening
+      hearingNow = false;
       if (turnId) { ev.onTurnEnd?.(turnId); turnId = ''; }
       if (listening && !speakingNow && !disposed) restartTimer = setTimeout(startRec, 250);
     };
@@ -277,6 +304,13 @@ function browserEngine(ev: EngineEvents, recognitionLang: () => string): VoiceEn
     try { r.start(); } catch { rec = null; }
   };
   const stopRec = () => { if (restartTimer) clearTimeout(restartTimer); restartTimer = null; try { rec?.abort(); } catch { /* ignore */ } rec = null; hearingNow = false; };
+  /** Push to talk let go and recognition finished: everything said while the key was down, as one utterance. */
+  const finishPtt = () => {
+    const id = turnId || newTurnId(), text = pttText.trim();
+    turnId = ''; pttText = ''; hearingNow = false;
+    if (text) ev.onUtterance({ transcript: text, audioFileId: null, durationMs: 0, turnId: id, snrDb: snrCount ? snrSum / snrCount : 20 });
+    else ev.onTurnEnd?.(id);
+  };
   if (!Ctor) ev.onProblem('This browser can’t listen. Try Chrome, or share a photo instead.', 'unsupported');
 
   return {
@@ -301,6 +335,17 @@ function browserEngine(ev: EngineEvents, recognitionLang: () => string): VoiceEn
     },
     hush() { window.speechSynthesis?.cancel(); speakingNow = false; },
     setListening(on) { listening = on; if (on) startRec(); else stopRec(); },
+    pushToTalk(down) {
+      if (!ptt) { ptt = true; stopRec(); } // hands-free recognition ends for the rest of the visit
+      if (!down) { if (held) { held = false; if (rec) { try { rec.stop(); } catch { finishPtt(); } } else finishPtt(); } return; }
+      if (held || !listening || !Ctor) return;
+      held = true; pttText = ''; hearingNow = true; snrSum = 0; snrCount = 0;
+      if (speakingNow) { window.speechSynthesis?.cancel(); speakingNow = false; } // the person has the floor
+      turnId = newTurnId();
+      ev.onTurnStart?.(turnId);
+      ev.onSpeechStart();
+      startRec();
+    },
     level() {
       if (speakingNow) {
         const t = (performance.now() - speakT0) / 1000;
@@ -327,6 +372,7 @@ export function silentEngine(): VoiceEngine {
     async say(text, _language) { speakingNow = true; await new Promise((r) => setTimeout(r, 700 + text.split(/\s+/).length * 260)); speakingNow = false; },
     hush() { speakingNow = false; },
     setListening() { /* nothing to listen with */ },
+    pushToTalk() { /* nothing to listen with */ },
     level: () => (speakingNow ? 0.4 : 0),
     speaking: () => speakingNow,
     hearing: () => false,

@@ -1,6 +1,6 @@
 // The quiet frame: the wordmark (or, on the far side, the memory's name), a listening indicator that tells you
 // you're heard, and the few controls a person might reach for: sound, rest, leave.
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
 import { useSocial } from '../social/store';
@@ -25,6 +25,9 @@ function ListeningChip() {
   const mood = useGate((s) => s.mood);
   const resting = useGate((s) => s.resting);
   const stage = useGate((s) => s.stage);
+  const ptt = useGate((s) => s.pushToTalk);
+  const held = useGate((s) => s.talkHeld);
+  const keyboard = useMemo(() => matchMedia('(pointer: fine)').matches, []);
   const dot = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     let raf = 0;
@@ -41,10 +44,13 @@ function ListeningChip() {
   const shared = voice === 'shared' || (joined && !together && voice !== 'blocked' && voice !== 'starting');
   const live = voice === 'cartesia' || voice === 'browser' || shared;
   const text = resting ? 'Resting' : shared ? 'Listening on the main device' : voice === 'blocked' ? 'Microphone is off' : voice === 'unsupported' ? 'Voice isn’t available here' : voice === 'starting' ? 'Getting ready' : mood === 'speaking' ? 'Speaking' : mood === 'thinking' ? 'Thinking' : 'Listening';
-  const tone = resting ? 'rest' : live ? 'on' : 'off';
+  // On a computer: hold V to talk. Once push to talk is on, the mic waits for the key (a quieter dot until it's down).
+  const hint = keyboard && live && !shared && !resting;
+  const tone = resting ? 'rest' : live && (!ptt || held) ? 'on' : 'off';
   return (
-    <div className="status glass dot-only" role="status" aria-live="polite" data-tone={tone} data-testid="listening" title={text}>
+    <div className={`status glass${hint ? ' ptt' : ' dot-only'}`} role="status" aria-live="polite" data-tone={tone} data-held={held} data-testid="listening" title={text}>
       <span className="dot" ref={dot} aria-hidden="true" />
+      {hint && (held ? <span>Listening…</span> : <span>Hold <kbd>V</kbd> to talk</span>)}
       <span className="visually-hidden">{text}</span>
     </div>
   );

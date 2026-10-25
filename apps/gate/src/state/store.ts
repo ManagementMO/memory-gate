@@ -48,6 +48,9 @@ export interface GateState {
   status: string;
   /** Freezes the conversation: no listening, no speech, the place stays visible and calm. */
   resting: boolean;
+  /** Push to talk: on once V has been held in this visit (the room's noise no longer starts a turn); V is down now. */
+  pushToTalk: boolean;
+  talkHeld: boolean;
   /** Set while a shared photo is shown as a 3D splat (SHARP / World Labs): the memory is seen from the photo's eye. */
   photoWorld: { eye: number } | null;
   /** The companion's language on this device: Automatic follows the person, or one pinned language (remembered). */
@@ -112,6 +115,8 @@ export const useGate = create<GateState>((set, get) => ({
   invite: null,
   status: '',
   resting: false,
+  pushToTalk: false,
+  talkHeld: false,
   photoWorld: null,
   language: initialLanguage(),
   settingsOpen: false,
