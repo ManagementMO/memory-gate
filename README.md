@@ -1,4 +1,4 @@
-# Memory Gate / Heirloom
+# Memora
 
 **Apify photo sources:** [Setup, usage and verification](docs/APIFY_MEMORY_SOURCES.md). Import selected public family posts, review a photo, and attach it to a kite, flower or landmark in a chosen perspective. The Red Kite includes a native VR source card and a clearly labeled offline example. Live Instagram import requires a server-side Apify token.
 
