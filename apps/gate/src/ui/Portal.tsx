@@ -49,11 +49,12 @@ export function Portal() {
   return (
     <section className="portal" aria-labelledby="portal-h" aria-busy={!!opening} data-testid="portal">
       <h1 id="portal-h">{guestOf ? `Join ${guestOf} in a memory` : 'Visit a place you remember'}</h1>
+      {/* What happens first, then the button that agrees to it. */}
+      <p className="fine">It listens while you talk and keeps your words, voice and photos with your memories. Rest or stop any time.</p>
       <button type="button" className="pill big glass begin refract" onClick={() => void start('visit', () => flow.begin())} disabled={!!opening} data-testid="begin">
         <span className="glow" aria-hidden="true" />
         {guestOf ? 'Join' : 'Begin'}
       </button>
-      <p className="fine">It listens while you talk and keeps your words, voice and photos with your memories. Rest or stop any time.</p>
       {problem && <p className="portal-problem" role="alert">{problem}</p>}
     </section>
   );
