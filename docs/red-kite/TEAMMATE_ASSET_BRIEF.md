@@ -2,6 +2,8 @@
 
 Give this file to the teammate and their Claude Code or Codex agent. It is a concrete build assignment, not a request to invent another architecture. Work in your own clone or agreed branch so you do not overwrite the integration owner's active changes.
 
+**Current delivery:** the five original GLBs, editable Blender source, builder, measured manifest and Gate interaction adapter now exist. Start with `TEAM_HANDOFF.md` for the current refinement assignment and exact paths. Gate's real two-view, pointer and emulated squeeze checks pass; physical Quest evaluation is still open. Treat the detailed contract below as the asset/refinement specification, not a request to rebuild the integrated app.
+
 ## Copy-and-paste starter prompt
 
 > Build the Red Kite asset and interaction package described in `docs/red-kite/TEAMMATE_ASSET_BRIEF.md`. Read that entire file, `docs/red-kite/SCENE_DIRECTION.md`, the scoped repository instructions and the existing loader/interaction code before editing. You own original Blender models, their reproducible build script, validated GLB exports, a manifest, a small framework-independent behavior core, one isolated adapter for the selected client and a preview. The new `apps/gate` client is the preferred journey integration target; `apps/headset` is the currently verified World Labs rendering fallback. Do not mix their Three runtimes. Preserve the existing app and backend; do not edit their shared integration files without coordinating with the integration owner. Work on `codex/red-kite-assets`. Make the kite and spool beautiful and usable before adding optional scenery. Use Blender's Python API to build and refine reproducibly; an MCP connection is optional. Run focused validation, load the actual exports in a browser, inspect context renders, test real input where available and distinguish desktop/emulated evidence from physical Quest evidence. Deliver source, exports, code, screenshots and a concise handoff with actual budgets, commands, limitations and commit. Continue with useful local work if an optional service is unavailable. No paid generation or external publishing is authorized by this asset assignment.
@@ -21,7 +23,7 @@ The GLBs, named anchors, dimensions, material semantics and pure animation/state
 
 For the preferred Gate adapter, read `apps/gate/src/scene/PhotoWorld.tsx`, `World.tsx`, `SceneCanvas.tsx`, `XrLayer.tsx`, `scene/xr.ts`, `flow/memory.ts` and `state/store.ts`. Reuse its existing Canvas, XR store, frame loop, room session and pause/rest lifecycle. Use current documentation matching the pinned React Three XR version for handles/grabbing. Do not create a second Canvas/XR session or a new multiplayer service. Keep the existing companion, portal and album intact.
 
-The actual meadow contains forward splat centers beyond 267 m. Both clients now use the shared 1,000 m World Labs far-plane policy; Gate's PhotoWorld restores its previous range when the source leaves. During integration, ensure the portal's white-space/sky transition steps aside for the opaque generated setting. This new meadow has **not** been visually validated in Gate by this package; the existing evidence is from IWSDK.
+The actual meadow contains forward splat centers beyond 267 m. Both clients use the 1,000 m World Labs far-plane policy. The Red Kite route now renders the actual world in Gate and has checked both stationary viewpoints and peripheral stereo views. Keep the normal portal and its transitions independent of this explicit route.
 
 ## The outcome
 
@@ -67,9 +69,8 @@ Portable build shape:
 ```sh
 "/path/to/blender" --background --factory-startup \
   --python tools/red-kite/build_assets.py -- \
-  --output apps/headset/public/red-kite/models \
-  --source assets/red-kite/source \
-  --evidence evidence/red-kite-assets
+  --output apps/gate/public/red-kite/models \
+  --source assets/red-kite/source
 ```
 
 Make these arguments real in your script. Detect supported exporter options from the installed Blender operator rather than copying options for a different release. Use only exported glTF features that the application's loader can actually consume.

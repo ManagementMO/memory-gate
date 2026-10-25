@@ -1,6 +1,6 @@
 # Red Kite Perspectives Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Ship two attributed tellings of the Red Kite afternoon in the actual Gate app, with a checked World Labs meadow, voluntary viewpoint switching, interactive original props and reproducible evidence.
 
@@ -35,11 +35,11 @@
 
 **Interfaces:** `RED_KITE_TELLINGS`, `resolveKiteLook(telling, progress)`; `api.redKite.prepare`, `current`, `advance`, `choose`. Every mutation uses membership, sample-room, pause, revision and command checks. Narrator identity comes from fixed fixture records, not an arbitrary client name.
 
-- [ ] Write backend tests for independent choices, unknown color, rejected suggestions, stale revisions, repeat commands, paused writes, read-only viewers and foreign rooms.
-- [ ] Run the focused suite; expect missing-function failures before implementation.
-- [ ] Implement fixed fictional sources and typed state; no paid extraction or generation.
-- [ ] Run root typecheck and focused backend suite; expect all pass.
-- [ ] Commit the cohesive data path.
+- [x] Write backend tests for independent choices, unknown color, rejected suggestions, stale revisions, repeat commands, paused writes, read-only viewers and foreign rooms.
+- [x] Run the focused suite; expect missing-function failures before implementation.
+- [x] Implement fixed fictional sources and typed state; no paid extraction or generation.
+- [x] Run root typecheck and focused backend suite; expect all pass.
+- [x] Commit the cohesive data path.
 
 ### Task 2: Actual meadow and original props
 
@@ -47,11 +47,11 @@
 
 **Interfaces:** A source-backed splat loader with metric alignment, natural color, 1,000 m far plane, independent 100k/500k choice and lifecycle cleanup. Two calibrated stationary anchors. Props expose string anchors and local lift/dock behavior.
 
-- [ ] Load the cached meadow in Gate and capture both candidate viewpoints with ground/peripheral checks; choose usable nearby anchors from actual geometry.
-- [ ] Build original kite, spool, support and keepsake assets with reproducible Blender Python. Validate actual GLB nodes, bounds, geometry counts and browser loading.
-- [ ] Preserve shared world-space object placement across views; keep local hand motion out of authored story state.
-- [ ] Run the Gate typecheck/build and capture the actual world and props from both final anchors.
-- [ ] Commit the spatial implementation and evidence.
+- [x] Load the cached meadow in Gate and capture both candidate viewpoints with ground/peripheral checks; choose usable nearby anchors from actual geometry.
+- [x] Build original kite, spool, support and keepsake assets with reproducible Blender Python. Validate actual GLB nodes, bounds, geometry counts and browser loading.
+- [x] Preserve shared world-space object placement across views; keep local hand motion out of authored story state.
+- [x] Run the Gate typecheck/build and capture the actual world and props from both final anchors.
+- [x] Commit the spatial implementation and evidence.
 
 ### Task 3: Story, local transitions and native interaction
 
@@ -59,17 +59,25 @@
 
 **Interfaces:** `?story=red-kite` creates/reopens a labeled sample or joins a shared room. `requestPerspective(id)` performs local fade-out, safe release, stationary origin change and fade-in. Backend query updates never change selected telling. Pause stops sample speech, motion and story writes.
 
-- [ ] Add focused transition/state tests for pause-mid-switch, queued input, local-only choice and release/dock.
-- [ ] Implement clearly attributed source cards, next-line control, separate illustration choices, compare view, sample playback, reset/reconnect handling and a keepsake ending.
-- [ ] Bind native XR input and an accessible button alternative; avoid conflicts with voice, pointing or pause.
-- [ ] Run the real flow with browser buttons/pointer and emulated XR. Capture input/state evidence separately from spatial screenshots.
-- [ ] Commit the actual-app experience.
+- [x] Add focused transition/state tests for pause-mid-switch, queued input, local-only choice and release/dock.
+- [x] Implement clearly attributed source cards, next-line control, separate illustration choices, compare view, sample playback, reset/reconnect handling and a keepsake ending.
+- [x] Bind native XR input and an accessible button alternative; avoid conflicts with voice, pointing or pause.
+- [x] Run the real flow with browser buttons/pointer and emulated XR. Capture input/state evidence separately from spatial screenshots.
+- [x] Commit the actual-app experience.
 
 ### Task 4: Verification, next steps and publication
 
 **Files:** Add reproducible Red Kite browser checks and dated evidence; update scene evaluation, teammate brief, demo script and remaining-work checklist.
 
-- [ ] Check two independent browser sessions, source ownership, per-narrator choices, declined/unknown values, local camera selection, pause, replay cancellation, reconnect and mobile/reduced-motion behavior.
-- [ ] Run required root/headset/Gate checks and the unchanged portal smoke; expect all required checks pass.
-- [ ] Obtain a fresh whole-change review, fix important findings with regression tests and record remaining hardware/live-language gates honestly.
-- [ ] Commit named paths, merge any remote changes without overwriting teammate work, push and verify exact local/remote parity.
+- [x] Check two independent browser sessions, source ownership, per-narrator choices, declined/unknown values, local camera selection, pause, replay cancellation, reconnect and mobile/reduced-motion behavior.
+- [x] Run required root/headset/Gate checks and the unchanged portal smoke; expect all required checks pass.
+- [x] Obtain a fresh whole-change review, fix important findings with regression tests and record remaining hardware/live-language gates honestly.
+- [x] Commit named paths, merge any remote changes without overwriting teammate work, push and verify exact local/remote parity.
+
+## Execution notes
+
+- The pure local transition and interaction state live together in `motion.ts`; no second global store or XR session was added.
+- The spatial assets and their actual Gate consumer were verified and committed together because the two-view evidence depends on that integrated route.
+- Teammate changes through `5837fff` were preserved in merge `fdada69`; both the album entry and Red Kite portal entry remain available.
+- Fresh review found two P2 motion issues. Failing regressions reproduced both; the reduced-motion bridge and smoothed spool-height response now pass unit, actual-browser and emulated-input checks.
+- Physical Quest comfort/frame timing, hand pinch and real family speech are explicitly assigned next in the teammate handoff.

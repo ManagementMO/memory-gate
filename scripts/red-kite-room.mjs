@@ -62,5 +62,7 @@ chmodSync(checkpoint, 0o600);
 console.log(JSON.stringify({ code: room.code, reused: selected.reused, source: 'Cached World Labs meadow; fictional sample setting',
   spectator: `https://localhost:4173/?room=${room.code}&view=spectator&drift=0`,
   managedSpectator: `https://localhost:8081/?room=${room.code}&view=spectator&drift=0`,
+  gateViewer: `https://localhost:5180/?story=red-kite&room=${room.code}`,
+  gateHost: 'https://localhost:5180/?story=red-kite',
   privateSession: '.logs/red-kite-demo-room.json',
-  note: 'No generation credits used. No live service flags changed. The separate 3D kite assets and story integration are still a teammate task.' }, null, 2));
+  note: 'No generation credits used. No live service flags changed. Gate implements both tellings and original 3D props. The Gate host link creates or reopens your browser-owned sample; the room link is read-only.' }, null, 2));

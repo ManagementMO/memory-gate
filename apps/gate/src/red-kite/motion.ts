@@ -22,16 +22,19 @@ export function stepTransition(t: Transition, dt: number, paused: boolean): Tran
 }
 
 export const SPOOL_DOCK: Point3 = [-.55, .825, -.7];
-export type MotionState = { time: number; breeze: number; held: Point3 | null; spool: Point3; grabs: number; lifts: number };
-export const initialMotion = (): MotionState => ({ time: 0, breeze: 0, held: null, spool: [...SPOOL_DOCK], grabs: 0, lifts: 0 });
+export type MotionState = { time: number; breeze: number; kiteLift: number; held: Point3 | null; spool: Point3; grabs: number; lifts: number };
+export const initialMotion = (): MotionState => ({ time: 0, breeze: 0, kiteLift: 0, held: null, spool: [...SPOOL_DOCK], grabs: 0, lifts: 0 });
 export function clampSpool(p: Point3): Point3 {
   return [Math.max(-.92, Math.min(-.18, p[0])), Math.max(.81, Math.min(1.23, p[1])), Math.max(-1.05, Math.min(-.35, p[2]))];
 }
 export function releaseSpool(s: MotionState): MotionState { return { ...s, held: null, spool: [...SPOOL_DOCK] }; }
-export function stepMotion(s: MotionState, dt: number, paused: boolean): MotionState {
+export function stepMotion(s: MotionState, dt: number, paused: boolean, reduced = false): MotionState {
   if (paused) return releaseSpool(s);
   const d = Math.min(.05, Math.max(0, dt)), gain = 1 - Math.exp(-d * 7);
   const goal = s.held ?? SPOOL_DOCK;
-  return { ...s, time: s.time + d, breeze: Math.max(0, s.breeze - d * .1),
-    spool: s.spool.map((x, i) => x + (goal[i]! - x) * gain) as Point3 };
+  const spool = s.spool.map((x, i) => x + (goal[i]! - x) * gain) as Point3;
+  const lift = Math.max(0, Math.min(1, (spool[1] - SPOOL_DOCK[1]) / .35));
+  const target = (s.breeze * .42 + lift * .28) * (reduced ? .35 : 1);
+  return { ...s, time: s.time + (reduced ? 0 : d), breeze: Math.max(0, s.breeze - d * .1), spool,
+    kiteLift: (s.kiteLift ?? 0) + (target - (s.kiteLift ?? 0)) * (1 - Math.exp(-d * 4.5)) };
 }

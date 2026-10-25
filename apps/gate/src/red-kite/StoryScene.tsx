@@ -65,6 +65,8 @@ export function StoryView({ transition, motion, eye, paused, controls, onPerspec
       camera: camera.position.toArray(), origin: origin.current?.position.toArray(), yaw: origin.current?.rotation.y,
       spoolScreen: new THREE.Vector3(...motion.current.spool).project(camera).toArray(), kite: scene.getObjectByName('RedKiteKite')?.position.toArray(),
       propsResting: scene.getObjectByName('RedKiteSpool')?.userData.resting,
+      kiteRotation: scene.getObjectByName('RedKiteKite')?.rotation.toArray().slice(0, 3),
+      tailRotation: scene.getObjectByName('Tail_08')?.rotation.toArray().slice(0, 3),
       xr: gl.xr.isPresenting, frames: frames.current, held: motion.current.held !== null, spool: [...motion.current.spool],
       simulationTime: motion.current.time, breeze: motion.current.breeze, grabs: motion.current.grabs, lifts: motion.current.lifts,
       moves: [...moves.current], inputSources: xrStore.getState().inputSourceStates.map(s => ({ type: s.type, hand: s.inputSource.handedness })) }) };
