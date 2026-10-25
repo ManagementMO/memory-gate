@@ -2,7 +2,8 @@
 // through the grandparent's. The host's words call up the prepared meadow and the headset, already in VR at the gate,
 // follows into it. Each sees the other as their person (the boy, the grandmother); when the laptop walks (W) the Quest
 // sees the boy walking, and stopping; he stops short of her; when the Quest steps back with its stick the laptop sees
-// her walking. Reads what each device draws from window.__people.
+// her walking. Before that, the laptop's keys: W A S D and the arrows each go the right way, Shift hurries, R goes
+// back to your place, and typing in a note never walks. Reads what each device draws from window.__people.
 //   node apps/gate/scripts/walk-check.mjs [outDir]   (needs npm run local:up, node scripts/red-kite-room.mjs, the gate dev server)
 import { chromium } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
@@ -53,6 +54,46 @@ try {
   check(Math.abs(eyes - 1.21) < 0.02, `the laptop sees from the boy's eyes, ${eyes.toFixed(2)} m above the ground`);
   await shot(laptop, '1-laptop-grandchild-sees-grandma');
   await shot(quest, '2-quest-grandparent-sees-the-boy');
+
+  // The keys, each from the grandchild's spot (R puts you back there): which way they carry you, seen from where you look.
+  await laptop.focus('canvas').catch(() => undefined);
+  const where = () => laptop.evaluate(() => ({ ...window.__social.walk.offset, yaw: window.__socialCamera().yaw }));
+  const home = async () => { await laptop.keyboard.press('KeyR'); await laptop.waitForTimeout(400); };
+  const press = async (keys, ms = 600) => {
+    await home();
+    const a = await where();
+    for (const k of keys) await laptop.keyboard.down(k);
+    await laptop.waitForTimeout(ms);
+    for (const k of [...keys].reverse()) await laptop.keyboard.up(k);
+    await laptop.waitForTimeout(200);
+    const b = await where(), dx = b.x - a.x, dz = b.z - a.z;
+    return { forward: -dx * Math.sin(a.yaw) - dz * Math.cos(a.yaw), right: dx * Math.cos(a.yaw) - dz * Math.sin(a.yaw) };
+  };
+  const way = (m) => `${m.forward.toFixed(2)} m forward, ${m.right.toFixed(2)} m right`;
+  for (const [keys, label, ok] of [
+    [['KeyW'], 'W walks forward', (m) => m.forward > 0.5 && Math.abs(m.right) < 0.15],
+    [['KeyS'], 'S walks back', (m) => m.forward < -0.5 && Math.abs(m.right) < 0.15],
+    [['KeyA'], 'A steps left', (m) => m.right < -0.5 && Math.abs(m.forward) < 0.15],
+    [['KeyD'], 'D steps right', (m) => m.right > 0.5 && Math.abs(m.forward) < 0.15],
+    [['ArrowUp'], 'the up arrow walks forward', (m) => m.forward > 0.5],
+    [['ArrowDown'], 'the down arrow walks back', (m) => m.forward < -0.5],
+    [['ArrowLeft'], 'the left arrow steps left', (m) => m.right < -0.5],
+    [['ArrowRight'], 'the right arrow steps right', (m) => m.right > 0.5],
+  ]) { const m = await press(keys); check(ok(m), `${label} (${way(m)})`); }
+  const walked = await press(['KeyW']), hurried = await press(['ShiftLeft', 'KeyW']);
+  check(hurried.forward > walked.forward * 1.5, `Shift hurries (${walked.forward.toFixed(2)} m → ${hurried.forward.toFixed(2)} m in the same time)`);
+  await home();
+  const atHome = await where();
+  check(Math.hypot(atHome.x, atHome.z) < 0.05, `R goes back to your place (${Math.hypot(atHome.x, atHome.z).toFixed(2)} m from it)`);
+  // Typing in a box never walks you.
+  await laptop.click('[data-testid=add-memory]');
+  await laptop.fill('[data-testid=story-text]', '');
+  await laptop.click('[data-testid=story-text]');
+  await laptop.keyboard.type('wasd wasd', { delay: 60 });
+  const typed = await where();
+  check(Math.hypot(typed.x, typed.z) < 0.05, 'typing w a s d in a note doesn’t walk');
+  await laptop.keyboard.press('Escape');
+  await laptop.waitForTimeout(400);
 
   // The laptop walks toward her (W): the Quest sees the boy walking, then stopping short of her.
   await laptop.focus('canvas').catch(() => undefined);

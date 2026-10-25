@@ -7,7 +7,7 @@ Two demonstration scenes live in Gate's library and in its album:
 
 Both places can also be reached from a normal visit. Words that describe a place call it up instead of a live sketch: "courtyard", or two of "pergola / grape vines / shutters / limestone / stone paving", and "red kite", or two of "kite / meadow / oak / path / hills". The person's words are matched against `packages/shared/src/places.ts`. Things named in the conversation are then brought in from the library, each to its own spot in that world. This is instant and costs nothing; no model is called. Things that rest on something bring it along, so a teapot brings its table and a spool brings Mo's side table.
 
-The host's device keeps the place as the visit's memory (`memories.share`, with each thing brought in and where it was put), so guests follow into it and see the same things, as they do for a sketched memory.
+A visit opened as the meadow (`?memory=red-kite`) steps into it whatever is said first, so a few misheard words never sketch a room inside it. The host's device keeps the place as the visit's memory (`memories.share`, with each thing brought in and where it was put), so guests follow into it and see the same things, as they do for a sketched memory.
 
 ## Changing a scene
 

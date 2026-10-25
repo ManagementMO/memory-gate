@@ -16,5 +16,5 @@ prepared meadow is called up and the headset, waiting at the gate, follows into 
 Her raised hands are the emulator's: its controllers float at face height in front of the head, and in the headset
 the arms reach for the controllers. The emulated Quest loads the light 100k meadow, which it draws with a fine grid.
 
-Checked by `node apps/gate/scripts/walk-check.mjs` (9/9), which reads what each device draws (`window.__people`:
+Checked by `node apps/gate/scripts/walk-check.mjs` (20/20, including W A S D, the arrows, Shift, R and typing in a note), which reads what each device draws (`window.__people`:
 which person, how much of the walk, speed, position). Not tried on a physical Quest yet.
