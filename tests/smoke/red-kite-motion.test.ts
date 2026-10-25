@@ -38,4 +38,26 @@ describe('Red Kite local motion', () => {
     while (moved.phase !== 'covered') moved = stepTransition(moved, .1, false);
     expect(cancelSwitch(moved)).toEqual(initialTransition('rosa'));
   });
+  it('a grab without lift stays level; actual lift drives a bounded, smoothed kite response', () => {
+    const dock = initialMotion();
+    const held = stepMotion({ ...dock, held: [...dock.spool] }, .05, false);
+    expect(held.kiteLift).toBe(0);
+    const raise = (height: number) => {
+      let s: ReturnType<typeof initialMotion> = { ...initialMotion(), held: [dock.spool[0], dock.spool[1] + height, dock.spool[2]] };
+      for (let i = 0; i < 20; i++) s = stepMotion(s, .025, false);
+      return s;
+    };
+    const low = raise(.1), high = raise(.3);
+    expect(low.kiteLift).toBeGreaterThan(0); expect(high.kiteLift).toBeGreaterThan(low.kiteLift);
+    expect(high.kiteLift).toBeLessThan(.3);
+    const released = stepMotion({ ...high, held: null }, .016, false);
+    expect(Math.abs(released.kiteLift - high.kiteLift)).toBeLessThan(.015);
+    expect(stepMotion(high, 1, true).kiteLift).toBe(high.kiteLift);
+  });
+  it('reduced motion freezes the idle clock while preserving explicit spool movement', () => {
+    const s = { ...initialMotion(), time: 3, held: [-.5, 1.1, -.7] as [number, number, number] };
+    const next = stepMotion(s, .05, false, true);
+    expect(next.time).toBe(3); expect(next.spool[1]).toBeGreaterThan(s.spool[1]);
+    expect(stepMotion(next, .05, false, false).time).toBeGreaterThan(3);
+  });
 });

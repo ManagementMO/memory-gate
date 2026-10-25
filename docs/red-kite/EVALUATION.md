@@ -1,88 +1,90 @@
 # The Red Kite: evaluation and remaining work
 
-Evaluated October 24, 2026. This record separates original concept art, a real World Labs generation, actual browser behavior and work not yet implemented.
+Evaluated October 24, 2026. The two-perspective fictional demo is implemented in the actual Gate app. This record distinguishes real browser/stereo evidence from physical-headset and live-family work that still needs evaluation.
 
-During delivery, 19 newer team commits through `5ba599f` arrived on `origin/main`, adding `apps/gate` and related backend/presence work. They are preserved in the merge. This scene package's visual evidence is from `apps/headset`; it does not establish the new meadow's rendering or interaction quality in Gate. The teammate brief now prefers Gate for the finished journey while keeping GLBs and behavior portable.
+## What is implemented
 
-The user subsequently clarified that viewing the same memory through different people's perspectives is the core idea. The storyline, future backdrop prompt and teammate brief now require two attributed tellings and two spatially coherent viewpoints. This is a design update; no additional World Labs generation was submitted, and the existing captures and browser tests do not establish that feature.
-
-## What exists
-
-| Deliverable | Result / evidence |
+| Deliverable | Current result |
 | --- | --- |
-| Original empty-meadow reference | Generated and revised once to make the near clearing less rocky and more usable. Both image prompts are recorded. The selected JPEG hash is in the generation manifest. |
-| Final-state prop composition | Original concept image with a red kite, ribbon, spool, side table and keepsake. This is art direction, not implemented VR. |
-| World Labs meadow | One approved Marble 1.1 image generation completed in 618,496 ms, about 10 min 19 s. The durable job reports one attempt. Both bounded SPZ variants and a provider preview are cached. |
-| Cached-world reuse | `npm run demo:kite` seeds only cached files and creates/reopens a fictional room. A repeated live run returned `reused: true`. No generation endpoint or global service-flag mutation is in this script. |
-| Existing IWSDK runtime | Actual full 500k meadow rendered through the managed browser, with provider-derived eye height ~1.525 m and spectator FOV 78°. The final check reported no app or tick error. This was desktop spectator rendering, not physical Quest proof. |
-| 2D story rehearsal | Real browser buttons and pointer input exercised the unknown → proposed → chosen illustration flow, lift/dock, pause, sample speech cancellation and responsive layout. See `rehearsal-check.json`. |
-| Teammate assignment | Detailed original-model specifications, Blender build path, export/manifest contract, runtime API, interaction ownership, validation and handoff requirements. |
-| Multiple personal perspectives | Specified for Elena and Rosa, including separate source-linked details, local viewpoint selection and preserved disagreements. Not yet implemented or visually verified. |
+| Actual app entry | The Gate portal links to `?story=red-kite`. It creates/reopens a browser-owned fictional sample or joins a room as a viewer. Cached-world setup is recoverable; a paused story reopens without unpausing. |
+| One continuous World Labs meadow | The previously approved Marble 1.1 world is cached. No additional generation was submitted. Both viewpoints and their peripheral surroundings were checked in Gate. |
+| Two personal and spatial perspectives | Elena looks along the path; Rosa looks back across the clearing from the oak side. Selection stays local to each viewer and never accepts a detail or moves another participant. |
+| Separate sources and choices | Eight attributed fictional source records, per-telling revisions/playheads and explicit Use / Leave decisions. Unknown color never borrows from the other telling. Elena's red and Rosa's orange remain separately source-linked. |
+| Five original Blender props | Paper kite with frame/bridle/ribbon, wound wooden spool, folding support table, hinged keepsake box and story card. Editable source, reproducible builder, embedded small textures and actual GLBs are committed. |
+| Interactive scene | Dynamic string uses the actual exported string anchors. Desktop pointer capture, native controller ray input and a nearby squeeze grab lift and release the spool. Kite lift derives from actual vertical spool travel and is smoothed; grabbing alone does not raise it. A breeze button provides an alternative. |
+| Voluntary viewpoint transition | Scene-space opaque mask, release/dock, stationary origin change, fade-in. The mask exists in the scene for immersive rendering. Head tracking stays active. Rest/disconnect cancels a pending mask at the current safe anchor. |
+| Rest and reduced motion | Rest stops sample speech and procedural motion, safely releases capture and gates story writes. Browser reduced-motion preference freezes the idle kite/ribbon clock while retaining bounded explicit interaction. Preference changes during the visit are observed. |
+| Source and keepsake presentation | Exact source text, separate comparison cards, an interactive box and an in-world comparison summary. Sample playback is labeled as a computer voice. No original family recording is attached. |
+| Sharing and recovery | Read-only room links omit author tokens. Two browser contexts keep independent perspectives while receiving shared choices. Reconnect preserves decisions; the saved local viewpoint survives reload. |
 
-## The actual world versus the reference
+## Actual spatial review
 
-The provider result has convincing warm light, layered meadow depth, a worn path and a readable oak silhouette. It also adds a very large nearby oak on the left, rather than reproducing the reference's single dominant right-side tree. The candidate remains useful as a fictional setting, but this is a compositional departure. We should place the kite in open sky and keep reachable props away from the large trunk.
+The generated result differs from the reference: it has a large nearby oak on the left and a smaller oak farther down the path. The implementation uses that actual geometry. The prop support stays at one shared world position; it does not move to follow a camera switch.
 
-The revised reference gives a stronger interaction clearing than the original rocky foreground. A requested four-meter clearing in an image prompt is not a measured flat collision surface. The actual scene needs near-ground inspection, seated reach calibration and a physical Quest check before final object placement. It also needs inspection from the oak-side viewpoint looking back across the clearing, including newly exposed surfaces and peripheral coverage. The current evidence covers a fixed forward view only. The backdrop remains a candidate until both intended perspectives work; prompting alone is not a multi-view quality guarantee.
+Elena's stationary feet anchor is `[0, 0, 0.25]`; Rosa's is `[-2, 0, -4]`, in meters. Provider scale is 2.6397884, with an inferred source eye height about 1.525 m. Desktop framing includes the spool after the first input check found it below the frame. The World Labs camera far plane remains 1,000 m, preserving distant hills/sky.
 
-This generation is accepted as a **candidate environment foundation**. It is not evidence of a fully navigable game, an exact historical place or clinical benefit. The intended experience stays stationary; arbitrary walking around generated geometry is outside this acceptance.
+Actual Gate captures, not concept art:
 
-## Rendering defects found and repaired
+- [Elena with her chosen red kite](../../evidence/red-kite/03-elena-red.png)
+- [Rosa with her chosen orange kite](../../evidence/red-kite/04-rosa-orange.png)
+- [Both source-linked tellings](../../evidence/red-kite/05-both-tellings.png)
+- [Emulated stereo from Elena](../../evidence/red-kite/07-xr-elena.png)
+- [Emulated stereo from Rosa](../../evidence/red-kite/08-xr-rosa.png)
+- [Rosa looking left](../../evidence/red-kite/09-xr-rosa-left.png)
+- [Rosa looking right](../../evidence/red-kite/09-xr-rosa-right.png)
 
-The first actual runtime capture exposed large black gaps even though the provider preview looked coherent. Two independent authored limits caused the problem:
+The 500k world is the default. Actual 100k captures showed visibly coarse/streaked scenery; it remains an explicit “Lighter meadow” fallback. Spark uses its standard wider Gaussian kernel coverage for this environment. This is not a claim that every generated surface, arbitrary walking position or headset resolution is artifact-free. Physical scale, seated reach and sustained frame timing still need Quest evaluation.
 
-1. The photo reconstruction shader faded scenery between 28 and 36 metric meters and ended its reveal near 38 m. Complete World Labs scenes now bypass that radial window, retaining their distant landscape and sky. Their existing load cross-fade remains. Photo reconstructions retain their prior bounded treatment.
-2. The camera's far plane was 200 m. Offline inspection of the actual cached SPZ v2 found 1,081 forward centers beyond 200 m, with a maximum forward depth of ~267.139 m and a maximum center radius of ~410.661 m. World Labs scenes now use a 1,000 m far plane; photo/fallback scenes remain at 200 m. The near plane, metric alignment and framebuffer scale were not changed.
+The source scene is a fictional AI interpretation. The application does not turn differences between speakers into a truth score or a visualization of a person's brain.
 
-The final same-view capture shows the restored sky and hills without those black cutouts. This is a verified presentation correction for the inspected view; it is not a claim that every angle or small head movement is artifact-free.
+## Verification
 
-| Capture | Meaning |
-| --- | --- |
-| `references/world-runtime.png` | Initial actual app render with the radial-distance problem. |
-| `references/world-runtime-after.png` | Radial fading removed; right-side far-plane clipping still visible. |
-| `references/world-runtime-final.png` | Final actual app render after both corrections. |
-| `references/rehearsal-chosen.png` | Actual 2D concept rehearsal after accepting the fictional red/cream depiction and lifting the spool. |
-| `references/completed-scene-concept.png` | Proposed artistic target only. |
+- 97 smoke tests cover existing server behavior plus independent narrator choices, source ownership, stale/repeat commands, viewer restrictions, pause, cleanup, transition timing, lift response, reduced motion and bootstrap recovery.
+- 12 existing headset regression tests pass.
+- Root, Gate and fallback-headset TypeScript checks pass. Both clients build. Existing large-bundle warnings remain; they are not physical performance measurements.
+- Eleven actual-browser checks pass with no page errors. They exercise the real UI, unknown/declined/accepted choices, two sessions, source display, pointer capture/lift, switching while holding, pause/reload, reconnect, mobile rest and actual scene stability under reduced motion.
+- Eight IWER checks pass with no page errors: immersive entry/frame advancement, masked local switch, A/trigger authoring, tracked head turns, ray and squeeze lift/release, B rest, read-only viewer pause protection and Y exit. Stereo uses a 64 mm IPD. The harness disables only the emulator's manual pose/gizmo updater so emulated tracked poses can drive the actual XR event path.
+- All five GLBs pass Khronos glTF Validator 2.0.0-dev.3.10 with **zero errors and zero warnings**. The independent export check verifies hashes, one scene per GLB, required anchors, plausible meter scale and actual index-based triangle counts.
+- Total exported models: **406,892 bytes and 5,612 triangles**. The source Blender file is also committed.
+- The browser speech test invokes the real browser API, and deliberately injects one late callback to check cancellation. Audible quality and family speech are not measured by that test.
+- A fresh whole-change review found no critical issue or authorization bypass. Its two P2 motion findings were reproduced with failing regressions and fixed: the 3D reduced-motion behavior and spool-height-driven kite response.
 
-The existing spectator source card takes substantial space at a small browser viewport. A quieter, shorter final demo caption is still worthwhile after the object loop is integrated. We did not replace the shared interface as part of this art-direction task.
+Reports: [browser](../../evidence/red-kite/browser-report.json), [XR](../../evidence/red-kite/xr-report.json), [glTF](../../evidence/red-kite/gltf-validation.json).
 
-## Verification results
+## Reproduce
 
-- Root TypeScript check passed.
-- Headset TypeScript check and production build passed after the rendering changes.
-- After merging the team's work, the Gate TypeScript check and production build also passed. Gate now shares the World Labs camera-distance policy. These checks establish compilation, not a visual or native-interaction pass for this meadow in Gate.
-- Eleven focused backend tests passed across the World Labs and new cached-meadow suites, including authorization, explicit sample mode, reuse, no paid-job creation, pause and preserving the default courtyard selection.
-- Twelve headset tests passed, including full-world versus photo presentation, camera distance policy and existing room-switch/load/pause regressions.
-- Seven actual-browser rehearsal checks passed with no page errors or external service requests. These are grouped behavioral checks, not a claim of seven native XR tests.
-- The current cached-world script was run twice against local Convex and reused the room/selection. Source hashes were checked before uploads.
-- A local managed-browser rendering check loaded the actual 500k source successfully with no reported app/tick error.
-
-The IWSDK production build still reports the existing large JavaScript chunk (~9.46 MB, ~2.68 MB gzip) and dependency comment warnings. Gate's build also warns about a ~3.06 MB scene chunk (~1.07 MB gzip); the apps have different chunk layouts, so those numbers are not a total-size or runtime-performance comparison. Both builds pass, but bundle size and real-device performance remain engineering work. No physical Quest frame-rate or comfort claim is made.
-
-Useful commands from the repository root:
+From the repository root, with local Convex and Gate running:
 
 ```sh
-npm run typecheck
-npm test -- tests/smoke/red-kite-world.test.ts tests/smoke/worldlabs.test.ts
-npm run test:headset
-npm --prefix apps/headset run typecheck
-npm --prefix apps/headset run build
 npm run demo:kite
-python3 -m http.server 4187 --bind 127.0.0.1 --directory docs/red-kite
-# In another terminal, with that local rehearsal server running:
-node scripts/check-red-kite-rehearsal.mjs
+npm --prefix apps/gate run dev
+# In another terminal:
+npm run test:red-kite
+npm test
+npm run test:headset
+npm run typecheck
+npm --prefix apps/gate run typecheck
+npm --prefix apps/gate run build
 ```
 
-The managed-browser world check is `node node_modules/@iwsdk/cli/bin/iwsdk.js browser run scripts/red-kite-world-check.mjs --timeout 60000` from `apps/headset`, with its existing managed runtime running and the demo room created. It reads the ignored private session file; it does not print its privileged tokens.
+`demo:kite` checks cached hashes, reuses its private sample-room checkpoint and prepares both tellings. It never calls World Labs or changes live provider flags. Browser checks read that ignored checkpoint without printing its token. For a new interactive host sample, open `https://localhost:5180/?story=red-kite`. The room link printed by the script is a read-only viewer link.
 
-## Next integration gates, in order
+To rebuild and validate the original models:
 
-1. **Real GLB assets.** The 3D kite, spool, box and card described in the teammate brief do not exist yet as this package's final authored assets. The 2D SVG overlay is an illustration of their intended behavior. Deliver the kite/spool first.
-   Before final placement, validate the generated backdrop from both intended viewing regions. Do not build the second telling around an uninspected reverse view.
-2. **Native interaction.** Add one selected-client adapter explicitly. The IWSDK fallback currently opts in photographs only; Gate uses a different XR framework. Verify grab → lift → string follows → safe release/dock → pause in the chosen runtime, then on Quest 3. Preserve that client's voice and pointing input ownership. Both clients now share the adequate World Labs far-plane policy; visually check the complete meadow in Gate when integrating it.
-3. **Server story semantics.** Add supported kite/spool nouns and per-contributor color/ribbon/placement proposals with source ownership, revisions, rejection/undo and explicit human illustration choice. Preserve both tellings, including disagreements; selected perspective is local viewing state. The local rehearsal does not prove this server integration.
-4. **Physical Quest evaluation.** Check the 100k option as well as full quality, scene scale, side/back views, near floor, seated reach, headset pause, discomfort and dropped frames. No physical headset was available for this evaluation.
-5. **Human story and language.** Choose one actual language pair, obtain the participant's permissions, test recognition with a bilingual teammate and attach original audio only when consented. No real family speech or human language review was tested here.
-6. **Polish the whole two-minute loop.** Keep source captions concise, preload the world, adjust prop lighting to the actual meadow, and rehearse a quiet ending with an original-voice keepsake or explicitly labeled transcript fallback.
+```sh
+/Applications/Blender.app/Contents/MacOS/Blender --background --factory-startup --python tools/red-kite/build_assets.py
+node tools/red-kite/validate_assets.mjs
+```
 
-No further paid generation is authorized by this evaluation. The local World Labs counter is five of five after the approved meadow. The generation's 1,580-credit / US$1.264 cost is an estimate based on documented ordinary-image pricing; settled billing was not audited.
+For Khronos validation, install the pinned validator in the ignored tools folder and use its documented `validateBytes` API; the full resulting report is committed. No paid-provider tests are required for an asset refinement.
+
+## What comes next
+
+Use [TEAM_HANDOFF.md](TEAM_HANDOFF.md) for parallel assignments and exact files.
+
+1. **Physical Quest 3 acceptance:** caption size, seated/standing reach, both views and head movement, hardware trigger/squeeze, hand pinch if desired, rest/leave and sustained frame timing. Choose the final 500k/100k setting from real measurements.
+2. **Real two-person storytelling:** short consented clips, exact speaker-linked transcript/translation and bilingual review. Connect the existing general speech services to this source/choice boundary. The current Red Kite route is fixture-driven; arbitrary live narration does not yet build this scene.
+3. **Art and sound refinement:** refine the existing paper/wood/ribbon rather than rebuild the architecture; add restrained spatial ambience, align transitions to real audio and rehearse a quiet keepsake ending. Keep it comfortable and clear before adding people or locomotion.
+4. **Participant feedback:** evaluate a person-led reminiscence session with an appropriate family partner. Younger-onset Alzheimer's is the intended context; this prototype has no established clinical efficacy.
+
+No new World Labs generation is authorized by this evaluation. Its existing local count remains five of five.

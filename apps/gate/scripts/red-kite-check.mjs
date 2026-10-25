@@ -117,6 +117,12 @@ try {
     await b.reload(); await ready(b); await expect(b.getByTestId('red-kite-experience')).toHaveAttribute('data-perspective', 'rosa');
     await b.setViewportSize({ width: 390, height: 844 }); await b.emulateMedia({ reducedMotion: 'reduce' }); await b.waitForTimeout(600);
     assert(await b.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'mobile must not overflow horizontally');
+    const still = await snap(b); await b.waitForTimeout(300); const later = await snap(b);
+    assert.equal(later.simulationTime, still.simulationTime); assert.deepEqual(later.kite, still.kite);
+    assert.deepEqual(later.kiteRotation, still.kiteRotation); assert.deepEqual(later.tailRotation, still.tailRotation);
+    await b.emulateMedia({ reducedMotion: 'no-preference' }); await b.waitForTimeout(200);
+    assert((await snap(b)).simulationTime > later.simulationTime, 'normal idle motion resumes when the preference is disabled');
+    await b.emulateMedia({ reducedMotion: 'reduce' });
     await expect(b.getByTestId('mobile-rest')).toBeVisible(); await b.getByTestId('mobile-rest').click();
     await expect(b.getByTestId('red-kite-experience')).toHaveAttribute('data-paused', 'true');
     await b.getByTestId('mobile-rest').click(); await expect(b.getByTestId('red-kite-experience')).toHaveAttribute('data-paused', 'false');

@@ -28,6 +28,7 @@ function Experience() {
   const [xr, setXR] = useState(false), [supported, setSupported] = useState(false), [localPause, setLocalPause] = useState(false);
   const [compare, setCompare] = useState(false), [busy, setBusy] = useState(false), [speaking, setSpeaking] = useState(false), [switching, setSwitching] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
+  const [reducedMotion, setReducedMotion] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   const connected = useConvexConnectionState().isWebSocketConnected && online;
   const [lite, setLite] = useState(() => {
     const choice = new URLSearchParams(location.search).get('lite');
@@ -42,6 +43,10 @@ function Experience() {
     setPerspective(p);
     if (session) { try { sessionStorage.setItem(`mg.red-kite.view.${session.code}`, p); } catch { /* optional local preference */ } }
   }, [session]);
+  useEffect(() => {
+    const media = matchMedia('(prefers-reduced-motion: reduce)'), update = () => setReducedMotion(media.matches);
+    media.addEventListener('change', update); return () => media.removeEventListener('change', update);
+  }, []);
   useEffect(() => {
     const update = () => setOnline(navigator.onLine);
     addEventListener('online', update); addEventListener('offline', update);
@@ -69,10 +74,10 @@ function Experience() {
   const look = telling?.look ?? { visible: false, color: null, ribbon: null };
   const proposal = !!line?.proposal && !decision;
   const quiet = paused || switching || !connected;
-  const simulationPaused = useRef(true), viewPaused = useRef(true);
+  const simulationPaused = useRef(true), viewPaused = useRef(true), reduced = useRef(reducedMotion);
   // DOM and Canvas have separate React roots. A frame reads these guards directly, so rest cannot
   // keep animating while an expensive Canvas commit is still catching up with the visible controls.
-  useLayoutEffect(() => { simulationPaused.current = quiet; viewPaused.current = paused || !connected; }, [quiet, paused, connected]);
+  useLayoutEffect(() => { simulationPaused.current = quiet; viewPaused.current = paused || !connected; reduced.current = reducedMotion; }, [quiet, paused, connected, reducedMotion]);
   useEffect(() => { if (quiet) { stopSpeech(); motion.current = releaseSpool(motion.current); } }, [quiet, stopSpeech]);
   useEffect(() => {
     if (paused || !connected) { transition.current = cancelSwitch(transition.current); setSwitching(false); }
@@ -147,7 +152,7 @@ function Experience() {
     {source?.url && <SceneCanvas effects={false}>
       <StoryView transition={transition} motion={motion} eye={source.floorY === null ? 1.5246 : -source.floorY * source.scale} paused={viewPaused} controls={controls} onPerspective={selected} onXR={onXR} />
       <Meadow source={source} lite={lite} onReady={onReady} onError={onError} />
-      <Suspense fallback={null}><MemoryProps look={look} proposed={proposal} paused={simulationPaused} motion={motion} onKeepsake={onKeepsake} onReady={onPropsReady} /></Suspense>
+      <Suspense fallback={null}><MemoryProps look={look} proposed={proposal} paused={simulationPaused} reduced={reduced} motion={motion} onKeepsake={onKeepsake} onReady={onPropsReady} /></Suspense>
     </SceneCanvas>}
     <div className="rk-vignette" aria-hidden="true" />
     <header className="rk-header">
