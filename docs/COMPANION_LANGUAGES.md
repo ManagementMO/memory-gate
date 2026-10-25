@@ -31,64 +31,63 @@ Plan: [docs/superpowers/plans/2026-10-24-companion-languages.md](superpowers/pla
   two devices) is not built here; the multiplayer teammate owns it. The design doc's last section lists the building
   blocks this branch leaves for that work.
 
-## Status (as of 2026-10-25, before pausing)
+## Status (2026-10-25, after the gaps were filled)
+
+`main` (60af182: the memory map, Memora, the proposal showcase, the Apify add-ons, the boy and his grandmother) is
+merged in. Everything below ran on the merged branch.
 
 | Check | Result |
 |---|---|
-| `tests/smoke/companion-language.test.ts` | **32/32** after the review fixes |
-| `npm run typecheck`, `npm --prefix apps/gate run typecheck` | clean after the review fixes |
-| `npm test` (full smoke suite) | **135/135** at `586e2d3`, run with `--maxWorkers=4`. The review fixes after it touch only `packages/shared/src/guide.ts` and `apps/gate/src/flow/controller.ts`, and no other smoke file imports them. |
-| `npm --prefix apps/gate run build` | OK at `586e2d3` |
-| `node apps/gate/scripts/language-check.mjs` (browser, free) | **15/15** at `586e2d3`, before the review fixes. **Not rerun after them.** |
-| Whole-branch code review | Done. 2 Critical and 6 Important findings fixed in `010ae4e`; 7 minor items deferred (listed below). |
+| `tests/smoke/companion-language.test.ts` | **36/36** (4 new: the review items fixed below) |
+| `npm run typecheck`, `npm --prefix apps/gate run typecheck` | clean |
+| `npm test` (full smoke suite) | **186/186** |
+| `npm --prefix apps/gate run build` | OK |
+| `node apps/gate/scripts/language-check.mjs` (browser, free) | **16/16**, including the 16th check that had never run ("a goodbye in Spanish is answered in Spanish") |
+| `node apps/gate/scripts/flow.mjs <outDir>` (the long English walk-through) | passes end to end, 0 errors, English lines word for word |
+| Local Convex | the merged functions are deployed (`convex dev` picked them up; `api.sketch.*` take `language`) |
 
-## Gaps: please do these before merging
+## Gaps
 
-1. **Rerun the browser check after the review fixes.** It now has a 16th check that has never run: "Automatic: a
-   goodbye in Spanish is answered in Spanish", which covers the fix in `heard()` that says the instant goodbye in the
-   language of the wish. Both of its runs here timed out on `page.reload` because the machine was overloaded (load
-   average 100–200 from other sessions), not because of a code failure.
-2. **Rerun the long English walk-through,** `node apps/gate/scripts/flow.mjs <outDir>`, on a quiet machine. Here it
-   timed out waiting for the brief "forming" stage, and it also failed against `main`'s own Gate as a control.
-   `language-check.mjs` now includes an English visit that checks today's lines word for word, and it passed.
-3. **Live test with real voice.** Cartesia and Claude were never called from this branch. The first real Spanish and
-   French turns will be your test. Things to listen for:
-   - Ariana's accent. Sonic currently gets `language` only. If you want Mexican Spanish or metropolitan French, send
-     `locale` (`es-MX` / `fr-FR`) in `apps/headset/src/voice/tts.ts`.
-   - Whether Claude really returns `language`, `english` and `reply_english`.
-   - That a short "ok" never makes the companion answer in English mid-Spanish.
-4. **A fluent reader for the copy.** The Spanish and French in `apps/gate/src/flow/lines.ts` and in the `OFFLINE`
-   table of `packages/shared/src/guide.ts` use *usted* / *vous*. Nobody fluent has read them yet.
-5. **Merge `main` first.** `origin/main` was 21 commits ahead when this paused (the Apify add-ons, "the boy and his
-   grandmother"). Files changed on both sides: `apps/gate/src/flow/controller.ts`, `apps/gate/src/flow/memory.ts`,
-   `apps/gate/src/social/ui/SocialUI.tsx`, `apps/gate/src/ui/Overlay.tsx` and `apps/gate/src/ui/TopBar.tsx`. Expect
-   two conflicts:
-   - **`TopBar.tsx`:** keep both: `SettingsButton` on the portal, and main's `places-objects` button in the memory,
-     with both imports.
-   - **`memory.ts`:** keep main's `sharing` field and `sharePlace()`, keep this branch's `language` field and
-     `setLanguage()`, and use main's `adopt(…, place)` signature.
+Done:
 
-   Main's new features add no companion speech, so nothing new needs translating.
-6. **Redeploy Convex after merging.** `api.sketch.caption/plan/see/detail` gained an optional `language` argument. An
-   older deployed backend rejects the extra argument, and the Gate then quietly falls back to offline planning and no
-   photo caption until the new functions deploy. `convex dev`, as started by `npm run local:up`, deploys them on
-   change. `api.guide.respond` takes `v.any()`, so it works either way.
+1. ~~Rerun the browser check after the review fixes.~~ 16/16.
+2. ~~Rerun the long English walk-through.~~ Passes on a quiet machine.
+3. ~~A fluent reader for the copy.~~ A fluent pass over `flow/lines.ts` and the `OFFLINE` table (393f296): the
+   Spanish is neutral Latin American for the families in California ("escuché", "envió", "video"), no gender guessing
+   on photos vs videos, no plural "ellos" / "eux" for one person, and a few phrasings fixed ("¿Dónde queda este
+   lugar?", "le vieux chêne au tournant"). A native speaker from the families' own region is still the best final read.
+4. ~~Merge `main` first.~~ Merged (741a017). Four conflicts, each kept from both sides: `TopBar.tsx` (the gear beside
+   the memory map button; "Places and objects" in a memory), `Icons.tsx`, `memory.ts` (`language` and `sharing`),
+   `SocialUI.tsx`. Main's features add no companion speech.
+5. ~~Redeploy Convex after merging.~~ Done locally. Any other deployment needs the same.
 
-## Known minor issues (deferred, found in review)
+Still open:
 
-- The Spanish safety filter blocks a few warm lines and falls back to an offline reply: "Eso me recuerda que…",
-  "el cura del pueblo", "jamón curado", and the French "guéridon".
+- **Live test with real voice.** Blocked here: this checkout has no Cartesia or Anthropic keys (no
+  `auth/memory-gate.env`; the local backend has only `ADMIN_CODE` and `WORKER_SECRET`). With keys in place
+  (`npm run env:push`, `npm run services:live`), listen for Ariana's accent (send `locale` `es-MX` / `fr-FR` in
+  `apps/headset/src/voice/tts.ts` if wanted), check that Claude returns `language`, `english` and `reply_english`, and
+  that a short "ok" never turns a Spanish conversation English.
+
+## Known minor issues
+
+Fixed (9ea71fa):
+
+- ~~The Spanish safety filter blocks a few warm lines.~~ "el cura del pueblo", "jamón curado", "guéridon" and "eso me
+  recuerda que…" get through; "esto cura", "una cura para", "¿recuerda qué año…?" and "guérir" are still caught.
+- ~~The album's final caption is the English intro for a prepared place.~~ It uses the intro in the visit's language.
+- ~~A bare "si" counts as "yes".~~ Only "sí", a lone "si", or "si" with a yes ("si, vamos").
+- ~~"Retrato" offers the photo picker.~~ Removed from the photo words.
+- ~~The settings panel has no focus trap.~~ Tab stays inside it.
+- ~~English ends the visit on "I want to go back to my grandmother's house" and "That's all I remember".~~ Going back
+  somewhere and "that's all I remember" no longer end it; "can we go back now" and a bare "that's all" still do.
+
+Still open:
+
 - Short English captions ("yellow curtains over a sink") aren't recognised as English, so "Veo yellow curtains…" is
   possible. That only happens in the turn where the person switched language, or for a photo a guest sent.
-- For a prepared place, the album's final caption is the place's English intro even in a Spanish or French visit
-  (`moments.captureFinal`).
-- A bare "si" counts as "yes" when the companion has just invited them to step through ("Si no me equivoco…").
-- "Retrato" in the Spanish photo keywords makes describing a portrait offer the photo picker.
-- The settings panel has no focus trap, the same as the invite sheet. On landscape phones wider than 640 px, Done can
-  be clipped. `close()` finds the gear by its test id.
+- On landscape phones wider than 640 px, the settings panel's Done can be clipped.
 - The captions' `lang` is the conversation language, even for a single line Claude spoke in Hindi or Japanese.
-- **Not from this branch:** English already ends the visit on "I want to go back to my grandmother's house" and
-  "That's all I remember". This was left unchanged because English stays word for word, but it deserves its own fix.
 
 ## How to check it
 
