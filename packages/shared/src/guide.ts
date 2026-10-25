@@ -321,13 +321,37 @@ export function perspectiveFromWords(transcript: string): 'child' | 'grandparent
   return null;
 }
 
-/** Whose eyes, from what the companion just said back ("A kite hill with your grandmother."): what it heard, even in
- *  words the person's own reading missed. Its questions ("your grandmother, perhaps?") are not what it heard. */
-export function perspectiveFromReply(reply: string): 'child' | 'grandparent' | null {
+/**
+ * They said who was there with them, anyone at all ("with my parents", "my sister and I", "with friends", "just me"):
+ * the companion never asks "Who was there with you?" after that. Whose eyes is perspectiveFromWords' (only a
+ * grandparent or a grandchild settles it).
+ */
+export function mentionsCompany(transcript: string): boolean {
+  const t = norm(transcript);
+  if (!t) return false;
+  if (perspectiveFromWords(transcript)) return true;
+  const someone = "(mom|mum|mother|mama|mommy|mummy|dad|father|papa|daddy|parents|family|folks|sister|brother|siblings|sis|bro|son|daughter|kids|children|baby|wife|husband|partner|girlfriend|boyfriend|fianc[eé]e?|friends?|best friend|cousins?|aunt|auntie|uncle|niece|nephew|neighbou?rs?|classmates?|dog|madres?|padres?|pap[aá]s|mam[aá]|hermanos?|hermanas?|hij[ao]s?|espos[ao]|amig[ao]s?|familia|famille|m[eè]re|p[eè]re|fr[eè]res?|s[oœ]eurs?|fils|fille|enfants|femme|mari|ami[es]*)";
+  return new RegExp(`\\b((my|our|mi|mis|nuestr[ao]s?|ma|mon|mes|notre|nos) ${someone}|(with|con|avec) (my |our |a |some |the |mi |mis |ma |mon |mes |des )?${someone}|${someone} and (i|me))\\b`).test(t)
+    || /\b(just me|only me|by myself|on my own|alone|nobody else|no one else|solo yo|yo sol[ao]|seule?|toute? seule?)\b/.test(t);
+}
+
+/** What the companion just said back as heard ("A kite hill with your grandmother."), in the person's own words ("my
+ *  grandmother"); its questions ("your grandmother, perhaps?") are not what it heard. Null when it said back nobody. */
+function saidBack(reply: string): string | null {
   const told = reply.split(/(?<=[.!?¿¡])\s+/).filter((x) => !/[?¿]/.test(x)).join(' ');
   const mine = told.replace(/\byour\b/gi, 'my').replace(/\b(tu|su)\b/gi, 'mi').replace(/\b(tus|sus)\b/gi, 'mis')
     .replace(/\b(ta|votre)\b/gi, 'ma').replace(/\bton\b/gi, 'mon').replace(/\b(tes|vos)\b/gi, 'mes');
-  return mine === told ? null : perspectiveFromWords(mine);
+  return mine === told ? null : mine;
+}
+/** Whose eyes, from what the companion said back: what it heard, even in words the person's own reading missed. */
+export function perspectiveFromReply(reply: string): 'child' | 'grandparent' | null {
+  const mine = saidBack(reply);
+  return mine ? perspectiveFromWords(mine) : null;
+}
+/** Who was there, from what the companion said back ("How lovely, with your parents."). */
+export function companyFromReply(reply: string): boolean {
+  const mine = saidBack(reply);
+  return !!mine && mentionsCompany(mine);
 }
 
 /** "Let's go", "take me there", "step inside" (and "vamos allá", "allons-y"): asking to go into the place they've been

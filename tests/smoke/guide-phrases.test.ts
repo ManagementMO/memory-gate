@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { asksToEnter, asksToGoIn, asksToLeave, guideOffline, perspectiveFromReply, perspectiveFromWords, saysYes, type GuideInput } from '../../packages/shared/src/guide';
+import { asksToEnter, asksToGoIn, asksToLeave, companyFromReply, guideOffline, mentionsCompany, perspectiveFromReply, perspectiveFromWords, saysYes, type GuideInput } from '../../packages/shared/src/guide';
 import { bringIn, placeFor, placePlan, PLACES } from '../../packages/shared/src/places';
 import { COLORS } from '../../packages/shared/src/scene';
 
@@ -97,3 +97,19 @@ test.each([
   ['A kite hill on a windy day. Shall we go there?', null],
   ['Una colina con su abuela.', 'child'],
 ])('whose eyes, from what the companion says back: %s → %s', (r, who) => expect(perspectiveFromReply(r)).toBe(who));
+
+test.each([
+  ['I was there with my parents.', true],
+  ['My sister and I ran down that path.', true],
+  ['We went with friends every summer.', true],
+  ['Just me, on my own.', true],
+  ['Con mis padres.', true],
+  ['Avec mes parents.', true],
+  ['A kite hill on a windy day.', false],
+  ['There were two benches by the path.', false],
+])('who was there, anyone at all: %s → %s', (t, said) => expect(mentionsCompany(t)).toBe(said));
+
+test('what the companion said back about who was there counts too', () => {
+  expect(companyFromReply('How lovely, a picnic with your parents. Shall we go there?')).toBe(true);
+  expect(companyFromReply('Was anyone with you, your parents perhaps?')).toBe(false);
+});

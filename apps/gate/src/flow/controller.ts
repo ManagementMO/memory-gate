@@ -2,7 +2,7 @@
 // companion says or does; the person only ever talks, shares a photo or video, or says they'd like to stop.
 //   portal → greeting → gathering (talk / photo / video / someone helps) → entering → forming → memory → leaving → album
 import { api } from '../../../../convex/_generated/api';
-import { asksToEnter, asksToGoIn, asksToLeave, perspectiveFromReply, perspectiveFromWords, resolveReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
+import { asksToEnter, asksToGoIn, asksToLeave, companyFromReply, mentionsCompany, perspectiveFromReply, perspectiveFromWords, resolveReply, saysYes, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
 import { initialConversationLanguage, nextConversationLanguage, sameLanguage, type Lang, type LanguageSetting } from '../../../../packages/shared/src/language';
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
@@ -198,9 +198,13 @@ class Flow {
     if (!companion.live()) turn('person', text);
     this.clearNudge();
     music.duck(false);
-    // Whose eyes they remember through, as soon as they say it ("with my grandmother": the child's), never a form.
-    const who = g.session?.role === 'guest' ? null : perspectiveFromWords(text);
+    // Whose eyes they remember through, as soon as they say it ("with my grandmother": the child's), never a form; and
+    // once they've said who was there at all ("with my parents", "just me"), it is never asked.
+    const answering = this.who.asked && !this.who.known; // this is the answer to "Who was there with you?"
+    const host = g.session?.role !== 'guest';
+    const who = host ? perspectiveFromWords(text) : null;
     if (who) { this.who.known = true; useMemory.setState({ company: true }); void claimPerspective(who, null); }
+    else if (host && mentionsCompany(text)) this.who.known = true;
     // Step through at once, without waiting on a model (and before the gate, "let's go" is never taken for goodbye),
     // saying "Come with me" on the way rather than before it. The host's device starts the visit; a guest's "let's go"
     // goes to the room's companion, and they follow the host in.
@@ -224,7 +228,7 @@ class Flow {
     if (g.stage === 'memory' || g.stage === 'forming') return void this.heardInMemory(text, h);
     if (g.stage !== 'gathering' && g.stage !== 'greeting') return;
     // The answer to "Who was there with you?": settled (or the default kept), and straight on to the invitation.
-    if (this.who.asked && !this.who.known) {
+    if (answering) {
       this.who.known = true;
       this.turnsInPhase++;
       this.placeWords(text);
@@ -267,8 +271,9 @@ class Flow {
         memory.plan();
         // What the companion says back ("A kite hill with your grandmother.") shows whose eyes too, even in words the
         // reading of theirs missed: it never asks what it was just told.
-        const told = this.who.known || g.session?.role === 'guest' ? null : perspectiveFromReply(reply.reply);
+        const told = this.who.known || !host ? null : perspectiveFromReply(reply.reply);
         if (told) { this.who.known = true; useMemory.setState({ company: true }); void claimPerspective(told, null); }
+        else if (host && companyFromReply(reply.reply)) this.who.known = true;
         // Before stepping in, once: who was there with them (their perspective), asked in words in place of the
         // invitation; the rest of the reply is still said.
         if (asksToEnter(reply.reply) && !this.who.known && !this.who.asked && g.session?.role !== 'guest') {
