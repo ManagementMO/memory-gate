@@ -2,16 +2,18 @@
 // height, facing the other one across the room: behind a short blink the XR origin is scaled (k = perspective eye
 // height / your measured eye height, so the world grows around your feet for a grandchild) and moved and turned so
 // your head lands on the perspective's spot looking toward the other. Head tracking stays one-to-one; nothing moves
-// you while your eyes are open. Outside a memory the origin follows the journey as before, scaled around your feet.
+// you while your eyes are open, except walking with the stick (social/scene/Walking), which carries the origin over
+// the ground. Outside a memory the origin follows the journey as before, scaled around your feet.
 import type * as THREE from 'three';
 import { useGate } from '../../state/store';
 
 // `turn` faces the scene toward the wearer: the headset's own "forward" is wherever it was last recentred, not where
 // the person is looking when they step in, so PlayerOrigin turns the origin (faceFrom) as the visit and each memory begin.
-const state = { k: 1, offX: 0, offZ: 0, turn: 0, anchor: null as null | { x: number; z: number; yaw: number }, target: null as null | { spot: { x: number; z: number }; faceYaw: number },
-  // Walking inside a memory (scene/Walk.tsx): how far the stick, a turn or a hop across the ground has carried the
-  // wearer from where they were placed, and the ground height under them. `epoch` counts restarts (a new memory, a
-  // change of perspective, a recentre), so the walker knows to start again from the new spot.
+// `ground` is the height of the ground under a perspective's anchor as Keira's stick walking carries it (moveAnchor).
+const state = { k: 1, offX: 0, offZ: 0, turn: 0, ground: 0, anchor: null as null | { x: number; z: number; yaw: number }, target: null as null | { spot: { x: number; z: number }; faceYaw: number },
+  // Walking inside a memory where nobody's perspective places you (scene/Walk.tsx): how far the stick, a turn or a hop
+  // across the ground has carried the wearer from where they were placed, and the ground height under them. `epoch`
+  // counts restarts (a new memory, a change of perspective, a recentre), so the walker starts again from the new spot.
   walk: { x: 0, y: 0, z: 0, yaw: 0, epoch: 0 } };
 const inMemory = () => { const st = useGate.getState().stage; return st === 'forming' || st === 'memory' || st === 'leaving'; };
 
@@ -25,7 +27,7 @@ export function applyPerspectiveToOrigin(origin: THREE.Group | null, baseX: numb
   origin.scale.setScalar(state.k);
   const w = inMemory() ? state.walk : null;
   if (state.anchor && inMemory()) {
-    origin.position.set(state.anchor.x + (w?.x ?? 0), w?.y ?? 0, state.anchor.z + (w?.z ?? 0));
+    origin.position.set(state.anchor.x + (w?.x ?? 0), state.ground + (w?.y ?? 0), state.anchor.z + (w?.z ?? 0));
     origin.rotation.set(0, state.anchor.yaw + (w?.yaw ?? 0), 0);
     return;
   }
@@ -83,5 +85,19 @@ export function anchorAt(spot: { x: number; z: number }, faceYaw: number, k: num
 }
 
 export const anchored = () => state.anchor !== null;
-export function clearAnchor(): void { state.anchor = null; state.target = null; }
-export function resetOriginScale(): void { state.k = 1; state.offX = 0; state.offZ = 0; state.turn = 0; state.anchor = null; state.target = null; resetWalk(); }
+export function clearAnchor(): void { state.anchor = null; state.target = null; state.ground = 0; }
+export function resetOriginScale(): void { state.k = 1; state.offX = 0; state.offZ = 0; state.turn = 0; state.ground = 0; state.anchor = null; state.target = null; resetWalk(); }
+
+/** Walking with the stick: carry the origin across (world metres) and onto the ground's height there. */
+export function moveAnchor(dx: number, dz: number, ground: number): void {
+  state.ground = ground;
+  if (state.anchor) { state.anchor.x += dx; state.anchor.z += dz; }
+}
+
+/** Turning with the stick: turn the origin by `by` (radians) about the head, so the head stays where it is. */
+export function turnAnchor(by: number, head: { x: number; z: number }): void {
+  const a = state.anchor;
+  if (!a) return;
+  const c = Math.cos(by), s = Math.sin(by), x = a.x - head.x, z = a.z - head.z;
+  a.x = head.x + x * c + z * s; a.z = head.z - x * s + z * c; a.yaw += by;
+}

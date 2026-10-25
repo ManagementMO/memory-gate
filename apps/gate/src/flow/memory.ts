@@ -38,18 +38,33 @@ class Memory {
   private inflight: Promise<void> | null = null;
   private mediaFileId: string | null = null;
   private mediaKind: 'photo' | 'video' | null = null;
+  private sharing: Promise<void> = Promise.resolve();
 
   attach(session: Session) { this.session = session; }
   setTitle(t: string) {
     this.title = t;
     // A prepared place keeps its plan; only its name follows the conversation.
-    if (useMemory.getState().place) useMemory.setState((st) => (st.plan ? { plan: { ...st.plan, title: t } } : {}));
+    if (useMemory.getState().place) { useMemory.setState((st) => (st.plan ? { plan: { ...st.plan, title: t } } : {})); this.sharePlace(); }
+  }
+
+  /** A prepared place is never sketched by the backend, so the host keeps it as the visit's memory: guests follow
+   *  into it and see each thing brought in (one save at a time, so they all land on the same memory). */
+  private sharePlace() {
+    const s = this.session;
+    if (!s || s.role !== 'host') return;
+    this.sharing = this.sharing.then(async () => {
+      const st = useMemory.getState();
+      if (!st.place || !st.plan) return;
+      try { this.memoryId = await convex.mutation(api.memories.share, { code: s.code, token: s.token, plan: st.plan, place: st.place, ...(this.memoryId ? { memoryId: this.memoryId } : {}) }); }
+      catch (e) { console.warn('[memory] the place could not be shared with the family', e); }
+    });
   }
 
   /** Step into a prepared place: its plan is its world (nothing sketched); things come in as they're named. */
   usePlace(p: PreparedPlace, title?: string | null) {
     this.planned = this.words.join(' ').trim();
     useMemory.setState((st) => ({ plan: placePlan(p, title ?? this.title), version: st.version + 1, planning: false, formed: 0, source: 'offline', place: p.key }));
+    this.sharePlace();
   }
 
   /** The prepared place couldn't be shown: plan the place from the words instead, as any visit would. */
@@ -68,6 +83,7 @@ class Memory {
     const next = bringIn(PLACES[st.place], st.plan, text, pointed);
     if (!next) return false;
     useMemory.setState((s) => ({ plan: next, version: s.version + 1 }));
+    this.sharePlace();
     return true;
   }
   addWords(text: string, _audio: string | null) { this.words.push(text); }
@@ -179,13 +195,14 @@ class Memory {
   /** The shared memory's id once the backend has one (perspectives keep their things with it). */
   get id(): string | null { return this.memoryId; }
 
-  /** Take on a memory someone else in the session began (a guest following the host, the host taking a guest's photo). */
-  adopt(plan: ScenePlan, memoryId: string, photoUrl: string | null) {
+  /** Take on a memory someone else in the session began (a guest following the host, the host taking a guest's photo),
+   *  in the prepared place it is visiting, if it is. */
+  adopt(plan: ScenePlan, memoryId: string, photoUrl: string | null, place: PlaceKey | null = null) {
     this.memoryId = memoryId as Id<'memories'>;
     this.title = plan.title;
     this.planned = this.words.join(' ').trim();
     const next = keepIdentities(useMemory.getState().plan, plan);
-    useMemory.setState((st) => ({ plan: next, version: st.version + 1, planning: false, source: 'claude', ...(photoUrl ? { photoUrl } : {}) }));
+    useMemory.setState((st) => ({ plan: next, version: st.version + 1, planning: false, source: 'claude', ...(photoUrl ? { photoUrl } : {}), ...(place ? { place } : {}) }));
   }
 
   /** Bring back a memory exactly as it was drawn (from the album). */
@@ -193,6 +210,7 @@ class Memory {
     this.reset();
     this.title = plan.title;
     useMemory.setState({ plan, version: 1, planning: false, formed: 0, source: 'offline', place });
+    this.sharePlace();
   }
 
   reset() {

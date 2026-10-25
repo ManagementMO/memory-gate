@@ -171,9 +171,11 @@ export const leaveVisit = db.reducer({ roomId: t.string(), memberId: t.string() 
 // The gateway calls these for a member it has just checked in Convex: roomId and memberId always come from that check,
 // never from the browser. Each perspective keeps its own stories, the things it adds to the place, the companion's
 // thread with it and its archive photographs; poses are everyone's live head and hands in the memory.
+// Eye heights are the two people the gate shows (apps/gate/src/social/avatar/people.ts): a grandmother and a boy.
+// `was`: the first defaults, which a visit made before them moves to these.
 const PERSONAS = [
-  { key: 'grandparent', label: 'Grandparent', eyeHeight: 1.6, color: '#8fb8ff' },
-  { key: 'child', label: 'Grandchild', eyeHeight: 1.1, color: '#ffb48f' },
+  { key: 'grandparent', label: 'Grandparent', eyeHeight: 1.45, was: 1.6, color: '#8fb8ff' },
+  { key: 'child', label: 'Grandchild', eyeHeight: 1.21, was: 1.1, color: '#ffb48f' },
 ] as const;
 const finite = (v: number, max: number) => Number.isFinite(v) && Math.abs(v) <= max;
 function vector(v: number[], lengths: number[], label: string) {
@@ -197,7 +199,8 @@ export const ensurePerspectives = db.reducer({ roomId: t.string() }, (ctx, { roo
   requireOperator(ctx); bounded(roomId, 180, 'roomId');
   for (const p of PERSONAS) {
     const id = `${roomId}:${p.key}`;
-    if (ctx.db.perspective.id.find(id)) continue;
+    const row = ctx.db.perspective.id.find(id);
+    if (row) { if (Math.abs(row.eyeHeight - p.was) < 1e-3) ctx.db.perspective.id.update({ ...row, eyeHeight: p.eyeHeight }); continue; }
     ctx.db.perspective.insert({ id, roomId, key: p.key, label: p.label, eyeHeight: p.eyeHeight, color: p.color, claimedBy: '', claimedName: '', archivePlace: '', yearFrom: 1900, yearTo: 1980, createdAt: nowMs(ctx) });
   }
 });

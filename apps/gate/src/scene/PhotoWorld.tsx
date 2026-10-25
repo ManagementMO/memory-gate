@@ -4,7 +4,7 @@
 import { useQuery } from 'convex/react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { SparkRenderer, SplatMesh } from '@sparkjsdev/spark';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { api } from '../../../../convex/_generated/api';
 import { fileUrl } from '../backend/client';
@@ -46,14 +46,19 @@ export function PhotoWorld() {
   // A whole World Labs world is seen from several places (each perspective's viewpoint), not only where a photo was
   // taken: Spark's default kernel coverage, as the Red Kite meadow uses, since the photo-tuned one leaves gaps there.
   // (Chosen when the renderer is made: changing it on a running renderer stopped splats drawing in the headset.)
+  // Made inside the effect, so whatever disposes it (a kernel change, leaving, or React's development double mount)
+  // disposes only its own: a renderer kept in useMemo was disposed by that double mount and then shown, and drew
+  // nothing wherever the world was already known when this mounted (a guest's headset).
   const kernel = splat?.source === 'worldlabs' ? Math.sqrt(8) : Math.sqrt(5);
-  const spark = useMemo(() => {
+  const spark = useRef<SparkRenderer | null>(null);
+  useEffect(() => {
     const s = new SparkRenderer({ renderer: gl, maxStdDev: kernel, lodCleanupTimeoutMs: Infinity } as ConstructorParameters<typeof SparkRenderer>[0]);
     const mat = (s as unknown as { material?: THREE.Material }).material;
     if (mat) mat.forceSinglePass = true;
-    return s;
-  }, [gl, kernel]);
-  useEffect(() => { scene.add(spark); return () => { scene.remove(spark); spark.dispose(); }; }, [scene, spark]);
+    scene.add(s);
+    spark.current = s;
+    return () => { scene.remove(s); s.dispose(); if (spark.current === s) spark.current = null; };
+  }, [gl, scene, kernel]);
 
   const mesh = useRef<SplatMesh | null>(null);
   const ready = useRef(false);
@@ -103,7 +108,7 @@ export function PhotoWorld() {
     const d = detail.current, dtc = Math.min(dt, 0.05);
     if (d) {
       // The splat budget around the visitor: what the headset carries at its frame rate, more on a computer.
-      spark.lodSplatCount = gl.xr.isPresenting ? 500_000 : COARSE ? 600_000 : 1_200_000;
+      if (spark.current) spark.current.lodSplatCount = gl.xr.isPresenting ? 500_000 : COARSE ? 600_000 : 1_200_000;
       const showDetail = show && detailReady.current;
       d.opacity = damp(d.opacity, showDetail ? 1 : 0, showDetail ? 0.7 : 3, dtc);
       d.visible = d.opacity > 0.01;

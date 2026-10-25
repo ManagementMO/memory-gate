@@ -1,7 +1,7 @@
 // Headset rehearsal in the emulated Quest 3 (IWER via @react-three/xr): the Enter button appears, entering begins the
 // conversation, captions render in 3D, the memory forms around the wearer, seeing through the grandchild's eyes puts
-// the wearer's eyes at 1.1 m (the world scales around their feet), and the album opens in the headset (the session stays
-// on). --yaw 1.2 enters with the headset turned away and off-centre: the palace and the companion must still be ahead.
+// the wearer's eyes at the boy's 1.21 m (the world scales around their feet), and the album opens in the headset (the
+// session stays on). --yaw 1.2 enters with the headset turned away and off-centre: the palace and the companion must still be ahead.
 import { chromium } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import { PNG } from 'pngjs';
@@ -73,7 +73,7 @@ try {
   await page.waitForTimeout(5000);
   await view(page, `${out}/03-xr-memory.png`, 'headset view in the memory');
   note(`state: ${JSON.stringify(await st())}`);
-  // Perspectives: through the grandchild's eyes the world grows around the wearer until their eyes are at 1.1 m.
+  // Perspectives: through the grandchild's eyes the world grows around the wearer until their eyes are at the boy's.
   const eyes = () => page.evaluate(() => {
     const s = window.__social.store.getState();
     return { viewing: s.viewing, measured: s.xr.measured, k: s.xr.k };
@@ -81,11 +81,12 @@ try {
   await page.waitForFunction(() => window.__social.store.getState().xr.measured !== null, null, { timeout: 10000 }).catch(() => undefined);
   const before = await eyes();
   note(`perspective ${before.viewing}: measured eye ${before.measured?.toFixed(2)} m, world scale ${before.k.toFixed(2)}`);
+  const childEye = await page.evaluate(() => window.__social.store.getState().perspectives.find((p) => p.key === 'child').eyeHeight);
   await page.evaluate(() => window.__social.setViewing('child'));
-  await page.waitForFunction(() => Math.abs(window.__social.store.getState().xr.k - 1) > 0.05, null, { timeout: 5000 }).catch(() => undefined);
+  await page.waitForFunction((eye) => { const s = window.__social.store.getState().xr; return !!s.measured && Math.abs(s.measured * s.k - eye) < 0.03; }, childEye, { timeout: 5000 }).catch(() => undefined);
   const after = await eyes();
   const seenAt = after.measured ? after.measured * after.k : null;
-  note(`${seenAt && Math.abs(seenAt - 1.1) < 0.03 ? 'PASS' : 'FAIL'} grandchild's eyes: world scale ${after.k.toFixed(2)}, eyes at ${seenAt?.toFixed(2)} m in the memory`);
+  note(`${seenAt && Math.abs(seenAt - childEye) < 0.03 ? 'PASS' : 'FAIL'} grandchild's eyes: world scale ${after.k.toFixed(2)}, eyes at ${seenAt?.toFixed(2)} m in the memory`);
   await page.waitForTimeout(1200);
   await page.screenshot({ path: `${out}/03b-xr-grandchild-eyes.png` });
   // Two people in the room: the wearer now stands where the grandchild stands, facing the grandparent across it.
