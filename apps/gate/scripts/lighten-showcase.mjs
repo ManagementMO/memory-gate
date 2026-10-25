@@ -3,7 +3,7 @@
 // prepare-showcase.mjs); the scene lab's originals are untouched. macOS (sips) and the scene lab's glTF-Transform.
 //   node apps/gate/scripts/lighten-showcase.mjs
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, renameSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,7 +33,8 @@ for (const f of readdirSync(path.join(pub, 'models')).filter((x) => x.endsWith('
   const p = path.join(pub, 'models', f), tmp = `${p}.tmp.glb`;
   try {
     execFileSync(gt, ['resize', p, tmp, '--width', '512', '--height', '512'], { stdio: 'ignore' });
-    renameSync(tmp, p);
+    execFileSync(gt, ['meshopt', tmp, p], { stdio: 'ignore' }); // resize leaves the geometry uncompressed
   } catch { /* keep it as it was */ }
+  rmSync(tmp, { force: true });
 }
 console.log(`public/showcase: ${(before / 1e6).toFixed(0)} MB → ${(size(pub) / 1e6).toFixed(0)} MB`);
