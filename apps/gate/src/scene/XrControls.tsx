@@ -13,9 +13,9 @@ import { xrStore } from './xr';
 import { useMemory } from '../flow/memory';
 
 const _head = new THREE.Vector3();
-const _q = new THREE.Quaternion();
 const _e = new THREE.Euler();
 const _target = new THREE.Vector3();
+const _look = new THREE.Vector3();
 /** A hand ray is on one of the dock's buttons (the dock never moves under it). */
 const aimed = { n: 0 };
 
@@ -59,14 +59,18 @@ export function XrControls() {
   const group = useRef<THREE.Group>(null);
   const placed = useRef(false);
   const anchor = useRef({ x: 0, y: 0, z: 0, yaw: 0, set: false, stage: '' });
+  const local = useRef(new THREE.Vector3()); // where the dock is in the wearer's own space (tracked metres)
   const camera = useThree((s) => s.camera);
   const day = stage === 'forming' || stage === 'memory' || stage === 'leaving';
   useFrame((_, dt) => {
     const g = group.current;
-    if (!g) return;
-    camera.getWorldPosition(_head);
-    camera.getWorldQuaternion(_q);
-    const yaw = _e.setFromQuaternion(_q, 'YXZ').y;
+    const origin = camera.parent;
+    if (!g || !origin) return;
+    // The head as tracked, in the wearer's own space: what they do (turn, step, stand up), never what the app does to
+    // the world around them (turning it to face the palace as they arrive, a step by pinch, other eyes), which carries
+    // the dock along with them, so it is always in front however the world was turned.
+    _head.copy(camera.position);
+    const yaw = _e.setFromQuaternion(camera.quaternion, 'YXZ').y;
     // Ahead and low, close enough to reach: below where a ray held on the ground ahead passes to walk there (a little
     // higher and further, it sat right in their way). It stays put while
     // you look down at it and reach for it (a dock that followed every turn of the head was a moving target under the
@@ -79,9 +83,11 @@ export function XrControls() {
     }
     const ahead = 0.85;
     _target.set(a.x - Math.sin(a.yaw) * ahead, a.y - 0.8, a.z - Math.cos(a.yaw) * ahead);
-    if (!placed.current) { g.position.copy(_target); placed.current = true; }
-    g.position.lerp(_target, 1 - Math.exp(-dt * 4));
-    g.lookAt(a.x, g.position.y + 0.25, a.z);
+    if (!placed.current) { local.current.copy(_target); placed.current = true; }
+    local.current.lerp(_target, 1 - Math.exp(-dt * 4));
+    origin.updateWorldMatrix(true, false);
+    g.position.copy(local.current).applyMatrix4(origin.matrixWorld);
+    g.lookAt(_look.set(a.x, local.current.y + 0.25, a.z).applyMatrix4(origin.matrixWorld));
   });
   const show = stage === 'greeting' || stage === 'gathering' || stage === 'memory' || resting;
   if (!show) return null;
