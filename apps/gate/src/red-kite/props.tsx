@@ -22,8 +22,8 @@ function useAsset(key: string) {
   return clone;
 }
 
-export function MemoryProps({ look, proposed, paused, reduced, motion, onKeepsake, onReady }: {
-  look: KiteLook; proposed: boolean; paused: RefObject<boolean>; reduced: RefObject<boolean>; motion: RefObject<MotionState>; onKeepsake: () => void; onReady: () => void;
+export function MemoryProps({ look, proposed, paused, reduced, motion, onKeepsake, onReady, onKite }: {
+  look: KiteLook; proposed: boolean; paused: RefObject<boolean>; reduced: RefObject<boolean>; motion: RefObject<MotionState>; onKeepsake: () => void; onReady: () => void; onKite: () => void;
 }) {
   const kite = useAsset('kite'), spool = useAsset('spool'), table = useAsset('side-table');
   const box = useAsset('keepsake-box'), card = useAsset('story-card');
@@ -108,7 +108,7 @@ export function MemoryProps({ look, proposed, paused, reduced, motion, onKeepsak
       <primitive object={spool} />
       <mesh><sphereGeometry args={[.12, 12, 8]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} /></mesh>
     </group>
-    <group name="RedKiteKite" ref={kiteGroup} visible={look.visible || proposed}><primitive object={kite} /></group>
+    <group name="RedKiteKite" ref={kiteGroup} visible={look.visible || proposed} onClick={e => { if (paused.current) return; e.stopPropagation(); onKite(); }}><primitive object={kite} /></group>
     <primitive object={thread} visible={look.visible || proposed} />
     <group position={[-.74, .765, -.77]} onClick={e => { if (paused.current) return; e.stopPropagation(); open.current = !open.current; onKeepsake(); }}>
       <primitive object={box} />

@@ -3,11 +3,14 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
+    "sourceMode": { "title": "Source", "type": "string", "enum": ["archive", "social"], "default": "archive", "editor": "select" },
+    "postUrls": { "title": "Public Instagram photo posts (social mode)", "type": "array", "items": { "type": "string" }, "editor": "stringList", "maxItems": 3 },
+    "permissionConfirmed": { "title": "I have permission to use these public posts", "type": "boolean", "default": false },
     "place": { "title": "Public place name", "type": "string", "description": "A city, neighborhood or public landmark. Do not send private family stories or addresses.", "editor": "textfield", "prefill": "San Francisco" },
     "yearFrom": { "title": "From year", "type": "integer", "minimum": 1000, "maximum": 2100, "default": 1900 },
     "yearTo": { "title": "To year", "type": "integer", "minimum": 1000, "maximum": 2100, "default": 1980 },
     "terms": { "title": "Optional public search terms", "type": "string", "editor": "textfield", "default": "street" },
     "maxItems": { "title": "Maximum references", "type": "integer", "minimum": 1, "maximum": 8, "default": 4 }
   },
-  "required": ["place", "yearFrom", "yearTo"]
+  "required": []
 }

@@ -24,6 +24,8 @@ import type * as lib_storage from "../lib/storage.js";
 import type * as lib_worldAssetDownload from "../lib/worldAssetDownload.js";
 import type * as library from "../library.js";
 import type * as memories from "../memories.js";
+import type * as memoryImport from "../memoryImport.js";
+import type * as memorySources from "../memorySources.js";
 import type * as moments from "../moments.js";
 import type * as objects from "../objects.js";
 import type * as presence from "../presence.js";
@@ -59,6 +61,8 @@ declare const fullApi: ApiFromModules<{
   "lib/worldAssetDownload": typeof lib_worldAssetDownload;
   library: typeof library;
   memories: typeof memories;
+  memoryImport: typeof memoryImport;
+  memorySources: typeof memorySources;
   moments: typeof moments;
   objects: typeof objects;
   presence: typeof presence;

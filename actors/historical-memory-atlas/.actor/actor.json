@@ -1,9 +1,9 @@
 {
   "actorSpecification": 1,
   "name": "heirloom-historical-memory-atlas",
-  "title": "Heirloom Historical Memory Atlas",
-  "description": "Bounded Library of Congress discovery with provenance, date uncertainty and conservative image rights. Public place searches only; never family recordings.",
-  "version": "1.0",
+  "title": "Memory Gate Source Atlas",
+  "description": "Public archives and consented Instagram photo posts become attributed, reviewable memory source cards with object suggestions. Never sends family recordings.",
+  "version": "1.1",
   "dockerfile": "../Dockerfile",
   "input": "./input_schema.json",
   "output": "./output_schema.json"

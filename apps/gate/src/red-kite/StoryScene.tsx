@@ -1,17 +1,20 @@
 import { Text } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { XROrigin, useXR, useXRInputSourceState } from '@react-three/xr';
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import * as THREE from 'three';
 import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff?url';
 import type { Perspective } from '../../../../packages/shared/src/redKite';
 import { stepTransition, type MotionState, type Transition } from './motion';
 import { VIEWPOINTS, viewpointYaw } from './viewpoints';
 import { xrStore } from '../scene/xr';
+import type { MemorySource } from './memory-lens';
 
 export type SceneControls = {
   title: string; quote: string; paused: boolean; locked: boolean; canAdvance: boolean; proposal: boolean;
   onNext: () => void; onSwitch: () => void; onRest: () => void; onUse: () => void; onLeave: () => void; onPlay: () => void; onBreeze: () => void; onCompare: () => void;
+  sourcesOpen: boolean; photo: MemorySource | null; sourceCount: number; sourceIndex: number;
+  onSources: () => void; onSourcesClose: () => void; onSourceNext: () => void;
 };
 function Button3D({ label, x, y, onClick, disabled = false }: { label: string; x: number; y: number; onClick: () => void; disabled?: boolean }) {
   return <group position={[x, y, .012]} onClick={e => { e.stopPropagation(); if (!disabled) onClick(); }}>
@@ -25,11 +28,12 @@ function NativeControls({ controls: c }: { controls: SceneControls }) {
   useFrame(() => {
     const edge = (key: string, pressed: boolean) => { const fire = pressed && !previous.current[key]; previous.current[key] = pressed; return fire; };
     const pressed = (src: typeof right, key: string) => src?.gamepad?.[key]?.state === 'pressed';
-    if (edge('a', pressed(right, 'a-button')) && !c.locked && c.canAdvance) c.onNext();
+    if (edge('a', pressed(right, 'a-button')) && !c.locked) { if (c.sourcesOpen) c.onSourceNext(); else if (c.canAdvance) c.onNext(); }
     if (edge('b', pressed(right, 'b-button'))) c.onRest();
     if (edge('x', pressed(left, 'x-button')) && !c.locked) c.onSwitch();
     if (edge('y', pressed(left, 'y-button'))) void xrStore.getState().session?.end();
   });
+  if (c.sourcesOpen) return <NativeSources controls={c} />;
   return <group position={[0, .91, -1.65]}>
     <mesh position-z={-.008}><planeGeometry args={[1.16, .72]} /><meshBasicMaterial color="#23392f" transparent opacity={.93} /></mesh>
     <Text font={fontUrl} fontSize={.032} color="#ecd4a0" position={[0, .28, .002]} maxWidth={1.05} onClick={e => { e.stopPropagation(); if (!c.locked) c.onPlay(); }}>{c.title + ' · ▷ voice'}</Text>
@@ -38,10 +42,46 @@ function NativeControls({ controls: c }: { controls: SceneControls }) {
     <Button3D label={c.paused ? 'Continue · B' : 'Rest · B'} x={0} y={-.11} onClick={c.onRest} />
     <Button3D label="Next line · A" x={.38} y={-.11} onClick={c.onNext} disabled={c.locked || !c.canAdvance} />
     <Button3D label={c.proposal ? 'Use this look' : 'Both tellings'} x={-.38} y={-.24} onClick={c.proposal ? c.onUse : c.onCompare} disabled={c.locked} />
-    <Button3D label={c.proposal ? 'Leave it open' : 'Sample voice'} x={0} y={-.24} onClick={c.proposal ? c.onLeave : c.onPlay} disabled={c.locked} />
+    <Button3D label={c.proposal ? 'Leave it open' : 'Photo sources'} x={0} y={-.24} onClick={c.proposal ? c.onLeave : c.onSources} disabled={c.locked} />
     <Button3D label="Catch the breeze" x={.38} y={-.24} onClick={c.onBreeze} disabled={c.locked} />
     <Text font={fontUrl} fontSize={.021} color="#e1dbc7" position={[0, -.325, .004]} onClick={e => { e.stopPropagation(); void xrStore.getState().session?.end(); }}>Leave headset · Y</Text>
   </group>;
+}
+
+/** Draws inside the actual XR scene; DOM dialogs are disabled in immersive VR. */
+function NativeSources({ controls: c }: { controls: SceneControls }) {
+  const p = c.photo;
+  return <group position={[0, 1.16, -1.65]} name="MemorySourcePanel" userData={{ sourceId: p?._id ?? null }}>
+    <mesh position-z={-.008}><planeGeometry args={[1.16, 1.32]} /><meshBasicMaterial color="#23392f" /></mesh>
+    <Text font={fontUrl} fontSize={.032} color="#ecd4a0" position={[0, .58, .003]} maxWidth={1.04}>{p ? `The kite · photo ${c.sourceIndex + 1} / ${c.sourceCount}` : 'The kite · photo sources'}</Text>
+    {p?.imageUrl && <SourcePhoto url={p.imageUrl} />}
+    <Text font={fontUrl} fontSize={.026} color="#ecd4a0" maxWidth={1.04} textAlign="center" position={[0, .035, .004]}>{p ? (p.execution === 'fixture' ? 'Fictional example · no Apify run' : `Public post · @${p.owner}`) : 'A photo can be a conversation starter.'}</Text>
+    <Text font={fontUrl} fontSize={.029} color="#f5f0df" maxWidth={1.03} textAlign="center" anchorY="top" position={[0, -.025, .004]}>{c.paused ? 'Take your time. The meadow can wait.' : p ? (p.note ? 'Family note: ' + p.note.slice(0, 200) : 'Post caption: ' + p.caption.slice(0, 200)) : 'Ask family to review a photo on the phone or laptop, then attach it to this kite and this perspective.'}</Text>
+    <Text font={fontUrl} fontSize={.023} color="#d1d7c2" maxWidth={1.04} textAlign="center" position={[0, -.39, .004]}>What does this kite bring to mind? You can leave it open.</Text>
+    <Button3D label="Back to the story" x={-.38} y={-.49} onClick={c.onSourcesClose} />
+    <Button3D label="Next photo · A" x={0} y={-.49} onClick={c.onSourceNext} disabled={c.locked || c.sourceCount < 2} />
+    <Button3D label={c.paused ? 'Continue · B' : 'Rest · B'} x={.38} y={-.49} onClick={c.onRest} />
+    <Text font={fontUrl} fontSize={.021} color="#d1d7c2" position={[0, -.59, .004]}>A source supports a conversation; it does not prove a recollection.</Text>
+  </group>;
+}
+function SourcePhoto({ url }: { url: string }) {
+  const [photo, setPhoto] = useState<{ texture: THREE.CanvasTexture; aspect: number } | null>(null);
+  useEffect(() => {
+    let live = true, texture: THREE.CanvasTexture | undefined;
+    setPhoto(null); const img = new Image(); img.crossOrigin = 'anonymous'; img.referrerPolicy = 'no-referrer';
+    img.onload = () => {
+      if (!live || !img.naturalWidth || !img.naturalHeight) return;
+      const scale = Math.min(1, 768 / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(img.naturalWidth * scale)); canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+      const context = canvas.getContext('2d'); if (!context) return;
+      context.drawImage(img, 0, 0, canvas.width, canvas.height); texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
+      setPhoto({ texture, aspect: img.naturalWidth / img.naturalHeight });
+    };
+    img.src = url;
+    return () => { live = false; img.onload = null; img.src = ''; texture?.dispose(); };
+  }, [url]);
+  const width = photo ? Math.min(.86, .39 * photo.aspect) : .6, height = photo ? width / photo.aspect : .35;
+  return <mesh position={[0, .30, .004]} name="MemorySourcePhoto"><planeGeometry args={[width, height]} /><meshBasicMaterial map={photo?.texture ?? null} color={photo ? '#ffffff' : '#51664d'} toneMapped={false} /></mesh>;
 }
 
 export function StoryView({ transition, motion, eye, paused, controls, onPerspective, onXR }: {

@@ -6,6 +6,18 @@ export const anchorV = v.object({ position: vec3, normal: v.optional(vec3), sour
 export const pointerV = v.object({ origin: vec3, direction: vec3, hit: v.union(vec3, v.null()), surfaceHit: v.optional(v.union(vec3, v.null())), source: v.string() });
 
 export default defineSchema({
+  memoryImports: defineTable({
+    roomId: v.id('rooms'), memberId: v.id('members'), mode: v.string(), status: v.string(),
+    urls: v.array(v.string()), runId: v.union(v.string(), v.null()), actorId: v.string(),
+    error: v.union(v.string(), v.null()), createdAt: v.number(),
+  }).index('by_room', ['roomId']),
+  memorySources: defineTable({
+    roomId: v.id('rooms'), importId: v.id('memoryImports'), approved: v.boolean(),
+    sourceUrl: v.union(v.string(), v.null()), imageUrl: v.union(v.string(), v.null()), fileId: v.union(v.id('_storage'), v.null()),
+    caption: v.string(), owner: v.string(), timestamp: v.union(v.string(), v.null()),
+    suggestedObjects: v.array(v.string()), objectKey: v.string(), perspective: v.string(), note: v.string(),
+    execution: v.string(), runId: v.union(v.string(), v.null()), createdAt: v.number(),
+  }).index('by_room', ['roomId']).index('by_import', ['importId']),
   rooms: defineTable({
     code: v.string(), // 6-char join code (not a secret by itself: every call also needs a member token)
     title: v.string(),

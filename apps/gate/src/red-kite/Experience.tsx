@@ -10,6 +10,7 @@ import { beginSwitch, cancelSwitch, initialMotion, initialTransition, releaseSpo
 import { openKiteSession, type KiteSession } from './session';
 import { StoryView, type SceneControls } from './StoryScene';
 import './story.css';
+import { SourceLibrary, useImportProgress } from './SourceLibrary';
 
 class StoryBoundary extends Component<{ children: ReactNode }, { error: string }> {
   state = { error: '' };
@@ -28,6 +29,7 @@ function Experience() {
   const [xr, setXR] = useState(false), [supported, setSupported] = useState(false), [localPause, setLocalPause] = useState(false);
   const [compare, setCompare] = useState(false), [busy, setBusy] = useState(false), [speaking, setSpeaking] = useState(false), [switching, setSwitching] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
+  const [sourcesOpen, setSourcesOpen] = useState(false), [sourceIndex, setSourceIndex] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   const connected = useConvexConnectionState().isWebSocketConnected && online;
   const [lite, setLite] = useState(() => {
@@ -65,6 +67,10 @@ function Experience() {
   useEffect(() => { let live = true; navigator.xr?.isSessionSupported('immersive-vr').then(v => { if (live) setSupported(v); }).catch(() => undefined); return () => { live = false; }; }, []);
   const auth = session ? { code: session.code, token: session.token } : null;
   const room = useQuery(api.rooms.get, auth ?? 'skip'), data = useQuery(api.redKite.current, auth ?? 'skip');
+  const library = useQuery(api.memorySources.list, auth ?? 'skip');
+  useImportProgress(session, library);
+  const photos = library?.sources.filter(s => s.approved && s.perspective === perspective && s.objectKey === 'kite') ?? [];
+  const photo = photos[sourceIndex % Math.max(1, photos.length)];
   const advance = useMutation(api.redKite.advance), choose = useMutation(api.redKite.choose), reset = useMutation(api.redKite.reset), setPaused = useMutation(api.rooms.setPaused);
   const telling = data?.tellings.find(t => t.key === perspective), line = telling?.lines[telling.beat];
   const paused = localPause || !!data?.paused, ready = worldReady && propsReady;
@@ -142,7 +148,9 @@ function Experience() {
   const both = data?.tellings.map(t => `${t.name}: ${t.look.visible ? (t.look.color ?? 'color open') + (t.look.ribbon ? ', cream ribbon' : '') : 'details open'}.`).join(' ') ?? '';
   const controls: SceneControls = { title: compare ? 'Both tellings · fictional sample' : `${telling?.name ?? 'The Red Kite'} · fictional sample`, quote: paused ? 'Take your time. The meadow can wait.' : compare ? `${both} Neither replaces the other.` : line?.quote ?? 'Opening the meadow…', paused,
     locked: quiet || busy || !ready, canAdvance: !!data?.canAuthor && !!telling && telling.beat < telling.lines.length - 1,
-    proposal: !!line?.proposal && !!data?.canAuthor, onNext: next, onSwitch: () => switchTo(perspective === 'elena' ? 'rosa' : 'elena'), onRest: rest, onUse: () => pick('use'), onLeave: () => pick('leave'), onPlay: play, onBreeze: breeze, onCompare: () => setCompare(v => !v) };
+    proposal: !!line?.proposal && !!data?.canAuthor, onNext: next, onSwitch: () => switchTo(perspective === 'elena' ? 'rosa' : 'elena'), onRest: rest, onUse: () => pick('use'), onLeave: () => pick('leave'), onPlay: play, onBreeze: breeze, onCompare: () => setCompare(v => !v),
+    sourcesOpen, photo: photo ?? null, sourceCount: photos.length, sourceIndex: sourceIndex % Math.max(1, photos.length),
+    onSources: () => { stopSpeech(); setSourcesOpen(true); }, onSourcesClose: () => setSourcesOpen(false), onSourceNext: () => setSourceIndex(i => i + 1) };
   const share = () => {
     if (!session) return;
     const url = new URL(location.href); url.search = ''; url.searchParams.set('story', 'red-kite'); url.searchParams.set('room', session.code);
@@ -152,7 +160,7 @@ function Experience() {
     {source?.url && <SceneCanvas effects={false}>
       <StoryView transition={transition} motion={motion} eye={source.floorY === null ? 1.5246 : -source.floorY * source.scale} paused={viewPaused} controls={controls} onPerspective={selected} onXR={onXR} />
       <Meadow source={source} lite={lite} onReady={onReady} onError={onError} />
-      <Suspense fallback={null}><MemoryProps look={look} proposed={proposal} paused={simulationPaused} reduced={reduced} motion={motion} onKeepsake={onKeepsake} onReady={onPropsReady} /></Suspense>
+      <Suspense fallback={null}><MemoryProps look={look} proposed={proposal} paused={simulationPaused} reduced={reduced} motion={motion} onKeepsake={onKeepsake} onReady={onPropsReady} onKite={() => { stopSpeech(); setSourcesOpen(true); }} /></Suspense>
     </SceneCanvas>}
     <div className="rk-vignette" aria-hidden="true" />
     <header className="rk-header">
@@ -167,6 +175,8 @@ function Experience() {
       </button>)}
     </nav>
     <p className="rk-place-note">{perspective === 'elena' ? 'The whole sky ahead.' : 'Her friend in the sunlight.'}<span>AI interpretation · each telling keeps its own details</span></p>
+    <button className="rk-photo-button" data-testid="photo-sources" onClick={() => { stopSpeech(); setSourcesOpen(true); }} disabled={!session}>Photo sources{photos.length ? ` · ${photos.length}` : ''} ↗</button>
+    {sourcesOpen && session && !xr && <SourceLibrary session={session} library={library} perspective={perspective} paused={paused || !connected} onClose={() => setSourcesOpen(false)} />}
     <div className="rk-visual-status" aria-live="polite" data-testid="visual-status">{look.visible ? `${telling?.name}’s illustration · ${look.color ?? 'color left open'}${look.ribbon ? ' · cream ribbon' : ''}` : proposal ? 'A possibility, waiting for a choice' : 'The place is here. The details can take their time.'}</div>
     <section className="rk-story" aria-label={`${telling?.name ?? 'Story'}’s source line`}>
       <div className="rk-source-heading"><p className="rk-eyebrow">{telling?.name ?? 'Opening the story'}<span>{telling ? `${telling.beat + 1} / ${telling.lines.length}` : '…'}</span></p><button className="rk-listen" data-testid="sample-play" onClick={play} disabled={!ready || quiet || !line} aria-label={speaking ? 'Stop sample voice' : 'Play synthetic sample voice'}>{speaking ? '■ Stop voice' : '▷ Sample voice'}</button></div>
