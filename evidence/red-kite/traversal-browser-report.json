@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-25T03:16:47.546Z",
+  "checks": [
+    "a held run survives looking and releasing the mouse",
+    "all scenery quality modes render while retaining the real walking surface",
+    "a rejected collision surface remains an actionable error after the visual meadow loads",
+    "touch movement traverses real ground and releases cleanly"
+  ],
+  "metrics": {
+    "runSpeed": 3.200650128644589,
+    "touchDistance": 2.1452903877548577
+  },
+  "pageErrors": [],
+  "physicalQuestTested": false,
+  "providerCalls": 0
+}

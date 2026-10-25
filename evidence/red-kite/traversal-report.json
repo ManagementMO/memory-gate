@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-25T03:15:16.847Z",
+  "engine": "Rapier 0.21.0 kinematic capsule",
+  "worldId": "0b84554c-b182-4b3e-a7bb-78f15822a49d",
+  "colliderSha256": "5871a615750e77ce751077bc3b82cbce592b7decb9c600107f09ecffe6d60600",
+  "triangles": 51610,
+  "verticalShift": 1.1462371349334717,
+  "distanceMeters": 31.888283595213167,
+  "visited": [
+    {
+      "target": [
+        0,
+        -8
+      ],
+      "reached": true,
+      "feet": [
+        0.000008896815415937454,
+        -0.007586567401886013,
+        -7.853853225708008
+      ],
+      "grounded": true
+    },
+    {
+      "target": [
+        6,
+        -8
+      ],
+      "reached": true,
+      "feet": [
+        5.8637542724609375,
+        0.016205818653106663,
+        -7.996767997741699
+      ],
+      "grounded": true
+    },
+    {
+      "target": [
+        6,
+        0
+      ],
+      "reached": true,
+      "feet": [
+        5.991105556488037,
+        0.41261705875396726,
+        -0.12616215646266937
+      ],
+      "grounded": true
+    },
+    {
+      "target": [
+        0,
+        0.25
+      ],
+      "reached": true,
+      "feet": [
+        0.13559266924858093,
+        0.025194377899169895,
+        0.24147620797157288
+      ],
+      "grounded": true
+    },
+    {
+      "target": [
+        0.85,
+        -4
+      ],
+      "reached": true,
+      "feet": [
+        0.8298284411430359,
+        0.0021747064590453835,
+        -3.8805394172668457
+      ],
+      "grounded": true
+    }
+  ],
+  "elapsedMs": 155.00404200000003,
+  "providerCalls": 0,
+  "physicalQuestTested": false
+}

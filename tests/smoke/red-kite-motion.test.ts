@@ -23,7 +23,7 @@ describe('Red Kite local motion', () => {
     expect(initial.current).toBe('elena'); // another viewer's state was never mutated
   });
   it('bounds a captured pointer near the real spool and docks/release on rest', () => {
-    expect(clampSpool([100, -9, 8])).toEqual([-.18, .81, -.35]);
+    expect(clampSpool([100, -9, 8])).toEqual([-.18, .825, -.35]);
     const moving = { ...initialMotion(), time: 2, breeze: 1, held: [-.5, 1.02, -.7] as [number, number, number] };
     const rested = stepMotion(moving, 3, true);
     expect(rested.time).toBe(2); expect(rested.breeze).toBe(1);
@@ -59,5 +59,21 @@ describe('Red Kite local motion', () => {
     const next = stepMotion(s, .05, false, true);
     expect(next.time).toBe(3); expect(next.spool[1]).toBeGreaterThan(s.spool[1]);
     expect(stepMotion(next, .05, false, false).time).toBeGreaterThan(3);
+  });
+  it('carries spring velocity, returns to the table without penetrating it, and rests without stored energy', () => {
+    let s: ReturnType<typeof initialMotion> = { ...initialMotion(), held: [-.55, 1.15, -.7] };
+    for (let i = 0; i < 12; i++) s = stepMotion(s, 1 / 90, false);
+    expect(s.spoolVelocity?.[1]).toBeGreaterThan(0);
+    expect(s.kiteLiftVelocity).toBeGreaterThan(0);
+    s = { ...s, held: null };
+    for (let i = 0; i < 360; i++) {
+      s = stepMotion(s, 1 / 90, false);
+      expect(s.spool[1]).toBeGreaterThanOrEqual(.825);
+      expect(s.spool.every(Number.isFinite)).toBe(true);
+    }
+    expect(s.spool[1]).toBeCloseTo(.825, 4);
+    const rested = stepMotion({ ...s, held: [-.55, 1.15, -.7] }, 1, true);
+    expect(rested.spoolVelocity).toEqual([0, 0, 0]);
+    expect(rested.kiteLiftVelocity).toBe(0);
   });
 });
