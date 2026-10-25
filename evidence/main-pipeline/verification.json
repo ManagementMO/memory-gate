@@ -69,5 +69,16 @@
     "contracts": 126,
     "gateTypecheck": "passed",
     "gateProductionBuild": "passed"
+  },
+  "mergedApifyRegression": {
+    "checks": [
+      "place references require review and optional models start as private previews",
+      "explicit placement shares the real model and switching POV preserves the other viewer",
+      "a real controller ray selects the placed model and opens its source inside VR",
+      "hide and source removal update another device and preserve the kite story",
+      "a direct family photo is stored privately and can be approved without Apify"
+    ],
+    "errors": [],
+    "paidCalls": 0
   }
 }
