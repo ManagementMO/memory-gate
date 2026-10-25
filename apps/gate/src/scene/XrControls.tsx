@@ -67,7 +67,8 @@ export function XrControls() {
     camera.getWorldPosition(_head);
     camera.getWorldQuaternion(_q);
     const yaw = _e.setFromQuaternion(_q, 'YXZ').y;
-    // Below the captions, a little closer: within reach of a pointer, out of the way of the view. It stays put while
+    // Low and a little to the left, within reach of a pointer: out of the way of the view, and of a ray held on the
+    // ground ahead to walk there (straight ahead and low, it sat right where those rays pass). It stays put while
     // you look down at it and reach for it (a dock that followed every turn of the head was a moving target under the
     // hand), and comes round only once you've turned well away, walked off or stood up; never while a ray is on it.
     const a = anchor.current;
@@ -76,7 +77,8 @@ export function XrControls() {
     if (!a.set || (aimed.n === 0 && (turned > 0.8 || Math.hypot(_head.x - a.x, _head.z - a.z) > 0.6 || Math.abs(_head.y - a.y) > 0.3))) {
       Object.assign(a, { x: _head.x, y: _head.y, z: _head.z, yaw, set: true });
     }
-    _target.set(a.x - Math.sin(a.yaw) * 1.05, a.y - 0.68, a.z - Math.cos(a.yaw) * 1.05);
+    const ahead = 0.95, left = 0.42;
+    _target.set(a.x - Math.sin(a.yaw) * ahead - Math.cos(a.yaw) * left, a.y - 0.62, a.z - Math.cos(a.yaw) * ahead + Math.sin(a.yaw) * left);
     if (!placed.current) { g.position.copy(_target); placed.current = true; }
     g.position.lerp(_target, 1 - Math.exp(-dt * 4));
     g.lookAt(a.x, g.position.y + 0.25, a.z);
