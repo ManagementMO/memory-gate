@@ -16,6 +16,7 @@ import { walk as socialWalk } from '../social/walk';
 import { moveAnchor, perspectiveAnchored, reanchor, resetWalk, setWalk, walkState } from '../social/xr/perspectiveScale';
 import type { MeadowTraversal } from '../red-kite/traversal';
 import { splatEye } from './PhotoWorld';
+import { WalkHint } from './WalkHint';
 
 /** Places with a walking surface, and the frame their world is drawn in (fixtures/worlds/*.json): a backup copy of the
  *  surface comes from these when Keira's (which waits on the room's world from the backend) hasn't arrived. */
@@ -194,6 +195,7 @@ export function Walk() {
   if (!place) return null;
   return (
     <>
+      <WalkHint id="memory-walk" text="Hold a pinch on the ground to walk there" when={() => walkPointer.active} />
       <mesh ref={ring} visible={false} rotation-x={-Math.PI / 2} renderOrder={1500}>
         <ringGeometry args={[0.16, 0.22, 40]} />
         <meshBasicMaterial color="#fff6e6" transparent opacity={0.5} depthWrite={false} toneMapped={false} fog={false} />

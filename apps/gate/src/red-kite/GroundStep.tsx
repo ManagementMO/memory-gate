@@ -3,13 +3,14 @@ import { useXR } from '@react-three/xr';
 import { useRef, type RefObject } from 'react';
 import * as THREE from 'three';
 import type { MeadowTraversal } from './traversal';
+import { WalkHint } from '../scene/WalkHint';
 
-const HOLD_MS = 450;
+const HOLD_MS = 150; // a pinch, not a brush: nothing else here is pinched on the ground
 const _head = new THREE.Vector3();
 
 /**
- * Walking by pinch, for hands (which have no sticks) and controllers alike: hold a pinch or trigger on the meadow's
- * ground for half a second (a ring fills where you point), let go, and you step there behind a short blink. The step
+ * Walking by pinch, for hands (which have no sticks) and controllers alike: pinch (or pull the trigger) on the meadow's
+ * ground (a ring marks where you point), let go, and you step there behind a short blink. The step
  * goes through the same traversal as the sticks, so it lands on walkable ground or not at all.
  */
 export function GroundStep({ traversal, blocked }: { traversal: RefObject<MeadowTraversal | null>; blocked: RefObject<boolean> }) {
@@ -61,6 +62,7 @@ export function GroundStep({ traversal, blocked }: { traversal: RefObject<Meadow
 
   if (!presenting) return null;
   return <>
+    <WalkHint id="red-kite-walk" text="Pinch the ground to walk there" when={() => !!traversal.current && !blocked.current} />
     {/* The meadow is splats (not pointable); an unseen ground catches the pinch. Nearer things (the spool, the panel's
         buttons) still take a ray first. */}
     <mesh name="RedKiteGroundStep" rotation-x={-Math.PI / 2} position={[0, .003, 0]} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={cancel}>
