@@ -1,9 +1,11 @@
-// The palace, built from a handful of shapes: lathe-turned columns (one instanced mesh for all of them), the rotunda's
-// eight arched walls, entablature, drum and dome merged into a few meshes, the colonnade's beams and planter boxes, the
-// weeping figures at the boxes' corners, the terrace with the lagoon cut out of it. Everything is computed once.
+// The palace, built from a handful of shapes: lathe-turned columns (one instanced mesh for all of them, the rotunda's
+// tinted red), the rotunda's eight arched piers, pedestals, entablature, attic and low dome merged into a few meshes,
+// the colonnade's beams and planter boxes, the figures (weeping women at the boxes' corners, statues over the
+// rotunda's column pairs), the terrace with the lagoon cut out of it. Everything is computed once.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { COL, LAGOON, R, ROT, WATER_Y, lagoonPoint, sc } from './plan';
+import { siteFloor } from './grounds';
+import { COL, COL_TOP, LAGOON, R, ROT, WATER_Y, lagoonPoint, sc } from './plan';
 
 /** Same attributes everywhere (position, normal, uv), non-indexed, so any set of parts can be merged. */
 function clean(g: THREE.BufferGeometry): THREE.BufferGeometry {
@@ -50,17 +52,23 @@ export function columnGeometry(segments: number, volutes = true): THREE.BufferGe
   return merge(parts);
 }
 
-export type ColumnSpot = { x: number; z: number; h: number; yaw: number };
+export type ColumnSpot = { x: number; z: number; y: number; h: number; yaw: number; red: boolean };
 
-/** Where every column stands: two flanking each arch of the rotunda, and the two rows of each colonnade arm. */
+/** The rotunda's corners (radians round from the axis toward you), and their distance from its centre (real metres). */
+const corner = (k: number) => ((k + 0.5) / 8) * Math.PI * 2;
+const CORNER_R = R.apothem / Math.cos(Math.PI / 8);
+/** Where each pair of the rotunda's columns stands (real metres from the centre, along its corner's bisector). */
+const PAIR_R = CORNER_R + R.pairOut;
+
+/** Where every column stands: a pair at each corner of the rotunda, on its pedestal, and the two rows of each
+ *  colonnade arm. */
 export function columnSpots(): ColumnSpot[] {
   const out: ColumnSpot[] = [];
-  const d = sc(R.apothem + R.colOut);
   for (let k = 0; k < 8; k++) {
-    const a = (k / 8) * Math.PI * 2;
+    const c = corner(k);
     for (const side of [-1, 1]) {
-      const u = side * sc(R.colSide);
-      out.push({ x: ROT.x + Math.sin(a) * d + Math.cos(a) * u, z: ROT.z + Math.cos(a) * d - Math.sin(a) * u, h: sc(R.colH), yaw: a });
+      const o = turn(c, side * sc(R.pairHalf), sc(PAIR_R));
+      out.push({ x: ROT.x + o.x, z: ROT.z + o.y, y: sc(R.podium), h: sc(R.colH), yaw: c, red: true });
     }
   }
   for (const c of colonnadeColumns()) out.push(c);
@@ -86,7 +94,7 @@ function colonnadeColumns(): ColumnSpot[] {
     for (const t of colonnadeAngles()) {
       for (const dr of [-1, 1]) {
         const p = arcPoint(side * t, sc(COL.radius + dr * COL.rows));
-        out.push({ x: p.x, z: p.y, h: sc(COL.height), yaw: arcYaw(side * t) });
+        out.push({ x: p.x, z: p.y, y: 0, h: sc(COL.height), yaw: arcYaw(side * t), red: false });
       }
     }
   }
@@ -96,7 +104,7 @@ function colonnadeColumns(): ColumnSpot[] {
 /** One arched wall of the octagon, facing +Z before it is turned into place. */
 function archPanel(): THREE.BufferGeometry {
   const hw = sc(R.apothem) * Math.tan(Math.PI / 8) + 0.02;
-  const a = sc(R.archHalf), spring = sc(R.spring), top = sc(R.colH);
+  const a = sc(R.archHalf), spring = sc(R.spring), top = sc(COL_TOP);
   const shape = new THREE.Shape();
   shape.moveTo(-hw, 0);
   shape.lineTo(-a, 0);
@@ -124,6 +132,13 @@ function octBand(apothemOut: number, depth: number, y0: number, y1: number): THR
   return parts;
 }
 
+/** A box at one of the rotunda's corners (real metres): centred `r` out along the corner's bisector, `w` wide across it,
+ *  `d` deep along it, between two heights. */
+function atCorner(k: number, r: number, w: number, d: number, y0: number, y1: number): THREE.BufferGeometry {
+  const c = corner(k);
+  return box(sc(w), sc(y1 - y0), sc(d), ROT.x + Math.sin(c) * sc(r), sc((y0 + y1) / 2), ROT.z + Math.cos(c) * sc(r), c);
+}
+
 function domeProfile(rScale: number, steps: number): THREE.Vector2[] {
   const pts: THREE.Vector2[] = [];
   for (let i = 0; i <= steps; i++) {
@@ -133,79 +148,131 @@ function domeProfile(rScale: number, steps: number): THREE.Vector2[] {
   return pts;
 }
 
-export type RotundaParts = { marble: THREE.BufferGeometry; relief: THREE.BufferGeometry; dome: THREE.BufferGeometry; gold: THREE.BufferGeometry; ceiling: THREE.BufferGeometry; oculus: THREE.Vector3 };
+export type RotundaParts = { marble: THREE.BufferGeometry; detail: THREE.BufferGeometry; relief: THREE.BufferGeometry; dome: THREE.BufferGeometry; ceiling: THREE.BufferGeometry; oculus: THREE.Vector3 };
+
+/** A standing draped figure for the attic's pedestals (real metres, about 3.2 m): a long robe gathered at the waist,
+ *  shoulders, a head, and arms held a little forward. */
+function statue(): THREE.BufferGeometry {
+  const robe = new THREE.LatheGeometry([
+    [0, 0], [0.62, 0], [0.6, 0.18], [0.5, 0.9], [0.4, 1.55], [0.36, 1.9], [0.46, 2.3], [0.44, 2.5], [0.2, 2.62], [0, 2.72],
+  ].map(([r, y]) => new THREE.Vector2(r, y)), 8);
+  const head = new THREE.SphereGeometry(0.21, 7, 5).scale(1, 1.15, 1).translate(0, 2.92, 0.02);
+  const armL = new THREE.CapsuleGeometry(0.12, 0.85, 2, 5).rotateX(-0.45).translate(0.42, 2.0, 0.22);
+  const armR = new THREE.CapsuleGeometry(0.12, 0.85, 2, 5).rotateX(-0.75).translate(-0.42, 2.05, 0.3);
+  return merge([robe, head, armL, armR]);
+}
+
+/** An archivolt: the moulded band round the head of an arch, standing a little proud of the wall, facing +Z. */
+function archRing(): THREE.BufferGeometry {
+  const a = sc(R.archHalf), w = sc(0.65), spring = sc(R.spring);
+  const shape = new THREE.Shape();
+  shape.moveTo(-(a + w), spring);
+  shape.absarc(0, spring, a + w, Math.PI, 0, true);
+  shape.lineTo(a, spring);
+  shape.absarc(0, spring, a, 0, Math.PI, false);
+  shape.lineTo(-(a + w), spring);
+  const g = new THREE.ExtrudeGeometry(shape, { depth: sc(0.3), bevelEnabled: false, curveSegments: 16 });
+  g.translate(0, 0, sc(R.apothem) - sc(0.05));
+  return g;
+}
+
+/** An ovoid urn on its foot, as on the rotunda's podium (real size, about 2.6 m). */
+function urn(): THREE.BufferGeometry {
+  const prof: [number, number][] = [[0, 0], [0.62, 0], [0.62, 0.22], [0.42, 0.3], [0.34, 0.52], [0.72, 0.95], [0.94, 1.45], [0.9, 1.85], [0.62, 2.2], [0.4, 2.32], [0.5, 2.42], [0.5, 2.5], [0, 2.56]];
+  return new THREE.LatheGeometry(prof.map(([r, y]) => new THREE.Vector2(sc(r), sc(y))), 9);
+}
 
 export function rotunda(quality: number): RotundaParts {
   const marble: THREE.BufferGeometry[] = [];
-  const panel = archPanel();
-  for (let k = 0; k < 8; k++) {
-    const a = (k / 8) * Math.PI * 2;
-    marble.push(panel.clone().applyMatrix4(new THREE.Matrix4().makeRotationY(a).setPosition(ROT.x, 0, ROT.z)));
-  }
-  // Base moulding round the piers, the entablature over the columns, its cornice, then the drum and its cap.
+  // Small carved things (dentils, imposts, urns, statues): drawn, but too fine to need the lagoon's reflection.
+  const detail: THREE.BufferGeometry[] = [];
+  const relief: THREE.BufferGeometry[] = [];
   const hw = sc(R.apothem) * Math.tan(Math.PI / 8);
+  // The eight piers: each face an arched wall, the head of its arch ringed by an archivolt, an impost moulding where
+  // the arch springs, and a moulded base.
+  const panel = archPanel();
+  const ring = archRing();
   for (let k = 0; k < 8; k++) {
     const a = (k / 8) * Math.PI * 2;
+    const place = new THREE.Matrix4().makeRotationY(a).setPosition(ROT.x, 0, ROT.z);
+    marble.push(panel.clone().applyMatrix4(place), ring.clone().applyMatrix4(place));
     for (const side of [-1, 1]) {
       const u = side * (sc(R.archHalf) + (hw - sc(R.archHalf)) / 2);
-      const d = sc(R.apothem - R.wall / 2);
-      const o = turn(a, u, d);
-      marble.push(box(hw - sc(R.archHalf) + 0.02, sc(0.9), sc(R.wall + 0.5), ROT.x + o.x, sc(0.45), ROT.z + o.y, a));
+      const base = turn(a, u, sc(R.apothem - R.wall / 2));
+      marble.push(box(hw - sc(R.archHalf) + 0.02, sc(0.9), sc(R.wall + 0.5), ROT.x + base.x, sc(0.45), ROT.z + base.y, a));
+      const imp = turn(a, u, sc(R.apothem) + sc(0.12));
+      detail.push(box(hw - sc(R.archHalf) + 0.04, sc(0.7), sc(0.5), ROT.x + imp.x, sc(R.spring) - sc(0.35), ROT.z + imp.y, a));
     }
   }
-  marble.push(...octBand(sc(R.apothem + 1.7), sc(R.wall + 1.7), sc(R.colH), sc(R.entTop)));
-  marble.push(...octBand(sc(R.apothem + 2.15), sc(R.wall + 2.15), sc(R.entTop), sc(R.cornice)));
-  marble.push(...octBand(sc(R.drumApothem), sc(1.8), sc(R.cornice), sc(R.drumTop)));
-  marble.push(...octBand(sc(R.drumApothem + 0.5), sc(2.3), sc(R.drumTop - 0.7), sc(R.drumTop)));
-  // Relief panels on the drum (the real one carries Zimm's frieze): carved stone set into each face, in a raised
-  // frame whose edges catch the light.
-  const relief: THREE.BufferGeometry[] = [];
+  // At every corner a high pedestal for the column pair (plinth, die, a band, a moulded cap), and an urn before it.
+  const urnGeo = urn();
+  for (let k = 0; k < 8; k++) {
+    const c = corner(k);
+    marble.push(atCorner(k, PAIR_R - 0.2, 6.2, 4.6, 0, 0.55));
+    marble.push(atCorner(k, PAIR_R - 0.2, 5.6, 4.0, 0.55, R.podium - 0.45));
+    marble.push(atCorner(k, PAIR_R - 0.2, 5.85, 4.25, 1.55, 1.95));
+    marble.push(atCorner(k, PAIR_R - 0.2, 6.0, 4.4, R.podium - 0.45, R.podium));
+    detail.push(urnGeo.clone().translate(ROT.x + Math.sin(c) * sc(PAIR_R + 3.4), 0, ROT.z + Math.cos(c) * sc(PAIR_R + 3.4)));
+  }
+  // The entablature: a two-fascia architrave, a frieze carried round in relief, and a deep cornice with its dentils,
+  // breaking forward over every column pair.
+  marble.push(...octBand(sc(R.apothem + 0.9), sc(R.wall + 0.9), sc(COL_TOP), sc(COL_TOP + 0.75)));
+  marble.push(...octBand(sc(R.apothem + 1.05), sc(R.wall + 1.05), sc(COL_TOP + 0.75), sc(COL_TOP + 1.45)));
+  marble.push(...octBand(sc(R.apothem + 0.85), sc(R.wall + 0.85), sc(COL_TOP + 1.45), sc(R.entTop)));
+  relief.push(...octBand(sc(R.apothem + 0.9), 0.08, sc(COL_TOP + 1.6), sc(R.entTop - 0.15)));
+  marble.push(...octBand(sc(R.apothem + 1.75), sc(R.wall + 1.75), sc(R.entTop), sc(R.cornice)));
+  for (let k = 0; k < 8; k++) {
+    marble.push(atCorner(k, PAIR_R, 5.4, 4.2, COL_TOP, COL_TOP + 1.45));
+    marble.push(atCorner(k, PAIR_R + 0.1, 5.2, 4.0, COL_TOP + 1.45, R.entTop));
+    marble.push(atCorner(k, PAIR_R + 0.25, 6.4, 5.0, R.entTop, R.cornice));
+  }
   for (let k = 0; k < 8; k++) {
     const a = (k / 8) * Math.PI * 2;
-    const w = 2 * sc(R.drumApothem) * Math.tan(Math.PI / 8) * 0.74;
-    const h = sc(4.2), cy = sc(R.cornice + 0.7 + 2.1);
-    const r = sc(R.drumApothem) + 0.02;
+    const half = sc(R.apothem + 1.75) * Math.tan(Math.PI / 8) - 0.35;
+    const n = Math.floor((2 * half) / (quality >= 0.9 ? 0.24 : 0.3));
+    for (let i = 0; i <= n; i++) {
+      const u = -half + (i * 2 * half) / n;
+      const o = turn(a, u, sc(R.apothem + 1.75) - 0.02);
+      detail.push(box(0.11, 0.16, 0.16, ROT.x + o.x, sc(R.entTop) - 0.08, ROT.z + o.y, a));
+    }
+  }
+  // The attic: a tall band with a carved panel in a raised frame on each face, a cornice along its top, and over
+  // every column pair a pedestal carrying a statue.
+  marble.push(...octBand(sc(R.apothem + 0.55), sc(3.4), sc(R.cornice), sc(R.atticTop)));
+  marble.push(...octBand(sc(R.apothem + 0.95), sc(3.8), sc(R.atticTop), sc(R.atticTop + 0.6)));
+  for (let k = 0; k < 8; k++) {
+    const a = (k / 8) * Math.PI * 2;
+    const w = sc(7.8), h = sc(2.9), cy = sc((R.cornice + R.atticTop) / 2);
+    const r = sc(R.apothem + 0.55) + 0.02;
     relief.push(box(w, h, 0.08, ROT.x + Math.sin(a) * r, cy, ROT.z + Math.cos(a) * r, a));
-    const fr = sc(R.drumApothem) + 0.07, t = sc(0.32);
+    const fr = r + 0.05, t = sc(0.36);
     for (const [fw, fh, ux, uy] of [[w + 2 * t, t, 0, (h + t) / 2], [w + 2 * t, t, 0, -(h + t) / 2], [t, h, (w + t) / 2, 0], [t, h, -(w + t) / 2, 0]] as const) {
       const o = turn(a, ux, 0);
       marble.push(box(fw, fh, 0.16, ROT.x + Math.sin(a) * fr + o.x, cy + uy, ROT.z + Math.cos(a) * fr + o.y, a));
     }
   }
-  // The architrave's two fascia steps and a dentil line under the cornice: the classical order, in small.
-  marble.push(...octBand(sc(R.apothem + 1.78), 0.08, sc(R.colH + 0.08), sc(R.colH + 0.42)));
-  marble.push(...octBand(sc(R.apothem + 1.82), 0.08, sc(R.colH + 0.5), sc(R.colH + 0.9)));
+  const figure = statue();
   for (let k = 0; k < 8; k++) {
-    const a = (k / 8) * Math.PI * 2;
-    const half = sc(R.apothem + 1.85) * Math.tan(Math.PI / 8) - 0.1;
-    const n = Math.floor((2 * half) / 0.21);
-    for (let i = 0; i <= n; i++) {
-      const u = -half + (i * 2 * half) / n;
-      const o = turn(a, u, sc(R.apothem + 1.72) + 0.07);
-      marble.push(box(0.1, 0.15, 0.14, ROT.x + o.x, sc(R.entTop) - 0.1, ROT.z + o.y, a));
-    }
+    const c = corner(k);
+    const r = CORNER_R + 0.9;
+    marble.push(atCorner(k, r, 3.2, 3.2, R.cornice, R.atticTop + 1.2));
+    marble.push(atCorner(k, r, 3.7, 3.7, R.atticTop + 1.2, R.atticTop + 1.65));
+    detail.push(figure.clone().applyMatrix4(new THREE.Matrix4().compose(
+      new THREE.Vector3(ROT.x + Math.sin(c) * sc(r), sc(R.atticTop + 1.65), ROT.z + Math.cos(c) * sc(r)),
+      new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), c), new THREE.Vector3(1, 1, 1).multiplyScalar(sc(1.1)))));
   }
-  // The frieze band under the cornice, the same warm stone.
-  relief.push(...octBand(sc(R.apothem + 1.72), 0.1, sc(R.colH + 1.0), sc(R.entTop - 0.15)));
 
+  // The dome: low and broad, springing from behind the attic, its foot stepped back in two rings; the coffered
+  // ceiling inside.
   const domeSeg = quality >= 0.9 ? 64 : 40;
-  const dome = new THREE.LatheGeometry(domeProfile(1, 28), domeSeg).translate(ROT.x, sc(R.drumTop), ROT.z);
-  const ceiling = new THREE.LatheGeometry(domeProfile(0.975, 28), domeSeg).translate(ROT.x, sc(R.drumTop) - 0.05, ROT.z);
-
-  // Gold: a ring at the dome's foot, eight ribs up its meridians, a hairline on the cornice, a small finial.
-  const gold: THREE.BufferGeometry[] = [];
-  gold.push(new THREE.TorusGeometry(sc(R.domeR) * 1.005, 0.07, 8, domeSeg).rotateX(Math.PI / 2).translate(ROT.x, sc(R.drumTop) + 0.05, ROT.z));
-  for (let k = 0; k < 8; k++) {
-    const a = (k / 8) * Math.PI * 2 + Math.PI / 8;
-    const pts = domeProfile(1.004, 20).map((p) => new THREE.Vector3(ROT.x + Math.sin(a) * p.x, sc(R.drumTop) + p.y, ROT.z + Math.cos(a) * p.x));
-    gold.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 0.045, 5, false));
+  const domeParts = [new THREE.LatheGeometry(domeProfile(1, 28), domeSeg).translate(ROT.x, sc(R.drumTop), ROT.z)];
+  for (const [rr, y0, y1] of [[R.domeR + 0.5, R.atticTop + 0.6, R.atticTop + 1.05], [R.domeR + 0.2, R.atticTop + 1.05, R.atticTop + 1.4]] as const) {
+    domeParts.push(new THREE.LatheGeometry([new THREE.Vector2(sc(rr), sc(y0)), new THREE.Vector2(sc(rr), sc(y1)), new THREE.Vector2(sc(R.domeR) * 0.9, sc(y1))], domeSeg).translate(ROT.x, 0, ROT.z));
   }
-  gold.push(...octBand(sc(R.apothem + 2.18), 0.06, sc(R.cornice) - 0.04, sc(R.cornice) + 0.02));
-  gold.push(...octBand(sc(R.drumApothem + 0.53), 0.06, sc(R.drumTop) - 0.06, sc(R.drumTop)));
+  const dome = merge(domeParts);
+  const ceiling = new THREE.LatheGeometry(domeProfile(0.975, 28), domeSeg).translate(ROT.x, sc(R.drumTop) - 0.05, ROT.z);
   const top = sc(R.drumTop + R.domeH);
-  gold.push(new THREE.SphereGeometry(0.28, 16, 12).translate(ROT.x, top + 0.2, ROT.z));
-  gold.push(new THREE.ConeGeometry(0.09, 1.3, 10).translate(ROT.x, top + 0.95, ROT.z));
-  return { marble: merge(marble), relief: merge(relief), dome, gold: merge(gold), ceiling, oculus: new THREE.Vector3(ROT.x, top - 0.4, ROT.z) };
+  return { marble: merge(marble), detail: merge(detail), relief: merge(relief), dome, ceiling, oculus: new THREE.Vector3(ROT.x, top - 0.4, ROT.z) };
 }
 
 export type ColonnadeParts = { marble: THREE.BufferGeometry; relief: THREE.BufferGeometry; figures: THREE.Matrix4[] };
@@ -244,7 +311,7 @@ export function colonnade(): ColonnadeParts {
       const th = side * t;
       const mid = arcPoint(th, sc(COL.radius));
       marble.push(box(sc(1.1), beam * 0.8, sc(2 * COL.rows + 1.2), mid.x, H + beam * 0.4, mid.y, arcYaw(th)));
-      if (i % COL.boxEvery === 1 && i < angles.length - 1) {
+      if (i % COL.boxEvery === 0 && i < angles.length - 1) {
         const tb = side * (t + (angles[i + 1]! - t) / 2);
         const c = arcPoint(tb, sc(COL.radius));
         const bw = sc(6.2), bd = sc(2 * COL.rows + 3.0), bh = sc(4.4);
@@ -286,16 +353,14 @@ export function figureGeometry(): THREE.BufferGeometry {
   return merge([robe, head, arms]);
 }
 
-/** The ground: a wide terrace of pale stone with the lagoon cut from it, the basin's rim and its inner wall. */
+/** The ground: the whole site's floor with the lagoon cut from it (paving round the palace, the park and the streets
+ *  beyond, all drawn by its material), the basin's rim and its inner wall. */
 export function terrace(): { floor: THREE.BufferGeometry; rim: THREE.BufferGeometry; water: THREE.BufferGeometry } {
   const N = 96;
   const outline = Array.from({ length: N }, (_, i) => lagoonPoint((i / N) * Math.PI * 2));
-  const outer = new THREE.Shape();
-  outer.absarc(0, -12, 150, 0, Math.PI * 2, false);
   const hole = new THREE.Path(outline.map((p) => new THREE.Vector2(p.x, -p.y)));
   hole.closePath();
-  outer.holes.push(hole);
-  const floor = new THREE.ShapeGeometry(outer, 48).rotateX(-Math.PI / 2);
+  const floor = siteFloor();
 
   // Rim: a low curb round the basin, and the inner wall down into the water.
   const curb = new THREE.Shape(Array.from({ length: N }, (_, i) => { const p = lagoonPoint((i / N) * Math.PI * 2, 0.55); return new THREE.Vector2(p.x, -p.y); }));
@@ -388,6 +453,9 @@ export function planting(): { cypress: THREE.BufferGeometry; cypresses: THREE.Ma
     return new THREE.Matrix4().compose(new THREE.Vector3(Math.sin(a) * dist, 0, 42.4 - Math.cos(a) * dist), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), new THREE.Vector3(sy * 0.4, sy, sy * 0.4));
   };
   const cypresses: THREE.Matrix4[] = [];
+  // Two dark cypresses just behind the rotunda's flanks, rising between it and the colonnades.
+  const near = (x: number, z: number, h: number, yaw: number) => new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), new THREE.Vector3(h / 6.95 * 0.42, h / 6.95, h / 6.95 * 0.42));
+  cypresses.push(near(-12.6, -10.5, 13.5, 0.4), near(12.9, -11.2, 12.5, 1.3));
   for (const side of [-1, 1]) {
     cypresses.push(tree(side * 13.2, 86, 25, 0), tree(side * 14.5, 91, 22, 1));
     cypresses.push(tree(side * 23.0, 84, 27, 2), tree(side * 24.4, 89, 23, 3), tree(side * 22.0, 93, 21, 4));

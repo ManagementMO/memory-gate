@@ -1,6 +1,6 @@
 // The companion in English, Spanish and French: which language the conversation is in, pure and offline.
 import { describe, expect, test } from 'vitest';
-import { asksToEnter, asksToLeave, guideOffline, languageLines, resolveReply, safeReply, type GuideInput } from '../../packages/shared/src/guide';
+import { asksToEnter, asksToGoIn, asksToLeave, guideOffline, languageLines, resolveReply, safeReply, saysYes, type GuideInput } from '../../packages/shared/src/guide';
 import { planOffline } from '../../packages/shared/src/scene';
 import { LINES, PLACE_INTROS, line } from '../../apps/gate/src/flow/lines';
 import { generationConfig } from '../../apps/headset/src/voice/tts';
@@ -204,5 +204,27 @@ describe('deferred review items, fixed', () => {
   });
   test('Spanish: describing a portrait does not offer the photo picker', () => {
     expect(guideOffline({ ...invited, invitedToEnter: false, transcript: 'En la pared había un retrato de mi abuelo' }).intent).not.toBe('offer_photo');
+  });
+});
+
+describe('main\'s "yes steps in at once", in all three languages', () => {
+  test('a yes to the invitation, in English, Spanish or French; not "not yet" or "let\'s go home"', () => {
+    for (const t of ['Yes', 'Okay, let\'s go', 'Sí', 'Sí, vamos', 'Claro', 'Oui', 'D\'accord', 'Oui, allons-y']) expect(saysYes(t), t).toBe(true);
+    for (const t of ['Not yet', 'Let\'s go home', 'Sí, pero todavía no', 'Vamos a casa', 'Oui, mais pas encore', 'Si no me equivoco']) expect(saysYes(t), t).toBe(false);
+  });
+  test('"let\'s go" before the gate means going in, in each language; going home stays a goodbye', () => {
+    for (const t of ['Let\'s go', 'Take me there', 'Vamos allá', 'Vámonos', 'Lléveme allí', 'Allons-y', 'Emmenez-moi là-bas']) expect(asksToGoIn(t), t).toBe(true);
+    for (const t of ['Let\'s go home', 'Vámonos a casa', 'Quiero volver a casa', 'Je voudrais rentrer']) expect(asksToGoIn(t), t).toBe(false);
+  });
+  test('offline: going in is answered in the conversation\'s language', () => {
+    const at: GuideInput = { phase: 'gathering', transcript: 'Vamos allá', history: [], media: null, mediaCaption: null, place: null, invitedToEnter: false, turnsInPhase: 0, language: 'es' };
+    expect(guideOffline(at)).toMatchObject({ intent: 'chat', reply: 'Con mucho gusto. Cuénteme de algún lugar que le gustaría visitar.' });
+    expect(guideOffline({ ...at, turnsInPhase: 2 })).toMatchObject({ intent: 'enter', reply: 'Venga conmigo.' });
+    expect(guideOffline({ ...at, transcript: 'Oui, allons-y', invitedToEnter: true, language: 'fr' })).toMatchObject({ intent: 'enter', reply: 'Venez avec moi.' });
+  });
+  test('Spanish and French invitations still count as invitations', () => {
+    expect(asksToEnter('Ya casi puedo verlo. ¿Vamos allí juntos?')).toBe(true);
+    expect(asksToEnter('Je le vois presque. On y va ensemble ?')).toBe(true);
+    expect(asksToEnter('Shall I take you there?')).toBe(true);
   });
 });

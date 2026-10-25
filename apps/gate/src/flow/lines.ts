@@ -60,6 +60,7 @@ export const LINES = {
     es: 'Tómese su tiempo. Si le resulta más fácil, una foto puede ayudarnos a encontrar el camino.',
     fr: 'Prenez votre temps. Si c’est plus facile, une photo peut nous aider à trouver le chemin.',
   },
+  comeWithMe: { en: 'Come with me.', es: 'Venga conmigo.', fr: 'Venez avec moi.' },
   shallWeSee: { en: 'Shall we go and see it?', es: '¿Vamos a verlo?', fr: 'Voulez-vous qu’on aille le voir ?' },
   noHurry: { en: 'There’s no hurry. I’m right here.', es: 'No hay prisa. Aquí estoy.', fr: 'Rien ne presse. Je suis là.' },
   ourVisit: { en: 'Our visit.', es: 'Nuestra visita.', fr: 'Notre visite.' },

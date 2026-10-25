@@ -178,7 +178,7 @@ const KEYS: Record<Exclude<Lang, 'en'>, Keys> = {
 
 // Every offline reply, in each language. Spanish and French speak to the storyteller as usted / vous.
 type OfflineLines = {
-  leaveMemory: string; leaveGate: string; rest: string; listening: readonly string[]; addDetail: readonly string[];
+  leaveMemory: string; leaveGate: string; rest: string; goIn: string; listening: readonly string[]; addDetail: readonly string[];
   video: string; photo: string; unsure: string; enter: string; notYet: string; describe: (place: string | null) => string; ask: readonly string[];
 };
 const OFFLINE: Record<Lang, OfflineLines> = {
@@ -186,6 +186,7 @@ const OFFLINE: Record<Lang, OfflineLines> = {
     leaveMemory: 'Thank you for bringing me here. I’ll keep this moment safe for you.',
     leaveGate: 'Of course. Thank you for spending this time with me.',
     rest: 'Of course. Let’s rest here for a moment.',
+    goIn: 'Gladly. Tell me about a place you’d like to visit.',
     listening: ['Mm. I’m here.', 'Take your time.', 'I’m listening.'],
     addDetail: ['I can see it now.', 'Yes. Let’s put that here.', 'There it is.', 'That makes it feel like home.'],
     video: 'A video would be lovely. Choose one whenever you’re ready, or drop it right here.',
@@ -200,6 +201,7 @@ const OFFLINE: Record<Lang, OfflineLines> = {
     leaveMemory: 'Gracias por traerme aquí. Guardaré este momento para usted.',
     leaveGate: 'Por supuesto. Gracias por pasar este rato conmigo.',
     rest: 'Por supuesto. Descansemos aquí un momento.',
+    goIn: 'Con mucho gusto. Cuénteme de algún lugar que le gustaría visitar.',
     listening: ['Mm. Aquí estoy.', 'Tómese su tiempo.', 'Estoy escuchando.'],
     addDetail: ['Ahora lo veo.', 'Sí. Pongámoslo aquí.', 'Ahí está.', 'Así ya se siente como en casa.'],
     video: 'Un video sería maravilloso. Elija uno cuando quiera, o arrástrelo hasta aquí.',
@@ -214,6 +216,7 @@ const OFFLINE: Record<Lang, OfflineLines> = {
     leaveMemory: 'Merci pour ce moment ici. Je le garderai précieusement pour vous.',
     leaveGate: 'Bien sûr. Merci d’avoir passé ce moment avec moi.',
     rest: 'Bien sûr. Reposons-nous ici un instant.',
+    goIn: 'Avec plaisir. Parlez-moi d’un endroit que vous aimeriez visiter.',
     listening: ['Mm. Je suis là.', 'Prenez votre temps.', 'Je vous écoute.'],
     addDetail: ['Je le vois maintenant.', 'Oui. Mettons-le ici.', 'Le voilà.', 'On s’y sent comme chez soi.'],
     video: 'Une vidéo, ce serait merveilleux. Choisissez-en une quand vous voulez, ou faites-la glisser ici.',
@@ -236,6 +239,9 @@ export function guideOffline(input: GuideInput): GuideReply {
   const place = guessPlace(input.transcript) ?? input.place;
   const reply = (text: string, intent: GuideIntent): GuideReply => ({ reply: text, intent, place, language, english: null, replyEnglish: null });
 
+  // Before leaving: "let's go" to "Shall we go there together?" means step in, not goodbye.
+  if (input.phase === 'gathering' && ((input.invitedToEnter && saysYes(input.transcript)) || (asksToGoIn(input.transcript) && (!!place || input.turnsInPhase >= 2 || !!input.media)))) return reply(say.enter, 'enter');
+  if (input.phase === 'gathering' && asksToGoIn(input.transcript)) return reply(say.goIn, 'chat');
   if (asksToLeave(input.transcript)) return reply(input.phase === 'memory' ? say.leaveMemory : say.leaveGate, 'leave');
   if ((/\b(rest|pause|a break|wait a (minute|moment|second)|hold on|one moment)\b/.test(t) || keys?.rest.test(t)) && words <= 8) return reply(say.rest, 'rest');
   if (input.phase === 'memory') {
@@ -245,7 +251,6 @@ export function guideOffline(input: GuideInput): GuideReply {
   if (/\b(video|clip|recording|film)\b/.test(t) || keys?.video.test(t)) return reply(say.video, 'offer_video');
   if (/\b(photo|photos|picture|pictures|photograph|image|album)\b/.test(t) || keys?.photo.test(t)) return reply(say.photo, 'offer_photo');
   if (/\b(i don'?t know|not sure|can'?t think|no idea|i forget|nothing comes|hmm+|um+)\b/.test(t) || keys?.unsure.test(t) || words === 0) return reply(say.unsure, 'offer_invite');
-  if (input.invitedToEnter && (/^(yes|yeah|yep|ok|okay|sure|please|let'?s|let'?s go|i'?d like that|go|alright|all right|mhm|uh huh)\b/.test(t) || keys?.yes.test(t))) return reply(say.enter, 'enter');
   if (input.invitedToEnter && (/^(no|not yet|wait|hold on)\b/.test(t) || keys?.notYet.test(t))) return reply(say.notYet, 'chat');
   const enough = input.turnsInPhase >= 1 || words >= 14 || (input.media && words >= 4);
   if (enough) return reply(say.describe(place), 'describe');
@@ -255,7 +260,45 @@ export function guideOffline(input: GuideInput): GuideReply {
 const ENTER_ES_FR = anyOf('(vamos|vayamos) (all[ií]|juntos|juntas|a verlo|a ese lugar)|quiere (ir|que vayamos|entrar|pasar)|le gustar[ií]a (ir|entrar|pasar)|on y va|allons-y|(voulez|aimeriez)-vous (y aller|entrer|y entrer)|si on y allait');
 
 /** True when a companion line invites stepping through the gate (so the next "yes" means go), in any of the three. */
-export const asksToEnter = (reply: string) => /\b(shall we|should we|would you like to|want to) (go|step|walk|visit)\b/i.test(reply) || ENTER_ES_FR.test(reply);
+export const asksToEnter = (reply: string) =>
+  /\b(shall we|should we|would you like to|do you want to|want to|ready to|are you ready to) (go|step|walk|visit|head|see|wander)\b/i.test(reply)
+  || /\b(shall|can|may) i take you\b/i.test(reply)
+  || /\bshall we\s*\?/i.test(reply)
+  || ENTER_ES_FR.test(reply);
+
+/**
+ * A plain yes to an invitation ("yes", "sure", "okay, let's go", "I'd love that"; "sí, vamos", "oui, allons-y"), told
+ * apart from "yes, but not yet" and from "let's go home". After the companion invites them in, the app steps through
+ * at once on it.
+ */
+export function saysYes(transcript: string): boolean {
+  const t = norm(transcript);
+  if (!t || /\b(home|back|out|leave|stop|not yet|wait|hold on)\b/.test(t) || /^no\b/.test(t)) return false;
+  if (/^(yes|yeah|yea|yep|yup|ok|okay|sure|please|let'?s|go|alright|all right|mhm|uh huh|of course|absolutely|definitely|i'?d (like|love) (that|to)|i would (like|love) (that|to)|sounds (good|lovely|nice|great|wonderful)|take me there|i'?m ready|ready)\b/.test(t)) return true;
+  // Spanish and French: the same yes, but not "sí, pero todavía no", "vamos a casa" or "oui, mais pas encore".
+  if (asksToLeave(transcript) || NOT_YET_ES_FR.test(t)) return false;
+  return KEYS.es.yes.test(t) || KEYS.fr.yes.test(t);
+}
+const NOT_YET_ES_FR = anyOf("todav[ií]a no|a[uú]n no|espere|espera|a casa|de vuelta|pas encore|attendez|attends|à la maison");
+
+/** "Let's go", "take me there", "step inside" (and "vamos allá", "allons-y"): asking to go into the place they've been
+ *  describing, not home. */
+export function asksToGoIn(transcript: string): boolean {
+  const t = norm(transcript);
+  if (!t || /\b(home|back|out|leave|stop|done|goodbye|bye)\b/.test(t)) return false;
+  return /^((yes|yeah|ok|okay|alright|so|well|now)\s+)*(let'?s go|let us go|let'?s do it|take me there|take me (in|inside)|go in|step in|i'?m ready|show me)\b/.test(t)
+    || /\b(take me there|take me to (it|the|that|this)|let'?s go (there|in|inside|see)|go (there|inside) now|step (in|inside|through))\b/.test(t)
+    || GO_IN_ES_FR.some((re) => re.test(t));
+}
+// On norm()'s text. Going in only on its own or toward "there": "vámonos a casa" and "on rentre" stay goodbyes.
+const GO_IN_ES_FR: readonly RegExp[] = [
+  new RegExp(`^((s[ií]|bueno|vale|claro) )?(vamos|v[aá]monos|vayamos)( all[aá]| all[ií]| juntos| juntas| ya| a verlo)?$`, 'u'),
+  new RegExp(`${B}(ll[eé]veme|ll[eé]vame) (all[ií]|all[aá]|a ese lugar)${E}`, 'u'),
+  new RegExp(`${B}(entremos|quiero entrar|quisiera entrar|me gustar[ií]a entrar)${E}`, 'u'),
+  new RegExp(`^((oui|bon|d'accord) )?(allons y|on y va)( ensemble)?$`, 'u'),
+  new RegExp(`${B}(emmenez moi|emm[eè]ne moi) (l[aà] bas|l[aà])${E}`, 'u'),
+  new RegExp(`${B}(entrons|je veux entrer|je voudrais entrer|j'aimerais entrer)${E}`, 'u'),
+];
 
 /** The language part of the companion's request: which language to answer in, and what else to return. */
 export function languageLines(i: Pick<GuideInput, 'language' | 'setting'>): string {

@@ -1,7 +1,7 @@
 // What the headset needs that the page can't show: the companion's words as calm 3D captions under your line of
 // sight, a small dock of things to reach for (XrControls), and controller buttons for the same. Everything else is voice.
 //   A: begin / continue    B: rest or resume    menu (left) or thumbstick press: leave the memory
-// When the album is ready the headset session ends, so the album is waiting on the page in Quest Browser.
+// Leaving a memory keeps you in the headset: the album opens there (XrAlbum), and so does the start you come back to.
 import { Text } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useXR, useXRInputSourceState } from '@react-three/xr';
@@ -10,7 +10,7 @@ import * as THREE from 'three';
 import fontUrl from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff?url';
 import { flow } from '../flow/controller';
 import { useGate } from '../state/store';
-import { xrStore } from './xr';
+import { XrAlbum } from './XrAlbum';
 import { XrControls } from './XrControls';
 import { useObjectWorkshop } from '../memory-objects/workshop';
 
@@ -91,21 +91,15 @@ function FrameCounter() {
 
 export function XrLayer() {
   const presenting = useXR((s) => s.session != null);
-  const stage = useGate((s) => s.stage);
   // Entering the headset from the gate begins the conversation (the Enter tap was the gesture audio needs).
   useEffect(() => { if (presenting && useGate.getState().stage === 'portal') void flow.begin(); }, [presenting]);
-  // The album lives on the page: leave the headset a moment after the album is ready.
-  useEffect(() => {
-    if (!presenting || stage !== 'album') return;
-    const t = setTimeout(() => { void xrStore.getState().session?.end().catch(() => undefined); }, 3500);
-    return () => clearTimeout(t);
-  }, [presenting, stage]);
   if (!presenting) return <FrameCounter />;
   return (
     <>
       <FrameCounter />
       <Captions3D />
       <XrControls />
+      <XrAlbum />
       <Buttons />
     </>
   );

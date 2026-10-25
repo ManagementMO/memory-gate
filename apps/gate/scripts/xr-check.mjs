@@ -1,6 +1,7 @@
 // Headset rehearsal in the emulated Quest 3 (IWER via @react-three/xr): the Enter button appears, entering begins the
 // conversation, captions render in 3D, the memory forms around the wearer, seeing through the grandchild's eyes puts
-// the wearer's eyes at the boy's 1.21 m (the world scales around their feet), and reaching the album ends the session.
+// the wearer's eyes at the boy's 1.21 m (the world scales around their feet), and the album opens in the headset (the
+// session stays on). --yaw 1.2 enters with the headset turned away and off-centre: the palace and the companion must still be ahead.
 import { chromium } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import { PNG } from 'pngjs';
@@ -24,6 +25,8 @@ const out = process.argv[2] ?? 'apps/gate/.shots/xr';
 const arg = (n, d) => (process.argv.includes(`--${n}`) ? process.argv[process.argv.indexOf(`--${n}`) + 1] : d);
 const world = arg('world', 'palace');
 const q = arg('q', null); // e.g. --q 0.15 renders at the headset's own quality
+const base = arg('base', 'https://localhost:5180'); // --base https://localhost:4180 checks the deployed build
+const yaw = arg('yaw', null); // e.g. --yaw 1.2: the emulated headset starts turned away (its forward is the last recentre)
 const memory = arg('memory', null); // --memory red-kite: the memory is the team's cached meadow (node scripts/red-kite-room.mjs first)
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--ignore-gpu-blocklist', '--use-angle=metal', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
@@ -38,7 +41,7 @@ const t0 = Date.now();
 const note = (s) => console.log(`${((Date.now() - t0) / 1000).toFixed(1)}s  ${s}`);
 const st = () => page.evaluate(() => { const g = window.__gate.store.getState(); return { stage: g.stage, xr: g.xr, said: g.companionLine?.text ?? null }; });
 try {
-  await page.goto(`https://localhost:5180/?emulate=1&mode=offline&voice=off&world=${world}${q ? `&q=${q}` : ''}${memory ? `&memory=${memory}` : ''}`, { waitUntil: 'load' });
+  await page.goto(`${base}/?emulate=1&mode=offline&voice=off&world=${world}${q ? `&q=${q}` : ''}${memory ? `&memory=${memory}` : ''}${yaw ? `&emulateYaw=${yaw}` : ''}`, { waitUntil: 'load' });
   await page.waitForTimeout(4000);
   const enter = page.getByTestId('enter-vr');
   note(`enter button visible: ${await enter.isVisible().catch(() => false)}`);
@@ -50,6 +53,13 @@ try {
   await page.waitForTimeout(3000);
   const f1 = await page.evaluate(() => window.__gateFrames ?? 0);
   note(`XR frames rendered in 3 s: ${f1 - f0}`);
+  // Wherever the headset's own forward points, the wearer stands on the shore spot facing the rotunda and the companion.
+  const head = await page.evaluate(() => window.__xrHead ?? null);
+  if (head) {
+    const off = Math.hypot(head[0], head[2] - 42.4), turn = Math.abs(Math.atan2(Math.sin(head[3]), Math.cos(head[3])));
+    note(`${off < 0.05 && turn < 0.05 ? 'PASS' : 'FAIL'} facing the palace on entering${yaw ? ` (headset turned ${yaw} rad)` : ''}: ${off.toFixed(3)} m from the shore spot, ${turn.toFixed(3)} rad off`);
+    if (off >= 0.05 || turn >= 0.05) failed = true;
+  }
   // Hide the emulator's control panels so the screenshot shows what the wearer sees.
   await page.evaluate(() => { for (const el of document.querySelectorAll('body > div')) { const s = getComputedStyle(el); if (el.id !== 'root' && (s.position === 'fixed' || s.position === 'absolute') && el.querySelector('canvas') === null) el.style.display = 'none'; } });
   await page.waitForTimeout(6000);
@@ -98,8 +108,10 @@ try {
   await page.evaluate(() => window.__gate.flow.leave());
   await page.waitForFunction(() => window.__gate.store.getState().stage === 'album', null, { timeout: 40000 });
   await page.waitForTimeout(6000);
-  note(`after album: ${JSON.stringify(await st())}`);
-  await page.screenshot({ path: `${out}/04-after-album.png` });
+  const atAlbum = await st();
+  note(`${atAlbum.xr ? 'PASS' : 'FAIL'} the album opens in the headset (still in XR): ${JSON.stringify(atAlbum)}`);
+  if (!atAlbum.xr) failed = true;
+  await view(page, `${out}/04-xr-album.png`, 'headset view of the album');
 } catch (e) {
   note(`FAILED: ${String(e).slice(0, 300)}`);
   note(`state at failure: ${JSON.stringify(await page.evaluate(() => { const g = window.__gate.store.getState(); return { stage: g.stage, xr: g.xr, enterProgress: g.enterProgress, said: g.companionLine?.text ?? null, heard: g.heardLine?.text ?? null }; }).catch(() => null))}`);
@@ -107,4 +119,4 @@ try {
 }
 note(`errors: ${errors.length}`); for (const e of errors.slice(0, 12)) note(`  ${e}`);
 await browser.close();
-if (failed) { note('FAILED: the headset view was black'); process.exitCode = 1; }
+if (failed) { note('FAILED: see the FAIL lines above (a black headset view, the wrong facing, or the album leaving the headset)'); process.exitCode = 1; }

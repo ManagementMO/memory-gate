@@ -26,7 +26,11 @@ export function PhotoWorld() {
   // Real generations from this photo always; the bundled sample splat only when the sample photo was shared.
   const isSample = !!media && /sample-photo-1938/.test(media.name);
   const usable = !!splat && splat.status === 'ready' && !!splat.url && (splat.source === 'sharp' || splat.source === 'worldlabs' || (splat.source === 'prebaked' && isSample));
-  const url = usable ? fileUrl(splat!.liteUrl && /OculusBrowser|Quest/i.test(navigator.userAgent) ? splat!.liteUrl : splat!.url) : null;
+  // The headset sees the same world as the browser. The 100k export of a World Labs world lost too much in stereo (the
+  // Red Kite page found the same), so the lighter file is for photo splats on a headset, or when asked for (?lite=1).
+  const liteAsked = new URLSearchParams(location.search).get('lite');
+  const lite = !!splat?.liteUrl && (liteAsked === '1' || (liteAsked !== '0' && splat.source !== 'worldlabs' && /OculusBrowser|Quest/i.test(navigator.userAgent)));
+  const url = usable ? fileUrl(lite ? splat!.liteUrl : splat!.url) : null;
 
   // The cached meadow has forward centers beyond 267m. Keep its horizon within the projection volume,
   // restoring the prior range when this source leaves so the portal/photo presentation stays independent.
@@ -46,16 +50,19 @@ export function PhotoWorld() {
   // disposes only its own: a renderer kept in useMemo was disposed by that double mount and then shown, and drew
   // nothing wherever the world was already known when this mounted (a guest's headset).
   const kernel = splat?.source === 'worldlabs' ? Math.sqrt(8) : Math.sqrt(5);
+  const spark = useRef<SparkRenderer | null>(null);
   useEffect(() => {
     const s = new SparkRenderer({ renderer: gl, maxStdDev: kernel, lodCleanupTimeoutMs: Infinity } as ConstructorParameters<typeof SparkRenderer>[0]);
     const mat = (s as unknown as { material?: THREE.Material }).material;
     if (mat) mat.forceSinglePass = true;
     scene.add(s);
-    return () => { scene.remove(s); s.dispose(); };
+    spark.current = s;
+    return () => { scene.remove(s); s.dispose(); if (spark.current === s) spark.current = null; };
   }, [gl, scene, kernel]);
 
   const mesh = useRef<SplatMesh | null>(null);
   const ready = useRef(false);
+  const calibrated = splat?.source === 'worldlabs' && splat.worldId ? CALIBRATED[splat.worldId] ?? null : null;
   useEffect(() => {
     if (!url || !splat) return;
     ready.current = false;
@@ -71,13 +78,54 @@ export function PhotoWorld() {
     return () => { live = false; scene.remove(m); m.dispose(); mesh.current = null; useGate.getState().set({ photoWorld: null }); };
   }, [url, splat?.id, scene]);
 
+  // A world whose full-resolution export ships with the app comes in twice: the room's copy first (it arrives in
+  // seconds), then the full source with Spark's level of detail, faded in over it once loaded, so what's near the
+  // visitor keeps the source's own detail (the Red Kite page does the same; a uniformly reduced copy can't).
+  const fullUrl = usable && calibrated && liteAsked !== '1' ? calibrated.full : null;
+  const detail = useRef<SplatMesh | null>(null);
+  const detailReady = useRef(false);
+  useEffect(() => {
+    if (!fullUrl || !splat) return;
+    detailReady.current = false;
+    const m = new SplatMesh({ url: fullUrl, raycastable: false, lod: true, enableLod: true });
+    m.quaternion.set(1, 0, 0, 0);
+    m.scale.setScalar(splat.scale);
+    m.position.set(0, splatEye(splat.floorY, splat.scale), 0);
+    m.opacity = 0;
+    m.visible = false;
+    scene.add(m);
+    detail.current = m;
+    let live = true;
+    m.initialized.then(() => { if (live) detailReady.current = true; }).catch(() => undefined); // the room's copy stays
+    return () => { live = false; scene.remove(m); m.dispose(); detail.current = null; };
+  }, [fullUrl, splat?.id, scene]);
+
   useFrame((_, dt) => {
     const m = mesh.current;
     if (!m) return;
     const st = useGate.getState().stage;
     const show = ready.current && (st === 'forming' || st === 'memory' || st === 'leaving');
-    m.opacity = damp(m.opacity, show ? 1 : 0, show ? 0.7 : 3, Math.min(dt, 0.05));
+    const d = detail.current, dtc = Math.min(dt, 0.05);
+    if (d) {
+      // The splat budget around the visitor: what the headset carries at its frame rate, more on a computer.
+      if (spark.current) spark.current.lodSplatCount = gl.xr.isPresenting ? 500_000 : COARSE ? 600_000 : 1_200_000;
+      const showDetail = show && detailReady.current;
+      d.opacity = damp(d.opacity, showDetail ? 1 : 0, showDetail ? 0.7 : 3, dtc);
+      d.visible = d.opacity > 0.01;
+    }
+    // The room's copy steps aside once the full detail has fully come in over it.
+    const base = show && !(d && detailReady.current && d.opacity > 0.97);
+    m.opacity = damp(m.opacity, base ? 1 : 0, base ? 0.7 : 3, dtc);
     m.visible = m.opacity > 0.01;
   });
   return null;
 }
+
+/** Worlds whose full-resolution export is in the app (fixtures/worlds/*.json). The world's own floor estimate holds for
+ *  what is seen: measured from the meadow's splats, its ground under the entrance, the viewpoints and every prop spot is
+ *  at the floor (within a few cm; 0.2 m on the bank by the left bench). Its collision mesh sits about 1.15 m lower, so
+ *  that mesh's correction belongs to walking, never to the splats. */
+const CALIBRATED: Record<string, { full: string }> = {
+  '0b84554c-b182-4b3e-a7bb-78f15822a49d': { full: '/red-kite/meadow-full.spz' }, // the Red Kite meadow, 1.92M splats
+};
+const COARSE = matchMedia('(pointer: coarse)').matches;

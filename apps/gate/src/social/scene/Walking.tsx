@@ -4,11 +4,12 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useXRInputSourceState } from '@react-three/xr';
 import { useQuery } from 'convex/react';
-import { Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { api } from '../../../../../convex/_generated/api';
 import { initialNavigation, stepNavigation } from '../../red-kite/navigation';
-import { Terrain } from '../../red-kite/Terrain';
+// Loaded only when a meadow opens: it brings the physics engine, which every page would otherwise download at start.
+const Terrain = lazy(() => import('../../red-kite/Terrain').then((m) => ({ default: m.Terrain })));
 import type { MeadowTraversal } from '../../red-kite/traversal';
 import { xrStore } from '../../scene/xr';
 import { useGate } from '../../state/store';

@@ -88,7 +88,8 @@ function servePacked(): Plugin {
         if (!hit) {
           const raw = readFileSync(file);
           hit = {
-            br: brotliCompressSync(raw, { params: { [zlib.BROTLI_PARAM_QUALITY]: 9 } }), gz: gzipSync(raw, { level: 9 }),
+            // Quality 5: a few percent larger than 9, a tenth of the time (it runs on the first request after a deploy).
+            br: brotliCompressSync(raw, { params: { [zlib.BROTLI_PARAM_QUALITY]: 5 } }), gz: gzipSync(raw, { level: 6 }),
             type: { js: 'text/javascript', css: 'text/css', wasm: 'application/wasm', json: 'application/json', svg: 'image/svg+xml' }[m[1]!]!,
           };
           packed.set(file, hit);

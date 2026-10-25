@@ -6,6 +6,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 # Keep the previous build's files: a headset that is mid-visit still loads its own (hashed) chunks after a rebuild.
 npx vite build --emptyOutDir false > /dev/null
+# Keep the public files' own timestamps (the build copies them anew), so their ETags hold and a headset re-downloads
+# a big one (the 30 MB meadow) only when it actually changed, not after every deploy.
+rsync -a public/ dist/
 # A running server picks up the new build by itself (it reads dist/ on every request): never restart it mid-visit.
 if lsof -nP -iTCP:4180 -sTCP:LISTEN > /dev/null 2>&1; then echo "preview already running on :4180: now serving this build"; else
   nohup npx vite preview --port 4180 --host 0.0.0.0 > ../../.logs/gate-preview.log 2>&1 &

@@ -1,7 +1,9 @@
 // The Palace world: the Palace of Fine Arts at a pastel golden hour, the second world you can begin in. You stand
 // across the still lagoon from the rotunda; when you are ready the companion leads you over the water, under the dome,
-// where light gathers from the oculus and the memory forms. Built once from procedural geometry (see geometry.ts) and
-// a sky painted once; per frame only a few uniforms, a dozen stepping stones and the motes move.
+// where light gathers from the oculus and the memory forms. All round you lies the rest of the site, as on the map: the
+// park and its paths, the exhibition hall, Baker Street's houses, the harbour and the bay with the Golden Gate, the
+// hills (site.ts, grounds.ts, surroundings.ts). Built once from procedural geometry (see geometry.ts) and a sky painted
+// once; per frame only a few uniforms, a dozen stepping stones and the motes move.
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -9,9 +11,12 @@ import { useGate, type Stage } from '../../state/store';
 import { HASH, SIMPLEX3 } from '../shaders/noise.glsl';
 import { damp, glowBlending } from '../util';
 import { balustrade, colonnade, columnGeometry, columnSpots, figureGeometry, lilyPads, planting, rotunda, terrace } from './geometry';
-import { PAL, palaceMaterial, palaceMaterials } from './materials';
+import { siteMap } from './grounds';
+import { PAL, ROSSO, STONE, palaceMaterial, palaceMaterials } from './materials';
 import { GLOW_DIR, LAGOON, R, ROT, SHORE, SUN_DIR, WATER_Y, flatWhite, sc, xrWhite } from './plan';
+import { treeSpots } from './site';
 import { paintClouds, skyEnvironment, skyMaterial } from './sky';
+import { CROWN, buildGrounds } from './surroundings';
 
 /** The palace is the world before the memory, and the album's backdrop after it. */
 const PRE: readonly Stage[] = ['portal', 'greeting', 'gathering', 'entering', 'album'];
@@ -107,7 +112,11 @@ export function PalaceWorld({ quality }: { quality: number }) {
   const built = useMemo(() => {
     const clouds = paintClouds(gl, quality >= 0.9 ? 1024 : 768);
     const env = skyEnvironment(gl, clouds.texture);
-    const mats = palaceMaterials(env, quality);
+    // The site map the floor is painted from: paths, streets, and the shade pooled under every tree on the lawns.
+    const lawnTrees = treeSpots();
+    const pools = (list: { x: number; z: number; s: number }[], r: number) => list.map((s) => ({ x: s.x, z: s.z, r: r * s.s }));
+    const site = siteMap(quality, [...pools(lawnTrees.willow, CROWN.willow), ...pools(lawnTrees.cypress, CROWN.cypress), ...pools(lawnTrees.eucalyptus, CROWN.eucalyptus), ...pools(lawnTrees.park, CROWN.park)]);
+    const mats = palaceMaterials(env, quality, site);
     const skyMat = skyMaterial(clouds.texture, true);
     const rot = rotunda(quality);
     const col = colonnade();
@@ -117,8 +126,11 @@ export function PalaceWorld({ quality }: { quality: number }) {
     const mirrorColGeo = columnGeometry(8, false);
     const colMatrices = spots.map((c) => {
       const w = sc(R.colR) / (0.05 * c.h);
-      return new THREE.Matrix4().compose(new THREE.Vector3(c.x, 0, c.z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), c.yaw), new THREE.Vector3(c.h * w, c.h, c.h * w));
+      return new THREE.Matrix4().compose(new THREE.Vector3(c.x, c.y, c.z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), c.yaw), new THREE.Vector3(c.h * w, c.h, c.h * w));
     });
+    const colColors = spots.map((c) => (c.red ? ROSSO : STONE));
+    // The weeping women at the planter boxes' corners (the rotunda's statues are carved into its stone).
+    const figures = col.figures;
     const figGeo = figureGeometry();
     // The near plane: a balustrade on the shore, planting at the sides, lily pads by the edges.
     const bal = balustrade();
@@ -139,6 +151,8 @@ export function PalaceWorld({ quality }: { quality: number }) {
       vertexShader: /* glsl */ `varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
       fragmentShader: WATER_FRAG,
     });
+    // Everything round the palace: the park, the hall, the streets and houses, the harbour, the hills and the bay.
+    const grounds = buildGrounds({ env, quality, shadows: quality >= 0.9, stone: mats.marble, water });
     // Stepping stones of light that rise ahead of you as the companion leads the way across the water.
     const stoneZ: number[] = [];
     for (let z = LAGOON.cz + LAGOON.hd - 1.1; z > LAGOON.cz - LAGOON.hd + 0.6; z -= 1.55) stoneZ.push(z);
@@ -166,7 +180,7 @@ export function PalaceWorld({ quality }: { quality: number }) {
     moteGeo.setAttribute('position', new THREE.BufferAttribute(mpos, 3));
     moteGeo.setAttribute('aSeed', new THREE.BufferAttribute(mseed, 4));
     const moteMat = glowBlending(new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uPx: { value: 900 }, uFade: { value: 1 } }, vertexShader: MOTE_VERT, fragmentShader: MOTE_FRAG }));
-    return { clouds, env, mats, skyMat, rot, col, ter, colGeo, mirrorColGeo, colMatrices, figGeo, bal, plant, lily, green, water, stoneZ, stoneGeo, stoneMat, glowMat, oculusMat, shaftGeo, shaftMat, moteGeo, moteMat };
+    return { clouds, env, site, grounds, mats, skyMat, rot, col, ter, colGeo, mirrorColGeo, colMatrices, colColors, figures, figGeo, bal, plant, lily, green, water, stoneZ, stoneGeo, stoneMat, glowMat, oculusMat, shaftGeo, shaftMat, moteGeo, moteMat };
   }, [gl, quality]);
 
   useEffect(() => () => {
@@ -174,6 +188,8 @@ export function PalaceWorld({ quality }: { quality: number }) {
     built.env.dispose();
     built.skyMat.dispose();
     built.water.dispose();
+    built.site.texture.dispose();
+    built.grounds.dispose();
   }, [built]);
 
   // Instanced columns and figures (and their reflections) get their matrices once.
@@ -188,7 +204,7 @@ export function PalaceWorld({ quality }: { quality: number }) {
   const padRef = useRef<THREE.InstancedMesh>(null);
   useEffect(() => {
     const sets = [
-      [colRef, built.colMatrices], [colMirrorRef, built.colMatrices], [figRef, built.col.figures], [figMirrorRef, built.col.figures],
+      [colRef, built.colMatrices], [colMirrorRef, built.colMatrices], [figRef, built.figures], [figMirrorRef, built.figures],
       [balRef, built.bal.balusters], [balMirrorRef, built.bal.balusters], [cypRef, built.plant.cypresses], [cypMirrorRef, built.plant.cypresses],
       [padRef, built.lily.pads],
     ] as const;
@@ -199,10 +215,18 @@ export function PalaceWorld({ quality }: { quality: number }) {
       m.instanceMatrix.needsUpdate = true;
       m.computeBoundingSphere();
     }
+    // The columns take their stone from their instance: sand for the colonnades, red for the rotunda.
+    for (const m of [colRef.current, colMirrorRef.current]) {
+      if (!m) continue;
+      built.colColors.forEach((c, i) => m.setColorAt(i, c));
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    }
   }, [built]);
 
   // On first load the palace simply appears; coming back to it later (from the album) it clears out of white.
-  const live = useRef({ white: 0, oculus: 0, wasShown: false, everShown: false });
+  const live = useRef<{ white: number; oculus: number; wasShown: boolean; everShown: boolean; warmFor: unknown; warmFrames: number; culled: Set<THREE.Object3D> }>({
+    white: 0, oculus: 0, wasShown: false, everShown: false, warmFor: null, warmFrames: 0, culled: new Set(),
+  });
   const _m = useMemo(() => new THREE.Matrix4(), []);
   const _q = useMemo(() => new THREE.Quaternion(), []);
   const _v = useMemo(() => new THREE.Vector3(), []);
@@ -223,6 +247,18 @@ export function PalaceWorld({ quality }: { quality: number }) {
     }
     if (!L.wasShown) { L.white = L.everShown && s.stage !== 'entering' ? 1 : 0; L.wasShown = true; L.everShown = true; }
     if (g) g.visible = true;
+    // The first frames the palace is shown, draw all of it, behind you too, so every shader it and its grounds use is
+    // compiled at once while the page is still arriving, not one by one the first time you turn toward each (a
+    // stutter in the headset). Drawn for real, so each compiles exactly as it will be used.
+    if (g && L.warmFor !== built) {
+      L.warmFor = built;
+      L.warmFrames = 2;
+      L.culled.clear();
+      g.traverse((o) => { if (o.frustumCulled) { L.culled.add(o); o.frustumCulled = false; } });
+    } else if (L.warmFrames > 0 && --L.warmFrames === 0) {
+      for (const o of L.culled) o.frustumCulled = true;
+      L.culled.clear();
+    }
     const t = state.clock.elapsedTime;
     const entering = s.stage === 'entering';
     const p = entering ? s.enterProgress : 0;
@@ -238,7 +274,9 @@ export function PalaceWorld({ quality }: { quality: number }) {
     const u = built.skyMat.uniforms;
     u.uWhite!.value = PAL.uPalWhite.value;
     u.uShift!.value = t * 0.00015;
-    if (sky.current) sky.current.position.copy(camera.position);
+    // The sky is centred on your eyes. (In the headset the camera hangs under the XR origin at the shore, so its own
+    // position is only the head's offset from there: take its world position.)
+    if (sky.current) camera.getWorldPosition(sky.current.position);
     built.water.uniforms.uTime!.value = t;
     built.shaftMat.uniforms.uAmt!.value = L.oculus * (1 - PAL.uPalWhite.value * 0.6);
     built.shaftMat.uniforms.uTime!.value = t;
@@ -294,23 +332,25 @@ export function PalaceWorld({ quality }: { quality: number }) {
       {/* The palace */}
       <instancedMesh ref={colRef} args={[built.colGeo, m.column, built.colMatrices.length]} castShadow={shadows} receiveShadow={shadows} />
       <mesh geometry={built.rot.marble} material={m.marble} castShadow={shadows} receiveShadow={shadows} />
+      <mesh geometry={built.rot.detail} material={m.marble} castShadow={shadows} receiveShadow={shadows} />
       <mesh geometry={built.rot.relief} material={m.relief} receiveShadow={shadows} />
       <mesh geometry={built.rot.dome} material={m.dome} castShadow={shadows} />
       <mesh geometry={built.rot.ceiling} material={m.ceiling} />
-      <mesh geometry={built.rot.gold} material={m.gold} />
       <mesh position={built.rot.oculus} rotation-x={Math.PI / 2} material={built.oculusMat} renderOrder={5}>
         <circleGeometry args={[sc(R.oculus), 40]} />
       </mesh>
       <mesh geometry={built.shaftGeo} material={built.shaftMat} renderOrder={12} frustumCulled={false} />
       <mesh geometry={built.col.marble} material={m.marble} castShadow={shadows} receiveShadow={shadows} />
       <mesh geometry={built.col.relief} material={m.relief} />
-      <instancedMesh ref={figRef} args={[built.figGeo, m.marble, built.col.figures.length]} castShadow={shadows} />
+      <instancedMesh ref={figRef} args={[built.figGeo, m.marble, built.figures.length]} castShadow={shadows} />
       <mesh geometry={built.ter.floor} material={m.terrace} receiveShadow={shadows} />
       <mesh geometry={built.ter.rim} material={m.marble} receiveShadow={shadows} />
       <mesh geometry={built.bal.rails} material={m.marble} castShadow={shadows} receiveShadow={shadows} />
       <instancedMesh ref={balRef} args={[built.bal.baluster, m.marble, built.bal.balusters.length]} castShadow={shadows} />
       <instancedMesh ref={cypRef} args={[built.plant.cypress, built.green.cypress, built.plant.cypresses.length]} castShadow={shadows} />
       <instancedMesh ref={padRef} args={[built.lily.pad, built.green.pad, built.lily.pads.length]} />
+      {/* The grounds round it: the park, the hall behind the colonnades, the streets, the harbour, the hills, the bay. */}
+      <primitive object={built.grounds.main} />
 
       {/* Its reflection: the same shapes mirrored under the water's surface, lit as they are above it. */}
       <group position={[0, 2 * WATER_Y, 0]} scale={[1, -1, 1]}>
@@ -318,12 +358,12 @@ export function PalaceWorld({ quality }: { quality: number }) {
         <mesh geometry={built.rot.marble} material={mm.marble} />
         <mesh geometry={built.rot.relief} material={mm.relief} />
         <mesh geometry={built.rot.dome} material={mm.dome} />
-        <mesh geometry={built.rot.gold} material={mm.gold} />
         <mesh geometry={built.col.marble} material={mm.marble} />
-        <instancedMesh ref={figMirrorRef} args={[built.figGeo, mm.marble, built.col.figures.length]} />
+        <instancedMesh ref={figMirrorRef} args={[built.figGeo, mm.marble, built.figures.length]} />
         <mesh geometry={built.bal.rails} material={mm.marble} />
         <instancedMesh ref={balMirrorRef} args={[built.bal.baluster, mm.marble, built.bal.balusters.length]} />
         <instancedMesh ref={cypMirrorRef} args={[built.plant.cypress, built.green.cypressMirror, built.plant.cypresses.length]} />
+        <primitive object={built.grounds.mirror} />
       </group>
       <mesh geometry={built.ter.water} material={built.water} renderOrder={2} />
 

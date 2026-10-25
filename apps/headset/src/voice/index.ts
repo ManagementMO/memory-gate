@@ -305,21 +305,26 @@ export function createVoice(opts: VoiceOptions): Voice {
     if (!mint) { degradedReported = true; report(mintMessage(mintError)); }
   })();
   // A headset going to sleep takes the microphone away. When the page is visible again, ask for it again (the
-  // permission is already granted, so no prompt); only after two minutes without it say that a reload is needed.
+  // permission is already granted, so no prompt). Time asleep doesn't count: only after half a minute awake without it
+  // does it say a reload is needed, and even then it tries again each time the page comes back.
   let recovering = false;
   async function recoverMic(): Promise<void> {
     if (recovering || disposed || !mic) return;
     recovering = true;
-    const deadline = Date.now() + 120_000;
-    while (!disposed && Date.now() < deadline) {
+    let awakeMs = 0;
+    while (!disposed && awakeMs < 30_000) {
       if (document.visibilityState === 'visible') {
         if (ctx && ctx.state !== 'running') await ctx.resume().catch(() => {});
         if (await mic.reopen()) { micOk = true; recovering = false; refreshState(); return; }
+        awakeMs += 1500;
       }
       await sleep(1500);
     }
     recovering = false;
-    if (!disposed) report('The microphone stopped. Reload the page to use voice again; typing still works.');
+    if (disposed) return;
+    report('The microphone stopped. Reload the page to use voice again; typing still works.');
+    const again = () => { if (document.visibilityState !== 'visible') return; document.removeEventListener('visibilitychange', again); void recoverMic(); };
+    document.addEventListener('visibilitychange', again);
   }
 
   const ready: Promise<void> = (async () => {
