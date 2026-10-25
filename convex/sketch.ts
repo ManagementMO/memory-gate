@@ -119,7 +119,9 @@ export const see = action({
 });
 
 export const detail = action({
-  args: { code: v.string(), token: v.string(), plan: v.any(), words: v.string(), memoryId: v.optional(v.id('memories')) },
+  // persist: false asks for the updated plan without changing the shared memory: a perspective's own additions
+  // (apps/gate social layer) are kept with that perspective in the exchange instead.
+  args: { code: v.string(), token: v.string(), plan: v.any(), words: v.string(), memoryId: v.optional(v.id('memories')), persist: v.optional(v.boolean()) },
   handler: async (ctx, a): Promise<PlanResult | null> => {
     const gate = await ctx.runQuery(internal.budget.gate, { code: a.code, token: a.token });
     if (!gate.ok) return null;
@@ -133,6 +135,7 @@ export const detail = action({
     if (!out) return null;
     const plan = validatePlan(out, current.title);
     if (plan.objects.length === 0) return null;
+    if (a.persist === false) return { plan, source: 'claude', memoryId: a.memoryId ?? null };
     const memoryId = await ctx.runMutation(internal.memories.save, { roomId: gate.roomId, memberId: gate.memberId, memoryId: a.memoryId, title: plan.title, words: [a.words], plan, source: 'claude', appendWords: true });
     return { plan, source: 'claude', memoryId };
   },

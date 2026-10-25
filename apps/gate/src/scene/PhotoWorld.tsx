@@ -46,6 +46,9 @@ export function PhotoWorld() {
     return s;
   }, [gl]);
   useEffect(() => { scene.add(spark); return () => { scene.remove(spark); }; }, [scene, spark]);
+  // A whole World Labs world is seen from several places (each perspective's viewpoint), not only where a photo was
+  // taken: Spark's default kernel coverage, as the Red Kite meadow uses, since the photo-tuned one leaves gaps there.
+  useEffect(() => { spark.maxStdDev = splat?.source === 'worldlabs' ? Math.sqrt(8) : Math.sqrt(5); }, [spark, splat?.source]);
 
   const mesh = useRef<SplatMesh | null>(null);
   const ready = useRef(false);

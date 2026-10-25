@@ -11,6 +11,7 @@ import { Portal } from './Portal';
 import { TopBar } from './TopBar';
 import { XrButton } from './XrButton';
 import { PresenceSync } from '../presence/PresenceSync';
+import { SocialUI } from '../social/ui/SocialUI';
 import { lazyRetry } from './lazyRetry';
 
 const AlbumView = lazyRetry(() => import('../album/AlbumView'));
@@ -45,7 +46,7 @@ export function Overlay() {
       {stage === 'album' && (
         <AlbumUnavailable>
           <Suspense fallback={null}>
-            <AlbumView onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} />
+            <AlbumView onBeginAnother={() => flow.again()} onRevisit={(id) => void flow.revisit(id)} onClose={() => flow.home()} />
           </Suspense>
         </AlbumUnavailable>
       )}
@@ -53,6 +54,7 @@ export function Overlay() {
       <InviteSheet />
       <DropZone />
       <PresenceSync />
+      <SocialUI />
     </div>
   );
 }

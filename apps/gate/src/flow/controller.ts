@@ -2,7 +2,7 @@
 // companion says or does; the person only ever talks, shares a photo or video, or says they'd like to stop.
 //   portal → greeting → gathering (talk / photo / video / someone helps) → entering → forming → memory → leaving → album
 import { api } from '../../../../convex/_generated/api';
-import { asksToEnter, guideOffline, safeReply, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
+import { asksToEnter, asksToLeave, guideOffline, safeReply, type GuideInput, type GuideReply, type GuideTurn } from '../../../../packages/shared/src/guide';
 import { music } from '../audio/music';
 import { convex, readInvite, startSession, uploadFile } from '../backend/client';
 import { useGate, type MediaItem } from '../state/store';
@@ -13,6 +13,8 @@ import { memory } from './memory';
 import { moments, useMoments } from './moments';
 import type { SharedMemory } from './sync';
 import { PALACE_ENTER_MS } from '../scene/palace/plan';
+import { guideContext, story, turn } from '../social/attribution';
+import { overlayActive } from '../social/overlay';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -43,7 +45,8 @@ class Flow {
 
   // ------------------------------------------------------------ the beginning
   async begin(): Promise<void> {
-    if (this.begun) return;
+    // Back at the start page after a visit (the album's ×): Begin starts the next visit in the same session.
+    if (this.begun) { if (useGate.getState().stage === 'portal') this.again(); return; }
     this.begun = true;
     const g = useGate.getState();
     // Joining a visit in the same room: this device stays quiet (no music, no voice of its own); the main device
@@ -96,6 +99,7 @@ class Flow {
       if (g.resting && !/rest|ready/i.test(text)) return;
       g.speakLine(text);
       this.history.push({ who: 'companion', text });
+      turn('companion', text); // inside a memory: into the viewing perspective's thread
       music.duck(true);
       const words = text.split(/\s+/).length;
       try {
@@ -121,8 +125,16 @@ class Flow {
     if (!text) return;
     g.hearLine(text, false);
     this.history.push({ who: 'person', text });
+    turn('person', text);
     this.clearNudge();
     music.duck(false);
+    // "I'd like to leave", "take me back", "I'm done": acted on at once, without waiting on a model, so leaving always
+    // works (even offline, even on a slow connection).
+    if (asksToLeave(text) && ['memory', 'forming', 'gathering', 'greeting'].includes(g.stage)) {
+      if (g.stage === 'memory' || g.stage === 'forming') return void this.leave();
+      await this.say('Of course. Thank you for spending this time with me.');
+      return void this.finish();
+    }
     if (g.stage === 'memory' || g.stage === 'forming') return void this.heardInMemory(text, h);
     if (g.stage !== 'gathering' && g.stage !== 'greeting') return;
     this.turnsInPhase++;
@@ -163,8 +175,13 @@ class Flow {
     if (reply.intent === 'leave') { await this.say(reply.reply); return void this.leave(); }
     if (reply.intent === 'rest') return void this.rest(reply.reply);
     if (reply.intent === 'add_detail') {
-      memory.addDetail(text, h.audioFileId);
+      // Seeing through someone's eyes (and the exchange is keeping perspectives): it becomes that perspective's own
+      // story and things in the place. Otherwise the shared memory grows, as always.
+      if (overlayActive()) void story(text, { audioFileId: h.audioFileId, addsThings: true });
+      else memory.addDetail(text, h.audioFileId);
       moments.mark(text, h.audioFileId);
+    } else if (reply.intent === 'chat' && text.split(/\s+/).length >= 5) {
+      void story(text, { audioFileId: h.audioFileId });
     }
     await this.say(reply.reply);
   }
@@ -172,9 +189,12 @@ class Flow {
   /** Ask the companion's brain: Claude through the backend, else the offline rules. Never longer than ~7 s. */
   private async ask(partial: Pick<GuideInput, 'phase' | 'transcript'>): Promise<GuideReply> {
     const g = useGate.getState();
+    // Inside a memory, the companion speaks to whoever's eyes the place is seen through, with that perspective's thread.
+    const seen = guideContext();
     const input: GuideInput = {
       ...partial,
-      history: this.history.slice(-8),
+      history: seen && seen.history.length >= 2 ? seen.history : this.history.slice(-8),
+      ...(seen ? { perspective: seen.perspective } : {}),
       media: g.media?.kind ?? null,
       mediaCaption: this.mediaCaption,
       place: this.place,
@@ -368,6 +388,22 @@ class Flow {
     music.setEnabled(g.musicOn);
     music.setMode('album');
     g.set({ stage: 'album' });
+  }
+
+  /** From the album's ×: back to the start page. The session continues; Begin (or the album link) from there. */
+  home(): void {
+    this.leaving = false;
+    this.history = [];
+    this.turnsInPhase = 0;
+    this.invitedToEnter = false;
+    this.mediaCaption = null;
+    this.place = null;
+    this.clearNudge();
+    this.listen(false);
+    memory.reset();
+    moments.reset();
+    music.setMode('gate');
+    useGate.getState().set({ stage: 'portal', media: null, memoryTitle: null, offers: { photo: false, video: false, invite: false }, enterProgress: 0, heardLine: null, companionLine: null, resting: false });
   }
 
   /** From the album: back to the gate for another memory (the session continues). */

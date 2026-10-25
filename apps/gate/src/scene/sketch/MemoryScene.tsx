@@ -13,6 +13,8 @@ import { Ambience } from './Ambience';
 import { atmoLive, stepAtmosphere, useAtmosphere } from './atmosphere';
 import { Setting } from './Setting';
 import { formation, SketchObject } from './SketchObject';
+import { memoryPlacements } from '../../social/overlay';
+import { PerspectiveLayer } from '../../social/scene/PerspectiveLayer';
 
 const ORDER: Record<string, number> = { 'floor-under': 0, wall: 1, backdrop: 1, water: 1, edge: 2, floor: 3, 'wall-mounted': 4, surface: 5 };
 
@@ -62,6 +64,7 @@ export function MemoryScene() {
   const placements = useMemo(() => {
     if (!plan) { placed.current = new Map(); return placed.current; }
     placed.current = stablePlacements(plan, placed.current);
+    memoryPlacements.current = placed.current; // perspectives place their own things around these
     return placed.current;
   }, [plan]);
 
@@ -119,6 +122,7 @@ export function MemoryScene() {
         if (!p) return null;
         return <SketchObject key={o.id} obj={o} place={p} delay={delayOf(o.id, i, o.kind)} />;
       })}
+      <PerspectiveLayer />
     </group>
   );
 }

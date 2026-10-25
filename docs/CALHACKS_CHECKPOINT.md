@@ -4,7 +4,7 @@ Branch: `codex/calhacks-apify-spacetime-meta`. User explicitly requested regular
 
 ## Latest user direction — not yet implemented
 
-The user wants SpacetimeDB to drive shared collaboration and 3D perspectives inside VR, with POV switching a priority. They also suggested Apify Instagram photo ingestion into a memory, asked for actual headset verification with the correct software, and reiterated checking supplied credentials and pushing small checkpoints. The current exchange/board is implemented; synchronized VR perspectives, POV switching, and Instagram ingestion are still outstanding. Keep this distinction explicit when reporting progress.
+The user wants SpacetimeDB to drive shared collaboration and 3D perspectives inside VR, with POV switching a priority. They also suggested Apify Instagram photo ingestion into a memory, asked for actual headset verification with the correct software, and reiterated checking supplied credentials and pushing small checkpoints. The current exchange/board is implemented. Synchronized perspectives and POV switching are now implemented on branch `social-experience` (see `docs/SOCIAL_EXPERIENCE.md` for exactly what has and hasn't been verified); Instagram ingestion is still outstanding. Keep this distinction explicit when reporting progress.
 
 ## Implementation checklist
 
