@@ -19,6 +19,8 @@ const DEVICES = ['headset', 'phone', 'desktop'];
 const STAGES = ['portal', 'greeting', 'gathering', 'entering', 'forming', 'memory', 'leaving', 'album'];
 /** The companion speaks at the gate and inside the memory; never over the walk in or out. */
 const SPEAKING_STAGES = new Set(['greeting', 'gathering', 'forming', 'memory']);
+/** Where the visit is for the brain: at the gate, or inside the memory. */
+const phaseOf = (flow) => (flow?.stage === 'memory' || flow?.stage === 'forming' ? 'memory' : 'gathering');
 const KEEP_HEARD_MS = 20_000;
 const OPEN_TURN_MS = 45_000; // a turn heard starting but never finished stops counting after this
 const WAIT_FOR_OTHER_MS = 1500;
@@ -37,7 +39,7 @@ export function buildInput({ turns, batch, people, summary, flow, labelOf }) {
   // One person on their own (nobody has joined, or they left): an ordinary turn, as in a visit alone.
   const two = people.length > 1;
   return {
-    phase: flow?.stage === 'memory' || flow?.stage === 'forming' ? 'memory' : 'gathering',
+    phase: phaseOf(flow),
     transcript: batch.map(b => b.text).join(' … ').slice(0, 600),
     history: turns.slice(-14).map(t => (t.who === 'companion' || !two ? { who: t.who, text: t.text } : { who: 'person', text: t.text, name: t.speakerName, perspective: labelOf(t.perspectiveId) })),
     media: flow?.media ?? null, mediaCaption: flow?.mediaCaption ?? null, place: flow?.place ?? null,
@@ -119,6 +121,9 @@ export function createConversation({ db, clients, send, convex }) {
       Object.assign(input, { language: last.language, setting: last.setting });
       const online = await withTimeout(convex.action(respondRef, { ...r.auth, input }), BRAIN_MS);
       if (online?.listen) return; // they're talking with each other: let them
+      // Stepped through (or came back out) while this was being answered: it answers a moment that has passed. Said
+      // inside the memory, "yes, let's go" from the gate would read as wanting to leave.
+      if (phaseOf(r.flow) !== input.phase) return;
       // One turn's language, as for one person (shared/src/guide.ts resolveReply); offline, the last speaker by name.
       const turn = resolveReply(input, online);
       const reply = online ? turn.reply : guideTogether({ ...input, language: turn.language });
@@ -201,7 +206,7 @@ export function createConversation({ db, clients, send, convex }) {
       r.auth = c.auth;
       await addTurn({ id: `${ctx.roomId}:${turnId}:p`, roomId: ctx.roomId, who: 'person', memberId: ctx.memberId, speakerName: ctx.displayName.slice(0, 80), perspectiveId: perspective?.id ?? '', text });
       // Each person's conversation language (their device's): the companion answers in the last speaker's.
-      r.pending.push({ memberId: ctx.memberId, name: ctx.displayName, text,
+      r.pending.push({ memberId: ctx.memberId, name: ctx.displayName, text, phase: phaseOf(r.flow),
         language: LANGS.includes(m.language) ? m.language : 'en', setting: LANGUAGE_SETTINGS.includes(m.setting) ? m.setting : 'auto' });
       r.lastHeardAt = Date.now();
       r.addressed ||= addressesCompanion(text);
@@ -214,6 +219,7 @@ export function createConversation({ db, clients, send, convex }) {
       if (!ctx.isOwner) return;
       const r = roomOf(ctx.roomId);
       const stage = STAGES.includes(m.stage) ? m.stage : r.flow?.stage ?? 'gathering';
+      const before = phaseOf(r.flow);
       r.flow = {
         stage, invitedToEnter: !!m.invitedToEnter,
         turnsInPhase: Number.isInteger(m.turnsInPhase) && m.turnsInPhase >= 0 ? Math.min(m.turnsInPhase, 1000) : 0,
@@ -222,6 +228,9 @@ export function createConversation({ db, clients, send, convex }) {
         mediaCaption: typeof m.mediaCaption === 'string' ? m.mediaCaption.slice(0, 160) : null,
       };
       r.auth ??= c.auth;
+      // Through the gate (or back out): words said on the other side were already acted on by the page ("yes, let's go"
+      // stepped them in), and answered from in here they'd mean something else. Only this side's are still answered.
+      if (phaseOf(r.flow) !== before) r.pending = r.pending.filter((b) => b.phase === phaseOf(r.flow));
       if (!SPEAKING_STAGES.has(stage)) { r.pending = []; clearTimeout(r.timer); r.timer = null; } else schedule(ctx.roomId);
     },
 
