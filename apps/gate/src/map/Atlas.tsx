@@ -42,7 +42,7 @@ function MapScreen({ tab, onTab, onOpen, onClose }: { tab: Tab; onTab: (t: Tab) 
       <div className="album-scroll">
         <div className="album-inner">
           <div className="album-top atlas-top">
-            <div className="wordmark">Memory Gate</div>
+            <div className="wordmark">Memora</div>
             <div className="atlas-tabs glass" role="tablist" aria-label="Whose memories">
               {TABS.map((t) => (
                 <button key={t.id} type="button" role="tab" id={`atlas-tab-${t.id}`} aria-selected={tab === t.id} aria-controls="atlas-panel"

@@ -53,7 +53,7 @@ export function TopBar() {
   const inConversation = stage !== 'portal' && stage !== 'album';
   return (
     <header className="topbar">
-      {day && title ? <h1 className="memory-title" data-testid="memory-title">{title}</h1> : <div className="wordmark">Memory Gate</div>}
+      {day && title ? <h1 className="memory-title" data-testid="memory-title">{title}</h1> : <div className="wordmark">Memora</div>}
       {inConversation && <ListeningChip />}
       <div className="right">
         {(stage === 'memory' || stage === 'forming') && <button type="button" className="icon-btn glass" aria-label="Places and objects" title="Places and objects" data-testid="places-objects" onClick={openObjectWorkshop}><PhotosIcon /></button>}

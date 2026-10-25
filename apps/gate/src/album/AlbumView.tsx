@@ -75,7 +75,7 @@ export default function AlbumView({ onBeginAnother, onRevisit, onClose, onVisitS
         <div className="album-top">
           {onBack ? (
             <button type="button" className="pill glass album-back" onClick={onBack} data-testid="album-back"><BackIcon /> Map</button>
-          ) : <div className="wordmark">Memory Gate</div>}
+          ) : <div className="wordmark">Memora</div>}
           {onClose && (
             <button type="button" className="icon-btn glass album-close" aria-label="Back to the start" onClick={onClose} data-testid="album-close">
               <CloseIcon />
