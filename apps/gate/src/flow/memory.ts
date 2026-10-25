@@ -11,6 +11,7 @@ import { bringIn, placePlan, PLACES, type PlaceKey, type PreparedPlace } from '.
 import { serverNow, usePresence } from '../presence/presence';
 import { convex, uploadFile } from '../backend/client';
 import type { MediaItem, Session } from '../state/store';
+import { heldHeard } from '../showcase/held';
 
 type MemoryState = {
   plan: ScenePlan | null;
@@ -28,6 +29,10 @@ type MemoryState = {
   shared?: boolean;
   /** A place we already have finished (a garden, a football field...): it forms whole instead of being planned. */
   showcase?: string | null;
+  /** The showcase has arrived and is drawn (until then the white space stays, never a black wait). */
+  showcaseReady?: boolean;
+  /** The held things of a showcase someone has named so far (item indexes): they come in when said. */
+  revealed?: number[];
   /** They said who was there with them ("with my grandmother"): the other perspective's stand-in waits in the memory
    *  only then (or when someone else is in it), never by default. */
   company?: boolean;
@@ -87,6 +92,12 @@ class Memory {
 
   /** Things these words name, brought into the prepared place (true when something came). */
   bringIn(text: string): boolean {
+    // In a showcase (a garden, a living room), the things it holds back come in when they're named.
+    const sc = useMemory.getState();
+    if (sc.showcase) {
+      const ids = heldHeard(sc.showcase, text, sc.revealed ?? []);
+      if (ids.length) { useMemory.setState({ revealed: [...(sc.revealed ?? []), ...ids] }); return true; }
+    }
     const st = useMemory.getState();
     if (!st.place || !st.plan) return false;
     // A spot pointed at in the last twenty seconds is what "here" and "there" mean.

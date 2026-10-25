@@ -12,6 +12,9 @@ export type BuiltShowcase = {
   backgroundBlur: number;
   rotation: number;
   uniforms: { value: number }[];
+  /** Things held aside until someone names them, by their index in the scene's items. */
+  held: { index: number; it: unknown }[];
+  place: (it: unknown) => Promise<THREE.Object3D | null>;
 };
 
 export function buildShowcase(o: {

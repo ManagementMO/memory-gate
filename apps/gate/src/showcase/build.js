@@ -21,7 +21,7 @@ export async function buildShowcase({ spec, script, renderer, camera, grass: gra
   const scene = new THREE.Group();
   scene.name = `showcase-${spec.title ?? ''}`;
   const env = spec.env ?? {};
-  const out = { group: scene, hdr: null, envMap: null, background: null, fog: null, exposure: env.exposure ?? 1, envIntensity: env.envIntensity ?? 1, backgroundIntensity: env.backgroundIntensity ?? 1, backgroundBlur: env.backgroundBlur ?? 0, rotation: (env.hdriRotation ?? 0) * DEG, uniforms: [] };
+  const out = { group: scene, hdr: null, envMap: null, background: null, fog: null, exposure: env.exposure ?? 1, envIntensity: env.envIntensity ?? 1, backgroundIntensity: env.backgroundIntensity ?? 1, backgroundBlur: env.backgroundBlur ?? 0, rotation: (env.hdriRotation ?? 0) * DEG, uniforms: [], held: [], place: null };
   const waits = [];
 
   // ---------- sky ----------
@@ -326,7 +326,10 @@ export async function buildShowcase({ spec, script, renderer, camera, grass: gra
 
   // ---------- build ----------
   for (const gr of [env.grass ?? spec.grass ?? []].flat()) placeGrass(gr);
-  waits.push(...(spec.items ?? []).map((it) => placeItem(it).catch((e) => console.warn('[showcase] item', it.m, e))));
+  // Things someone can call in by name ("there was a birdbath") wait aside until they're said (src/showcase/held.ts).
+  (spec.items ?? []).forEach((it, index) => { if (it.say) out.held.push({ index, it }); });
+  out.place = (it) => placeItem(it).catch((e) => { console.warn('[showcase] held', it.m, e); return null; });
+  waits.push(...(spec.items ?? []).filter((it) => !it.say).map((it) => placeItem(it).catch((e) => console.warn('[showcase] item', it.m, e))));
   waits.push(...(spec.scatter ?? []).map((sc) => placeScatter(sc).catch((e) => console.warn('[showcase] scatter', sc.m, e))));
   await Promise.all(waits);
   if (script) {

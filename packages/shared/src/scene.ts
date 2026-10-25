@@ -407,14 +407,15 @@ export function planOffline(text: string, title?: string | null, opts: { seeds?:
   // The people they say were there ("my parents were with me"): one of each for parents, the right age for each.
   const people: PlanPerson[] = [];
   const who: [RegExp, PersonAge, 'female' | 'male'][] = [
-    [/\b(my )?(mom|mum|mother|mama)\b/, 'middle-aged', 'female'], [/\b(my )?(dad|father|papa)\b/, 'middle-aged', 'male'],
-    [/\b(grandma|grandmother|granny|nana)\b/, 'older', 'female'], [/\b(grandpa|grandfather|granddad)\b/, 'older', 'male'],
-    [/\b(my )?(sister)\b/, 'young adult', 'female'], [/\b(my )?(brother)\b/, 'young adult', 'male'],
-    [/\b(my )?(daughter|little girl)\b/, 'child', 'female'], [/\b(my )?(son|little boy)\b/, 'child', 'male'],
-    [/\b(my )?(wife|girlfriend)\b/, 'adult', 'female'], [/\b(my )?(husband|boyfriend)\b/, 'adult', 'male'],
+    [/\b(my )?(mom|mum|mother|mama)\b(?!')/, 'middle-aged', 'female'], [/\b(my )?(dad|father|papa)\b(?!')/, 'middle-aged', 'male'],
+    [/\b(grandma|grandmother|granny|nana)\b(?!')/, 'older', 'female'], [/\b(grandpa|grandfather|granddad)\b(?!')/, 'older', 'male'],
+    [/\b(my )?(sister)\b(?!')/, 'young adult', 'female'], [/\b(my )?(brother)\b(?!')/, 'young adult', 'male'],
+    [/\b(my )?(daughter|little girl)\b(?!')/, 'child', 'female'], [/\b(my )?(son|little boy)\b(?!')/, 'child', 'male'],
+    [/\b(my )?(wife|girlfriend)\b(?!')/, 'adult', 'female'], [/\b(my )?(husband|boyfriend)\b(?!')/, 'adult', 'male'],
   ];
-  if (/\bparents\b/.test(t)) people.push(...(['female', 'male'] as const).map((g) => ({ age: 'middle-aged' as PersonAge, gender: g })) as PlanPerson[]);
-  for (const [re, age, gender] of who) if (re.test(t) && !(/\bparents\b/.test(t) && age === 'middle-aged')) people.push({ age, gender } as PlanPerson);
+  // ("grandma's garden" is whose garden it is, not someone in it)
+  if (/\bparents\b(?!')/.test(t)) people.push(...(['female', 'male'] as const).map((g) => ({ age: 'middle-aged' as PersonAge, gender: g })) as PlanPerson[]);
+  for (const [re, age, gender] of who) if (re.test(t) && !(/\bparents\b(?!')/.test(t) && age === 'middle-aged')) people.push({ age, gender } as PlanPerson);
   const planPeople: PlanPerson[] = people.slice(0, 6).map((p, i) => ({ id: `person-${i}`, age: p.age, gender: p.gender, skin: null, hair: null, top: null, bottom: null, pose: i % 2 ? 'wait' : 'stand', zone: 'center', facing: 0 }));
   // "... on the counter", "... by the fireplace": the words right after a thing name what it relates to.
   const after = (o: PlanObject) => t.slice((o as PlanObject & { _at?: number })._at ?? 0, ((o as PlanObject & { _at?: number })._at ?? 0) + 40);
